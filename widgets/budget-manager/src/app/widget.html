@@ -4,19 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.92"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.93"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.92"></script>
-<script src="po-grid.js?v=122.29.92"></script>
-<script src="po-controller.js?v=122.29.92"></script>
-<script src="po-progress.js?v=122.29.92"></script>
-<script src="po-ui.js?v=122.29.92"></script>
-<script src="request-attachments.js?v=122.29.92"></script>
-<script src="full-budget-export.js?v=122.29.92"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.92">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.92">
+<script src="po-domain.js?v=122.29.93"></script>
+<script src="po-grid.js?v=122.29.93"></script>
+<script src="po-controller.js?v=122.29.93"></script>
+<script src="po-progress.js?v=122.29.93"></script>
+<script src="po-ui.js?v=122.29.93"></script>
+<script src="request-attachments.js?v=122.29.93"></script>
+<script src="full-budget-export.js?v=122.29.93"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.93">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.93">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1842,15 +1842,19 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.92">
-<script src="success-feedback.js?v=122.29.92"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.92">
-<script src="interaction-motion.js?v=122.29.92"></script>
-<script src="interaction-surfaces.js?v=122.29.92"></script>
-<script src="number-edit-commit.js?v=122.29.92"></script>
-<script src="number-transitions.js?v=122.29.92"></script>
-<script src="number-surfaces.js?v=122.29.92"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.92">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.93">
+<script src="success-feedback.js?v=122.29.93"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.93">
+<script src="interaction-motion.js?v=122.29.93"></script>
+<script src="interaction-surfaces.js?v=122.29.93"></script>
+<script src="number-edit-commit.js?v=122.29.93"></script>
+<script src="number-transitions.js?v=122.29.93"></script>
+<script src="number-surfaces.js?v=122.29.93"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.93">
+<script src="budget-import-ledger.js?v=122.29.93"></script>
+<script src="budget-import-workspace.js?v=122.29.93"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.93">
+
 </head>
 <body>
 
@@ -2014,35 +2018,13 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
   <div class="wrap">
     <div class="crumbs" style="margin-bottom:14px"><span>Budgets</span><span class="sep">/</span><span class="cur">Budget Import Items</span></div>
     <div class="imports-head">
-      <div class="imports-title-row">
-        <div>
-          <h2 class="imports-title">Budget Import Items</h2>
-        </div>
-        <div class="imports-stats" id="importsStats"></div>
-      </div>
-      <div class="imports-toolbar">
-        <div class="imports-search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input type="text" id="importSearch" placeholder="Search by code, description, or subdivision" autocomplete="off">
-        </div>
-        <div class="imports-toolbar-right">
-          <div class="imp-sort-wrap"><label for="importMajor">Major</label><select id="importMajor"><option value="">All</option></select></div>
-          <div class="imp-sort-wrap"><label for="importMinor">Minor</label><select id="importMinor"><option value="">All</option></select></div>
-          <div class="imp-sort-wrap"><label for="importSource">Source</label><select id="importSource"><option value="">All</option></select></div>
-          <button class="imp-filter-chip" id="importFilterMissing" data-on="0">
-            <span class="imp-dot"></span>Missing item <span class="imp-chip-ct" id="importMissingCt">0</span>
-          </button>
-          <button class="imp-filter-chip" id="importFilterDifferent" type="button" data-on="0" aria-pressed="false" title="Assigned Budget Item code differs from Subdivision Code–Minor Code">
-            <span class="imp-dot"></span>Different code
-          </button>
-          <div class="imp-sort-wrap">
-            <label for="importSort">Sort</label>
-            <select id="importSort">
-              <option value="sub">Subdivision</option>
-              <option value="code">Code</option>
-              <option value="status">Assignment status</option>
-            </select>
-          </div>
+      <div class="imports-title-row"><h2 class="imports-title">Budget Import Items</h2></div>
+      <div class="il-scope"><div class="il-subdivision" id="importsSubdivisionWrap"></div><div class="imports-stats" id="importsStats"></div></div>
+      <div class="imports-toolbar" id="importsToolbar" hidden>
+        <div class="imports-search-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input type="search" id="importSearch" aria-label="Search Import Items" placeholder="Search Description Or Code" autocomplete="off"></div>
+        <div class="imports-toolbar-right"><div id="importsFilters"></div>
+          <button type="button" class="imp-filter-chip" id="importFilterMissing" data-on="0" aria-pressed="false"><span class="imp-dot"></span>Missing Item <span class="imp-chip-ct" id="importMissingCt">0</span></button>
+          <button type="button" class="imp-filter-chip" id="importFilterDifferent" data-on="0" aria-pressed="false" title="Assigned Budget Item Code Differs From Subdivision Code–Minor Code"><span class="imp-dot"></span>Different Code</button>
         </div>
       </div>
     </div>
@@ -2606,7 +2588,8 @@ var S = {
   approvals: [],        // raw approval records
   importItems: [],      // raw Budget_Import_Item records
   importItemsLoaded: false,
-  importUI: { search: "", missingOnly: false, differentOnly: false, sort: "sub", major: "", minor: "", source: "" },
+  importWorkspaceData: null,
+  importUI: { subdivision: "", search: "", missingOnly: false, differentOnly: false, sort: "code", major: "", minor: "", source: "", expanded: {}, stored: {} },
   aqUI: { search: "", status: "", track: "", mine: "mine" },
   allBudgetItems: [],   // raw Budget_Item records (fallback roster for the assignment dropdown)
   allBudgetItemsLoaded: false,
@@ -2749,7 +2732,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.92", code:"BMW",
+  widget:"Budget Manager", version:"122.29.93", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -4337,7 +4320,10 @@ function getMockRecords(reportName, criteria) {
   if (reportName === CFG.reports.approvals) return MOCK.approvals;
   if (reportName === CFG.reports.modifications) return MOCK.modifications || [];
   if (reportName === CFG.reports.userAccess) return MOCK.userAccess || [];
-  if (reportName === CFG.reports.importItems) return MOCK.importItems || [];
+  if (reportName === CFG.reports.importItems) {
+    var importScope=criteria&&criteria.match(/Subdivision_Code\s*==\s*"([^"\\]*)"/);
+    return importScope?(MOCK.importItems||[]).filter(function(row){return String(row.Subdivision_Code||'').toLowerCase()===importScope[1].toLowerCase();}):MOCK.importItems||[];
+  }
   if (reportName === CFG.reports.subdivisions) return MOCK.subdivisions || [];
   if (reportName === CFG.reports.projects) return MOCK.projects || [];
   if (reportName === CFG.reports.proformas || reportName === CFG.reports.proformaDetails) return MOCK.proformas || [];
@@ -4355,6 +4341,8 @@ function getMockRecords(reportName, criteria) {
     return MOCK.categories;
   }
   if (reportName === CFG.reports.items) {
+    var itemScope=criteria&&criteria.match(/Budget\.Subdivision_Code\s*==\s*"([^"\\]*)"/);
+    if(itemScope)return (MOCK.budgetItems||[]).filter(function(row){return String(row.Subdivision_Code||'').toLowerCase()===itemScope[1].toLowerCase();});
     // Filter by Budget_Category in [ids]
     if (criteria) {
       var m2 = criteria.match(/Budget_Category\s+in\s+\[([^\]]+)\]/);
@@ -5123,7 +5111,6 @@ function scheduleBudgetBadgeSummaries(){
   S.badgeSummaryTimer=setTimeout(function(){
     if(!S.startupReady||scope!==budgetBadgeScope())return;
     var requests=[loadBudgetBadgeSummary("comments"),loadBudgetBadgeSummary("attachments")];
-    if(canViewImportItems())requests.push(loadImportItems(false));
     Promise.allSettled(requests);
   },0);
 }
@@ -6397,15 +6384,16 @@ function importAssignedItem(rec) {
   var raw = firstRaw(rec, [CFG.importItemConfig.budgetItemLookupField, "Budget_Item", "Budget_Item1"]);
   if (raw == null || raw === "") return null;
   if (typeof raw === "object") {
-    var id = String(raw.ID || raw.id || raw.value || "").trim();
+    var nativeId=raw.ID||raw.id||raw.value||"";
+    var id = typeof nativeId==="number"&&!Number.isSafeInteger(nativeId)?"":String(nativeId).trim();
     var label = cleanVal(raw.display_value || raw.zc_display_value || raw.name || "");
     if (!id && !label) return null;
     return { id: id, label: label || id };
   }
   var s = String(raw).trim();
-  return s ? { id: s, label: s } : null;
+  return s ? { id: /^\d+$/.test(s) ? s : "", label: s } : null;
 }
-function importIsMissing(rec) { return !importAssignedItem(rec); }
+function importIsMissing(rec) { var assigned=importAssignedItem(rec);return !assigned||!assigned.id; }
 
 // Creator's automatic linker uses Subdivision_Code + "-" + Minor_Code.
 // Import Code contains a source marker (HJ/GP/B), so it is not the native item code.
@@ -6417,7 +6405,7 @@ function importAssignedBudgetCode(rec) {
   var assigned=importAssignedItem(rec);if(!assigned)return "";
   var direct=cleanVal(firstRaw(rec,[CFG.importItemConfig.budgetItemLookupField+".Budget_Code","Budget_Item.Budget_Code","Budget_Item1.Budget_Code"]));
   if(direct)return direct;
-  var items=S.allBudgetItems||[];
+  var items=(S.importWorkspaceData&&S.importWorkspaceData.items||[]).concat(S.allBudgetItems||[]);
   if(S.importCodeItemSource!==items){
     S.importCodeItemSource=items;S.importCodeItemIndex=Object.create(null);
     items.forEach(function(item){var code=cleanVal(item.Budget_Code);if(code&&item.ID!=null)S.importCodeItemIndex[String(item.ID)]=code;});
@@ -6439,17 +6427,10 @@ function importCodeFilterUnknown() {
   return (S.importItems||[]).some(function(rec){return importHasDifferentCode(rec)===null;});
 }
 function loadImportAssignmentCodes(force) {
-  if(!canViewImportItems())return Promise.reject(new Error("Budget Import Items are unavailable."));
-  return loadBudgetFeature("import-assignment-codes",function(){
-    return sdkGetAllRecords(CFG.reports.items,"",{fields:["ID","Budget_Code"],fresh:!!force}).then(function(rows){
-      var codes=Object.create(null);
-      rows.forEach(function(row){
-        if(!Object.prototype.hasOwnProperty.call(row,"Budget_Code"))throw new Error("Budget Item codes were not returned.");
-        var code=cleanVal(row.Budget_Code);if(code)codes[String(row.ID)]=code;
-      });
-      return codes;
-    });
-  },null,force);
+  return loadImportWorkspace(!!force).then(function(data){
+    if(!data||data.itemError)throw new Error("Budget Item codes are unavailable.");
+    var codes=Object.create(null);data.items.forEach(function(item){codes[String(item.ID)]=cleanVal(item.Budget_Code);});return codes;
+  });
 }
 function syncImportAssignmentFilters() {
   [["importFilterMissing",!!S.importUI.missingOnly],["importFilterDifferent",!!(S.importUI.differentOnly||S.importCodeFilterPending)]].forEach(function(pair){var button=$(pair[0]);if(button){button.setAttribute("data-on",pair[1]?"1":"0");button.setAttribute("aria-pressed",pair[1]?"true":"false");}});
@@ -6460,25 +6441,7 @@ function syncImportAssignmentFilters() {
   status.innerHTML=S.importCodeFilterPending?"Loading Budget Item codes…":S.importCodeFilterError?"Different code filter unavailable. <button class='btn' type='button' data-import-code-retry>Retry</button>":"";
 }
 function setImportAssignmentFilter(kind,retry) {
-  var generation=(S.importCodeFilterGeneration||0)+1;S.importCodeFilterGeneration=generation;
-  var wasDifferent=!!(S.importUI.differentOnly||S.importCodeFilterPending);
-  S.importCodeFilterPending=false;S.importCodeFilterError="";
-  if(kind==="missing"){
-    S.importUI.missingOnly=!S.importUI.missingOnly;S.importUI.differentOnly=false;renderImports();return Promise.resolve();
-  }
-  S.importUI.missingOnly=false;S.importUI.differentOnly=false;
-  if(wasDifferent&&!retry){renderImports();return Promise.resolve();}
-  if(!importCodeFilterUnknown()){S.importUI.differentOnly=true;renderImports();return Promise.resolve();}
-  S.importCodeFilterPending=true;renderImports();
-  var needsCodes=(S.importItems||[]).some(function(rec){return !importIsMissing(rec)&&!importAssignedBudgetCode(rec);});
-  return (needsCodes?loadImportAssignmentCodes(!!retry):Promise.resolve()).then(function(){
-    if(S.importCodeFilterGeneration!==generation)return;
-    if(importCodeFilterUnknown())throw new Error("Some assigned item codes are unavailable.");
-    S.importCodeFilterPending=false;S.importUI.differentOnly=true;renderImports();
-  }).catch(function(error){
-    if(S.importCodeFilterGeneration!==generation)return;
-    S.importCodeFilterPending=false;S.importCodeFilterError=shortErr(error);S.importUI.differentOnly=false;renderImports();
-  });
+  return importWorkspaceController().toggleFilter(kind);
 }
 
 function budgetItemSubCode(it) {
@@ -6519,6 +6482,10 @@ function budgetItemsForSubCode(subCode) {
   // == this code — mirrors the Deluge query). Fall back to client-side filtering of the full
   // roster only if the scoped fetch hasn't populated yet.
   var sc = normSubCode(subCode);
+  if(S.view==="vImports"){
+    var workspace=importWorkspaceController().current();
+    return workspace&&normSubCode(workspace.subdivision)===sc&&!workspace.itemError?workspace.items:[];
+  }
   if (sc && S.itemsBySubCode[sc]) return S.itemsBySubCode[sc];
   var items = S.allBudgetItems || [];
   if (!sc) return items.slice();
@@ -6590,15 +6557,29 @@ function loadAllBudgetItemsForAssign(force) {
 }
 
 function openImportsTab() {
-  if(!canViewImportItems()){setMsg("You don't have access to Budget Import Items.","err");return;}
-  if(!showView("vImports"))return;
-  var token=budgetNavigationToken();setActiveTab("imports");
-  var stats=$("importsStats");if(stats)stats.innerHTML="";var missing=$("importMissingCt");if(missing)missing.textContent="…";
-  var wrap=$("importsTableWrap");if(wrap)wrap.innerHTML="<div class='imports-loading'>Loading import items…</div>";
-  return Promise.all([loadImportItems(false),loadAllBudgetItemsForAssign(false)]).then(function(){
-    if(!budgetNavigationCurrent(token,"vImports"))return;
-    renderImports();prefetchScopedItemsForMissing();
-  }).catch(function(error){auditLog("error","Import workspace unavailable",error);if(budgetNavigationCurrent(token,"vImports")&&wrap)wrap.innerHTML="<div class='aq-empty'>Import data unavailable. <button class='btn' type='button' data-budget-feature-retry='imports'>Retry</button></div>";});
+  if(!canViewImportItems()){setMsg("You don't have access to Budget Import Items.","err");return Promise.resolve();}
+  if(!showView("vImports"))return Promise.resolve();
+  setActiveTab("imports");
+  return importWorkspaceController().open().catch(function(error){auditLog("error","Import workspace unavailable",error);});
+}
+var _importWorkspaceController=null;
+function importWorkspaceController() {
+  if(!_importWorkspaceController)_importWorkspaceController=BudgetImportWorkspace.create({
+    state:S,config:CFG,node:$,escape:esc,escapeAttr:escAttr,clean:cleanVal,
+    canView:canViewImportItems,canEdit:canEditImportItems,read:sdkGetAllRecords,
+    feature:budgetFeature,loadFeature:loadBudgetFeature,scope:budgetBadgeScope,
+    assigned:importAssignedItem,source:importDataSource,major:importMajorCode,minor:importMinorCode,
+    description:importItemDesc,code:importItemCode,subCode:importSubCode,subName:importSubName,
+    itemSubCode:budgetItemSubCode,different:importHasDifferentCode,assignHtml:importAssignCellHtml,
+    badge:syncBudgetImportBadge,onError:function(error){auditLog("error","Import workspace unavailable",error);}
+  });
+  return _importWorkspaceController;
+}
+function loadImportWorkspace(force) { return importWorkspaceController().load(!!force); }
+function importWorkspaceRows() { return importWorkspaceController().rows(); }
+function importLedgerGroups(rows) { return importWorkspaceController().groups(rows); }
+function findImportRecord(recordId) {
+  return importWorkspaceRows().concat(S.importItems||[]).find(function(row){return String(row.ID)===String(recordId);});
 }
 
 function importFilteredSorted() {
@@ -6648,71 +6629,8 @@ function populateImportFilter(selectId, values, current) {
 }
 
 function renderImports() {
+  importWorkspaceController().render();
   syncBudgetImportBadge();
-  if(S.importUI.differentOnly&&importCodeFilterUnknown()){S.importUI.differentOnly=false;S.importCodeFilterError="Some assigned item codes are unavailable.";}
-  syncImportAssignmentFilters();
-  var wrap = $("importsTableWrap");
-  if (!wrap) return;
-  if(budgetFeature("imports").status!=="loaded" || canEditImportItems()&&budgetFeature("import-assignment-items").status!=="loaded"){wrap.innerHTML=budgetFeatureStateHtml("imports","Imports");return;}
-  var all = S.importItems || [];
-  var missingCount = all.filter(importIsMissing).length;
-  var canEdit = canEditImportItems();
-
-  var stats = $("importsStats");
-  if (stats) {
-    stats.innerHTML =
-      "<div class='imp-stat'><div class='v'>" + all.length + "</div><div class='l'>Total rows</div></div>" +
-      "<div class='imp-stat" + (missingCount ? " warn" : "") + "'><div class='v'>" + missingCount + "</div><div class='l'>Missing item</div></div>" +
-      "<div class='imp-stat'><div class='v'>" + (all.length - missingCount) + "</div><div class='l'>Assigned</div></div>";
-  }
-  var mct = $("importMissingCt"); if (mct) mct.textContent = missingCount;
-  populateImportFilter("importMajor", importDistinct(importMajorCode), S.importUI.major);
-  populateImportFilter("importMinor", importDistinct(importMinorCode), S.importUI.minor);
-  populateImportFilter("importSource", importDistinct(importDataSource), S.importUI.source);
-
-  var rows = importFilteredSorted();
-  if (!rows.length) {
-    wrap.innerHTML = "<div class='imp-empty'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.6'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><path d='M7 10l5 5 5-5'/><path d='M12 15V3'/></svg><div>" +
-      (S.importUI.missingOnly ? "No rows missing a Budget Item." : S.importUI.differentOnly ? "No assigned items have a different code." : "No import items match your filters.") + "</div></div>";
-    return;
-  }
-
-  var groups = {};
-  var order = [];
-  rows.forEach(function (r) {
-    var key = importSubName(r) + "||" + importSubCode(r);
-    if (!groups[key]) { groups[key] = []; order.push(key); }
-    groups[key].push(r);
-  });
-
-  var html = "";
-  order.forEach(function (key) {
-    var parts = key.split("||");
-    var nm = parts[0], code = parts[1];
-    var grp = groups[key];
-    html += "<div class='imp-group'>";
-    html += "<div class='imp-group-h'><span class='nm'>" + esc(nm) + "</span>" +
-      (code ? "<span class='code'>" + esc(code) + "</span>" : "") +
-      "<span class='ct'>" + grp.length + " item" + (grp.length !== 1 ? "s" : "") + "</span></div>";
-    html += "<table class='imp-table'><thead><tr>" +
-      "<th>Code</th><th>Description</th><th>Major</th><th>Minor</th><th>Source</th><th class='r'>Cost</th><th>Budget Item</th>" +
-      "</tr></thead><tbody>";
-    grp.forEach(function (r) {
-      var missing = importIsMissing(r);
-      var assigned = importAssignedItem(r);
-      html += "<tr class='" + (missing ? "missing" : "") + "' data-imp-id='" + escAttr(r.ID) + "'>";
-      html += "<td class='imp-code'>" + esc(importItemCode(r) || "—") + "</td>";
-      html += "<td class='imp-desc'>" + esc(importItemDesc(r)) + "</td>";
-      html += "<td class='imp-meta'>" + esc(importMajorCode(r) || "—") + "</td>";
-      html += "<td class='imp-meta'>" + esc(importMinorCode(r) || "—") + "</td>";
-      html += "<td>" + (importDataSource(r) ? "<span class='imp-source'>" + esc(importDataSource(r)) + "</span>" : "<span class='imp-meta'>—</span>") + "</td>";
-      html += "<td class='imp-cost'>" + (importItemCost(r) ? "$" + importItemCost(r).toLocaleString() : "—") + "</td>";
-      html += "<td class='imp-assign-cell'>" + importAssignCellHtml(r, assigned, missing, canEdit) + "</td>";
-      html += "</tr>";
-    });
-    html += "</tbody></table></div>";
-  });
-  wrap.innerHTML = html;
 }
 
 function importAssignCellHtml(rec, assigned, missing, canEdit) {
@@ -6723,7 +6641,7 @@ function importAssignCellHtml(rec, assigned, missing, canEdit) {
   }
   if (assigned) {
     return "<span class='imp-assigned-name'><span class='imp-pill ok'>" + esc(assigned.label) + "</span>" +
-      "<span class='chg' data-imp-change='" + escAttr(rec.ID) + "'>change</span></span>";
+      "<button type='button' class='chg' data-imp-change='" + escAttr(rec.ID) + "'>Change</button></span>";
   }
   return importAssignSelectHtml(rec);
 }
@@ -6734,8 +6652,8 @@ function importAssignSelectHtml(rec) {
   var all = S.allBudgetItems || [];
   var isScoped = subCode && S.itemsBySubCode[normSubCode(subCode)] != null;
   var ph = isScoped
-    ? "Assign from " + esc(subCode) + " · " + opts.length + " items"
-    : (subCode ? "Assign a Budget Item" : "Assign a Budget Item");
+    ? "Assign From " + esc(subCode) + " · " + opts.length + " items"
+    : (subCode ? "Assign A Budget Item" : "Assign A Budget Item");
   // Searchable combobox styled as an obvious dropdown; subtle red until a Budget Item is assigned.
   return "<div class='imp-combo imp-combo-needs' data-imp-combo='" + escAttr(rec.ID) + "'>" +
     "<input type='text' class='imp-combo-input needs-assign" + (isScoped ? " scoped" : "") + "' placeholder='" + escAttr(ph) + "' autocomplete='off' data-imp-combo-input='" + escAttr(rec.ID) + "'>" +
@@ -6747,32 +6665,41 @@ function importComboOptions(rec, query) {
   var opts = budgetItemsForSubCode(importSubCode(rec));
   var q = cleanVal(query).toLowerCase();
   if (q) opts = opts.filter(function (it) { return budgetItemLabel(it).toLowerCase().indexOf(q) >= 0; });
-  if (!opts.length) return "<div class='imp-combo-empty'>No matching Budget Items</div>";
+  if (!opts.length) return "<div class='imp-combo-empty'>No Matching Budget Items</div>";
   return opts.slice(0, 60).map(function (it) {
     return "<div class='imp-combo-opt' data-imp-pick='" + escAttr(it.ID) + "' data-imp-pick-row='" + escAttr(rec.ID) + "'>" + esc(budgetItemLabel(it)) + "</div>";
   }).join("") + (opts.length > 60 ? "<div class='imp-combo-more'>Refine search to see more (" + opts.length + " total)</div>" : "");
 }
 
 function assignImportItem(impId, budgetItemId, selectEl) {
-  var rec = (S.importItems || []).find(function (r) { return String(r.ID) === String(impId); });
+  var rec = findImportRecord(impId);
   if (!rec) return;
   if (!canEditImportItems()) { setMsg("You don't have permission to assign Budget Items.", "err"); return; }
   if (!budgetItemId) return;
+  var picked = budgetItemsForSubCode(importSubCode(rec)).find(function(item){return String(item.ID)===String(budgetItemId);});
+  if(S.view==="vImports"&&!picked){setMsg("Selected Budget Item is unavailable for this subdivision.","err");return;}
+  var pickedLabel = picked ? budgetItemLabel(picked) : String(budgetItemId);
+  var writeScope = String(budgetBadgeScope()), writeView = S.view, writeSubdivision = normSubCode(importSubCode(rec));
+  function sameWorkspace() {
+    return String(budgetBadgeScope())===writeScope && writeView==="vImports" && S.view==="vImports" &&
+      normSubCode(S.importUI&&S.importUI.subdivision)===writeSubdivision;
+  }
   if (selectEl) selectEl.classList.add("saving");
   var fieldData = {};
   fieldData[CFG.importItemConfig.budgetItemLookupField] = budgetItemId;
   toastShow("Assigning Budget Item…");
   sdkUpdateRecord(CFG.forms.importItem, impId, fieldData).then(function () {
-    var picked = (S.allBudgetItems || []).find(function (it) { return String(it.ID) === String(budgetItemId); });
-    rec[CFG.importItemConfig.budgetItemLookupField] = picked
-      ? { ID: budgetItemId, display_value: budgetItemLabel(picked) }
-      : { ID: budgetItemId, display_value: budgetItemId };
-    S.elementImportSource = null;
-    toastShow("Budget Item assigned", "ok");
-    renderImports();
+    // Complete the captured record even after navigation; never patch another scope.
+    rec[CFG.importItemConfig.budgetItemLookupField] = { ID: budgetItemId, display_value: pickedLabel };
+    if(sameWorkspace()) {
+      (S.importItems||[]).forEach(function(row){if(String(row.ID)===String(rec.ID))row[CFG.importItemConfig.budgetItemLookupField]=rec[CFG.importItemConfig.budgetItemLookupField];});
+      S.elementImportSource = null;
+      renderImports();
+    }
+    if(String(budgetBadgeScope())===writeScope)toastShow("Budget Item Assigned", "ok");
   }).catch(function (err) {
     if (selectEl) selectEl.classList.remove("saving");
-    setMsg("Could not assign Budget Item: " + shortErr(err), "err");
+    if(String(budgetBadgeScope())===writeScope)setMsg("Could not assign Budget Item: " + shortErr(err), "err");
     auditLog("error", "Import item assignment failed", { impId: impId, budgetItemId: budgetItemId, error: err });
   });
 }
@@ -11778,8 +11705,11 @@ function updateImportsTabVisibility() {
   syncBudgetImportBadge();
 }
 function syncBudgetImportBadge() {
-  var state=budgetFeature("imports"),badge={status:state.status,count:state.status==="loaded"?(S.importItems||[]).filter(importIsMissing).length:null},count=$("importCt");
-  if(count){count.textContent=badge.count==null?budgetBadgeCount(badge):String(badge.count);count.title=badge.count==null?(badge.status==="error"?"Imports unavailable; open to retry":badge.status==="loading"?"Loading imports":"Imports not loaded"):badge.count+" missing items";}
+  var count=$("importCt");if(!count)return;
+  var current=S.importWorkspaceData,selected=S.importUI&&S.importUI.subdivision;
+  var ready=canViewImportItems()&&selected&&current&&current.key===String(budgetBadgeScope())+"|"+String(selected).toLowerCase();
+  count.textContent=ready?String(current.rows.filter(importIsMissing).length):"—";
+  count.title=ready?selected+" · Missing Items":"Select A Subdivision In Budget Import Items";
 }
 $("tabs").addEventListener("click", function (e) {
   var a = e.target.closest("a"); if (!a) return; e.preventDefault();
@@ -11823,7 +11753,7 @@ $("tabs").addEventListener("click", function (e) {
 
 // Searchable Budget Item combobox (focus to open, type to filter, click to pick) + "change" link.
 function openImportCombo(rowId, query) {
-  var rec = (S.importItems || []).find(function (r) { return String(r.ID) === String(rowId); });
+  var rec = findImportRecord(rowId);
   if (!rec) return;
   var panel = document.querySelector("[data-imp-combo-panel='" + cssEsc(rowId) + "']");
   var input = document.querySelector("[data-imp-combo-input='" + cssEsc(rowId) + "']");
@@ -11895,7 +11825,7 @@ document.addEventListener("click", function (e) {
   var chg = e.target.closest("[data-imp-change]");
   if (chg) {
     var impId = chg.getAttribute("data-imp-change");
-    var rec = (S.importItems || []).find(function (r) { return String(r.ID) === String(impId); });
+    var rec = findImportRecord(impId);
     if (!rec) return;
     var cell = chg.closest(".imp-assign-cell");
     if (cell) cell.innerHTML = importAssignSelectHtml(rec);
@@ -14518,7 +14448,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.92",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.93",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

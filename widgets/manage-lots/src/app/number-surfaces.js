@@ -64,6 +64,7 @@
           each('[data-po-element-value]',node=>api.text(node,[scope,'element',node.dataset.budgetItem,node.dataset.element,node.dataset.metric],'money'),overlay);
         });
         ['territoryFilterCount','statusFilterCount','apprCt','importCt','multiNotesCount'].forEach(name=>api.id(name,'budget-counts'));
+        each('#vImports [data-import-number]',node=>{if(node.dataset.importNumber)api.text(node,['import-ledger',s.importUI?.subdivision||'',node.dataset.importNumber]);});
         badges('[data-budget-attachments]','data-budget-attachments');badges('[data-budget-comments]','data-budget-comments');
       }else if(module==='manage-lots'){
         const selected=(s.subdivisionIds||[]).slice().sort(),scope=id('lots',selected),receipt=id('receipt',document.getElementById('overlay')?.dataset.lmNumberScope);

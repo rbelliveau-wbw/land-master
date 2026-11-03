@@ -1,3 +1,43 @@
+## Grouped Import Ledger — 122.29.93, November 3, 2026
+
+Budget Import Items uses the approved Grouped Ledger layout. Opening the tab
+does not read its financial records until the user selects one Subdivision.
+Workspace imports and mapped Budget Item candidates are fetched for that
+Subdivision only; startup badge loading does not fetch imports. Cached scopes
+and request generations prevent an older selection from replacing the current
+view. The Budget editor retains its separate, explicit element-expansion import
+snapshot for Construction Unapproved detail; a scoped workspace read must never
+claim that complete editor snapshot has loaded.
+
+Assigned import records consolidate only by exact native Budget Item lookup
+ID. Unassigned and unresolved display-only lookups stay as individual records,
+even when descriptions or cost codes match. Major Code groups contain compact
+line summaries with separate Construction Budget, HCSS Actuals and GP Actuals
+columns. A line expands into five element rows; Imported and Budget Item views
+keep current source amounts separate from stored Final Budget and actual fields.
+Source totals remain independent of element sums. Explicit zeroes and credits
+remain numeric, while absent, blank or invalid amounts display as unavailable.
+A present renamed Import element key supersedes its legacy `*_Budget` alias,
+including when the renamed value is blank.
+
+Original Import Records nest each source's code, description, source identity,
+subdivision, major/minor codes, Cost, five elements, Percent Complete, Cost To
+Complete, external cost-code ID, Updated Date, Import Status and Error Response.
+Import Status remains separate from assignment/code-review status. Existing
+native single-record assignment and permission checks are reused; opening or
+expanding a ledger line never writes financial data. Headings, tabs, column
+labels, field labels and actions use Title Case; source-owned record values and
+identifiers retain their original spelling.
+
+The shared motion registry keys ledger lines by native group/record identity
+and selected Subdivision. Native disclosures, annotated tabs and popovers reuse
+the shared interaction engine. Numeric amounts use explicit display-slot keys
+scoped by Subdivision, with Imported, Stored, summary and record values kept
+distinct. Unknown, first and unrelated-scope values remain static; reduced
+motion retains immediate values. This is a frontend change with no new Creator
+fields, workflows or API contracts. Rollback uses the preceding Budget Manager
+Production release; no Creator data rollback is needed.
+
 ## PO Pricing Input Recovery — 122.29.92, November 3, 2026
 
 Entering Total still selects Manual pricing and clears Quantity/Unit Price to

@@ -93,3 +93,30 @@ Update this file and affected implementations when this reusable design changes.
 Add a new component-family guide to this directory and its index for a new
 standard, following [AGENTS.md](../../AGENTS.md). The documentation check verifies
 discovery and links; focused behavior checks verify adoption.
+
+## Grouped External Import Details
+
+Budget Import Items uses a subdivision-scoped ledger when several external
+records map to the same internal Budget Item. Require an explicit single
+Subdivision before reading workspace data; load the financial scope only when
+the user opens that tab. Keep this workspace cache separate from any complete
+snapshot needed by an existing editor. A stale response cannot replace another
+selection or imply that an unrelated scope is complete.
+
+Consolidate only exact native lookup IDs. Keep unassigned and display-only
+lookups separate, even when names or codes match. A compact parent line carries
+the mapped identity and separate source totals. Its native disclosure contains
+the five element rows and an Imported/Stored comparison; preserve stored Final
+Budget versus latest Construction Budget and independent HCSS/GP actuals.
+Never manufacture a combined Actual figure, force element sums to equal source
+totals, or treat absent values as zero. Preserve signed amounts and explicit
+zeroes. Original Import Records nest source metadata, progress, cost to
+complete, statuses and errors without replacing original codes/descriptions
+with mapped values. Mapping status is distinct from native Import Status.
+
+Use Title Case for headings, tabs, columns, field labels and actions while
+retaining record-owned spelling. Keep viewing read-only and reuse existing
+single-record mapping controls and permissions. Register ledger row identity
+and selected Subdivision in the shared motion registry. Native disclosures,
+annotated tabs/popovers and explicitly keyed numeric display slots reuse the
+shared engines; Imported and Stored amounts have distinct display identities.

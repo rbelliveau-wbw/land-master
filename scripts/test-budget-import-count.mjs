@@ -4,6 +4,8 @@ import vm from 'node:vm';
 
 const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8').replace(/\r\n/g,'\n');
 const adapter=fs.readFileSync('widgets/budget-manager/src/app/creator-data.js','utf8');
+const ledgerSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-ledger.js','utf8');
+const workspaceSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-workspace.js','utf8');
 function block(name){
   const start=source.indexOf(`function ${name}(`),line=source.indexOf('\n',start);
   const end=source.slice(start,line).trimEnd().endsWith('}')?line:source.indexOf('\n}',start)+2;
@@ -21,7 +23,7 @@ const names=['cleanVal','isObj','rawPath','firstRaw','lookupId','lookupName','v'
   'budgetFeature','invalidateBudgetFeature','loadBudgetFeature','budgetFeatureStateHtml','budgetMeasured','budgetBadgeScope','resetBudgetBadgeSummaries','scheduleBudgetBadgeSummaries',
   'groupLandingCategories','validateLandingCategoryRows','loadAll','boot','perms','canViewImportItems','canEditImportItems','budgetNavigationToken','budgetNavigationCurrent',
   'importSubCode','importSubName','subdivisionNameForCode','normSubCode','importItemCode','importMajorCode','importMinorCode','importDataSource','importItemDesc','importItemCost',
-  'importAssignedItem','importIsMissing','budgetItemLabel','loadImportItems','loadAllBudgetItemsForAssign','openImportsTab','importFilteredSorted','importDistinct','populateImportFilter',
+  'importAssignedItem','importIsMissing','importNativeBudgetCode','importAssignedBudgetCode','importHasDifferentCode','budgetItemLabel','loadImportItems','loadAllBudgetItemsForAssign','openImportsTab','importFilteredSorted','importDistinct','populateImportFilter',
   'syncImportAssignmentFilters','renderImports','importAssignCellHtml','importAssignSelectHtml','budgetItemsForSubCode','budgetItemSubCode','assignImportItem','budgetBadgeCount','syncBudgetImportBadge','updateImportsTabVisibility'];
 function fixture(id,budgetItem=null,extra={}){return {ID:id,Code:'1000',Cost_Code_Description:'Native fixture',Subdivision_Code:'AV',Major_Code:'1000',Minor_Code:'010',Data_Source:'Great Plains',Budget_Item:budgetItem,...extra};}
 function harness({view=true,edit=false}={}){
@@ -36,7 +38,9 @@ function harness({view=true,edit=false}={}){
     calls.push({kind,config:plain(config)});const imports=config.report_name===reports.importItems;
     if(imports&&gate[kind==='count'?'count':'records'])await gate[kind==='count'?'count':'records'].promise;
     if(imports&&gate.denied)return {code:2898,message:'No permission to view imports'};
-    const rows=data[config.report_name];assert.ok(rows,'Only configured native report names may be requested');
+    let rows=data[config.report_name];assert.ok(rows,'Only configured native report names may be requested');
+    const selected=config.criteria&&config.criteria.match(/Subdivision_Code == "([^"]+)"/);
+    if(selected)rows=rows.filter(row=>row.Subdivision_Code===selected[1]);
     if(kind==='count')return {code:3000,result:{records_count:String(rows.length+(imports&&gate.incomplete?1:0))}};
     const start=Number(config.record_cursor||0),end=Math.min(start+(imports?gate.pageSize:1000),rows.length);
     const page=plain(rows.slice(start,end));
@@ -45,7 +49,7 @@ function harness({view=true,edit=false}={}){
   const c=vm.createContext({
     S:{liveSDK:true,useMock:false,currentUser:runtime.user,startupReady:false,view:'vBudgets',navigationGeneration:1,budgets:[],projects:[],approvals:[],landingCategories:{},
       importItems:[],importItemsLoaded:false,allBudgetItems:[],allBudgetItemsLoaded:false,itemsBySubCode:{},itemsBySubCodeLoading:{},
-      importUI:{search:'',missingOnly:false,major:'',minor:'',source:'',sort:'code'},perms:{viewImports:view,editImports:edit,readOnly:!edit}},
+      importUI:{subdivision:'',search:'',missingOnly:false,major:'',minor:'',source:'',sort:'code'},perms:{viewImports:view,editImports:edit,readOnly:!edit}},
     CFG:{reports,reportCandidates:{},landingCategoryFields:fields,forms:{importItem:'Budget_Import_Item',item:'Budget_Item'},
       importItemConfig:{budgetItemLookupField:'Budget_Item',importSubCodeFields:['Subdivision_Code'],itemSubCodeFields:['Subdivision_Code']}},
     Promise,Error,Date,Number,console:{log(){},warn(){},error(){}},IMPORT_TAB_TROUBLESHOOT:false,
@@ -63,9 +67,15 @@ function harness({view=true,edit=false}={}){
     esc:value=>String(value??''),escAttr:value=>String(value??'')
   });
   c.window=c;vm.runInContext(adapter,c);for(const name of names)vm.runInContext(block(name),c);
+  vm.runInContext(ledgerSource,c);vm.runInContext(workspaceSource,c);
+  const workspace=c.BudgetImportWorkspace.create({state:c.S,config:c.CFG,node:()=>null,escape:c.esc,escapeAttr:c.escAttr,clean:c.cleanVal,canView:c.canViewImportItems,canEdit:c.canEditImportItems,
+    read:c.sdkGetAllRecords,feature:c.budgetFeature,loadFeature:c.loadBudgetFeature,scope:c.budgetBadgeScope,
+    assigned:c.importAssignedItem,source:c.importDataSource,major:c.importMajorCode,minor:c.importMinorCode,description:c.importItemDesc,code:c.importItemCode,subCode:c.importSubCode,subName:c.importSubName,itemSubCode:c.budgetItemSubCode,different:c.importHasDifferentCode,assignHtml:c.importAssignCellHtml,badge:c.syncBudgetImportBadge,onError(){}});
+  c.importWorkspaceController=()=>workspace;c.importWorkspaceRows=()=>workspace.rows();c.findImportRecord=id=>workspace.rows().find(row=>String(row.ID)===String(id));
+  c.renderImports=()=>{c.syncBudgetImportBadge();node('importMissingCt').textContent=workspace.rows().filter(c.importIsMissing).length;};
   function runTimers(){for(const [id,t]of [...timers])if(t.delay===0){timers.delete(id);t.callback();}}
   function imports(){return calls.filter(call=>call.config.report_name===reports.importItems&&call.kind!=='write');}
-  return {c,calls,data,gate,nodes,node,events,messages,prefetches,runTimers,imports,renderCount:()=>renders};
+  return {c,workspace,calls,data,gate,nodes,node,events,messages,prefetches,runTimers,imports,renderCount:()=>renders};
 }
 
 // Native lookup forms and record IDs keep the existing assignment contract.
@@ -79,77 +89,78 @@ function harness({view=true,edit=false}={}){
   assert.notEqual(c.importAssignedItem(fixture(IID,{ID:ITEM})).id,c.importAssignedItem(fixture(IID,{ID:OTHER})).id);
 }
 
-// The actual boot becomes usable before imports; the background reuses a complete paginated native read.
+// The actual boot never reads imports. Opening the tab still waits for explicit subdivision selection.
 {
   const h=harness({edit:true}),g=deferred();h.gate.records=g;h.gate.pageSize=80;
   h.data[reports.importItems]=Array.from({length:127},(_,index)=>fixture(String(BigInt(IID)+BigInt(index))));
-  h.data[reports.importItems].push(fixture('4410926000009999801',{ID:ITEM}),fixture('4410926000009999802',OTHER));
+  h.data[reports.importItems].push(fixture('4410926000009999801',{ID:ITEM}),fixture('4410926000009999802',OTHER),fixture('4410926000009999803',null,{Subdivision_Code:'OTHER'}));
   await h.c.boot();assert.equal(h.c.S.startupReady,true);assert.equal(h.renderCount(),1);assert.equal(h.imports().length,0);
   assert.ok(h.c.LMPerf.snapshot().events.some(event=>event.name==='budget:first-usable'));
-  assert.equal(h.node('importCt').textContent,'…');h.runTimers();await settle();
-  assert.equal(h.c.budgetFeature('imports').status,'loading');assert.equal(h.node('importCt').textContent,'…');assert.match(h.node('importCt').title,/Loading/);
+  assert.equal(h.node('importCt').textContent,'—');h.runTimers();await settle();
+  assert.equal(h.c.budgetFeature('imports').status,'idle');assert.equal(h.imports().length,0,'Background badge work cannot fetch imports');
+  await h.c.openImportsTab();assert.equal(h.imports().length,0,'The tab requires a selected subdivision');
   assert.equal(h.calls.filter(call=>call.config.report_name===reports.items).length,0,'background badge does not fetch the assignment roster');
   assert.deepEqual(h.prefetches,[],'background badge does not prefetch subdivision item choices');
-  g.resolve();await settle();
-  assert.equal(h.node('importCt').textContent,'127','missing import counts above 99 must remain exact');assert.equal(h.node('importCt').title,'127 missing items');
-  assert.equal(h.c.S.importItems.length,129);assert.equal(h.c.S.importItemsLoaded,true);assert.equal(h.c.budgetFeature('imports').status,'loaded');
+  h.c.S.importUI.subdivision='AV';const open=h.c.openImportsTab();await settle();assert.equal(h.node('importCt').textContent,'—');
+  g.resolve();await open;await settle();
+  assert.equal(h.node('importCt').textContent,'127','Subdivision missing counts above 99 remain exact');assert.equal(h.node('importCt').title,'AV · Missing Items');
+  assert.equal(h.workspace.rows().length,129);assert.equal(h.c.S.importItems.length,0,'Editor imports are not replaced with a partial subdivision snapshot');
   assert.deepEqual(h.imports().map(call=>call.kind),['count','read','read']);
-  for(const call of h.imports()){assert.equal(call.config.criteria,undefined,'count is independent of import view filters');if(call.kind==='read')assert.equal(call.config.field_config,'all');}
+  for(const call of h.imports()){assert.equal(call.config.criteria,'(Subdivision_Code == "AV")','Every native count and page uses the required subdivision');if(call.kind==='read')assert.equal(call.config.field_config,'all');}
   assert.equal(h.imports()[2].config.record_cursor,'80');assert.equal(h.renderCount(),1,'background completion patches the tab badge without rebuilding the landing');
-  assert.equal(h.c.budgetFeature('import-assignment-items').status,'idle');
-  const before=h.imports().length;await h.c.openImportsTab();assert.equal(h.imports().length,before,'opening the tab reuses the fully counted background snapshot');
-  assert.equal(h.calls.filter(call=>call.config.report_name===reports.items&&call.kind==='read').length,1,'assignment choices load only when the editing workspace opens');
+  const before=h.imports().length;await h.c.openImportsTab();assert.equal(h.imports().length,before,'Reopening reuses the complete subdivision snapshot');
+  const itemReads=h.calls.filter(call=>call.config.report_name===reports.items);assert.ok(itemReads.length>0);assert.ok(itemReads.every(call=>call.config.criteria==='(Budget.Subdivision_Code == "AV")'),'Budget Item choices and fields never use a global roster');
 }
 
-// Both view-only and edit-only users see the count; unauthorized users perform no import read.
+// View-only/edit-only access remains supported, while denied and unselected users perform no reads.
 for(const permission of [{view:true,edit:false},{view:false,edit:true},{view:false,edit:false}]){
   const h=harness(permission);await h.c.boot();h.runTimers();await settle();
   const allowed=permission.view||permission.edit;
-  assert.equal(h.node('importsTabLink').style.display,allowed?'':'none');assert.equal(h.imports().length,allowed?2:0);
+  assert.equal(h.node('importsTabLink').style.display,allowed?'':'none');assert.equal(h.imports().length,0);
   assert.equal(h.calls.filter(call=>call.config.report_name===reports.items).length,0);
-  if(allowed)assert.equal(h.node('importCt').textContent,'1');
-  else {await h.c.openImportsTab();assert.equal(h.imports().length,0);assert.equal(h.c.S.view,'vBudgets');}
+  assert.equal(h.node('importCt').textContent,'—');h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  if(allowed){assert.equal(h.node('importCt').textContent,'1');assert.equal(h.imports().length,2);}
+  else {assert.equal(h.imports().length,0);assert.equal(h.c.S.view,'vBudgets');}
 }
 
 // Empty native reports and reports containing only assigned rows publish an explicit zero.
 for(const rows of [[],[fixture(IID,{ID:ITEM})]]){
-  const h=harness();h.data[reports.importItems]=rows;await h.c.boot();h.runTimers();await settle();
-  assert.equal(h.node('importCt').textContent,'0');assert.equal(h.node('importCt').title,'0 missing items');
+  const h=harness();h.data[reports.importItems]=rows;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  assert.equal(h.node('importCt').textContent,'0');assert.equal(h.node('importCt').title,'AV · Missing Items');
   assert.equal(h.imports().filter(call=>call.kind==='read').length,rows.length?1:0,'a confirmed empty native report requires no pages');
 }
 
-// A tab opened while the delayed background import is pending shares that native request.
+// Concurrent selected-tab opens deduplicate the complete native counted request.
 {
-  const h=harness(),g=deferred();h.gate.count=g;await h.c.boot();h.runTimers();await settle();
-  const open=h.c.openImportsTab();await settle();assert.equal(h.imports().length,1);assert.equal(h.c.budgetFeature('imports').status,'loading');
-  assert.match(h.node('importsTableWrap').innerHTML,/Loading import items/);g.resolve();await open;await settle();
+  const h=harness(),g=deferred();h.gate.count=g;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';
+  const open=h.c.openImportsTab(),duplicate=h.c.openImportsTab();await settle();assert.equal(h.imports().length,1);assert.equal(h.node('importCt').textContent,'—');
+  g.resolve();await Promise.all([open,duplicate]);await settle();
   assert.deepEqual(h.imports().map(call=>call.kind),['count','read']);assert.equal(h.node('importCt').textContent,'1');
-  assert.equal(h.calls.filter(call=>call.config.report_name===reports.items).length,0,'view-only tab needs no assignment roster');
+  assert.ok(h.calls.filter(call=>call.config.report_name===reports.items).every(call=>call.config.criteria==='(Budget.Subdivision_Code == "AV")'));
 }
 
 // Permission and incomplete-page failures remain visibly unavailable and can retry through the actual tab.
 for(const failure of ['denied','incomplete']){
-  const h=harness();h.gate[failure]=true;await h.c.boot();h.runTimers();await settle();
-  assert.equal(h.c.S.startupReady,true);assert.equal(h.node('importCt').textContent,'!');assert.match(h.node('importCt').title,/unavailable/);
-  assert.equal(h.c.S.importItemsLoaded,false);assert.equal(h.c.budgetFeature('imports').status,'error');assert.equal(h.renderCount(),1);
-  h.gate[failure]=false;await h.c.openImportsTab();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.c.S.importItemsLoaded,true);
+  const h=harness();h.gate[failure]=true;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  assert.equal(h.c.S.startupReady,true);assert.equal(h.node('importCt').textContent,'—');assert.equal(h.workspace.rows().length,0);assert.equal(h.renderCount(),1);
+  h.gate[failure]=false;await h.c.openImportsTab();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.workspace.rows().length,1);
 }
 
 // Native assignment acknowledgement updates the full missing count even with every view filter active.
 {
   const h=harness({edit:true});h.data[reports.importItems]=[fixture(IID),fixture('4410926000009999902'),fixture('4410926000009999903',{ID:OTHER})];
-  await h.c.boot();h.runTimers();await settle();await h.c.openImportsTab();
+  await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
   Object.assign(h.c.S.importUI,{search:'no matching description',major:'9999',minor:'999',source:'HeavyJob',missingOnly:true});h.c.renderImports();
   assert.equal(h.c.importFilteredSorted().length,0);assert.equal(h.node('importCt').textContent,'2','filters never reduce the tab count');
   const g=deferred();h.gate.write=g;const classes=new Set(),select={classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)}};
   h.c.assignImportItem(IID,ITEM,select);await settle();assert.equal(h.node('importCt').textContent,'2','pending assignment does not decrement the count');assert.ok(classes.has('saving'));
-  g.resolve();await settle();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.node('importCt').title,'1 missing items');
-  assert.equal(h.c.importAssignedItem(h.c.S.importItems[0]).id,ITEM);assert.equal(h.node('importMissingCt').textContent,1);
+  g.resolve();await settle();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.node('importCt').title,'AV · Missing Items');
+  assert.equal(h.c.importAssignedItem(h.workspace.rows()[0]).id,ITEM);assert.equal(h.node('importMissingCt').textContent,1);
   const write=h.calls.find(call=>call.kind==='write');assert.equal(write.config.report_name,reports.importItems);assert.equal(write.config.id,IID);
   assert.deepEqual(write.config.payload,{data:{Budget_Item:ITEM}},'native assignment preserves exact string identity');
   h.gate.write=null;h.gate.writeDenied=true;h.c.assignImportItem('4410926000009999902',ITEM,select);await settle();
-  assert.equal(h.node('importCt').textContent,'1');assert.equal(h.c.importIsMissing(h.c.S.importItems[1]),true);assert.equal(classes.has('saving'),false);
+  assert.equal(h.node('importCt').textContent,'1');assert.equal(h.c.importIsMissing(h.workspace.rows()[1]),true);assert.equal(classes.has('saving'),false);
   assert.ok(h.messages.some(message=>/Could not assign Budget Item/.test(message)));
 }
 
-console.log('Budget import count: deferred native startup, permissions, counted pagination, exact zero/large counts, lookup shapes, retries/dedup and confirmed assignment updates passed.');
+console.log('Budget Import counts: no startup reads, subdivision-scoped native pagination, exact zero/large counts, permissions, retries/dedup and confirmed assignment updates passed.');

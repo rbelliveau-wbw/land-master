@@ -1,0 +1,236 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+
+const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8').replace(/\r\n/g,'\n');
+const modelSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-ledger.js','utf8');
+const plain=value=>value===undefined?undefined:JSON.parse(JSON.stringify(value));
+const turn=()=>new Promise(resolve=>setImmediate(resolve));
+function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
+function block(name){
+  const start=source.indexOf(`function ${name}(`),line=source.indexOf('\n',start);
+  const end=source.slice(start,line).trimEnd().endsWith('}')?line:source.indexOf('\n}',start)+2;
+  assert.ok(start>=0&&end>start,`Missing production helper: ${name}`);return source.slice(start,end);
+}
+function install(context,names){for(const name of names)vm.runInContext(block(name),context);}
+function modelHarness(){
+  const context=vm.createContext({CFG:{importItemConfig:{budgetItemLookupField:'Budget_Item'}},console});
+  context.window=context;vm.runInContext(modelSource,context);
+  install(context,['cleanVal','isObj','rawPath','firstRaw','importAssignedItem']);
+  assert.ok(context.BudgetImportLedger,'The production ledger model is available');
+  return context;
+}
+const c=modelHarness(),ledger=c.BudgetImportLedger;
+const BID='90071992547409931',OTHER='90071992547409932';
+const elementNames=['Labor','Materials','Equipment','Subcontractor','Other'];
+const parts=values=>Object.fromEntries(elementNames.map((key,index)=>[key,values[index]]));
+const row=(id,source,cost,assigned,values=[1,2,3,4,5],extra={})=>({ID:id,Code:'AR05-GP-3101',Cost_Code_Description:'Source Description',Subdivision_Code:'AR05',Major_Code:'3100',Minor_Code:'3101',Data_Source:source,Cost:cost,Budget_Item:assigned,...parts(values),...extra});
+function options(extra={}){
+  return {assigned:c.importAssignedItem,source:r=>r.Data_Source,major:r=>r.Major_Code,minor:r=>r.Minor_Code,description:r=>r.Cost_Code_Description,code:r=>r.Code,cost:r=>r.Cost,component:ledger.readComponent,different:r=>r.Code_Differs===true,itemById:{[BID]:{ID:BID,Budget_Code:'AR05-3101',Item_Name:'Mapped Name'},[OTHER]:{ID:OTHER,Budget_Code:'AR05-3101',Item_Name:'Different Native Item'}},...extra};
+}
+
+// Native optional values preserve unknown, explicit zero, credits and four decimals.
+assert.deepEqual(plain(ledger.componentNames),elementNames);
+for(const value of [null,undefined,'','  ',true,false,'not a number',NaN,Infinity])assert.equal(ledger.nullableNumber(value),null,`Unknown numeric value ${String(value)}`);
+for(const [value,expected]of [[0,0],['0',0],['-45.6789',-45.6789],['$1,234.5678',1234.5678],[{value:'12.3401'},12.3401],[{display_value:'0'},0],[{zc_display_value:'-1.0001'},-1.0001]])assert.equal(ledger.nullableNumber(value),expected);
+assert.equal(ledger.readComponent({Labor:'0',Labor_Budget:'99'},'Labor'),0);
+assert.equal(ledger.readComponent({Labor:'',Labor_Budget:'99'},'Labor'),null,'A blank renamed field must not revive a legacy amount');
+assert.equal(ledger.readComponent({Labor:null,Labor_Budget:'99'},'Labor'),null);
+assert.equal(ledger.readComponent({Labor_Budget:'12.3401'},'Labor'),12.3401,'The legacy key is read only when the renamed key is absent');
+
+// Same code/description is not identity. Only an exact native Budget Item ID combines sources.
+{
+  const records=[
+    row('100','HeavyJob Budget','100',{ID:BID,display_value:'AR05-3101 - Mapped Name'}),
+    row('101','HeavyJob','12.3401',BID,[0,0,0,0,0]),
+    row('102','HeavyJob','-0.3401',{ID:BID},[1,0,0,0,0]),
+    row('103','Great Plains','-45.6789',{ID:BID},[-10,-2,-3,-4,-5],{Code_Differs:true}),
+    row('104','Great Plains','21',{ID:OTHER},[21,0,0,0,0]),
+    row('105','Great Plains','1',null),
+    row('106','Great Plains','2',null),
+    row('107','Great Plains','3',{display_value:'AR05-3101 - Mapped Name'}),
+    row('108','New External System','9',{ID:BID},[9,0,0,0,0])
+  ];
+  const snapshot=plain(records),groups=ledger.createGroups(records,options());
+  assert.equal(groups.length,5,'Two assigned identities plus three distinct unassigned records');
+  const group=groups.find(g=>g.budgetItemId===BID);
+  assert.ok(group);assert.equal(group.records.length,5);assert.equal(group.item.ID,BID);
+  assert.equal(group.sources.budget.total,100);
+  assert.equal(group.sources.hcss.total,12,'Multiple records for the same source aggregate once');
+  assert.equal(group.sources.hcss.elements.Labor,1);
+  assert.equal(group.sources.hcss.elements.Materials,0,'Explicit measured zero remains zero');
+  assert.equal(group.sources.gp.total,-45.6789,'Source totals retain signed native four-place values');
+  assert.equal(group.sources.gp.elements.Other,-5);
+  assert.notEqual(group.sources.gp.total,Object.values(group.sources.gp.elements).reduce((a,b)=>a+b,0),'No element-to-total equality or residual is imposed');
+  assert.equal(group.otherSources.length,1);assert.equal(group.otherSources[0].total,9);
+  assert.equal(group.different,true);
+  const missing=groups.filter(g=>g.missing);
+  assert.equal(missing.length,3);assert.equal(new Set(missing.map(g=>g.key)).size,3);
+  for(const g of missing){assert.equal(g.records.length,1);assert.equal(g.budgetItemId,'');}
+  assert.deepEqual(plain(records),snapshot,'Grouping never rewrites original codes, descriptions, mappings or source-owned amounts');
+  assert.equal(group.records[0],records[0],'Source records keep their identity for exact per-record mapping controls');
+}
+
+// Missing components cannot quietly understate a grouped amount, while known peers remain available.
+{
+  const first=row('201','Great Plains','10',{ID:BID},[0,2,3,4,5]);
+  const second=row('202','Great Plains','20',{ID:BID},[1,'',0,0,0]);
+  const group=ledger.createGroups([first,second],options())[0];
+  assert.equal(group.sources.gp.total,30);
+  assert.equal(group.sources.gp.elements.Labor,1);
+  assert.equal(group.sources.gp.elements.Materials,null,'A missing contributor is unknown, not a partial sum');
+  assert.equal(group.sources.gp.elements.Equipment,3);
+  assert.equal(group.sources.hcss,null,'An absent source has no invented zero record');
+  const missingTotal=ledger.createGroups([first,{...second,Cost:''}],options())[0];
+  assert.equal(missingTotal.sources.gp.total,null,'Incomplete source totals do not become a misleading partial total');
+}
+
+const workspaceSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-workspace.js','utf8');
+function workspaceHarness(){
+  const c=modelHarness(),calls=[],messages=[],domNodes={};
+  const permissions={view:true,edit:true},session={key:'PRODUCTION|native-user'};
+  c.S={view:'vImports',features:{},importUI:{subdivision:'',search:'',sort:'code',major:'',minor:'',source:''},importItems:[{ID:'editor-only'}],importItemsLoaded:true};
+  install(c,['budgetFeature','invalidateBudgetFeature','loadBudgetFeature']);
+  vm.runInContext(workspaceSource,c);
+  let readImpl=async(report,criteria)=>{
+    const sub=criteria.match(/== "([^"]+)"/)[1];
+    return report==='imports'?[row('workspace-'+sub,'Great Plains','12.3401',{ID:BID},[0,1,2,3,4],{Subdivision_Code:sub})]:[{ID:BID,Budget_Code:sub+'-3101',Item_Name:'Stored Item',Subdivision_Code:sub,GP_Labor_Actuals:'0'}];
+  };
+  const deps={state:c.S,config:{reports:{importItems:'imports',items:'items'}},node:id=>domNodes[id]||null,escape:String,escapeAttr:String,clean:value=>value==null?'':String(value).trim(),
+    canView:()=>permissions.view,canEdit:()=>permissions.edit,scope:()=>session.key,read:(report,criteria,options)=>{calls.push({report,criteria,options});return readImpl(report,criteria,options);},
+    feature:c.budgetFeature,loadFeature:c.loadBudgetFeature,assigned:c.importAssignedItem,source:r=>r.Data_Source,major:r=>r.Major_Code,minor:r=>r.Minor_Code,description:r=>r.Cost_Code_Description,code:r=>r.Code,subCode:r=>r.Subdivision_Code,subName:r=>r.Subdivision_Code,itemSubCode:r=>r.Subdivision_Code,different:()=>false,assignHtml:()=>'',badge(){},onError:error=>messages.push(error)};
+  const controller=c.BudgetImportWorkspace.create(deps);
+  return {c,controller,calls,permissions,session,deps,domNodes,messages,setRead:fn=>{readImpl=fn;}};
+}
+
+// The tab and an explicit subdivision jointly gate both native workspace requests.
+{
+  const h=workspaceHarness();
+  await h.controller.open();await h.controller.load();assert.equal(h.calls.length,0,'Opening without a subdivision performs no reads');
+  h.c.S.importUI.subdivision='AR05';h.c.S.view='vBudgets';
+  await h.controller.load();assert.equal(h.calls.length,0,'Selecting scope outside the Import Items tab performs no reads');
+  h.c.S.view='vImports';h.permissions.view=false;
+  await h.controller.load();assert.equal(h.calls.length,0,'Missing View permission cannot trigger native reads');
+  h.permissions.view=true;
+  await h.controller.load();
+  assert.deepEqual(h.calls.map(call=>[call.report,call.criteria]),[['imports','(Subdivision_Code == "AR05")'],['items','(Budget.Subdivision_Code == "AR05")']]);
+  assert.equal(h.controller.rows()[0].ID,'workspace-AR05');assert.equal(h.controller.items()[0].ID,BID);
+  assert.equal(h.c.S.importItems[0].ID,'editor-only','Scoped workspace publication cannot replace the complete editor import snapshot');
+  const reads=h.calls.length;await h.controller.load();assert.equal(h.calls.length,reads,'Reopening a complete scope uses its counted cache');
+  h.permissions.view=false;assert.equal(h.controller.rows().length,0);assert.equal(h.controller.items().length,0,'Loss of access hides cached data immediately');
+}
+
+// Pending duplicate opens share requests; older subdivisions may cache but cannot publish over selection.
+{
+  const h=workspaceHarness(),old=deferred(),fresh=deferred();h.c.S.importUI.subdivision='AR05';
+  h.setRead((report,criteria)=>{
+    const sub=criteria.includes('AR05')?'AR05':'AR06',gate=sub==='AR05'?old:fresh;
+    return gate.promise.then(()=>report==='imports'?[row('loaded-'+sub,'Great Plains','1',{ID:BID},[0,0,0,0,0],{Subdivision_Code:sub})]:[{ID:BID,Subdivision_Code:sub}]);
+  });
+  const a=h.controller.load(),duplicate=h.controller.load();await turn();assert.equal(h.calls.length,2,'Duplicate opens share one import and one Budget Item read');
+  h.c.S.importUI.subdivision='AR06';assert.equal(h.controller.rows().length,0,'Previous subdivision data disappears as soon as scope changes');
+  const b=h.controller.load();await turn();assert.equal(h.calls.length,4);
+  fresh.resolve();await b;assert.equal(h.controller.rows()[0].ID,'loaded-AR06');
+  old.resolve();await Promise.all([a,duplicate]);assert.equal(h.controller.rows()[0].ID,'loaded-AR06','A late old response cannot overwrite the selected subdivision');
+  h.c.S.importUI.subdivision='AR05';await h.controller.load();assert.equal(h.controller.rows()[0].ID,'loaded-AR05');assert.equal(h.calls.length,4,'A complete old scope remains reusable under its own key');
+}
+
+// A fresh generation wins even when an older request for the same scope finishes last.
+{
+  const h=workspaceHarness(),old=deferred(),fresh=deferred();let reads=0;h.c.S.importUI.subdivision='AR05';
+  h.setRead((report)=>{
+    const version=reads++<2?'old':'fresh',gate=version==='old'?old:fresh;
+    return gate.promise.then(()=>report==='imports'?[row(version,'Great Plains','1',{ID:BID},[0,0,0,0,0])]:[{ID:BID,Subdivision_Code:'AR05'}]);
+  });
+  const first=h.controller.load();const rejects=assert.rejects(first,/superseded/);await turn();
+  const second=h.controller.load(true);await turn();fresh.resolve();await second;assert.equal(h.controller.rows()[0].ID,'fresh');
+  old.resolve();await rejects;assert.equal(h.controller.rows()[0].ID,'fresh');
+}
+
+// Actor/environment identity belongs to the cache key and the read cancellation predicate.
+{
+  const h=workspaceHarness();h.c.S.importUI.subdivision='AR05';await h.controller.load();
+  const previous=h.calls[0].options;h.session.key='DEVELOPMENT|different-user';
+  assert.equal(previous.isCancelled(),true);assert.equal(h.controller.rows().length,0);
+  await h.controller.load();assert.equal(h.calls.length,4,'A different native session must query its own scope');
+  h.permissions.view=false;assert.equal(h.calls[2].options.isCancelled(),true);
+}
+
+// Wrong-scope native rows fail closed. A denied scoped item read never substitutes a global roster.
+{
+  const h=workspaceHarness();h.c.S.importUI.subdivision='AR05';
+  h.setRead(async report=>report==='imports'?[row('wrong','Great Plains','1',{ID:BID},[0,0,0,0,0],{Subdivision_Code:'AR06'})]:[]);
+  await assert.rejects(h.controller.load(),/selected subdivision/);assert.equal(h.controller.rows().length,0);
+  h.setRead(async report=>{if(report==='items')throw {permissionDenied:true,message:'Scoped items denied'};return [row('allowed-import','Great Plains','2',null,[0,0,0,0,0])];});
+  await h.controller.load(true);assert.equal(h.controller.rows()[0].ID,'allowed-import');assert.equal(h.controller.items().length,0);
+  assert.equal(h.controller.current().itemError.permissionDenied,true);
+  assert.ok(h.calls.every(call=>call.criteria.includes('Subdivision_Code == "AR05"')),'No failure path requests an unscoped roster');
+  h.setRead(async report=>report==='imports'?[]:[{ID:BID,Subdivision_Code:'AR06'}]);
+  await assert.rejects(h.controller.load(true),/selected subdivision/);
+}
+
+// A genuine import permission failure removes an old authorized workspace snapshot immediately.
+{
+  const h=workspaceHarness();h.c.S.importUI.subdivision='AR05';await h.controller.load();assert.equal(h.controller.rows().length,1);
+  h.setRead(async report=>{if(report==='imports')throw {permissionDenied:true,message:'Imports denied'};return [];});
+  await assert.rejects(h.controller.load(true),error=>error.permissionDenied===true);
+  assert.equal(h.controller.current(),null);assert.equal(h.controller.rows().length,0);assert.equal(h.controller.items().length,0);
+  assert.equal(h.c.S.importItems[0].ID,'editor-only','A workspace permission failure cannot rewrite the separate editor snapshot');
+}
+
+// Navigating away while an import read is pending cannot publish or repaint an inactive workspace.
+{
+  const h=workspaceHarness(),gate=deferred();h.c.S.importUI.subdivision='AR05';
+  h.setRead(report=>gate.promise.then(()=>report==='imports'?[row('late','Great Plains','1',{ID:BID})]:[]));
+  const pending=h.controller.load();await turn();h.c.S.view='vBudgets';gate.resolve();await pending;
+  assert.equal(h.c.S.importWorkspaceData,undefined,'Inactive navigation leaves publication to a subsequent explicit tab open');
+  h.c.S.view='vImports';await h.controller.open();assert.equal(h.controller.rows()[0].ID,'late','The completed native response is reusable only when the selected tab reopens');
+}
+
+// The real scheduler never reads imports; explicit editor detail still retains its dedicated loader.
+assert.doesNotMatch(block('scheduleBudgetBadgeSummaries'),/loadImportItems|loadImportWorkspace|reports\.importItems/);
+assert.match(block('loadBudgetElementImports'),/loadImportItems\(false\)/);
+assert.match(block('loadImportItems'),/S\.importItems=rows/,'Editor completeness remains separate from scoped workspace state');
+
+// Native assignment preserves exact IDs, permissions and the existing single-field adapter write.
+{
+  const h=workspaceHarness(),writes=[],gate=deferred();h.c.S.importUI.subdivision='AR05';await h.controller.load();
+  const record=h.controller.rows()[0];record.Budget_Item=null;
+  Object.assign(h.c,{findImportRecord:id=>h.controller.rows().find(r=>r.ID===id),canEditImportItems:()=>h.permissions.edit,budgetItemsForSubCode:()=>h.controller.items(),importSubCode:r=>r.Subdivision_Code,budgetItemLabel:item=>item.Budget_Code+' — '+item.Item_Name,
+    budgetBadgeScope:()=>h.session.key,setMsg:message=>h.messages.push(message),toastShow(){},renderImports(){},shortErr:error=>error.message||String(error),auditLog(){},sdkUpdateRecord:(form,id,payload)=>{writes.push({form,id,payload:plain(payload)});return gate.promise;}});
+  h.c.CFG.forms={importItem:'Budget_Import_Item'};install(h.c,['normSubCode','assignImportItem']);
+  h.permissions.edit=false;h.c.assignImportItem(record.ID,BID,null);assert.equal(writes.length,0);
+  h.permissions.edit=true;h.c.assignImportItem(record.ID,OTHER,null);assert.equal(writes.length,0,'An item outside scoped choices cannot be assigned');
+  h.c.assignImportItem(record.ID,BID,null);assert.deepEqual(writes,[{form:'Budget_Import_Item',id:record.ID,payload:{Budget_Item:BID}}]);
+  assert.equal(record.Budget_Item,null,'A pending native write cannot report the assignment as saved');
+  gate.resolve({code:3000,data:{ID:record.ID}});await turn();assert.equal(record.Budget_Item.ID,BID);
+}
+
+// Delayed native acknowledgements finish the captured record without touching a new workspace/actor.
+for(const change of ['subdivision','actor','view']){
+  const h=workspaceHarness(),gate=deferred(),toasts=[];let repaints=0;h.c.S.importUI.subdivision='AR05';await h.controller.load();
+  const original=h.controller.rows()[0],target=h.controller.items()[0];original.Budget_Item=null;
+  const mirror={...original};h.c.S.importItems=[mirror];
+  Object.assign(h.c,{findImportRecord:id=>original.ID===id?original:null,canEditImportItems:()=>h.permissions.edit,budgetItemsForSubCode:()=>[target],importSubCode:r=>r.Subdivision_Code,budgetItemLabel:item=>item.Budget_Code+' — '+item.Item_Name,
+    budgetBadgeScope:()=>h.session.key,setMsg:message=>h.messages.push(message),toastShow:message=>toasts.push(message),renderImports:()=>repaints++,shortErr:error=>error.message||String(error),auditLog(){},sdkUpdateRecord:()=>gate.promise});
+  h.c.CFG.forms={importItem:'Budget_Import_Item'};install(h.c,['normSubCode','assignImportItem']);
+  h.c.assignImportItem(original.ID,BID,null);assert.equal(original.Budget_Item,null);
+  if(change==='subdivision'){h.c.S.importUI.subdivision='AR06';await h.controller.load();}
+  if(change==='actor')h.session.key='PRODUCTION|another-user';
+  if(change==='view')h.c.S.view='vBudgets';
+  target.Item_Name='Different Roster Label After Navigation';
+  gate.resolve({code:3000,data:{ID:original.ID}});await turn();
+  assert.equal(original.Budget_Item.ID,BID);assert.equal(original.Budget_Item.display_value,'AR05-3101 — Stored Item','The acknowledgement uses its captured scoped item label');
+  assert.equal(mirror.Budget_Item,null,'The new workspace/session does not receive a late global mirror patch');
+  assert.equal(repaints,0,'A late assignment cannot repaint a different subdivision, actor or view');
+  if(change==='subdivision')assert.equal(h.controller.rows()[0].ID,'workspace-AR06');
+  if(change==='actor')assert.equal(toasts.includes('Budget Item Assigned'),false,'A success popup cannot cross native actors');
+}
+
+// All fixed headings, tabs and field labels on the new surface use Title Case.
+for(const title of ['Construction Budget','HCSS Actuals','GP Actuals','Cost Element','Source Total','Stored Total','Element Breakdown','Original Import Records','Cost To Complete','External Cost Code ID','Updated Date','Import Status','Error Response'])assert.ok(workspaceSource.includes(title),title);
+assert.doesNotMatch(workspaceSource,/Construction budget|HCSS actuals|GP actuals|Element breakdown|Original import records|Cost to complete|Import status|Error response/);
+assert.ok(/<script[^>]+src=["'][^"']*budget-import-ledger\.js(?:\?[^"']*)?["']/.test(source),'Widget loads the ledger model');
+assert.ok(/<script[^>]+src=["'][^"']*budget-import-workspace\.js(?:\?[^"']*)?["']/.test(source),'Widget loads the scoped workspace');
+
+console.log('Budget Import Ledger regression checks passed.');
