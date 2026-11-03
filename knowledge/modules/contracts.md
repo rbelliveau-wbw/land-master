@@ -1335,3 +1335,22 @@ missing and long values, escaped names, full repository validation and Pages
 build. Existing hover timing, pointer behavior, motion and numeric transitions
 are retained. Rollback: map Production Contract Management to **1.62.42** and
 rebuild Pages.
+
+### Darker report section bands - 1.62.45, November 3, 2026
+
+Legal and Construction list reports use darker blue type bands with the existing
+category accent colors and unchanged status colors. A full-width native button
+contains a centered SVG chevron, category label and filtered count. All sections
+start expanded. Collapse hides the existing section body without replacing rows
+or discarding open record details; intentional collapsed state survives report
+renders within the current actor session and is separate for each module.
+The shared interaction registry handles keyed row movement and reduced motion.
+
+Changed surfaces: Contract Management source HTML/report CSS, the shared motion
+registry and synchronized widget copies, release/config/environment metadata,
+the style guide and section regression fixture. No Creator forms, fields,
+functions, Custom APIs or permissions change; no Creator deployment is required.
+Regression coverage: both modules start open, independent collapse/reopen,
+retained rows and state on refresh, no record writes, desktop keyboard controls,
+centered rendered icons, repository validation and Pages build. Rollback:
+map Production Contract Management to **1.62.44** and rebuild Pages.

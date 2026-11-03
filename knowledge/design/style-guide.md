@@ -59,7 +59,11 @@ toolbar above the filters, with New and Refresh at the right. User direction
 October 20, 2026 supersedes the earlier centered-header placement. Use the exact
 Pro Forma main-report palette from its `report-layout.css`: `#e5ecf3` workspace,
 `#f4f7fb`/`#eaf1f7` alternating rows, `#d9e5f1` column headers and the
-`#dce8f5` → `#eaf1f8` group-heading gradient. Preserve the existing layout,
+`#dce8f5` → `#eaf1f8` group-heading gradient. November 3 exception: Legal and
+Construction type sections use darker `#b6cce2` → `#c8daeb` bands, a 5px
+category-color rail, and centered SVG chevrons in 24px containers. Sections
+start expanded; the full band is a keyboard-accessible disclosure button.
+Preserve the existing layout,
 hierarchy highlights, status colors and module-specific grants.
 Board cards and lane headings must not shrink vertically: wrap full request names
 and reserve a few pixels around cards for focus/hover edges. Workspace header

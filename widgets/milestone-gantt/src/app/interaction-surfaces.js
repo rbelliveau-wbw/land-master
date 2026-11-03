@@ -56,6 +56,7 @@
       tab('#aprTabs','button','#overlays');
       // Legal owns its existing FLIP and drag/drop; do not apply a second transform.
       panels.push({selector:'#view'});
+      list('.ctable',':scope>tbody>tr',row=>row.dataset.sectionKey?'section:'+row.dataset.sectionKey:row.dataset.contractId?'contract:'+row.dataset.contractId:row.classList.contains('drillrow')?'details:'+row.previousElementSibling?.dataset.contractId:null,()=>state().workMode,{visibility:true,highlight:false});
       surfaceExtra.push('#overlays .modal,.msel-pop,.kmenu');
       status('.dt,.apr-in,.cbo','tr',node=>M.key(node.closest('tr')?.id,node.dataset.field||node.id||M.identity(node)));
       meters.push('.stats-prog .progress>i');
