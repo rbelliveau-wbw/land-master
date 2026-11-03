@@ -82,7 +82,12 @@
   function applyPeriod() {
     const period = $('period').value, now = new Date(), y = now.getFullYear(), m = now.getMonth();
     const key = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-    if (['twoYears','currentYear','previousYear'].includes(period)) { $('from').value = (period === 'currentYear' ? y : y - 1) + '-01'; $('to').value = (period === 'previousYear' ? y - 1 : y) + '-12'; }
+    const wfy = y - (m === 0 ? 1 : 0);
+    if (['twoWFYs','currentWFY','previousWFY','wfytd'].includes(period)) {
+      $('from').value = (['twoWFYs','previousWFY'].includes(period) ? wfy - 1 : wfy) + '-02';
+      $('to').value = period === 'wfytd' ? key(now) : (period === 'previousWFY' ? wfy : wfy + 1) + '-01';
+    }
+    else if (['twoYears','currentYear','previousYear'].includes(period)) { $('from').value = (period === 'currentYear' ? y : y - 1) + '-01'; $('to').value = (period === 'previousYear' ? y - 1 : y) + '-12'; }
     else if (period !== 'custom' && period !== 'all') { $('to').value = key(now); $('from').value = key(new Date(y, period === 'ytd' ? 0 : m - Number(period) + 1, 1)); }
     $('from').disabled = period === 'all'; $('to').disabled = period === 'all'; InsightsControls.syncAll();
   }
@@ -427,7 +432,7 @@
       if (window.LMPerf) LMPerf.mark('insights:recent-ready', {count: data.lots.length});
       state.lots = M.normalize(data); state.loaded = true; fillFilters(); render();
       $('updated').textContent = 'Loading all lots…';
-      log('Recent years loaded: ' + state.lots.length + ' lots.');
+      log('Recent WFY and calendar periods loaded: ' + state.lots.length + ' lots.');
       window.dispatchEvent(new CustomEvent('insights:ready', { detail: { subdivisions: data.subdivisions, projects: data.projects } }));
       await history(generation);
     } catch (error) {
@@ -497,7 +502,7 @@
     $('salesDashboard').querySelector('.sales-filters').classList.toggle('is-expanded', open);
   }
   $('allFilters').addEventListener('click', () => setPanel('allFilters', 'moreFilters', $('moreFilters').hidden));
-  $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoYears'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'count'; state.collapsed.clear(); applyPeriod(); update(); });
+  $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoWFYs'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'count'; state.collapsed.clear(); applyPeriod(); update(); });
   $('audit').addEventListener('click', () => { const version = document.querySelector('#diagnostics .version')?.textContent.trim() || 'version unavailable'; $('auditText').textContent = 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()!=='budgets'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });

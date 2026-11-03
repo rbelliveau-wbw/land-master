@@ -122,7 +122,7 @@
     if (!/^\d{4}-\d{2}$/.test(from || '') || !/^\d{4}-\d{2}$/.test(to || '') || from > to) throw new Error('Choose a valid month range.');
     if (![from,to].every(value => Number(value.slice(0,4)) >= 1900 && Number(value.slice(5)) >= 1 && Number(value.slice(5)) <= 12)) throw new Error('Choose a valid month range.');
     const start = Number(from.slice(0, 4)) * 12 + Number(from.slice(5)) - 1, end = Number(to.slice(0, 4)) * 12 + Number(to.slice(5)) - 1;
-    if (end - start > 1199) throw new Error('Choose a range of 100 years or less.');
+    if (end - start > 1199) throw new Error('Choose a range of 1,200 months or less.');
     return Array.from({ length: end - start + 1 }, (_, i) => { const n = end - i; return Math.floor(n / 12) + '-' + String(n % 12 + 1).padStart(2, '0'); });
   }
   function report(rows, filters) {

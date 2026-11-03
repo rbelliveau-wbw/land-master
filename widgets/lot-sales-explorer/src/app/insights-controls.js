@@ -111,18 +111,21 @@
     const entry={control,trigger,label,sync(){const [y,m]=control.value.split('-');trigger.innerHTML='<span class="picker-value">'+esc(y&&months[Number(m)-1]?months[Number(m)-1]+' '+y:'Choose month')+'</span><svg class="picker-calendar" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>';trigger.disabled=control.disabled;}};
     trigger.addEventListener('click',()=>{
       if(opened?.trigger===trigger){close(true);return;}
-      const panel=makePanel(entry,true),today=new Date();let year=Number(control.value.slice(0,4))||today.getFullYear(),mode='months';
-      function choose(month){control.value=year+'-'+String(month+1).padStart(2,'0');commit(entry);close(true);}
+      const panel=makePanel(entry,true),today=new Date(),currentWFY=date=>date.getFullYear()-(date.getMonth()===0?1:0);
+      const [selectedYear,selectedMonth]=control.value.split('-');
+      let year=Number(selectedYear)?Number(selectedYear)-(Number(selectedMonth)===1?1:0):currentWFY(today),mode='months';
+      const monthKey=month=>(year+(month===0?1:0))+'-'+String(month+1).padStart(2,'0');
+      function choose(month){control.value=monthKey(month);commit(entry);close(true);}
       function draw() {
-        const start=Math.max(1900,Math.min(9988,Math.floor(year/12)*12)),yearMode=mode==='years';
-        panel.innerHTML='<div class="month-picker-header"><button type="button" data-step="-1" aria-label="Previous '+(yearMode?'12 years':'year')+'">‹</button><button type="button" class="month-year" aria-label="Choose year">'+(yearMode?start+' – '+(start+11):year)+'</button><button type="button" data-step="1" aria-label="Next '+(yearMode?'12 years':'year')+'">›</button></div>'+
-          '<div class="month-grid">'+(yearMode?Array.from({length:12},(_,i)=>'<button type="button" data-year="'+(start+i)+'"'+(year===start+i?' class="selected"':'')+'>'+(start+i)+'</button>').join(''):months.map((m,i)=>'<button type="button" data-month="'+i+'" aria-label="Choose '+m+' '+year+'" aria-pressed="'+(control.value===year+'-'+String(i+1).padStart(2,'0'))+'"'+(control.value===year+'-'+String(i+1).padStart(2,'0')?' class="selected"':'')+'>'+m.slice(0,3)+'</button>').join(''))+'</div>'+
-          '<div class="picker-actions"><button type="button" data-today>This month</button><button type="button" class="picker-done" data-close>Close</button></div>';
-        panel.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{year=Math.max(1900,Math.min(9999,year+Number(b.dataset.step)*(yearMode?12:1)));draw();panel.querySelector('[data-step="'+b.dataset.step+'"]').focus();}));
+        const start=Math.max(1900,Math.min(9987,Math.floor(year/12)*12)),yearMode=mode==='years';
+        panel.innerHTML='<div class="month-picker-header"><button type="button" data-step="-1" aria-label="Previous '+(yearMode?'12 WFYs':'WFY')+'">‹</button><button type="button" class="month-year" aria-label="Choose WFY">WFY '+(yearMode?start+' – '+(start+11):year)+'</button><button type="button" data-step="1" aria-label="Next '+(yearMode?'12 WFYs':'WFY')+'">›</button></div>'+
+          '<div class="month-grid">'+(yearMode?Array.from({length:12},(_,i)=>'<button type="button" data-year="'+(start+i)+'" aria-label="Choose WFY '+(start+i)+'"'+(year===start+i?' class="selected"':'')+'>'+(start+i)+'</button>').join(''):Array.from({length:12},(_,offset)=>{const i=(offset+1)%12,m=months[i];return '<button type="button" data-month="'+i+'" aria-label="Choose '+m+' '+(year+(i===0?1:0))+' (WFY '+year+')" aria-pressed="'+(control.value===monthKey(i))+'"'+(control.value===monthKey(i)?' class="selected"':'')+'>'+m.slice(0,3)+'</button>';}).join(''))+'</div>'+
+          '<div class="picker-actions"><button type="button" data-today>This Month</button><button type="button" class="picker-done" data-close>Close</button></div>';
+        panel.querySelectorAll('[data-step]').forEach(b=>b.addEventListener('click',()=>{year=Math.max(1900,Math.min(9998,year+Number(b.dataset.step)*(yearMode?12:1)));draw();panel.querySelector('[data-step="'+b.dataset.step+'"]').focus();}));
         panel.querySelector('.month-year').addEventListener('click',()=>{mode=yearMode?'months':'years';draw();panel.querySelector('.month-grid .selected')?.focus();});
         panel.querySelectorAll('[data-month]').forEach(b=>b.addEventListener('click',()=>choose(Number(b.dataset.month))));
         panel.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>{year=Number(b.dataset.year);mode='months';draw();panel.querySelector('.month-grid button').focus();}));
-        panel.querySelector('[data-today]').addEventListener('click',()=>{year=today.getFullYear();choose(today.getMonth());});
+        panel.querySelector('[data-today]').addEventListener('click',()=>{year=currentWFY(today);choose(today.getMonth());});
         panel.querySelector('[data-close]').addEventListener('click',()=>close(true));position();
       }
       panel.addEventListener('keydown',e=>{const delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-3,ArrowDown:3}[e.key];if(!delta)return;const buttons=[...panel.querySelectorAll('.month-grid button')],index=buttons.indexOf(document.activeElement);if(index<0)return;e.preventDefault();buttons[Math.max(0,Math.min(11,index+delta))].focus();});

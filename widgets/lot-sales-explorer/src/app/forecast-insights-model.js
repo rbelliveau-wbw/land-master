@@ -7,7 +7,7 @@
   const unique=(rows,label)=>{const result=new Map();for(const row of rows||[]){const key=id(row.ID);if(!key||result.has(key))throw new Error('Missing or duplicate '+label+' ID.');result.set(key,row);}return result;};
   function normalize(data){
     const subdivisions=unique(data.subdivisions,'subdivision'),projects=unique(data.projects,'project'),builders=unique(data.builders,'builder');
-    const parentRows=unique(data.years,'forecast year'),monthRows=unique(data.months,'forecast month'),parents=new Map(),pairs=new Set(),slots=new Set();
+    const parentRows=unique(data.years,'forecast WFY'),monthRows=unique(data.months,'forecast month'),parents=new Map(),pairs=new Set(),slots=new Set();
     const phases=[...subdivisions].map(([subdivisionId,sub])=>{
       const projectId=id(sub.Project),project=projects.get(projectId);
       const total=number(sub.Total_Lots),sold=number(sub.Lots_Sold);
@@ -17,8 +17,8 @@
     for(const [parentId,row]of parentRows){
       if(text(row.Status)!=='Builder')continue;
       const subdivisionId=id(row.Subdivision1),builderId=id(row.Builder1),year=Number(text(row.Forecast_Year)),phase=phaseMap.get(subdivisionId);
-      if(!phase||!builders.has(builderId)||!Number.isInteger(year)||year<2018||year>2046)throw new Error('A forecast year has an unavailable subdivision, builder or fiscal year.');
-      const pair=JSON.stringify([subdivisionId,builderId,year]);if(pairs.has(pair))throw new Error('Duplicate forecast years for '+phase.name+'.');pairs.add(pair);
+      if(!phase||!builders.has(builderId)||!Number.isInteger(year)||year<2018||year>2046)throw new Error('A forecast has an unavailable subdivision, builder or WFY.');
+      const pair=JSON.stringify([subdivisionId,builderId,year]);if(pairs.has(pair))throw new Error('Duplicate forecast WFYs for '+phase.name+'.');pairs.add(pair);
       parents.set(parentId,{id:parentId,phase,builderId,builder:text(builders.get(builderId).Builder_Name)||'Unassigned',year,months:new Map()});
     }
     for(const [monthId,row]of monthRows){
@@ -29,13 +29,13 @@
       const slot=parent.id+':'+index;if(slots.has(slot))throw new Error('Duplicate forecast months for '+parent.phase.name+'.');slots.add(slot);
       parent.months.set(start.slice(0,7),{id:monthId,start,forecast:checkedCount(row.Forecasted_Lots,'Forecasted Lots',true),actual:checkedCount(row.Actual_Lots,'Actual Lots'),scheduled:checkedCount(row.Scheduled_Lots,'Scheduled Lots')});
     }
-    for(const parent of parents.values())if(parent.months.size!==12)throw new Error('Incomplete forecast year for '+parent.phase.name+' / '+parent.builder+' / WFY '+parent.year+'.');
+    for(const parent of parents.values())if(parent.months.size!==12)throw new Error('Incomplete forecast WFY for '+parent.phase.name+' / '+parent.builder+' / WFY '+parent.year+'.');
     return {phases,parents:[...parents.values()],availableYears:[...new Set([...parents.values()].map(p=>p.year))].sort((a,b)=>a-b),builders:[...builders].map(([id,row])=>({id,name:text(row.Builder_Name)||'Unassigned'}))};
   }
   function yearsFor(period,today,selected=[]){
     const current=F.currentYear(today);
     if(period==='planning')return [2026,2027,2028,2029];
-    if(period==='custom'){const years=[...new Set(selected.map(Number))].sort((a,b)=>a-b);if(!years.length||years.some(y=>!Number.isInteger(y)||y<2018||y>2046))throw new Error('Choose at least one valid fiscal year.');return years;}
+    if(period==='custom'){const years=[...new Set(selected.map(Number))].sort((a,b)=>a-b);if(!years.length||years.some(y=>!Number.isInteger(y)||y<2018||y>2046))throw new Error('Choose at least one valid WFY.');return years;}
     return Array.from({length:period==='current'?1:period==='two'?3:2},(_,i)=>current+i);
   }
   const monthsFor=years=>years.flatMap(year=>F.months.map((name,index)=>({year,index,name,start:F.start(year,index),key:F.start(year,index).slice(0,7)})));

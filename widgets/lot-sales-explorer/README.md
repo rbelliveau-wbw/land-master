@@ -225,3 +225,13 @@ Uses the shared [success-feedback guide](../../knowledge/design/success-feedback
 
 Forecasts defaults Hide Empty on, including Reset. See the [filter performance
 release](../../docs/forecasts-filter-speed-2026-10-29.md) for scope, checks and rollback.
+
+## 1.6.17 WFY periods
+
+Lot Sales loads and resets to Current + Previous WFY. WFY uses its starting year: WFY 2026 is February 2026 through January 2027. Current WFY, Previous WFY and WFY to Date use that boundary, including in January. Explicit calendar alternatives retain January–December, including Current Year. Rolling, custom and all-history ranges remain available. The custom month picker presents February through January under a WFY heading while retaining exact calendar month values. Forecasts uses WFY labels for its picker, totals and validation and retains its existing fiscal planning range.
+
+Changed files: `src/app/sales-app.js`, `sales-model.js`, `creator-adapter.js`, `insights-controls.js`, `forecast-insights-app.js`, `forecast-insights-model.js`, `widget.html`, widget config, `manifests/widgets.json`, `deploy/environments.json`, `package.json`, this README, `knowledge/design/style-guide.md`, `scripts/test-lot-sales-explorer.mjs`, `test-insights-forecasts-browser.mjs`, and new `test-insights-wfy.mjs`, `test-insights-wfy-picker.mjs`, `test-insights-wfy-browser.mjs`, plus immutable release `1.6.17`. Existing read-only report fields and APIs are unchanged; no Creator form, field, function, Custom API or Creator deployment is required.
+
+Regression: January 31/February 1 rollover, leap February, fiscal initial/reset/to-date ranges, calendar and rolling alternatives, exact custom months, WFY month selection and navigation, complete-history gating, forecast totals and permissions, CSV, full repository validation and Pages build. Numeric/interaction transitions retain the existing shared adoption. Rollback: map production lot-sales-explorer to 1.6.16 and rebuild Pages.
+
+Focused desktop WFY browser verification passed with no page errors. The broader Forecasts browser run reached its existing 346-phase performance assertion and measured a 61.1 ms synchronous switch against a 60 ms limit on this host; it was not a complete pass. The focused WFY browser check has no performance-threshold exception.

@@ -18,10 +18,15 @@
     return rows;
   }
   function recentWindow(now = new Date()) {
-    const year = now.getFullYear();
-    const range = field => '(' + field + " >= '01/01/" + (year - 1) + "' && " + field + " < '01/01/" + (year + 1) + "')";
-    // Creator's application date format is MM/dd/yyyy. Either date basis can be used immediately.
-    return { from: (year - 1) + '-01', to: year + '-12', criteria: '(' + range('Close_Date') + ' || ' + range('Purchase_Date') + ')' };
+    const year = now.getFullYear(), january = now.getMonth() === 0;
+    // Cover both current/previous WFY and the retained calendar presets, on either date basis.
+    const from = january ? (year - 2) + '-02' : (year - 1) + '-01';
+    const to = january ? year + '-12' : (year + 1) + '-01';
+    const lower = january ? '02/01/' + (year - 2) : '01/01/' + (year - 1);
+    const upper = january ? '01/01/' + (year + 1) : '02/01/' + (year + 1);
+    // Creator's application date format is MM/dd/yyyy.
+    const range = field => '(' + field + " >= '" + lower + "' && " + field + " < '" + upper + "')";
+    return { from, to, criteria: '(' + range('Close_Date') + ' || ' + range('Purchase_Date') + ')' };
   }
   async function loadReferences(api, options = {}) {
     const keys = ['subdivisions','projects'];

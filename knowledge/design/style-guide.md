@@ -87,6 +87,12 @@ timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All
 immediately after Hide Empty, before the space leading to Reset; its label describes the next action for visible
 groups. Lot Count is the initial and Reset measure.
+Data Insights uses WFY for February–January periods and totals. The WFY number
+is the February start year: WFY 2026 runs February 2026 through January 2027.
+Default period choices use WFY; retain explicit January–December calendar choices.
+The Insights month picker also uses WFY start-year headings and February–January
+ordering. January belongs to the following calendar year; stored month values
+and visible month dates retain their actual calendar dates.
 User direction October 16, 2026: the Insights matrix fills the remaining report
 height. Omit its visible bottom description bar and page update/version footer;
 retain the totals row and keep Diagnostics/version information in Diagnostics.
@@ -94,14 +100,14 @@ Report descriptions, quality metadata and loading status may remain accessible
 outside the visible layout. Measure changes must not resize a bottom text strip.
 
 Forecasts keeps search/project-status/Lot Status/period filters, display switches
-and collapse/reset on one compact horizontal control row. Keep Hide Empty, Annual
+and collapse/reset on one compact horizontal control row. Keep Hide Empty, WFY
 Totals and Subtotals together, followed immediately by the Sold/Forecast color
 legend. Omit the separate Monthly Lot Count/count/legend row above the matrix;
 retain the report count as an accessible status.
 Align Collapse All / Expand All and Reset together at the far right of that
 control row. Make the Sold/Forecast legend 13px and bold, with 12px swatches.
 Tint complete monthly cells blue for Sold and green for Forecast, using the
-legend's basis colors; keep mixed annual totals neutral. Mark the exact Creator
+legend's basis colors; keep mixed WFY totals neutral. Mark the exact Creator
 server month/year with Forecast Manager's lavender Current heading and purple
 side rules through body and totals. Body cells keep their basis tint.
 Bound filter widths rather than stretching them across the page; allow local
@@ -125,7 +131,7 @@ expanded choices through display switches. Hide Empty applies to child lines
 as well as parent phases; hidden/collapsed ancestors hide their descendants.
 All three display switches update the mounted report immediately. Cache empty
 row membership, both visible-scope group/footer totals and annual columns during a real report build;
-switching Hide Empty, Annual Totals or Subtotals must not rebuild the model/table,
+switching Hide Empty, WFY Totals or Subtotals must not rebuild the model/table,
 read data, lose focus/scroll, or reset collapsed groups. October 27 correction:
 Hide Empty excludes rows with no nonzero displayed monthly value, including
 missing-only and mixed blank/zero rows. A nonzero month keeps a partly missing
