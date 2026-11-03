@@ -11,6 +11,9 @@ for(const [name,expected]of Object.entries(baseline.functions))if(!stagedLoaders
  // Authorized currency fix: keep construction base cents. The full save test
  // verifies the new result; normalize only this expression for the old guard.
  if(name==='buildHeaderData')actual=actual.replace('d.Construction_Cost_Base=round2(T.Construction_Cost_Base);','d.Construction_Cost_Base=round0(T.Construction_Cost_Base);');
+ // Authorized prewrite validation canonicalizes Acquisition Email whitespace.
+ // The real payload behavior is covered by test-proforma-input-validation.
+ if(name==='buildHeaderData')actual=actual.replace('    if(f==="Acquisition_Email"){ d[f]=String(m[f]).trim(); return; }\n','');
  // Authorized Settings routing: missing approval-row reads must not make a
  // Pending Approval parent or retained note/date history look like a new draft.
  // Normalize only that added history guard and its lifecycle declaration order

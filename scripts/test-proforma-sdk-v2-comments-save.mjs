@@ -17,7 +17,7 @@ for(const kind of ['wrong-parent']){
  assert.equal(h.writes.length,1);
 }
 for(const env of ['DEVELOPMENT','PRODUCTION']){
- const h=await saveFixture({env,model:m=>{m.items=[{Department:'Construction',Item_Name:'Fixture cost',Category:'Other',Description:'Fixed cost',Add_l_Cost:'25000',Cost_Application:'Across Phases',Start_Phase:'1',End_Phase:'1'}];},
+ const h=await saveFixture({env,model:m=>{m.items=[{Department:'Construction',Item_Name:'Fixture cost',Category:'Non-Standard',Description:'Fixed cost',Add_l_Cost:'25000',Cost_Application:'Across Phases',Start_Phase:'1',End_Phase:'1'}];},
   invoke:(cfg,storage,body,apply)=>{if(!body.op&&body.header){const raw=apply();for(const row of storage.Proforma_Item_Report){row.Per_Unit='0.00';row.Add_l_Cost='$25,000.00';}return raw;}}
  });
  await h.widget.saveProforma();

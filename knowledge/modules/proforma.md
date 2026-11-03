@@ -1,3 +1,12 @@
+## Prewrite Field Validation — 1.80.137, November 3, 2026
+
+The Save Pro Forma gate now checks typed inputs across the main form, Offer,
+new/edited Sellers and Properties, and financial child rows before any write.
+Invalid email/phone/date/URL values, malformed numbers, field capacities, catalog
+choices and known duplicate/reference errors appear in the existing grouped
+validation dialog. Optional blanks and decimal precision remain supported.
+No Creator deployment is required. [Coverage, limitations, tests and rollback](../../docs/proforma-prewrite-validation-2026-11-03.md).
+
 ## Always-visible attachment picker — 1.80.136, November 2, 2026
 
 Choose Files stays visible in both the attachment modal and record workspace.

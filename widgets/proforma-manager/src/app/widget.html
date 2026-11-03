@@ -8,23 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.136"></script>
-<script src="pf-save-audit.js?v=1.80.136"></script>
-<script src="pf-progress.js?v=1.80.136"></script>
+<script src="pf-save-verification.js?v=1.80.137"></script>
+<script src="pf-save-audit.js?v=1.80.137"></script>
+<script src="pf-input-rules.js?v=1.80.137"></script>
+<script src="pf-input-validation.js?v=1.80.137"></script>
+<script src="pf-progress.js?v=1.80.137"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.136">
-<script src="interaction-motion.js?v=1.80.136"></script>
-<script src="interaction-surfaces.js?v=1.80.136"></script>
-<script src="number-edit-commit.js?v=1.80.136"></script>
-<script src="number-transitions.js?v=1.80.136"></script>
-<script src="number-views.js?v=1.80.136"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.136">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.137">
+<script src="interaction-motion.js?v=1.80.137"></script>
+<script src="interaction-surfaces.js?v=1.80.137"></script>
+<script src="number-edit-commit.js?v=1.80.137"></script>
+<script src="number-transitions.js?v=1.80.137"></script>
+<script src="number-views.js?v=1.80.137"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.137">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.136"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.136">
-<script src="comments.js?v=1.80.136"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.136">
+<script src="budget-transfer-ui.js?v=1.80.137"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.137">
+<script src="comments.js?v=1.80.137"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.137">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1838,7 +1840,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.136"></script>
+<script src="success-feedback.js?v=1.80.137"></script>
 </head>
 <body>
 
@@ -2253,7 +2255,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.136";
+var PFW_VERSION="1.80.137";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -8779,7 +8781,7 @@ function byId(list,id){ id=String(id||""); return (list||[]).find(function(r){re
    value carries spaces / parentheses / dashes, silently failing the seller save. Strip
    everything but digits so what we send is a clean 10-digit string. Strip-only: we never
    block a save on length, we just remove formatting. */
-function normalizePhone(v){ return String(v==null?"":v).replace(/\D+/g,""); }
+function normalizePhone(v){ var s=String(v==null?"":v).trim();return /^[+\d\s().-]*$/.test(s)?s.replace(/\D+/g,""):s; }
 function creatorText(v,max){return String(v==null?"":v).trim().slice(0,max);}
 function sellerName(r){ return r ? String(r.Builder_Name||r.display_value||("Seller #"+r.ID)) : ""; }
 function companyName(r){ return r ? String(r.Company_Name||r.display_value||("Company #"+r.ID)) : ""; }
@@ -8989,6 +8991,7 @@ function pendingPropertyHasData(r){return !!String((r&&r.Common_Name)||"").trim(
 function pruneBlankPendingLOIRows(l){l.newSellers=pendingSellerRows(l).filter(pendingSellerHasData);l.newProperties=pendingPropertyRows(l).filter(pendingPropertyHasData);}
 function validateLOISubformDraft(l){
   if(!l)return [];pruneBlankPendingLOIRows(l);var errs=[];
+  errs=errs.concat(pfValidateLOIInputs(l));
   Object.keys(PF_WHOLE_LOI).forEach(function(k){if(invalidWholeNumber(l[k]))errs.push(PF_WHOLE_LOI[k]+" must be a whole number.");});
   [["Response_Date","Response Date"],["Assumed_Effective_Date","Effective Date"],["Projected_Hard_Close_Date","Projected Hard Close"]].forEach(function(p){
     if(!loiValidDate(l[p[0]]))errs.push(p[1]+": enter a valid date as YYYY-MM-DD.");
@@ -9298,7 +9301,7 @@ function buildLOIWorksheetPayload(l){
     Closing_Days_After_Feasibility:String(l.Closing_Days_After_Feasibility||""),
     Extensions:String(l.Extensions||""),Days_Per_Extension:String(l.Days_Per_Extension||""),
     Amount_Per_Extension:stripMoney(l.Amount_Per_Extension||""),Buyer_Broker:String(l.Buyer_Broker||""),Seller_Broker:String(l.Seller_Broker||""),
-    Earnest_Money_Due_Days:String(l.Earnest_Money_Due_Days||""),Acquisition_Email:String(l.Acquisition_Email||""),
+    Earnest_Money_Due_Days:String(l.Earnest_Money_Due_Days||""),Acquisition_Email:String(l.Acquisition_Email||"").trim(),
     Assumed_Effective_Date:dateToCreatorValue(l.Assumed_Effective_Date),Projected_Hard_Close_Date:dateToCreatorValue(l.Projected_Hard_Close_Date),
     Total_Acres:String(l.Total_Acres||""),Estimated_Price:String(l.Estimated_Price||""),Earnest_Money_Due_Date:dateToCreatorValue(l.Earnest_Money_Due_Date),
     Special_Provisions:String(l.Special_Provisions||""),Legal_Note:String(l.Legal_Note||""),Approval_Token:String(l.Approval_Token||""),
@@ -11226,6 +11229,63 @@ var PF_WHOLE_HEADER={Lots:["gen","Lots"],Phases:["gen","Phases"],Purchase_Instal
 var PF_WHOLE_LOI={Earnest_Money_Due_Days:"Earnest Money Due Days",Initial_Feasibility_Days:"Initial Feasibility Days",Extensions:"Extensions",Days_Per_Extension:"Days Per Extension",Closing_Days_After_Feasibility:"Closing Days After Feasibility",Version_Number:"Version Number"};
 PF_WHOLE_HEADER.Total_Street_LF=["gen","Total Street LF"];
 function invalidWholeNumber(v){ var raw=stripNumberGroups(v); return raw!=="" && !Number.isInteger(Number(raw)); }
+/* All local field checks run before the first write, including the separate Offer
+   operation. Never log the rejected values (email and phone are personal data). */
+function pfValidateLOIInputs(l){
+  var check=LMPFInputValidation,errors=check.record("LOI_Worksheet",l,null,stripMoney);
+  var sellerKeys=["Builder_Name","Email","Phone_Number","Street_Address","City_State_ZIP"];
+  var propertyKeys=["Common_Name","Property_ID","Facility_ID","County","City","Acres","TerraVault_URL"];
+  function add(form,row,keys,label){check.record(form,row,keys,stripMoney).forEach(function(message){errors.push(label+" — "+message);});}
+  var sellers=pendingSellerRows(l),properties=pendingPropertyRows(l),seenNames={},seenIds={};
+  function unique(row,key,seen,existing,label){
+    var value=String(row[key]||"").trim().toLowerCase();if(!value)return;
+    if(seen[value]||(existing||[]).some(function(r){return String(r.ID)!==String(row.ID)&&String(r[key]||"").trim().toLowerCase()===value;}))errors.push(label+": "+key.replace(/_/g," ")+" already exists; select the existing record or use a unique value.");
+    seen[value]=true;
+  }
+  sellers.forEach(function(row,i){var label="New Seller row "+(i+1);add("Builder",row,sellerKeys,label);unique(row,"Builder_Name",seenNames,S.builders,label);});
+  properties.forEach(function(row,i){var label="New Property row "+(i+1);add("Property",row,propertyKeys,label);unique(row,"Property_ID",seenIds,S.properties,label);});
+  Object.keys(l._editedSellers||{}).filter(function(id){return (l.sellerIds||[]).map(String).indexOf(id)>=0;}).forEach(function(id){
+    var row=byId(S.builders,id);if(!row){errors.push("An edited Seller is unavailable; reload record options.");return;}
+    if(!String(row.Builder_Name||"").trim())errors.push("Seller name is required.");
+    add("Builder",row,sellerKeys,"Seller "+sellerName(row));unique(row,"Builder_Name",seenNames,S.builders,"Seller "+sellerName(row));
+  });
+  Object.keys(l._editedProperties||{}).filter(function(id){return (l.propertyIds||[]).map(String).indexOf(id)>=0;}).forEach(function(id){
+    var row=byId(S.properties,id);if(!row){errors.push("An edited Property is unavailable; reload record options.");return;}
+    if(!String(row.County||"").trim())errors.push("Property "+propertyName(row)+": County is required.");
+    add("Property",row,propertyKeys,"Property "+propertyName(row));unique(row,"Property_ID",seenIds,S.properties,"Property "+propertyName(row));
+  });
+  var sellerRefs=(l.sellerIds||[]).map(String).concat(sellers.map(function(row){return String(row.tempId);}));
+  (l.sellerIds||[]).forEach(function(id){if(!byId(S.builders,id))errors.push("A selected Seller is unavailable; reload record options.");});
+  (l.propertyIds||[]).forEach(function(id){if(!byId(S.properties,id))errors.push("A selected Property is unavailable; reload record options.");});
+  function assignment(ref,label){if(ref&&sellerRefs.indexOf(String(ref))<0)errors.push(label+": select a Seller included in this Offer.");}
+  properties.forEach(function(row,i){assignment(row.sellerRef,"New Property row "+(i+1));});
+  (l.propertyIds||[]).forEach(function(id){assignment((l.propertyAssignments[id]||{}).sellerId,"Property "+id);});
+  if(l.Company&&!(S.companies||[]).some(function(row){return String(row.ID)===String(l.Company);}))errors.push("Purchasing Company: select an available company.");
+  return errors;
+}
+function pfValidateSaveInputs(m){
+  var errors=[];
+  function add(pane,messages){messages.forEach(function(message){if((S.ed.errors[pane]||[]).indexOf(message)<0){errors.push(message);(S.ed.errors[pane]=S.ed.errors[pane]||[]).push(message);}});}
+  HEADER_FIELDS.forEach(function(key){
+    var pane=LOI_FIELDS.indexOf(key)>=0?"loi":PF_WHOLE_HEADER[key]?PF_WHOLE_HEADER[key][0]:/^Overhead|Overhead$|Interest|Profit_Share/.test(key)?"vpcomp":/Land_Sale/.test(key)?"land":"gen";
+    add(pane,LMPFInputValidation.record("Add_Pro_Forma",m,[key],stripMoney));
+  });
+  var d=m.purchaseDate;
+  if(d&&(!Number.isInteger(d.y)||!Number.isInteger(d.m)||d.y<1000||d.y>9999||d.m<1||d.m>12))add("sched",["Project Start: choose a valid month and year."]);
+  [["purchaseInstallments","Land_Installments","land"],["saleInstallments","Land_Installments","land"],["pidMud","Land_Installments","pid"],["items","Proforma_Item","addl"],["curve","Construction_Curve","curve"],["lotMix","Lot_Mix_Row","gen"],["phaseSales","Proforma_Phase","lotsales"]].forEach(function(group){
+    (m[group[0]]||[]).forEach(function(row,i){
+      // Validate fields actually sent by each child writer. Inactive per-unit inputs are omitted.
+      var keys=Object.keys(row).filter(function(key){return row._perUnit||["Unit","Per_Unit"].indexOf(key)<0;});
+      add(group[2],LMPFInputValidation.record(group[1],row,keys,stripMoney).map(function(message){return "Row "+(i+1)+" — "+message;}));
+    });
+  });
+  if(!errors.length&&!Object.keys(S.ed.errors).some(function(pane){return S.ed.errors[pane].length;})){
+    var calculated=buildHeaderData(m,modelToCalc(m));
+    var numericKeys=Object.keys(calculated).filter(function(key){var rule=LMPFInputRules.Add_Pro_Forma[key];return HEADER_FIELDS.indexOf(key)<0&&rule&&/^(number|decimal|USD|percentage)$/.test(rule.type);});
+    add("gen",LMPFInputValidation.record("Add_Pro_Forma",calculated,numericKeys,stripMoney));
+  }
+  return errors;
+}
 function validateWholeInputs(m,err){
   Object.keys(PF_WHOLE_HEADER).forEach(function(k){var f=PF_WHOLE_HEADER[k];if(invalidWholeNumber(m[k]))err(f[0],f[1]+" must be a whole number.");});
   [["purchaseInstallments","land",["Installment","Month1"]],["saleInstallments","land",["Installment","Month1"]],["pidMud","pid",["Month1"]],["lotMix","gen",["Lot_Count"]],["curve","curve",["Month_Number"]],["items","addl",["Start_Phase","End_Phase","Start_Month","End_Month"]],["phaseSales","lotsales",["Phase","Total_Lots","Initial_Take_Lots","Initial_Delay_Months","First_Recurring_Delay_Months","Lots_Per_Take"]]].forEach(function(group){
@@ -11436,6 +11496,7 @@ function buildHeaderData(m, c){
     if(f==="Owner"){ var ownerIds=multiLookupIds(m[f]); if(ownerIds.length)d[f]=ownerIds; return; }
     if(m[f]==null||m[f]===""){ d[f]=""; return; }
     if(f==="Response_Date"){ d[f]=dateToCreatorValue(m[f]); return; }
+    if(f==="Acquisition_Email"){ d[f]=String(m[f]).trim(); return; }
     d[f]=String(m[f]);
   });
   d.Lot_Sales_Schedule_Version="2";
@@ -11810,6 +11871,7 @@ function saveProforma(){
   }
   var m=S.ed.model, errs=validateModel(m);
   updateTabWarnings();
+  errs=errs.concat(pfValidateSaveInputs(m));
   if(S.ed.loiDirty&&S.ed.loi){var loiDraftErrors=validateLOISubformDraft(S.ed.loi);if(loiDraftErrors.length){S.ed.errors.loi=(S.ed.errors.loi||[]).concat(loiDraftErrors);errs=errs.concat(loiDraftErrors);}}
   if(errs.length){
     auditLog("warn","Save blocked by validation",{errors:errs});
