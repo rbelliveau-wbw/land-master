@@ -71,7 +71,27 @@ page link is preserved). Financial contains Budgets, Data Insights, Forecast
 Manager and Pro Formas. Legal is a direct link. Setup contains User Access,
 Settings and Forms & Reports.
 
-The snippet is kept below Creator’s 450,000-character limit with compact HTML.
+The snippet is kept below Creator's 450,000-character limit with compact HTML.
 Optional table end tags follow HTML parsing rules; desktop checks verify the
 complete field table after parsing. Full repository validation and Pages build
-passed. Native save and Production promotion must be confirmed separately.
+passed.
+
+## Verified Release
+
+Source commit `dbdaecee5330b9dc731dc84f262539932d76e3f2` was pushed to main;
+GitHub CI run `41568524568` succeeded. The native page was saved, reopened,
+and verified in Development before promotion.
+
+Creator version **9.138**, "Forms and Reports catalog and app menu", was published
+to Stage and then Production on November 2, 2026. The release selected six
+components: Forms & Reports, App Menu, and the display-name changes for Estimating,
+Crew Locations, Territories and Vendors. Other pending Development changes were
+not selected.
+
+The Production page at
+`https://creatorapp.zoho.com/wbdevelopment/land-master/#Page:Forms_Reports`
+was verified with 83 forms, 100 reports, Production selected by default, the Add
+Budget explanation visible, and its 55 declared field rows available in View
+Fields. All requested menu groups and their item order were checked in Production,
+including Setup > User Access, Settings, Forms & Reports. At narrower browser
+widths, Creator places Setup under the navigation overflow menu.
