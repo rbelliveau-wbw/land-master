@@ -4,14 +4,19 @@ The five Preliminary fields and `All_Budget_Items` layouts were saved and
 verified in native **Development** on November 3. Exact display/link names
 survived Done/reopen, and form-preview input names confirmed the bindings. See
 [native installation progress](native-install-progress.json). Actual SDK/API
-full-field responses, save/reload, Production promotion and data backfill remain
-unverified or pending. All 14 Development function requirements are ready:
+full-field response capture remains unverified. A normal Development Preliminary
+save persisted the five elements, and Stage/Production promotion completed as
+Creator **9.142** (18 scoped components). Production backfill is prepared but
+blocked at the native upload control. All 14 Development function requirements are ready:
 12 editor saves were acknowledged without compiler errors; two existing
 modification functions already matched the candidate and were preserved.
 The user explicitly approved the remaining native Development setup.
 A read-only native ALL_DETAIL execution returned 90 parent rows, each with
-five labeled elements and the original 16 parent columns. No Budget Item
-records changed and no emails were sent. The November 2 export predates the fields.
+five labeled elements and the original 16 parent columns. One Development Budget
+Item initialized Preliminary components through the normal widget save while
+keeping its existing total unchanged and Final blank. No Production records
+changed and no business approval emails were sent; native publication notices
+were retained. The November 2 export predates the fields.
 
 The five optional fields in [schema.json](schema.json) are present on the
 existing `Budget_Item` form in Development. Retain them; do not create duplicates.
@@ -52,12 +57,15 @@ partial or all-zero values. A new approval cycle clears Final components while
 retaining Preliminary components. Construction keeps its existing HeavyJob
 source and frozen-snapshot behavior.
 
-PMP publishes repository/frontend changes only. Development setup is complete;
-the user promotes these Creator fields, report changes and functions together.
-Verify native read/save/reload in Development before selecting only these
-components for promotion. A local fixture does not establish live compilation
-or saved behavior. Check that an input save updates the correct exact item ID,
-keeps every total unchanged, and that each report returns the five fields.
+PMP alone publishes repository/frontend changes. The later explicit instruction
+authorized agent Creator promotion, completed through Stage and Production as
+**9.142** with five fields, one report and 12 functions. Native Development save
+verification used exact item `4410926000003558652` (AR04-4410): its unchanged
+255000 Preliminary input persisted 255000 under Other and zero under the other
+four elements. Preliminary/Unapproved totals, blank Final and zero actuals stayed
+unchanged. A separate native report/form showed the values. The fresh Production
+JSON export contains all five new field keys. Full raw SDK response capture and
+live approval finalization/email delivery remain separate acceptance limits.
 
 The lifecycle function set is `snapshotBudgetItemComponents`,
 `applyBudgetTrackFinalState`, `handleApprovalAction`, and `startApprovalChain`.

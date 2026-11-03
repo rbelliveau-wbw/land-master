@@ -27,14 +27,20 @@ Max Digits 16, four decimal places, no initial value. All five were saved and
 verified in native **Development**: display/link names persisted through
 Done/reopen and form-preview input names. **All_Budget_Items** list/quick-view
 columns include all five; detail-view Configure Fields auto-included them and
-was verified, preserving existing report fields. Actual full-field SDK/API
-reads and user save/reload remain unverified. All 14 Development function
+was verified, preserving existing report fields. A normal Development Preliminary
+save persisted five components and a separate native report/form showed the
+saved values; full raw SDK-response capture remains unverified. All 14 Development function
 requirements are ready after explicit user approval: 12 editor saves were
 accepted without compiler errors and two existing modification bodies already
 matched the candidate. Native read-only ALL_DETAIL execution passed for 90
 parent rows with five labeled elements each and unchanged parent column shape.
-Production Creator promotion and data backfill remain pending; no Budget Item
-or Production records changed, and no approval emails were sent.
+With the user's later explicit authorization, all 18 scoped components were
+promoted through Stage and Production as Creator **9.142**, with no pending
+changes shown. One Development item (AR04-4410) initialized Preliminary Other
+255000 with its total unchanged and Final blank. Production export contains
+all five new keys. No Production records changed; backfill remains blocked at
+the native upload control. No business approval test emails were sent; native
+publication notifications were retained.
 See the handoff's native installation progress record.
 
 The existing **Labor_Budget** through **Other_Budget** remain frozen Final
@@ -98,16 +104,16 @@ and linked manifest list five fields, additive report layouts and 14 function
 bodies in dependency order. No Custom API signature change or new endpoint is
 required. The stale extracted **poBudgetBalances.dg** must not overwrite its
 newer component-aware native prerequisite from the November 2 export. PMP
-publishes repository/main and Production widget assets; Creator promotion stays
-with the user.
+publishes repository/main and Production widget assets. This task's later
+explicit instruction authorized agent Creator promotion, completed as 9.142.
 
 The requested [one-time backfill](../../docs/budget-element-backfill-2026-11-03.md)
 remains pending native application and verification. Its prepared Final plan
 contains 10,125 existing Dev/Eng rows, including 9,972 known zero Finals; blank
 Finals are excluded. Only exact record IDs and five blank target components are
 updated, preserving any explicit allocation and retaining rollback preimages.
-A separate Preliminary plan requires a fresh export with the new fields and
-uses **Prelim_Budget_Ttl** only. No values are substituted between tiers, and no
+The fresh post-promotion snapshot also produced a separate 988-row Preliminary
+plan using **Prelim_Budget_Ttl** only; neither import was submitted. No values are substituted between tiers, and no
 scheduled or ongoing migration is added.
 
 Changed sources cover Budget matrix/Preliminary/manual Modification UI, PO labels

@@ -1,7 +1,7 @@
 {
   "contract": "budget-elements-creator-promotion-v1",
   "prepared_on": "2026-11-03",
-  "status": "Development fields/report layouts verified; all 14 function requirements ready: 12 native editor saves acknowledged without compiler errors and two existing bodies verified already compatible. Read-only ALL_DETAIL execution passed for 90 rows with five elements each. Full SDK save/reload, approval acceptance, Production promotion and backfill remain pending.",
+  "status": "Promoted through Stage and Production as Creator 9.142 after explicit user authorization: five fields, one report and 12 functions (18 components). Development normal Preliminary save persisted all five elements with unchanged totals and Final. Read-only ALL_DETAIL passed for 90 rows. One-time Production backfill remains blocked at the native upload control; no Production records changed. Live approval finalization and email delivery were not exercised.",
   "native_install_progress": "creator/workflows/budget-preliminary-elements/native-install-progress.json",
   "development_function_editor_saves_acknowledged": [
     "snapshotBudgetItemComponents",
@@ -27,8 +27,27 @@
       "invokes": "budgetElementExportRows"
     }
   ],
-  "production_creator_changes_performed": [],
-  "pmp_boundary": "Repository main/production widget publication does not promote Creator components. Creator promotion remains user-controlled.",
+  "production_creator_changes_performed": [
+    "Prelim_Labor_Budget",
+    "Prelim_Materials_Budget",
+    "Prelim_Equipment_Budget",
+    "Prelim_Subcontractor_Budget",
+    "Prelim_Other_Budget",
+    "All_Budget_Items",
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows",
+    "budgetElementExportHtml",
+    "poElementExportRows",
+    "applyBudgetTrackFinalState",
+    "handleApprovalAction",
+    "startApprovalChain",
+    "exportBudgetSnapshot",
+    "poExcelWorkbook",
+    "sendApprovalEmail",
+    "sendModificationEmail",
+    "sendPurchaseOrderEmail"
+  ],
+  "pmp_boundary": "PMP alone leaves Creator promotion to the user. For this task the later explicit instruction authorized agent promotion, completed through Stage and Production as 9.142.",
   "authority": "creator/exports/Land_Master_2026-11-02-catalog.ds",
   "schema": {
     "form": "Budget_Item",

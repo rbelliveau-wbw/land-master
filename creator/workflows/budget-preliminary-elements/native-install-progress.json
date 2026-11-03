@@ -1,8 +1,8 @@
 {
   "observed_on": "2026-11-03",
   "timezone": "America/Chicago",
-  "environment": "Development",
-  "status": "Development fields/report layouts verified; all 14 function requirements ready: 12 native editor saves acknowledged without compiler errors and two existing bodies verified already compatible. Read-only ALL_DETAIL execution passed for 90 rows with five elements each. Full SDK save/reload, approval acceptance, Production promotion and backfill remain pending.",
+  "environment": "Development, Stage and Production",
+  "status": "Promoted through Stage and Production as Creator 9.142 after explicit user authorization: five fields, one report and 12 functions (18 components). Development normal Preliminary save persisted all five elements with unchanged totals and Final. Read-only ALL_DETAIL passed for 90 rows. One-time Production backfill remains blocked at the native upload control; no Production records changed. Live approval finalization and email delivery were not exercised.",
   "form": "Budget_Item",
   "saved_property_reopen_audit": {
     "fields_checked": 5,
@@ -78,7 +78,24 @@
     "evidence": "tmp/budget-elements/creator-report-fields.jpg"
   },
   "full_field_sdk_api_response": "Not verified in this task",
-  "preliminary_save_reload": "Not verified in this task",
+  "preliminary_save_reload": {
+    "environment": "Development",
+    "item_id": "4410926000003558652",
+    "code": "AR04-4410",
+    "existing_preliminary_total": "255000",
+    "saved_preliminary_elements": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "255000"
+    ],
+    "method": "Re-entered unchanged existing total in normal Budget Manager input; All changes saved acknowledged; separate native report/form showed persisted components. Native form canceled without changes.",
+    "preliminary_and_unapproved_totals_unchanged": true,
+    "final_remained_blank": true,
+    "hcss_and_gp_actuals_remained_zero": true,
+    "evidence": "tmp/budget-elements/development-prelim-persisted.jpg"
+  },
   "functions_compiled_or_updated_natively_in_this_task": [
     "snapshotBudgetItemComponents",
     "budgetElementExportRows",
@@ -216,12 +233,31 @@
     "status": "Explicit user approval received; remaining Development setup completed",
     "user_reply": "Yes you can -- you're adding 12 functions?",
     "prior_automatic_review_rejection_resolved": true,
-    "production_promotion_authorized": false
+    "production_promotion_authorized": true
   },
-  "production_components_promoted_in_this_task": [],
-  "production_data_backfill": "Prepared only; no native import applied",
-  "native_import_interaction_block": "The cross-origin native importer file input/label could not be targeted; attempts returned Click target no longer available. No import was submitted.",
-  "budget_item_records_changed_in_this_task": 0,
+  "production_components_promoted_in_this_task": [
+    "Prelim_Labor_Budget",
+    "Prelim_Materials_Budget",
+    "Prelim_Equipment_Budget",
+    "Prelim_Subcontractor_Budget",
+    "Prelim_Other_Budget",
+    "All_Budget_Items",
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows",
+    "budgetElementExportHtml",
+    "poElementExportRows",
+    "applyBudgetTrackFinalState",
+    "handleApprovalAction",
+    "startApprovalChain",
+    "exportBudgetSnapshot",
+    "poExcelWorkbook",
+    "sendApprovalEmail",
+    "sendModificationEmail",
+    "sendPurchaseOrderEmail"
+  ],
+  "production_data_backfill": "Fresh 9.142 snapshot replanned: 10,125 Final and 988 Preliminary rows prepared separately; neither uploaded nor applied.",
+  "native_import_interaction_block": "Retried after 9.142 promotion: Local storage AX and screenshot coordinate clicks returned Click target is no longer available; actual file input was hidden and its click timed out. No chooser or upload completed and no import was submitted.",
+  "budget_item_records_changed_in_this_task": 1,
   "production_records_changed_in_this_task": 0,
   "scheduled_workflows_added": [],
   "new_custom_apis_added": [],
@@ -258,5 +294,22 @@
     "emails_sent": 0,
     "local_evidence": "tmp/budget-elements/development-all-detail-result.json",
     "limitation": "Direct native function execution; does not verify SDK/report API fields, financial save/reload, approval routing, email delivery or Production publication."
+  },
+  "creator_promotion": {
+    "user_instruction": "ok continue workign and when youre doen you promote in creator",
+    "version": "9.142",
+    "title": "Budget and PO element details",
+    "component_count": 18,
+    "stage_verified": true,
+    "production_verified": true,
+    "no_changes_available_verified": true,
+    "evidence": "tmp/budget-elements/creator-production-9-142.jpg",
+    "native_publish_notifications": "Default publication notification to the signed-in owner retained; no business approval test emails sent."
+  },
+  "production_export_after_promotion": {
+    "rows": 24516,
+    "all_five_preliminary_fields_present": true,
+    "local_path": "tmp/budget-elements/backfill/production-9142-before.json",
+    "sha256": "28fe1045052f171979b887c82de2922972eb13f2a921d2255baeafd152864840"
   }
 }

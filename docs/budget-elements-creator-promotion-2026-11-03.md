@@ -1,4 +1,4 @@
-# Budget Elements — Creator Promotion Handoff
+# Budget Elements — Creator Promotion Record
 
 This is the single Creator component checklist for the Budget/PO element work.
 The [machine-readable manifest](../creator/workflows/budget-preliminary-elements/promotion-manifest.json)
@@ -25,8 +25,9 @@ without changes.
 
 All five were added once to `All_Budget_Items` list/quick-view columns and
 verified. Detail-view Configure Fields already auto-included all five; that
-inclusion was verified. Existing report fields remain intact. An actual
-full-field native SDK/API response and user save/reload still require checking.
+inclusion was verified. Existing report fields remain intact. Normal Development
+widget save and separate native report/form persistence were verified; a full
+raw native SDK/API response was not captured.
 The November 2 catalog lists only this report for `Budget_Item`.
 
 Use [the merge fragments and progress record](../creator/workflows/budget-preliminary-elements/README.md)
@@ -40,9 +41,20 @@ Every updated existing native body was compared with the November 2 export
 before replacement, and local prechange copies were retained.
 
 The user explicitly authorized the remaining Development installation after
-the initial approval-review block. That block is resolved. Production Creator
-promotion remains user-controlled. No Budget Item data or Production records
-were changed and no emails were sent.
+the initial approval-review block. That block is resolved. The later instruction
+“ok continue workign and when youre doen you promote in creator” authorized agent
+promotion. The reviewed **18 components** (five fields, one report, 12 functions)
+were published through Stage and Production as **9.142**, titled **Budget and PO
+element details**. Both environments showed 9.142 and “No changes available.”
+Evidence: `tmp/budget-elements/creator-production-9-142.jpg`.
+
+One Development Budget Item was initialized through the normal widget save:
+AR04-4410, exact ID `4410926000003558652`. Re-entering its unchanged 255000
+Preliminary total saved Other 255000 and the remaining four components zero.
+Separate native report/form reads confirmed persistence; Preliminary/Unapproved
+totals, blank Final and zero actuals were unchanged. No Production records were
+changed. No business approval test emails were sent; native publication
+notifications to the owner were retained.
 
 ## Compile and Promote in Dependency Order
 
@@ -77,11 +89,12 @@ component balances are absent or unavailable, element Modified/Existing/
 Available/Remaining stay unknown; canonical five rows and current PO allocations
 remain readable beside the existing aggregate totals.
 
-Promote only the reviewed fields, additive report layout changes and compiled
-function set through the normal Creator process. PMP publishes the repository
-widget and leaves Creator promotion to the user. The native compile
-acknowledgements and read-only export check are distinct from full acceptance;
-no delivered approval email or successful live financial write is claimed.
+Only the reviewed fields, additive report layout changes and compiled function
+set were promoted through the normal Creator process. This explicit promotion
+authorization superseded the task's earlier PMP-only boundary. Native compile,
+read-only export and normal Preliminary save checks are distinct from full
+approval acceptance; no delivered approval email or live approval finalization
+is claimed.
 
 ## Acceptance and One-Time Data
 
@@ -108,11 +121,15 @@ have local rollback preimages. The prepared Production export/plan is not an
 applied-backfill claim. The native importer file-input interaction had not
 completed when this handoff was written: the cross-origin file input/label
 returned “Click target no longer available,” and no import was submitted. No
-Production application is recorded here. Do not replay an unknown import result
+Production record backfill is recorded here. A fresh post-promotion Production
+export contains all five new field keys across 24,516 rows; separate plans contain
+10,125 Final and 988 Preliminary updates. Retrying AX, visible coordinate and
+file-input controls after promotion did not open the file chooser. Do not replay an unknown import result
 without a read-only audit.
 
-Verify user save/reload, report keys, named elements, manual modification details,
-PO/budget exports and normal approval lifecycle in Development. After Creator
+Normal Preliminary save/native persistence and Production export keys are
+verified. Manual modification, PO export and normal approval lifecycle end-to-end
+acceptance remain separate from compiled/source fixture checks. After Creator
 promotion, use existing read-only targeted approval checks to confirm binding;
 do not create/send/repair an approval just to prove deployment.
 

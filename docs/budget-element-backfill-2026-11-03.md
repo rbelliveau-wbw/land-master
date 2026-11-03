@@ -8,7 +8,7 @@ workflow or recurring migration.
 ## Prepared Production Audit
 
 The signed-in native `All_Budget_Items` report was exported as JSON on November
-3. Local preparation used its exact string record IDs and native `Department`
+3, freshly repeated after Creator **9.142** reached Production. Local preparation used its exact string record IDs and native `Department`
 picklist. The export's Budget and Budget Category values are display labels;
 they were retained as provenance and were never joined across phases or used
 as update identities.
@@ -25,7 +25,30 @@ preserves any nonblank component, including partial or all-zero allocations.
 These are **prepared counts**, not a claim that native import succeeded.
 Raw source records, update CSV and rollback preimages remain local under
 `tmp/budget-elements/backfill/`; do not commit them. The source JSON SHA-256 is
-`a368e1ea8c72ebea0bcc697d996bd2d59d36e2680438619b431181a559d4e377`.
+`28fe1045052f171979b887c82de2922972eb13f2a921d2255baeafd152864840`.
+
+The fresh export includes all five Preliminary field keys. Its separate
+Preliminary plan contains **988** eligible rows: **897 Development** and **91
+Engineering**, including 78 known zero values and 53 signed credits. Another
+12,066 Dev/Eng rows have blank Preliminary totals and are excluded. Both plans
+exclude templates, Construction, and any explicit component allocation.
+
+Local source: `tmp/budget-elements/backfill/production-9142-before.json`.
+Final files: `tmp/budget-elements/backfill/final-plan-9142-v2/`.
+Preliminary files: `tmp/budget-elements/backfill/prelim-plan-9142-v2/`.
+Each directory contains `updates.csv`, `rollback.csv`, `rollback-preimage.json`
+and `summary.json`. Final CSV SHA-256:
+`b4f6f65a1964331fe23470e612074f5561026398eaac4d04133a67be07c88f61`.
+Preliminary CSV SHA-256:
+`d54a0eb32f85907a20820f872e7de7a63a6d616038ae23d451f04f0e2bef5328`.
+
+**Neither file has been uploaded or applied.** The Production native importer
+opens, but Local storage AX and visible coordinate clicks fail with “Click
+target is no longer available”; the actual file input is hidden and its click
+times out. The file chooser never opened. This was retried after promotion.
+No Production Budget Item records changed. A user can activate Local storage
+in the existing report importer to continue the reviewed import, but must
+re-audit the snapshot first if data has changed since this export.
 
 ## Preparation and Native Application
 
