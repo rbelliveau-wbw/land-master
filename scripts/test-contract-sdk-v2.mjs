@@ -3,6 +3,7 @@ import './test-contract-sdk-v2-fields.mjs';
 import './test-contract-proposal-access.mjs';
 import './test-contract-owned-edit.mjs';
 import './test-contract-sdk-v2-scopes.mjs';
+import './test-contract-access-refresh.mjs';
 import './test-contract-lot-selection-safety.mjs';
 import './test-contract-attachment-verification.mjs';
 import './test-contract-sdk-v2-derived.mjs';

@@ -1,3 +1,21 @@
+## PO Pricing Input Recovery — 122.29.92, November 3, 2026
+
+Entering Total still selects Manual pricing and clears Quantity/Unit Price to
+true nulls for native saving. Both pricing inputs remain editable. Typing either
+returns the row to Calculated pricing in Row and Spreadsheet views, using the
+existing exact decimal calculation. Active input text/caret and unrelated lines
+stay mounted. Removed-line events cannot overwrite the PO header description.
+
+Actual-handler regressions cover total overrides, both return paths, rapid
+decimal entry, retained text/caret, null manual payloads, scoped lines and
+read-only/pending/stale-actor guards. In-app browser checks using the actual
+shared numeric/motion engines passed manual 500000 → 10 × 250 = 2500 and
+1.50 × 12.30 = 18.45 with zero native writes. Full validation and the Pages build
+passed. Changed sources are po-ui.js,
+test-po-entry.mjs, metadata/release mappings and docs. No native fields, APIs,
+functions, exports, email or approval rules change; no Creator promotion needed.
+Rollback Budget Manager Production to **122.29.90** and rebuild Pages.
+
 ## Source Actual Elements — Budget 122.29.91 and Settings 1.6.6
 
 Budget Item actual detail now reads five saved **HCSS_*_Actuals** fields and five

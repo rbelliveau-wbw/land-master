@@ -131,6 +131,12 @@ atomic paste validation and the 250-line limit.
 
 ## Named Cost Elements and Budget Math
 
+PO Quantity and Unit Price stay editable after a manual Total override. Entering
+either returns to Quantity × Unit Price in both Row and Spreadsheet views. A
+Manual save still has null quantity/price; never send stale calculated values
+with a manual total. Keep active text/caret and unrelated rows mounted while
+derived amounts update on the established field-exit boundary.
+
 Use the full labels **(1) Labor**, **(2) Materials**, **(3) Equipment**,
 **(4) Subcontractor**, and **(5) Other** in PO and standalone Modification
 pickers, selected values, detail rows, downloads and approval mail. Keep the

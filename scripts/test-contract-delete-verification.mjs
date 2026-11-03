@@ -36,6 +36,17 @@ for(const reply of [{code:3000},{code:3000,data:{ID:ID}},{code:3000,result:[{cod
  assert.equal(deletes(h).length,0,'prewrite scope and permissions remain enforced');
 }
 {
+ const h=await ready({realDOM:true}),approvalId=(BigInt(ACTION)+90n).toString();
+ h.c.S.approvals=[{ID:approvalId,Contract1:{ID},Approver:'fixture-approver@example.test',Approval_Sequence:'1',Status:'Not Sent'}];
+ await h.c.doDeleteApproval(approvalId,ID);await drain();
+ assert.equal(deletes(h).length,0,'a stale or newly invisible approver never dispatches a deletion');
+ assert.equal(h.calls.filter(call=>call.method==='update').length,0,'refreshing a stale chain cannot renumber or mutate approvers');
+ assert.equal(h.c.S.approvals.length,0,'the fresh complete scoped chain replaces the stale display');
+ assert.match(h.node('banners').textContent,/Nothing was deleted/);
+ assert.equal(h.c.S.busy,false);assert.equal(h.c.contractHasReviews(),false);
+ assert.ok(!h.logs.some(values=>JSON.stringify(values).includes('Approver delete failed')),'an unavailable prewrite row is a recoverable warning, not a failed native delete');
+}
+{
  const h=await ready(),native=h.api.deleteRecords,gate=deferred();h.api.deleteRecords=config=>gate.promise.then(()=>native(config));
  const pending=h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION);await drain();await assert.rejects(h.c.sdkDeleteById(h.c.CFG.reports.actions,ACTION));
  gate.resolve();await pending;assert.equal(deletes(h).length,1,'pending duplicate sends remain blocked');

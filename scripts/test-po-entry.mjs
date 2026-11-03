@@ -78,3 +78,46 @@ assert.throws(()=>review.LMPO.allocations(submitted.lines,[oldBalance],submitted
 const beforeWarm=reads.length;review.progress=true;review.controller={state:()=>({snapshot:submitted,reviewBalances:{state:'loaded',balances:[newBalance]}})};review.click({target:{closest:selector=>selector==='button,input[data-po-date]'?{hasAttribute:name=>name==='data-po-done'}:null}});assert.equal(reads.length,beforeWarm,'Review reuses balances freshly loaded after the acknowledged mutation');assert.equal(review.model.loadState,'loaded');assert.equal(rendered.at(-1).allocation.available,4996500n,'Warm Review reveals its Summary immediately');
 assert.deepEqual(reads,['Balances','Balances','Balances']);
 console.log('PO Review after Submit: saved $50,065 PO and $100 mod, unknown-then-fresh budget, late read exclusion, failed read and strict reconciliation passed without writes.');
+
+// Manual totals deliberately store null pricing inputs, but those inputs must
+// remain usable to return to Quantity × Price without a separate reset action.
+const entry=vm.createContext({vendorDialog:null,progress:false});
+vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),entry);entry.root=entry;
+let editable=true,active=true,summaryUpdates=0,totalUpdates=0;
+entry.current=()=>active;entry.readOnly=()=>!editable;
+entry.patchBalances=()=>summaryUpdates++;entry.patchTotal=()=>totalUpdates++;
+entry.model={gridMode:'row',description:'PO header',lines:[{key:'one',budgetItemId:'2001',description:'First line',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'5',unitPrice:'150.00',finalAmount:'750.00'},{key:'two',budgetItemId:'2002',description:'Second line',uom:'EA',costElement:'1',pricingMode:'Calculated',quantity:'10',unitPrice:'250.00',finalAmount:'2500.00'}]};
+const first=entry.model.lines[0],untouched=JSON.stringify(entry.model.lines[1]),mode={textContent:''},reset={hidden:true},fields={};
+const row={querySelector(selector){if(selector==='[data-po-mode]')return mode;if(selector==='[data-po-calculated]')return reset;const name=selector.match(/data-po-field="([^"]+)"/)?.[1];assert.ok(name&&fields[name],'actual handler asks for a known pricing field');return fields[name];}};
+for(const name of ['quantity','unitPrice','finalAmount','description']){
+  let value=first[name]??'';
+  fields[name]={dataset:{poField:name,key:'one'},readOnly:false,writes:0,selectionStart:0,selectionEnd:0,hasAttribute:()=>false,closest:selector=>selector==='.po-line'?row:null,get value(){return value;},set value(next){this.writes++;value=next;}};
+}
+vm.runInContext(source.slice(source.indexOf('    function input(event)'),source.indexOf('    async function readBalances()')),entry);
+function type(name,text){const target=fields[name];target.value=text;target.selectionStart=target.selectionEnd=text.length;target.writes=0;entry.input({target});assert.equal(target.value,text,'the edited native text stays mounted');assert.equal(target.writes,0,'the handler never rewrites the active input/caret');assert.equal(target.selectionStart,text.length);assert.equal(target.selectionEnd,text.length);assert.equal(JSON.stringify(entry.model.lines[1]),untouched,'pricing edits stay scoped to the exact line key');}
+for(const gridMode of ['row','excel']){
+  entry.model.gridMode=gridMode;
+  type('finalAmount','500000');
+  assert.equal(first.pricingMode,'Manual');assert.equal(first.quantity,null);assert.equal(first.unitPrice,null);assert.equal(first.finalAmount,'500000');
+  for(const name of ['quantity','unitPrice']){assert.equal(fields[name].value,'');assert.equal(fields[name].readOnly,false,'manual blank inputs are immediately editable in '+gridMode+' mode');}
+  assert.equal(mode.textContent,'Manual amount');assert.equal(reset.hidden,false);
+  type('quantity','10');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,null,'incomplete pricing never retains a stale manual total');assert.equal(fields.finalAmount.value,'');assert.equal(mode.textContent,'');assert.equal(reset.hidden,true);
+  type('unitPrice','250.00');assert.equal(first.finalAmount,'2500.00');assert.equal(fields.finalAmount.value,'2500.00');
+  type('finalAmount','99.99');assert.equal(first.quantity,null);assert.equal(first.unitPrice,null);
+  type('unitPrice','12.30');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,null,'price-first return also awaits its quantity');
+  for(const value of ['1','1.','1.5','1.50'])type('quantity',value);
+  assert.equal(first.quantity,'1.50');assert.equal(first.finalAmount,'18.45','decimal typing retains exact arithmetic');
+  type('description','Updated text');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,'18.45');
+}
+type('finalAmount','77.77');
+entry.LMPO.validate({budgetId:'1001',vendorId:'9001',amount:'2577.77',lines:entry.model.lines},true);
+const prior=JSON.stringify(entry.model),updates=summaryUpdates+totalUpdates;
+editable=false;fields.quantity.value='20';entry.input({target:fields.quantity});assert.equal(JSON.stringify(entry.model),prior,'readonly native input events cannot switch pricing mode');
+editable=true;entry.progress=true;entry.input({target:fields.quantity});assert.equal(JSON.stringify(entry.model),prior,'pending writes prohibit pricing changes');
+entry.progress=false;active=false;entry.input({target:fields.quantity});assert.equal(JSON.stringify(entry.model),prior,'stale session events cannot edit pricing');
+active=true;fields.description.dataset.key='removed-line';fields.description.value='Detached text';entry.input({target:fields.description});assert.equal(entry.model.description,'PO header','a removed line event never overwrites the PO description');assert.equal(JSON.stringify(entry.model),prior);assert.equal(summaryUpdates+totalUpdates,updates);
+// The real renderer keeps manual inputs editable while its normal read-only
+// gate still controls saved previews and restricted actors.
+ctx.model.loadState='loaded';ctx.model.status='Draft';ctx.model.preview=false;ctx.model.lines[1].pricingMode='Manual';ctx.model.lines[1].quantity=null;ctx.model.lines[1].unitPrice=null;ctx.render();
+for(const name of ['quantity','unitPrice']){const tag=nodes.get('.po-body').innerHTML.match(new RegExp('<input[^>]*data-po-field="'+name+'"[^>]*data-key="two"[^>]*>'))?.[0];assert.ok(tag);assert.doesNotMatch(tag,/readonly/);}
+console.log('PO native input handler: row/spreadsheet Manual-to-Calculated parity, exact decimal edits, no active-input/caret rewrite, true-null manual payload, scoped lines and readonly/pending/stale guards passed.');

@@ -1,3 +1,39 @@
+## Native Responses and Access Refresh — 1.62.46, November 3, 2026
+
+Resolved native write replies may be JSON text, result arrays or empty bodies.
+The write path now checks actual native failures instead of applying report-read
+envelope requirements to a completed write. Known native validation messages,
+including field and unique-name errors, reach the retained save result. Existing
+child/attachment operations still require the necessary exact created identity;
+unknown writes retain duplicate-send protection and read-only recovery.
+
+Targeted approval bodies decode through array/JSON/responseText wrappers.
+Genuinely missing targeted Check data still stops safely; it never implies an
+approval or notification succeeded. An approver missing during prewrite triggers
+one fresh exact-parent read and a stale-data warning, without deleting or
+renumbering another row. Unusual native replies log bounded response shapes,
+without IDs, private field values, tokens or email addresses.
+
+Access responses must contain the native grant flags rather than only a roster.
+Failed/malformed reads are retryable; successful caches are scoped to actor and
+environment. Refresh re-reads grants, and older replies cannot overwrite newer
+permissions. Existing grant meanings and Construction/template denial gates stay
+intact. Request Name respects the native unique field's 100-character limit.
+
+Focused native-shaped regressions cover the reported Cameron Ranch Offsite /
+First Round / MUD No / High / December 3 inputs, all 72 supported choice
+combinations, field/name errors, successful reply formats, targeted approval
+outcomes, stale approvers, transient access failures, revoked grants and stale
+actors/replies. These simulations alone do not establish the original native
+rejection: its raw response was absent from the supplied incident. Production
+reproduction and cleanup are authorized and are tracked separately.
+Full repository validation and the Pages build passed for this release.
+
+Changed implementation: Contract widget HTML; Construction, approval/delete,
+access and SDK2 regression suites; release metadata and these notes. No Creator
+field, workflow, function or Custom API changes. Rollback the Contract Management
+Production mapping to **1.62.45** and rebuild Pages.
+
 ## Construction request delete wording — 1.62.37, October 26, 2026
 
 Construction deletion now says Delete construction request above the saved request

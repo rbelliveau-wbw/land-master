@@ -148,6 +148,13 @@ const oldSend={kind:'send',cid:'500',ids:['10'],target:0,step:0};oldContractCont
 await assert.rejects(oldContractContext.contractProgressCall(oldSend,'Check'),/targeted approval status/i);
 assert.equal(oldSend.reconciliationUnavailable,true);
 assert.equal(legalCalls.at(-1).payload.mode,'Check');assert.deepEqual(legalCalls.at(-1).payload.targetIds,['10']);assert.equal(legalCalls.at(-1).payload.contractId,'500');
+const targeted={ok:true,contractId:'500',targetCount:1,parentStatus:'Awaiting Approvals',activeCount:1,sentCount:1,missingCount:0,addresses:['fixture-approver@example.test']};
+for(const reply of [JSON.stringify({code:3000,result:JSON.stringify(targeted)}),{code:3000,result:[{code:3000,details:{output:JSON.stringify(targeted)}}]},[{code:3000,result:JSON.stringify(targeted)}],{code:3000,responseText:JSON.stringify({result:[{output:targeted}]})}]){
+ legal.api.invokeCustomApi=async config=>{legalCalls.push(JSON.parse(JSON.stringify(config)));return reply;};
+ const p={kind:'send',cid:'500',ids:['10'],target:0,step:0};oldContractContext.contractApprovalProgress=p;
+ const out=await oldContractContext.contractProgressCall(p,'Check');assert.equal(out.ok,true);assert.equal(out.contractId,'500');assert.equal(out.sentCount,1);assert.equal(p.reconciliationUnavailable,undefined,'targeted native results survive JSON and result-array wrappers');
+ assert.equal(legalCalls.at(-1).payload.mode,'Check','wrapper decoding never falls back to Send or Repair');
+}
 assert.match(budget,/if \(p\.reconciliationUnavailable\) \{\s*finishApprovalProgress\(p, "error"/);
 assert.match(proforma,/if\(p\.reconciliationUnavailable\)\{pfApprovalFinish\(p,"error"/);
 assert.match(contract,/if\(p\.reconciliationUnavailable\)\{contractProgressFinish\(p,"error"/);

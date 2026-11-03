@@ -7,12 +7,45 @@ const editor={...submit,constructionSubmit:false,constructionEditAll:true};
 const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.method));
 
 // A resolved native create does not require the widget's acknowledgement schema.
-for(const receipt of [{code:3000},{data:{ID:NEW},result:[{data:{ID:NEW}}]}]){
+for(const receipt of [{code:3000},{data:{ID:NEW},result:[{data:{ID:NEW}}]},JSON.stringify({code:3000,result:[{code:3000,data:{ID:NEW}}]}),[{code:3000,data:{ID:NEW}}],undefined,null,'Native save completed']){
  const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);
  const native=h.api.addRecords;h.api.addRecords=async config=>{await native(config);return receipt;};
  const result=await h.c.constructionSubmitForm();assert.equal(result.error,null);assert.equal(h.c.contractHasReviews(),false);
  assert.equal(writes(h).length,1);assert.ok(h.reports.All_Contracts1.some(row=>row.ID===NEW));
  assert.equal(h.c.ContractSetupUI.close(),true);assert.equal(h.c.S.nc,null,'completed submission clears its duplicate draft even without a returned ID');
+}
+
+// Resolved JSON/native arrays still expose actual rejection codes. No fallback
+// writer or second create may run after the reported native failure.
+for(const receipt of [JSON.stringify({code:2898,message:'Permission denied'}),{code:3000,result:JSON.stringify({code:2898,message:'Permission denied'})},[{code:2898,message:'Permission denied'}]]){
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);let sends=0;
+ h.api.addRecords=async()=>{sends++;return receipt;};
+ const result=await h.c.constructionSubmitForm();assert.ok(result.error);assert.match(String(result.error),/Permission denied/);assert.equal(sends,1);assert.ok(!h.reports.All_Contracts1.some(row=>row.ID===NEW));
+}
+
+for(const receipt of [JSON.stringify({code:3000,result:[{code:2932,data:{Description:'Description exceeds the field capacity.'}}]}),{code:3000,details:{output:JSON.stringify({code:2932,message:'Native field validation failed.',data:{Date_Needed:'Enter a valid date.'}})}}]){
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);let sends=0;h.api.addRecords=async()=>{sends++;return receipt;};
+ const result=await h.c.constructionSubmitForm();assert.ok(result.error);assert.match(String(result.error),/Description exceeds|Enter a valid date/,'the actual field rejection reaches the retained save result');assert.equal(sends,1);assert.ok(!h.reports.All_Contracts1.some(row=>row.ID===NEW));
+}
+
+{
+ const h=await ready({actionsCount:1,accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);const v=draft(h);
+ Object.assign(h.reports.All_Subdivisions[0],{Subdivision_Name:'Cameron Ranch - Phase 01',Territory:'North Austin'});Object.assign(h.c.S.subdivisions[0],h.reports.All_Subdivisions[0]);
+ Object.assign(v,{type:'Offsite',plans:'First Round',mud:'No',priority:'High',needed:'2026-12-03',name:'Cameron Ranch - Phase 01 · Offsite budget',description:'asdf',parent:''});
+ const payload=h.c.constructionPayload(v,false);
+ assert.equal(payload.Contract_Type,'Offsite');assert.equal(payload.Construction_Plans,'First Round');assert.equal(payload.MUD,false);assert.equal(payload.Priority,'High');assert.equal(payload.Territory,'North Austin');assert.equal(payload.Date_Needed,'12/03/2026');assert.equal(payload.Description,'asdf');assert.deepEqual(Array.from(payload.Subdivision1),[SUB]);assert.equal(payload.Parent_Contract,'');
+ for(const type of ['Internal','Offsite','Amenity','MUD Bid'])for(const plans of ['Prelim','First Round','Final'])for(const mud of ['Yes','No'])for(const priority of ['ASAP','High','Medium']){
+  Object.assign(v,{type,plans,mud,priority});const data=h.c.constructionPayload(v,false);assert.equal(data.Contract_Type,type);assert.equal(data.Construction_Plans,plans);assert.equal(data.MUD,mud==='Yes');assert.equal(data.Priority,priority);
+ }
+ v.name='N'.repeat(100);assert.equal(h.c.constructionPayload(v,false).Contract_Name.length,100);v.name+='N';assert.throws(()=>h.c.constructionPayload(v,false),/100 characters/);assert.equal(writes(h).length,0,'the native 100-character name limit is checked before sending');
+ Object.assign(v,{name:'Cameron Ranch - Phase 01 · Offsite budget',type:'Offsite',plans:'First Round',mud:'No',priority:'High'});let sends=0;
+ h.api.addRecords=async()=>{sends++;return JSON.stringify({code:3000,result:[{code:2932,message:'Native field validation failed.',data:{Contract_Name:'This value already exists.'}}]});};
+ const duplicate=await h.c.constructionSubmitForm();assert.match(String(duplicate.error),/Contract_Name: This value already exists/);assert.equal(sends,1,'native uniqueness rejection cannot cause another create');
+}
+
+{
+ const h=await ready(),secret='private-record-value@example.test',shape=h.c.contractResponseShape(JSON.stringify({code:3000,result:[{code:3000,data:{ID:NEW,Approver:secret,Token:secret}}]})),text=JSON.stringify(shape);
+ assert.match(text,/"code":"3000"/);assert.match(text,/recordIdType/);assert.doesNotMatch(text,new RegExp(secret));assert.ok(!text.includes(NEW),'response shape never logs a record identifier');assert.ok(text.length<3000);
 }
 
 // An actual transport failure must not masquerade as revoked create access.
