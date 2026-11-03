@@ -1,3 +1,12 @@
+## Approval Recipient Cards — 1.80.138, November 3, 2026
+
+Unsent Settings-managed approval cards omit the repeated Settings label beneath
+each recipient. Saved approval routes retain sent/responded dates, names, roles,
+status, notes and existing routing behavior. No Creator forms, fields, functions,
+Custom APIs or deployment change. Validation uses the existing Pro Forma routing
+checks, full repository validation and Pages build. Rollback: Proforma Manager
+1.80.137.
+
 ## Prewrite Field Validation — 1.80.137, November 3, 2026
 
 The Save Pro Forma gate now checks typed inputs across the main form, Offer,

@@ -122,6 +122,9 @@ exception does not change token-based LOI review or other approval progress dial
 
 ## Pro Forma Settings routing — October 14, 2026
 
+Unsent route cards show each recipient without a repeated Settings attribution.
+Saved routes retain their sent/responded metadata.
+
 Pro Forma submissions now preview Settings through a safe read-only Check
 request with `settingsPreview: true`. Confirm the ordered recipients before
 the committing send and check that intent before native execution-row writes.
