@@ -1,0 +1,8 @@
+// Add these five field references ONCE to each existing All_Budget_Items list,
+// quickview and detailview field block. Preserve all current columns/actions.
+// This is a merge fragment, not a replacement report definition.
+Prelim_Labor_Budget as "Prelim (1) Labor"
+Prelim_Materials_Budget as "Prelim (2) Materials"
+Prelim_Equipment_Budget as "Prelim (3) Equipment"
+Prelim_Subcontractor_Budget as "Prelim (4) Subcontractor"
+Prelim_Other_Budget as "Prelim (5) Other"

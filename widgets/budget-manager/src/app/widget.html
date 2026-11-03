@@ -4,19 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.86"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.88"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.86"></script>
-<script src="po-grid.js?v=122.29.86"></script>
-<script src="po-controller.js?v=122.29.86"></script>
-<script src="po-progress.js?v=122.29.86"></script>
-<script src="po-ui.js?v=122.29.86"></script>
-<script src="request-attachments.js?v=122.29.86"></script>
-<script src="full-budget-export.js?v=122.29.86"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.86">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.86">
+<script src="po-domain.js?v=122.29.88"></script>
+<script src="po-grid.js?v=122.29.88"></script>
+<script src="po-controller.js?v=122.29.88"></script>
+<script src="po-progress.js?v=122.29.88"></script>
+<script src="po-ui.js?v=122.29.88"></script>
+<script src="request-attachments.js?v=122.29.88"></script>
+<script src="full-budget-export.js?v=122.29.88"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.88">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.88">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1842,15 +1842,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.86">
-<script src="success-feedback.js?v=122.29.86"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.86">
-<script src="interaction-motion.js?v=122.29.86"></script>
-<script src="interaction-surfaces.js?v=122.29.86"></script>
-<script src="number-edit-commit.js?v=122.29.86"></script>
-<script src="number-transitions.js?v=122.29.86"></script>
-<script src="number-surfaces.js?v=122.29.86"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.86">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.88">
+<script src="success-feedback.js?v=122.29.88"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.88">
+<script src="interaction-motion.js?v=122.29.88"></script>
+<script src="interaction-surfaces.js?v=122.29.88"></script>
+<script src="number-edit-commit.js?v=122.29.88"></script>
+<script src="number-transitions.js?v=122.29.88"></script>
+<script src="number-surfaces.js?v=122.29.88"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.88">
 </head>
 <body>
 
@@ -1869,7 +1869,13 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
   <div class="autosave" id="autosave" style="display:none">
     <span class="dot"></span><span id="asText">All changes saved</span>
   </div>
-  <button class="btn sm" id="fullBudgetExport" type="button" style="display:none;margin-right:12px" title="Export all budgets to Excel"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span id="fullBudgetExportLabel">Export All Budgets</span></button>
+  <div class="export-dd-wrap" id="fullBudgetExportWrap" style="display:none;margin-right:12px">
+    <button class="btn sm" id="fullBudgetExport" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="fullBudgetExportMenu" title="Export all budgets"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span id="fullBudgetExportLabel">Export All Budgets</span></button>
+    <div class="export-dd" id="fullBudgetExportMenu" role="menu" hidden>
+      <button class="export-dd-row" type="button" role="menuitem" data-full-budget-export="xlsx"><span class="export-dd-label">Excel</span></button>
+      <button class="export-dd-row" type="button" role="menuitem" data-full-budget-export="csv"><span class="export-dd-label">CSV</span></button>
+    </div>
+  </div>
   <button class="audit-top-btn" id="auditToggle" aria-label="Open audit log" type="button" title="Open audit log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg><span class="audit-top-count" id="auditTopCount">0</span></button>
 </div>
 
@@ -2146,7 +2152,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
             <div class="cat-toolbar-actions">
               <button class="expand-toggle" id="expandToggle" type="button" title="Expand or collapse all categories">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
-                <span id="expandToggleText">Expand all</span>
+                <span id="expandToggleText">Expand All Lines</span>
               </button>
               <button class="btn project-rates-toggle" id="projectRatesToggle" type="button">
                 <span class="pr-dollar">$</span><span class="prtText">Show Project Rates</span>
@@ -2614,6 +2620,7 @@ var S = {
   edPhaseIdx: null,     // null = all phases, 0-N = single phase index
   tier: "final",
   collapsed: {},
+  elementExpanded: {},
   statusFilter: [],     // multi-select status keys; empty = show all
   projectFilter: [],
   territoryFilter: [],
@@ -2742,7 +2749,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.86", code:"BMW",
+  widget:"Budget Manager", version:"122.29.88", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -3803,27 +3810,55 @@ function budgetFunctionResultText(resp) {
   try { return JSON.stringify(raw); } catch (e) { return String(raw); }
 }
 var fullBudgetExportBusy = false;
-function runFullBudgetExport() {
+function runFullBudgetExport(format) {
   if(fullBudgetExportBusy)return Promise.resolve();
   if(!S.liveSDK){setMsg("Sign in to Creator to export all budgets.","err");return Promise.resolve();}
+  format=format==="csv"?"csv":"xlsx";
+  closeFullBudgetExportMenu();
   fullBudgetExportBusy=true;
   var button=$("fullBudgetExport"),label=$("fullBudgetExportLabel"),runtime=LMRuntime.current(),identity=runtime.environment+":"+S.currentUser,completed=false;
   function current(){var now=LMRuntime.current();return !completed&&S.liveSDK&&identity===now.environment+":"+S.currentUser;}
   function finish(){completed=true;fullBudgetExportBusy=false;button.disabled=false;button.removeAttribute("aria-busy");label.textContent="Export All Budgets";}
   button.disabled=true;button.setAttribute("aria-busy","true");label.textContent="Loading budgets…";
   return Promise.all([
-    import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs"),
+    format==="csv"?Promise.resolve(null):import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/xlsx.mjs"),
     BudgetFullExport.collect(function(cursor){
       return sdkRunBudgetFunction("exportBudgetSnapshot",{budgetId:JSON.stringify(cursor),exportType:"ALL_DETAIL"});
     },function(count,total){label.textContent="Exporting "+count.toLocaleString()+" / "+total.toLocaleString();},current)
   ]).then(function(parts){
     if(!current())throw new Error("The signed-in user or environment changed. Export again.");
-    var X=parts[0],rows=parts[1],book=BudgetFullExport.workbook(X,rows);
-    triggerBlobDownload(new Blob([X.write(book,{type:"array",bookType:"xlsx"})],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"All_Budgets_"+new Date().toISOString().slice(0,10)+".xlsx");
+    var X=parts[0],rows=parts[1],name="All_Budgets_"+new Date().toISOString().slice(0,10);
+    if(format==="csv")triggerBlobDownload(new Blob([BudgetFullExport.csv(rows)],{type:"text/csv;charset=utf-8"}),name+".csv");
+    else {
+      var book=BudgetFullExport.workbook(X,rows);
+      triggerBlobDownload(new Blob([X.write(book,{type:"array",bookType:"xlsx"})],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),name+".xlsx");
+    }
     toastShow("All budgets exported", "ok");
   }).catch(function(error){setMsg("Full budget export failed: "+shortErr(error),"err");}).then(finish,finish);
 }
-$("fullBudgetExport").addEventListener("click",runFullBudgetExport);
+function closeFullBudgetExportMenu(returnFocus){
+  $("fullBudgetExportMenu").hidden=true;$("fullBudgetExport").setAttribute("aria-expanded","false");
+  if(returnFocus)$("fullBudgetExport").focus();
+}
+$("fullBudgetExport").addEventListener("click",function(){
+  if(fullBudgetExportBusy)return;
+  var menu=$("fullBudgetExportMenu"),opening=menu.hidden;
+  menu.hidden=!opening;this.setAttribute("aria-expanded",String(opening));
+  if(opening)menu.querySelector("button").focus();
+});
+$("fullBudgetExportMenu").addEventListener("click",function(e){
+  var choice=e.target.closest("[data-full-budget-export]");
+  if(choice)runFullBudgetExport(choice.dataset.fullBudgetExport);
+});
+$("fullBudgetExportWrap").addEventListener("keydown",function(e){
+  if(e.key==="Escape"){e.preventDefault();closeFullBudgetExportMenu(true);}
+  else if(!$("fullBudgetExportMenu").hidden&&(e.key==="ArrowDown"||e.key==="ArrowUp")){
+    e.preventDefault();var buttons=Array.from($("fullBudgetExportMenu").querySelectorAll("button")),index=buttons.indexOf(document.activeElement);
+    buttons[(index+(e.key==="ArrowDown"?1:buttons.length-1))%buttons.length].focus();
+  }
+});
+document.addEventListener("click",function(e){if(!e.target.closest("#fullBudgetExportWrap"))closeFullBudgetExportMenu();});
+document.addEventListener("focusin",function(e){if(!e.target.closest("#fullBudgetExportWrap"))closeFullBudgetExportMenu();});
 function runExportBudgetSnapshot(budgetId, exportType) {
   var bid = String(budgetId || "");
   var typ = cleanVal(exportType).toUpperCase();
@@ -5001,8 +5036,9 @@ function showView(which) {
   if (S.view === "vEditor" && which !== "vEditor" && !budgetPerUnitNavigationAllowed()) return false;
   S.navigationGeneration=(S.navigationGeneration||0)+1;
   S.view = which;
-  var fullExportButton=$("fullBudgetExport");
-  if(fullExportButton)fullExportButton.style.display = which === "vBudgets" ? "inline-flex" : "none";
+  var fullExportButton=$("fullBudgetExportWrap");
+  if(fullExportButton)fullExportButton.style.display = which === "vBudgets" ? "inline-block" : "none";
+  closeFullBudgetExportMenu();
   ["vLoading", "vBudgets", "vApprovals", "vImports", "vCompare", "vEditor", "vApprDetail"].forEach(function (id) {
     var el = $(id);
     if (!el) return;
@@ -6546,7 +6582,7 @@ function normSubCode(x) {
 function loadImportItems(force) {
   var request=loadBudgetFeature("imports",function(){return sdkGetAllRecords(CFG.reports.importItems,"",{fresh:!!force});},function(rows){S.importItems=rows;S.importItemsLoaded=true;},force);
   syncBudgetImportBadge();
-  return request.then(function(rows){syncBudgetImportBadge();return rows;},function(error){S.importItemsLoaded=false;syncBudgetImportBadge();throw error;});
+  return request.then(function(rows){syncBudgetImportBadge();if(S.view==="vEditor")refreshBudgetElementValues();return rows;},function(error){S.importItemsLoaded=false;syncBudgetImportBadge();if(S.view==="vEditor")refreshBudgetElementValues();throw error;});
 }
 function loadAllBudgetItemsForAssign(force) {
   if(!canEditImportItems())return Promise.resolve();
@@ -6731,6 +6767,7 @@ function assignImportItem(impId, budgetItemId, selectEl) {
     rec[CFG.importItemConfig.budgetItemLookupField] = picked
       ? { ID: budgetItemId, display_value: budgetItemLabel(picked) }
       : { ID: budgetItemId, display_value: budgetItemId };
+    S.elementImportSource = null;
     toastShow("Budget Item assigned", "ok");
     renderImports();
   }).catch(function (err) {
@@ -9974,17 +10011,252 @@ function renderLockNotice() {
   }
 }
 function updateExpandToggle() {
+  syncBudgetElementRows();
   applyBudgetItemFilters();
   var btn = $("expandToggle"), txt = $("expandToggleText");
   if (!btn) return;
   var inEditor = S.view === "vEditor" && S.globalMode !== "approvals";
   btn.style.display = inEditor ? "inline-flex" : "none";
   var allOpen = allCategoriesExpanded();
-  btn.classList.toggle("all-open", allOpen);
-  if (txt) txt.textContent = allOpen ? "Collapse all" : "Expand all";
+  var elementsOpen = allOpen && allBudgetElementsExpanded();
+  btn.classList.toggle("all-open", elementsOpen);
+  btn.title = !allOpen ? "Expand All Lines" : elementsOpen ? "Collapse All" : "Expand All Elements";
+  if (txt) txt.textContent = btn.title;
+}
+// Native fields in the November 2 Creator export. These are frozen Final
+// Construction snapshots, not a split of Preliminary or actual amounts.
+var BUDGET_ELEMENTS = [
+  {key:"1", label:"Labor", field:"Labor_Budget"},
+  {key:"2", label:"Materials", field:"Materials_Budget"},
+  {key:"3", label:"Equipment", field:"Equipment_Budget"},
+  {key:"4", label:"Subcontractor", field:"Subcontractor_Budget"},
+  {key:"5", label:"Other", field:"Other_Budget"}
+];
+function budgetElementNumber(raw) {
+  if (raw == null || String(raw).trim() === "") return null;
+  var text = String(raw).trim().replace(/\u2212/g,"-"), accounting = /^\(.*\)$/.test(text);
+  if (accounting) text = text.slice(1,-1);
+  text = text.replace(/[$,\s]/g,"");
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(text)) return null;
+  var number = Number(text) * (accounting ? -1 : 1);
+  return Number.isFinite(number) ? number : null;
+}
+function budgetElementSnapshot(item) {
+  if (!item) return null;
+  var values = BUDGET_ELEMENTS.map(function(element){return budgetElementNumber(item[element.field]);});
+  return values.every(function(value){return value !== null;}) ? values : null;
+}
+function budgetElementDepartmentIndex(item) {
+  if (!item) return null;
+  var categoryId = lookupId(item.Budget_Category) || (typeof item.Budget_Category === "string" ? cleanVal(item.Budget_Category) : ""), category = null;
+  Object.keys(S.categories || {}).some(function(bid){
+    category = (S.categories[bid] || []).find(function(row){return String(row.ID) === categoryId;});
+    return !!category;
+  });
+  var dept = cleanVal(category ? catDept(category) : item.Department).toLowerCase();
+  return dept.indexOf("development") >= 0 ? 4 : dept.indexOf("engineering") >= 0 ? 0 : null;
+}
+function budgetElementValues(item, field) {
+  if (!item) return null;
+  if (field === "Prelim_Budget_Ttl") {
+    if (item._prelimElementDraft) return item._prelimElementDraft;
+    var prelim = budgetPrelimElementSnapshot(item);
+    if (prelim) return prelim;
+    if (BUDGET_ELEMENTS.some(function(element){var raw=item["Prelim_"+element.field];return raw != null && cleanVal(raw) !== "";})) return null;
+  }
+  if (field === "Budget_Ttl") {
+    var snapshot = budgetElementSnapshot(item);
+    if (snapshot) return snapshot;
+    if (BUDGET_ELEMENTS.some(function(element){return budgetElementNumber(item[element.field]) !== null;})) return null;
+  }
+  var index = budgetElementDepartmentIndex(item), amount = budgetElementNumber(item[field]);
+  if (index === null || amount === null) return null;
+  var values = [0,0,0,0,0]; values[index] = amount; return values;
+}
+function budgetPrelimElementSnapshot(item) {
+  if (!item) return null;
+  var values = BUDGET_ELEMENTS.map(function(element){return budgetElementNumber(item["Prelim_"+element.field]);});
+  return values.every(function(value){return value !== null;}) ? values : null;
+}
+function projectBudgetPrelimElements(item, amount) {
+  if (!item || budgetElementDepartmentIndex(item) === null || !Number.isFinite(amount)) return null;
+  // Capture actual report capability before projecting any local draft values.
+  // A partial/old report must never be mistaken for a promoted Creator schema.
+  if (item._prelimElementReportReady == null) item._prelimElementReportReady = BUDGET_ELEMENTS.every(function(element){return Object.prototype.hasOwnProperty.call(item,"Prelim_"+element.field);});
+  var snapshot = item._prelimElementDraft || budgetPrelimElementSnapshot(item), chosen = [];
+  if (snapshot) chosen = snapshot.map(function(n,index){return n !== 0 ? index : -1;}).filter(function(index){return index >= 0;});
+  if (chosen.length > 1 || !snapshot && BUDGET_ELEMENTS.some(function(element){var raw=item["Prelim_"+element.field];return raw != null && cleanVal(raw) !== "";})) return null;
+  var index = chosen.length === 1 ? chosen[0] : item._prelimElementEntryIndex;
+  if (!(index >= 0 && index < 5)) index = budgetElementDepartmentIndex(item);
+  var values = [0,0,0,0,0]; values[index] = amount;
+  item._prelimElementEntryIndex = index; item._prelimElementDraft = values;
+  return values;
+}
+function budgetPrelimElementWrite(item, amount) {
+  var result = {fields:{}, notice:""};
+  if (!item || budgetElementDepartmentIndex(item) === null) return result;
+  var values = projectBudgetPrelimElements(item,amount);
+  if (!values) { result.notice="Budget saved; the existing Preliminary element split needs review."; return result; }
+  if (!item._prelimElementReportReady) { result.notice="Budget saved; promote the Preliminary element fields and report columns to save its split."; return result; }
+  if (Math.abs(amount*10000-Math.round(amount*10000)) > .00001) { result.notice="Budget saved; Preliminary element fields support up to four decimal places."; return result; }
+  BUDGET_ELEMENTS.forEach(function(element,index){result.fields["Prelim_"+element.field] = values[index];});
+  return result;
+}
+function finishBudgetPrelimElementSave(item, allocation) {
+  if (!allocation) return;
+  if (allocation.notice) { setEdAutosave("elements-unavailable"); setMsg(allocation.notice); return; }
+  Object.keys(allocation.fields).forEach(function(field){item[field]=allocation.fields[field];});
+}
+function budgetPrelimSaveAllowed(item) {
+  if (!item || S.globalMode !== "edit") return false;
+  var bid = "";
+  Object.keys(S.items || {}).some(function(id){if((S.items[id]||[]).some(function(row){return String(row.ID) === String(item.ID);})){bid=id;return true;}return false;});
+  var budget = (S.budgets || []).find(function(row){return String(row.ID) === bid;});
+  if (!budget && S.edBudget && String(S.edBudget.ID) === bid) budget = S.edBudget;
+  return !!budget && budgetItemCanEditPerUnit(budget,item);
+}
+function budgetElementImportedSnapshot(item) {
+  if (!item || !S.importItemsLoaded || !canViewImportItems()) return null;
+  // Join the complete Imports snapshot by native assignment, never by name/code.
+  if (S.elementImportSource !== S.importItems) {
+    S.elementImportSource = S.importItems; S.elementImportIndex = Object.create(null);
+    (S.importItems || []).forEach(function(rec){
+      var id = lookupId(rec.Budget_Item);
+      if (!id || cleanVal(rec.Data_Source) !== "HeavyJob Budget") return;
+      (S.elementImportIndex[id] || (S.elementImportIndex[id] = [])).push(rec);
+    });
+  }
+  var rows = S.elementImportIndex[String(item.ID)] || [], total = 0, values = [0,0,0,0,0], complete = rows.length > 0;
+  rows.forEach(function(rec){
+    var parts = budgetElementSnapshot(rec), cost = budgetElementNumber(rec.Cost);
+    if (!parts || cost === null) { complete = false; return; }
+    total += cost; parts.forEach(function(n,index){values[index] += n;});
+  });
+  var saved = budgetElementNumber(item.Unapproved_Final_Budget_Ttl);
+  // Daily native application can lag Imports. Never label newer source values
+  // as saved Unapproved, or reuse imports for frozen Final component budgets.
+  return complete && saved !== null && Math.abs(total-saved) < .00005 ? values : null;
+}
+function budgetElementModAmounts(itemId, excludeModId) {
+  var result = {amounts:[0,0,0,0,0], unallocated:false};
+  modsForItem(itemId).forEach(function(mod){
+    if (excludeModId && String(mod.ID) === String(excludeModId)) return;
+    if (modStatusOf(mod).toLowerCase() !== "approved") return;
+    var amounts = budgetElementSnapshot(mod), total = budgetElementNumber(mod.Amount);
+    if (!amounts || total === null || amounts.some(function(n){return n < 0;}) ||
+        Math.abs(amounts.reduce(function(sum,n){return sum+n;},0)-Math.abs(total)) > .00005) {
+      result.unallocated = true; return;
+    }
+    var sign = cleanVal(mod.Modification_Type) === "Decrease" ? -1 : 1;
+    amounts.forEach(function(n,index){result.amounts[index] += sign*n;});
+  });
+  return result;
+}
+function budgetElementKey(ids) { return ids.map(String).join("|"); }
+function budgetLineItemIds(row) {
+  return row.dataset.iid ? [row.dataset.iid] : String(row.dataset.budgetItemIds || "").split(",").filter(Boolean);
+}
+function budgetElementCell(amount, title) {
+  return "<td class='budget-element-amount'" + (title ? " title='"+escAttr(title)+"'" : "") + ">" +
+    (amount === null ? "<span class='budget-element-unknown' aria-label='Unavailable'>—</span>" :
+      (amount < 0 ? "-$" : "$") + Math.abs(amount).toLocaleString("en-US",{maximumFractionDigits:4})) + "</td>";
+}
+function budgetElementRowsHtml(row) {
+  var ids = budgetLineItemIds(row), key = budgetElementKey(ids), phase = !!row.dataset.iid;
+  var items = ids.map(findItemById), snapshots = items.map(function(it){return budgetElementValues(it,"Budget_Ttl");});
+  var mods = ids.map(budgetElementModAmounts), imported = items.map(budgetElementImportedSnapshot);
+  return BUDGET_ELEMENTS.map(function(element,index){
+    var html = "<tr class='budget-element-row' data-element-parent='"+escAttr(key)+"' data-element-key='"+escAttr(key+":"+element.key)+"'>"+
+      "<td class='budget-element-label'><span>("+element.key+") "+element.label+"</span></td>";
+    if (phase) {
+      var amount = snapshots[0] ? snapshots[0][index] : null;
+      var prelim = budgetElementValues(items[0],"Prelim_Budget_Ttl"), unap = budgetElementValues(items[0],"Unapproved_Final_Budget_Ttl"),
+        hcss = budgetElementValues(items[0],"HCSS_Actuals"), gp = budgetElementValues(items[0],"PROJ_Actual");
+      html += "<td></td><td></td><td></td>" + budgetElementCell(prelim ? prelim[index] : null,"Development: (5) Other; Engineering: (1) Labor. Construction Preliminary has no element breakdown.") +
+        budgetElementCell(unap ? unap[index] : imported[0] ? imported[0][index] : null,"Department mapping or assigned HeavyJob Budget components matching saved Unapproved") + budgetElementCell(amount,"Saved Final allocation or department default") +
+        budgetElementCell(mods[0].unallocated ? null : mods[0].amounts[index],mods[0].unallocated ? "An approved modification has no complete element allocation" : "Approved element modifications") +
+        budgetElementCell(amount === null || mods[0].unallocated ? null : amount+mods[0].amounts[index],"Final plus approved element modifications") +
+        budgetElementCell(hcss ? hcss[index] : null,"Department-mapped HCSS actuals; Construction actuals have no element breakdown") + budgetElementCell(gp ? gp[index] : null,"Department-mapped GP actuals; Construction actuals have no element breakdown");
+    } else {
+      var sum = 0, complete = true;
+      Array.prototype.slice.call(row.cells,1,-1).forEach(function(cell){
+        var id = cell.dataset.budgetItemId, at = ids.indexOf(id);
+        var parts = at >= 0 ? budgetElementValues(items[at],S.tier === "final" ? "Budget_Ttl" : "Prelim_Budget_Ttl") : null;
+        var amount = parts ? parts[index] : null;
+        if (id && amount === null) complete = false; else if (amount !== null) sum += amount;
+        html += budgetElementCell(amount,S.tier === "final" ? "Saved Final element budget" : "Preliminary has no element breakdown");
+      });
+      html += budgetElementCell(complete ? sum : null,"Total of complete phase element budgets");
+    }
+    return html+"</tr>";
+  }).join("");
+}
+function syncBudgetElementVisibility(row) {
+  var key = row.dataset.budgetLineKey;
+  if (!key) return;
+  var expanded = !!S.elementExpanded[key], child = row.nextElementSibling;
+  while (child && child.dataset.elementParent === key) {
+    child.classList.toggle("element-collapsed",!expanded);
+    child.classList.toggle("cat-collapsed",row.classList.contains("cat-collapsed"));
+    child.classList.toggle("search-hidden",row.classList.contains("search-hidden"));
+    child = child.nextElementSibling;
+  }
+  var button = row.querySelector("[data-element-toggle]");
+  if (button) { button.setAttribute("aria-expanded",String(expanded)); button.title = expanded ? "Collapse Elements" : "Expand Elements"; }
+}
+function syncBudgetElementRows() {
+  S.elementExpanded = S.elementExpanded || {};
+  document.querySelectorAll("#mx tr.irow").forEach(function(row){
+    var ids = budgetLineItemIds(row), key = budgetElementKey(ids);
+    if (!ids.length) return;
+    row.dataset.budgetLineKey = key;
+    if (!row.querySelector("[data-element-toggle]")) {
+      var label = row.querySelector(".phase-item-label,.lab");
+      if (!label) return;
+      var button = document.createElement("button"); button.type="button"; button.className="budget-element-toggle";
+      button.dataset.elementToggle=key; button.setAttribute("aria-label","Elements for "+cleanVal(row.querySelector(".phase-item-name,.n").textContent));
+      button.innerHTML="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.3' aria-hidden='true'><path d='m9 6 6 6-6 6'/></svg>";
+      label.prepend(button);
+    }
+    if (S.elementExpanded[key] && (!row.nextElementSibling || row.nextElementSibling.dataset.elementParent !== key)) row.insertAdjacentHTML("afterend",budgetElementRowsHtml(row));
+    syncBudgetElementVisibility(row);
+  });
+}
+function allBudgetElementsExpanded() {
+  var rows = Array.prototype.slice.call(document.querySelectorAll("#mx tr.irow"));
+  return rows.every(function(row){return !!S.elementExpanded[budgetElementKey(budgetLineItemIds(row))];});
+}
+function refreshBudgetElementValues() {
+  if (!budgetModsReady()) return;
+  document.querySelectorAll("#mx tr.irow").forEach(function(row){
+    var child = row.nextElementSibling, key = row.dataset.budgetLineKey;
+    if (!child || !key || child.dataset.elementParent !== key) return;
+    var parsed = document.createElement("tbody"); parsed.innerHTML = budgetElementRowsHtml(row);
+    Array.prototype.forEach.call(parsed.rows,function(fresh){
+      if (!child || child.dataset.elementKey !== fresh.dataset.elementKey) return;
+      Array.prototype.forEach.call(fresh.cells,function(cell,index){
+        if (index && child.cells[index]) { child.cells[index].innerHTML = cell.innerHTML; child.cells[index].title = cell.title; }
+      });
+      child = child.nextElementSibling;
+    });
+  });
+}
+function loadBudgetElementImports() {
+  if (S.importItemsLoaded || !canViewImportItems()) return;
+  loadImportItems(false).catch(function(){});
+}
+function cycleBudgetExpansion() {
+  if (!allCategoriesExpanded()) { setAllCategoriesCollapsed(false); return; }
+  var collapse = allBudgetElementsExpanded();
+  document.querySelectorAll("#mx tr.irow").forEach(function(row){
+    var key = budgetElementKey(budgetLineItemIds(row));
+    if (collapse) delete S.elementExpanded[key]; else S.elementExpanded[key] = true;
+  });
+  if (collapse) setAllCategoriesCollapsed(true);
+  else { updateExpandToggle(); loadBudgetElementImports(); }
 }
 function categoryRowsForTbody(tbody) {
-  return tbody ? [].slice.call(tbody.querySelectorAll("tr.irow")) : [];
+  return tbody ? [].slice.call(tbody.querySelectorAll("tr.irow,tr.budget-element-row")) : [];
 }
 function finishCategoryAnimation(tbody) {
   if (!tbody) return;
@@ -10023,7 +10295,7 @@ function setCategoryExpanded(tbody, expanded, animate) {
     return;
   }
 
-  if (!animate || !Element.prototype.animate) {
+  if (!animate || !Element.prototype.animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     rows.forEach(function (row) { row.classList.toggle("cat-collapsed", !expanded); });
     finishCategoryAnimation(tbody);
     updateExpandToggle();
@@ -10031,7 +10303,7 @@ function setCategoryExpanded(tbody, expanded, animate) {
   }
 
   tbody.classList.add("cat-animating");
-  var visibleRows = rows.filter(function (row) { return !row.classList.contains("search-hidden"); });
+  var visibleRows = rows.filter(function (row) { return !row.classList.contains("search-hidden") && !row.classList.contains("element-collapsed"); });
   if (!visibleRows.length) visibleRows = rows;
   var remaining = visibleRows.length;
 
@@ -10067,9 +10339,7 @@ function setCategoryExpanded(tbody, expanded, animate) {
 }
 function setAllCategoriesCollapsed(collapsed) {
   var tbodies = [].slice.call(document.querySelectorAll("#mx tbody.cat-tbody"));
-  tbodies.forEach(function (tbody, index) {
-    setTimeout(function () { setCategoryExpanded(tbody, !collapsed, true); }, Math.min(index * 18, 120));
-  });
+  tbodies.forEach(function (tbody) { setCategoryExpanded(tbody, !collapsed, true); });
   updateExpandToggle();
 }
 function renderCatFilterBar() {
@@ -10121,7 +10391,7 @@ function applyCatFilter() {
 // from formatted cells or sums that can cancel credits against positive amounts.
 function budgetItemHasAmounts(it) {
   if (!it) return true;
-  if (["Prelim_Budget_Ttl", "Unapproved_Final_Budget_Ttl", "Budget_Ttl", "HCSS_Actuals", "PROJ_Actual", "Per_Unit"].some(function (field) { return budgetUnitNumber(it[field]) !== 0; })) return true;
+  if (["Prelim_Budget_Ttl", "Unapproved_Final_Budget_Ttl", "Budget_Ttl", "HCSS_Actuals", "PROJ_Actual", "Per_Unit", "Labor_Budget", "Materials_Budget", "Equipment_Budget", "Subcontractor_Budget", "Other_Budget"].some(function (field) { return budgetUnitNumber(it[field]) !== 0; })) return true;
   if (it._perUnit === true || cleanVal(it.Unit)) return true; // Keep per-unit setup and drafts reachable.
   if (!budgetModsReady()) return true;
   return modsForItem(it.ID).some(function (m) { return modSignedAmount(m) !== 0; });
@@ -10138,6 +10408,10 @@ function applyBudgetItemFilters() {
       var empty = hideEmpty && ids.length > 0 && !ids.some(function (id) { return budgetItemHasAmounts(findItemById(id)); });
       var hidden = empty || !!q && String(row.textContent || "").toLowerCase().indexOf(q) < 0;
       row.classList.toggle("search-hidden", hidden);
+      var child = row.nextElementSibling;
+      while (child && child.dataset.elementParent === row.dataset.budgetLineKey) {
+        child.classList.toggle("search-hidden", hidden); child = child.nextElementSibling;
+      }
       if (!hidden) matches++;
       if (departmentMatches) { count++; if (!hidden) visible++; }
     });
@@ -10409,6 +10683,7 @@ function syncBudgetPerUnitItem(b, it) {
   if (!result.ready) return false;
   if (budgetUnitNumber(it.Prelim_Budget_Ttl) === result.amount) return false;
   it.Prelim_Budget_Ttl = result.amount;
+  projectBudgetPrelimElements(it,result.amount);
   return true;
 }
 function budgetItemCanEditPerUnit(b, it) {
@@ -10729,12 +11004,13 @@ var edAs;
 function setEdAutosave(state2) {
   var el = $("edAutosave"), txt = $("edAsText"); if (!el || !txt) return;
   el.className = "autosave" + (state2 === "saving" || state2 === "draft" ? " saving" : "");
-  var dot = el.querySelector(".dot"); if (dot) { dot.style.background = state2 === "saving" || state2 === "draft" ? "var(--amber)" : state2 === "error" ? "var(--red)" : "var(--green)"; }
-  txt.textContent = state2 === "saving" ? "Saving…" : state2 === "draft" ? "Finish Per Unit inputs" : state2 === "error" ? "Save failed" : "All changes saved";
+  var dot = el.querySelector(".dot"); if (dot) { dot.style.background = state2 === "saving" || state2 === "draft" || state2 === "elements-unavailable" ? "var(--amber)" : state2 === "error" ? "var(--red)" : "var(--green)"; }
+  txt.textContent = state2 === "saving" ? "Saving…" : state2 === "draft" ? "Finish Per Unit inputs" : state2 === "error" ? "Save failed" : state2 === "elements-unavailable" ? "Budget saved · Element split pending" : "All changes saved";
   if(state2==="saved"&&S.deferredEditorRefresh)setTimeout(flushBudgetDeferredEditorRefresh,0);
 }
 function queueSave(itemId, fieldName, val, sourceEl) {
   var item = findItemById(itemId);
+  if (fieldName === "Prelim_Budget_Ttl" && !budgetPrelimSaveAllowed(item)) return;
   if (reimbursementMoneyField(fieldName)) {
     val = normalizeReimbursementValue(item, fieldName, val);
     if (item) item[fieldName] = val;
@@ -10748,11 +11024,17 @@ function queueSave(itemId, fieldName, val, sourceEl) {
   markInputState(sourceEl, "saving");
   S.saveTimers[key] = setTimeout(function () {
     var fd = {}; fd[fieldName] = val;
+    var allocation = null;
+    if (fieldName === "Prelim_Budget_Ttl") {
+      if (!budgetPrelimSaveAllowed(item)) { if(S.pendingItemSaves[key]===saveVersion)delete S.pendingItemSaves[key];setEdAutosave("error");markInputState(sourceEl,"save-error");setMsg("Budget editing is locked or unavailable.");return; }
+      allocation = budgetPrelimElementWrite(item,val); Object.assign(fd,allocation.fields);
+    }
     sdkUpdateRecord(CFG.forms.item, itemId, fd)
       .then(function () {
         setEdAutosave("saved");
         markInputState(sourceEl, "saved-ok");
-        if(window.LMSuccess&&S.itemSaveVersions[key]===saveVersion)LMSuccess.inline(key,fieldName==='Description'?'Budget note saved.':'Budget item saved.','budget changes',function(){return S.itemSaveVersions[key]===saveVersion;});
+        if(S.itemSaveVersions[key]===saveVersion)finishBudgetPrelimElementSave(item,allocation);
+        if(window.LMSuccess&&S.itemSaveVersions[key]===saveVersion&&!(allocation&&allocation.notice))LMSuccess.inline(key,fieldName==='Description'?'Budget note saved.':'Budget item saved.','budget changes',function(){return S.itemSaveVersions[key]===saveVersion;});
       })
       .catch(function (err) {
         setEdAutosave("error");
@@ -10764,6 +11046,7 @@ function queueSave(itemId, fieldName, val, sourceEl) {
 }
 function queueBudgetPerUnitSave(b, it, sourceEl) {
   if (!b || !it || !it.ID) return;
+  if (!budgetItemCanEditPerUnit(b,it)) return;
   var itemId = String(it.ID), key = itemId + "|perunit";if(window.LMSuccess)LMSuccess.begin(key);
   clearTimeout(S.saveTimers[itemId + "|Prelim_Budget_Ttl"]);
   clearTimeout(S.saveTimers[key]);
@@ -10781,6 +11064,7 @@ function queueBudgetPerUnitSave(b, it, sourceEl) {
   setEdAutosave("saving");
   markInputState(sourceEl, "saving");
   S.saveTimers[key] = setTimeout(function () {
+    if (!budgetItemCanEditPerUnit(b,it)) { if(S.perUnitSaveVersion[itemId]===version)S.perUnitSaveState[itemId].state="error";setEdAutosave("error");markInputState(sourceEl,"save-error");setMsg("Budget editing is locked or unavailable.");return; }
     // The draft may have changed while the debounce was pending.
     var currentStatus = budgetPerUnitStatus(b, it);
     if (currentStatus.enabled && !currentStatus.ready) {
@@ -10794,18 +11078,23 @@ function queueBudgetPerUnitSave(b, it, sourceEl) {
       Per_Unit:enabled && budgetUnitRate(it.Per_Unit) > 0 ? budgetUnitRate(it.Per_Unit) : "",
       Prelim_Budget_Ttl:budgetUnitNumber(it.Prelim_Budget_Ttl)
     };
+    var allocation = budgetPrelimElementWrite(it,fields.Prelim_Budget_Ttl); Object.assign(fields,allocation.fields);
     S.perUnitSaveChains = S.perUnitSaveChains || {};
     var prior = S.perUnitSaveChains[String(it.ID)] || Promise.resolve();
-    var save = prior.catch(function () {}).then(function () { return sdkUpdateRecord(CFG.forms.item, it.ID, fields); });
+    var save = prior.catch(function () {}).then(function () {
+      if (!budgetItemCanEditPerUnit(b,it)) throw new Error("Budget editing is locked or unavailable.");
+      return sdkUpdateRecord(CFG.forms.item, it.ID, fields);
+    });
     S.perUnitSaveChains[String(it.ID)] = save;
     save
       .then(function () {
         if (S.perUnitSaveVersion[itemId] === version) {
           delete S.perUnitSaveState[itemId];
           setEdAutosave("saved");
+          finishBudgetPrelimElementSave(it,allocation);
         }
         markInputState(sourceEl, "saved-ok");
-        if(window.LMSuccess&&S.perUnitSaveVersion[itemId]===version)LMSuccess.inline(key,'Budget item pricing saved.','budget changes',function(){return S.perUnitSaveVersion[itemId]===version&&!S.perUnitSaveState[itemId];});
+        if(window.LMSuccess&&S.perUnitSaveVersion[itemId]===version&&!allocation.notice)LMSuccess.inline(key,'Budget item pricing saved.','budget changes',function(){return S.perUnitSaveVersion[itemId]===version&&!S.perUnitSaveState[itemId];});
       })
       .catch(function (err) {
         if (S.perUnitSaveVersion[itemId] === version) S.perUnitSaveState[itemId].state = "error";
@@ -11006,6 +11295,7 @@ mxEl.addEventListener("input", function (e) {
   var it = findItemById(id);
   if (it) {
     it[f] = val;
+    if (f === "Prelim_Budget_Ttl") { projectBudgetPrelimElements(it,val); refreshBudgetElementValues(); }
     // Live: update category subtotal and summary matrices immediately
     if (S.edPhaseIdx === "all") {
       updateProjectMatrixLive(inp);
@@ -11037,6 +11327,7 @@ mxEl.addEventListener("blur", function (e) {
   if (i.classList.contains("dirty")) {
     if (item) {
       item[f] = v2;
+      if (f === "Prelim_Budget_Ttl") { projectBudgetPrelimElements(item,v2); refreshBudgetElementValues(); }
       // Recalculate the visible subtotal/project totals using the normalized credit.
       if (S.edPhaseIdx === "all") {
         updateProjectMatrixLive(i);
@@ -11068,6 +11359,14 @@ mxEl.addEventListener("keydown", function (e) {
   }
 });
 mxEl.addEventListener("click", function (e) {
+  var elementToggle = e.target.closest("[data-element-toggle]");
+  if (elementToggle) {
+    var key = elementToggle.dataset.elementToggle;
+    S.elementExpanded[key] = !S.elementExpanded[key];
+    updateExpandToggle();
+    if (S.elementExpanded[key]) loadBudgetElementImports();
+    return;
+  }
   var tog = e.target.closest("[data-ctog]");
   if (tog) {
     var k = tog.dataset.ctog;
@@ -11085,7 +11384,7 @@ function updateTsw() { renderTierFilterBar(); }
 /* tier switching is handled by the tier pills in the category toolbar row (see [data-tierpill]) */
 document.addEventListener("click", function (e) {
   if (!e.target.closest("#expandToggle")) return;
-  setAllCategoriesCollapsed(allCategoriesExpanded()); // if all open -> collapse, else expand
+  cycleBudgetExpansion();
 });
 $("exportBtn").addEventListener("click", function(e){
   e.stopPropagation();
@@ -12416,6 +12715,7 @@ function getPurchaseOrderUI(){
   canCreateVendor:function(){return !!S.edBudget&&canEditBudget(S.edBudget);},
   canEditInFlight:canDeleteBudgetRequest, canDelete:canDeleteBudgetRequest, phaseName:phaseName,
   itemCategory:function(item){var category=modItemCategory(item);return {id:category?String(category.ID):'',name:category?cleanVal(category.Budget_Category_Name):'Uncategorized'};},
+  defaultElement:function(item){if(!item||BUDGET_ELEMENTS.some(function(part){return item[part.field]!=null&&cleanVal(item[part.field])!=='';}))return '';var index=budgetElementDepartmentIndex(item);return index===null?'':String(index+1);},
   openDate:function(input,onSelect,onClose){return openRequestDatePicker(input,{iso:true,container:input.closest('.po-overlay'),onSelect:onSelect,onClose:onClose});},
   closeDate:closeRequestDatePicker,
   items:function(){return (S.items[S.edBudget.ID]||[]).filter(function(it){var cat=modItemCategory(it);return cat&&budgetCategoryIsLocked(S.edBudget,catDept(cat))&&!accessTruthy(it.Template_Item);});},
@@ -12487,6 +12787,7 @@ function openModEdit(modId) {
     trigger:document.activeElement,
     itemId: itId ? String(itId) : "", picker: false, mode: "edit", editId: String(modId),
     type: cleanVal(mod.Modification_Type) === "Decrease" ? "Decrease" : "Increase",
+    element: budgetModInitialElement(findItemById(itId),mod),
     amt: String(Math.abs(parseFloat(cleanVal(mod.Amount)) || 0) || ""),
     reason: cleanVal(mod.Reason), ref: cleanVal(mod.Reference_Number), date: cleanVal(mod.Effective_Date),
     busy: false, rejectFor: null
@@ -12523,6 +12824,8 @@ function updateModification() {
   var reason = cleanVal($("modReason").value);
   if (amt <= 0) { toastShow("Enter a modification amount"); return; }
   if (!reason) { toastShow("A reason is required for the audit trail"); return; }
+  var allocation;
+  try { allocation = budgetModComponentPayload(amt,m.element); } catch(error) { toastShow(error.message); return; }
   var reference = cleanVal($("modRef").value);
   var effectiveDate = cleanVal($("modDate").value);
   var token=budgetNavigationToken();m.amt=String(amt);m.reason=reason;m.ref=reference;m.date=effectiveDate;
@@ -12536,6 +12839,7 @@ function updateModification() {
     Reason: reason,
     Reference_Number: reference
   };
+  Object.assign(fieldData,allocation.fields);
   if (effectiveDate) fieldData.Effective_Date = effectiveDate;
   sdkUpdateRecord(CFG.forms.modification, String(m.editId), fieldData).then(function () {
     return sdkRunBudgetFunction("modificationAdmin", {
@@ -12543,7 +12847,7 @@ function updateModification() {
       modificationId: String(m.editId),
       budgetId: String(b.ID),
       modType: m.type,
-      amount: String(amt),
+      amount: allocation.amount,
       reason: reason,
       reference: reference,
       effectiveDate: effectiveDate
@@ -12649,12 +12953,14 @@ function renderModModal() {
     "<div class='box'><div class='l'>Current Revised Final</div><div class='v'>" + fmt(fin + agg.approved) + "</div></div>" +
   "</div>";
   if (canAdd) {
+    if (m.element == null) m.element = budgetModInitialElement(it,null);
     html += "<div class='mod-field'><label>Amount<span class='req'>*</span></label>" +
       "<div class='amt-row'>" +
         "<div class='sign-seg'>" +
           "<button type='button' class='sgn plus" + (m.type === "Increase" ? " on" : "") + "' data-modtype='Increase' title='Increase'>＋</button>" +
           "<button type='button' class='sgn minus" + (m.type === "Decrease" ? " on" : "") + "' data-modtype='Decrease' title='Decrease'>－</button>" +
         "</div>" +
+        budgetModElementPicker(m.element,m.busy) +
         "<input id='modAmt' inputmode='decimal' placeholder='0' value='" + escAttr(m.amt || "") + "'>" +
       "</div></div>";
     html += "<div class='mod-guard' id='modGuard'>⚠ This decrease exceeds the current Revised Final and would drive the line negative.</div>";
@@ -13045,18 +13351,53 @@ document.addEventListener("keydown", function (event) {
 }, true);
 window.addEventListener("resize", closeRequestDatePicker);
 window.addEventListener("scroll", function () { if (REQUEST_DATE_PICKER.input) closeRequestDatePicker(); }, true);
+function budgetModInitialElement(item, mod) {
+  if (mod) {
+    var parts = budgetElementSnapshot(mod), chosen = parts ? parts.map(function(n,i){return n !== 0 ? String(i+1) : "";}).filter(Boolean) : [];
+    if (chosen.length === 1) return chosen[0];
+    if (BUDGET_ELEMENTS.some(function(element){return budgetElementNumber(mod[element.field]) !== null;})) return "";
+  }
+  var index = budgetElementDepartmentIndex(item);
+  return index === null ? "5" : String(index+1);
+}
+function budgetModComponentPayload(amount, element) {
+  if (!/^[1-5]$/.test(String(element || ""))) throw new Error("Choose an element for this modification");
+  if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount*100-Math.round(amount*100)) > .0001) throw new Error("Enter an amount with at most two decimal places");
+  var fields = {};
+  BUDGET_ELEMENTS.forEach(function(part){fields[part.field] = part.key === String(element) ? amount.toFixed(2) : "0.00";});
+  return {fields:fields, amount:JSON.stringify({contract:"budget-components-v1",components:fields})};
+}
+function budgetModElementPicker(element, busy) {
+  var selected = BUDGET_ELEMENTS.find(function(part){return part.key === element;});
+  return "<div class='mod-element-picker'><button type='button' id='modElementToggle' aria-label='Cost Element' aria-haspopup='listbox' aria-expanded='false'"+(busy?" disabled":"")+"><span id='modElementLabel'>"+
+    (selected ? "("+selected.key+") "+selected.label : "Choose Element")+"</span><svg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' aria-hidden='true'><path d='m6 9 6 6 6-6'/></svg></button>"+
+    "<div class='mod-element-menu' id='modElementMenu' role='listbox' aria-label='Cost Element' hidden data-lm-motion='popover'>"+
+    BUDGET_ELEMENTS.map(function(part){return "<button type='button' role='option' data-mod-element='"+part.key+"' aria-selected='"+String(part.key===element)+"'>("+part.key+") "+part.label+"</button>";}).join("")+"</div></div>";
+}
+function budgetModElementPreview(item, modal, amount) {
+  var baseline = budgetElementValues(item,"Budget_Ttl"), prior = budgetElementModAmounts(item.ID,modal.editId), sign=modal.type === "Decrease" ? -1 : 1;
+  function money(n){return n === null ? "—" : (n < 0 ? "−$" : "$")+Math.abs(n).toLocaleString("en-US",{maximumFractionDigits:4});}
+  return "<table class='mod-element-preview' id='modElementPreview'><thead><tr><th>Element</th><th>Final</th><th>+ Prior Mods</th><th>+ This Mod</th><th>= Revised</th></tr></thead><tbody>"+
+    BUDGET_ELEMENTS.map(function(part,index){
+      var base = baseline ? baseline[index] : null, previous=prior.unallocated?null:prior.amounts[index], change=part.key===modal.element?sign*amount:0;
+      return "<tr data-mod-element-row='"+part.key+"'"+(part.key===modal.element?" class='selected'":"")+"><th>("+part.key+") "+part.label+"</th><td>"+money(base)+"</td><td>"+money(previous)+"</td><td>"+money(change)+"</td><td>"+money(base === null || previous === null ? null : base+previous+change)+"</td></tr>";
+    }).join("")+"</tbody></table>";
+}
 function wireModForm(fin, agg) {
   var m = S.modModal; if (!m) return;
   function refreshPreview() {
     var raw = parseFloat(cleanVal(($("modAmt") || {}).value).replace(/[^0-9.]/g, "")) || 0;
     var signed = m.type === "Decrease" ? -raw : raw;
-    var next = fin + agg.approved + signed;
+    var old = m.editId && (S.modifications || []).find(function(mod){return String(mod.ID)===String(m.editId)&&modStatusOf(mod).toLowerCase()==="approved";});
+    var prior = agg.approved - (old ? modSignedAmount(old) : 0);
+    var next = fin + prior + signed;
     var pv = $("modPreview");
     if (pv) pv.innerHTML =
       "<div class='row'><span class='rl'>Approved Final</span><span class='rv'>" + fmt(fin) + "</span></div>" +
-      "<div class='row'><span class='rl'>Prior approved mods</span><span class='rv'>" + fmtModAmount(agg.approved) + "</span></div>" +
+      "<div class='row'><span class='rl'>Prior approved mods</span><span class='rv'>" + fmtModAmount(prior) + "</span></div>" +
       "<div class='row'><span class='rl'>This modification (pending)</span><span class='rv' style='color:var(--amber)'>" + fmtModAmount(signed) + "</span></div>" +
-      "<div class='row big'><span class='rl'>Revised Final once approved</span><span class='rv'>" + fmt(next) + "</span></div>";
+      "<div class='row big'><span class='rl'>Revised Final once approved</span><span class='rv'>" + fmt(next) + "</span></div>"+
+      budgetModElementPreview(findItemById(m.itemId),m,raw);
     var g = $("modGuard");
     if (g) g.classList.toggle("show", next < 0);
   }
@@ -13067,6 +13408,12 @@ function wireModForm(fin, agg) {
       renderModModal();
     });
   });
+  var picker = $("modElementToggle"), menu = $("modElementMenu");
+  if (picker && menu) {
+    picker.addEventListener("click",function(){menu.hidden=!menu.hidden;picker.setAttribute("aria-expanded",String(!menu.hidden));if(!menu.hidden)(menu.querySelector("[aria-selected=true]")||menu.querySelector("button")).focus();});
+    menu.addEventListener("click",function(event){var option=event.target.closest("[data-mod-element]");if(!option||m.busy)return;m.element=option.dataset.modElement;$("modElementLabel").textContent=option.textContent;menu.querySelectorAll("[role=option]").forEach(function(node){node.setAttribute("aria-selected",String(node===option));});menu.hidden=true;picker.setAttribute("aria-expanded","false");picker.focus();refreshPreview();});
+    menu.addEventListener("keydown",function(event){var choices=Array.prototype.slice.call(menu.querySelectorAll("button")),at=choices.indexOf(document.activeElement);if(event.key==="Escape"){event.preventDefault();event.stopPropagation();menu.hidden=true;picker.setAttribute("aria-expanded","false");picker.focus();}else if(event.key==="ArrowDown"||event.key==="ArrowUp"){event.preventDefault();choices[(at+(event.key==="ArrowDown"?1:-1)+choices.length)%choices.length].focus();}else if(event.key==="Tab"){menu.hidden=true;picker.setAttribute("aria-expanded","false");}});
+  }
   // Currency formatting: show $ + commas when not editing, raw digits while typing.
   function amtNumber() {
     var el = $("modAmt"); if (!el) return 0;
@@ -13101,12 +13448,14 @@ function submitModification() {
   var reason = cleanVal($("modReason").value);
   if (amt <= 0) { toastShow("Enter a modification amount"); return; }
   if (!reason) { toastShow("A reason is required for the audit trail"); return; }
+  var allocation;
+  try { allocation = budgetModComponentPayload(amt,m.element); } catch(error) { toastShow(error.message); return; }
   var track = modTrackForItem(it);
   var trigger = $("modSubmitBtn");
   var args = {
     itemId: String(it.ID),
     modType: m.type,
-    amount: String(amt),
+    amount: allocation.amount,
     reason: reason,
     reference: cleanVal($("modRef").value),
     effectiveDate: cleanVal($("modDate").value),
@@ -14144,7 +14493,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.86",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.88",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

@@ -26,6 +26,7 @@ const context=vm.createContext({S,Intl,Number,Date,Promise,
   isReimbursementBudgetItem:item=>!!item.reimbursement,
   queueBudgetSave:(id,field,value)=>headerWrites.push({id,field,value}),
   queueSave:(id,field,value)=>itemWrites.push({id,field,value}),
+  projectBudgetPrelimElements:()=>null,refreshBudgetElementValues:()=>{}, // Persistence and child patching use their dedicated actual-handler suite.
   recalcBudgetPerUnitItems:()=>[],renderPhaseMatrix(){},renderSummaryMatrices(){},renderProjectRatesLite(){},
   markInputState:(input,state)=>input.classList.add(state),updateProjectMatrixLive(){},updateCatSubtotal(){},setMsg(){},
   itemModAgg:()=>({approved:0.25}),requestAmountNumber:value=>Number(value)||0,

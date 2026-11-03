@@ -1,0 +1,29 @@
+string budgetElementExportHtml(int budgetItemId)
+{
+	// Shared detail only: callers retain their own authorization and delivery gates.
+	html = "<table style='width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:10px;margin:8px 0 16px'><thead><tr>";
+	for each heading in {"Element","Preliminary","Unapproved","Final","Approved Mods","Revised Final","HCSS Actuals","GP Actuals"}
+	{
+		html = html + "<th style='padding:5px;border-bottom:1px solid #cbd5e1;text-align:right;background:#eef4fb'>" + heading + "</th>";
+	}
+	html = html + "</tr></thead><tbody>";
+	for each element in thisapp.budgetElementExportRows(budgetItemId)
+	{
+		html = html + "<tr>";
+		index = 0;
+		for each value in element.get("values")
+		{
+			if(index == 0) { html = html + "<td style='padding:5px;border-bottom:1px solid #e2e8f0;white-space:nowrap'>" + value + "</td>"; }
+			else
+			{
+				display = "—";
+				if(value != null) { display = value.text("$#,##0.####"); }
+				html = html + "<td style='padding:5px;border-bottom:1px solid #e2e8f0;text-align:right;white-space:nowrap'>" + display + "</td>";
+			}
+			index = index + 1;
+		}
+		html = html + "</tr>";
+	}
+	html = html + "</tbody></table>";
+	return html;
+}

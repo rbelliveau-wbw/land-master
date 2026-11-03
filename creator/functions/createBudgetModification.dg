@@ -16,7 +16,48 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		return "ERROR: Budget Item not found.";
 	}
-	vAmount = ifnull(amount,"0").toDecimal();
+	// Reuse the native budget-components-v1 envelope in the existing amount
+	// argument. The widget's single element picker sends that element's amount
+	// plus explicit zeroes for the other four; legacy decimal callers stay valid.
+	componentAmounts = Map();
+	amountInput = ifnull(amount,"0").trim();
+	if(amountInput.startsWith("{"))
+	{
+		try
+		{
+			componentRequest = amountInput.toMap();
+			if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
+			{
+				return "ERROR: Unsupported budget component request.";
+			}
+			componentSource = componentRequest.get("components");
+			componentFields = {"Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"};
+			vAmount = 0.0;
+			for each componentField in componentFields
+			{
+				componentRaw = componentSource.get(componentField);
+				if(componentRaw == null || componentRaw.toString().trim() == "")
+				{
+					return "ERROR: All five budget component values are required.";
+				}
+				componentValue = componentRaw.toString().toDecimal();
+				if(componentValue < 0 || componentValue.round(2) != componentValue)
+				{
+					return "ERROR: Budget components must be nonnegative amounts with at most two decimal places.";
+				}
+				componentAmounts.put(componentField,componentValue);
+				vAmount = vAmount + componentValue;
+			}
+		}
+		catch (componentError)
+		{
+			return "ERROR: Budget components must contain valid currency amounts.";
+		}
+	}
+	else
+	{
+		vAmount = amountInput.toDecimal();
+	}
 	if(vAmount <= 0)
 	{
 		return "ERROR: Amount must be greater than zero.";
@@ -109,6 +150,11 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Budget_Category=vCatId
 		Modification_Type=vType
 		Amount=vAmount
+		Labor_Budget=componentAmounts.get("Labor_Budget")
+		Materials_Budget=componentAmounts.get("Materials_Budget")
+		Equipment_Budget=componentAmounts.get("Equipment_Budget")
+		Subcontractor_Budget=componentAmounts.get("Subcontractor_Budget")
+		Other_Budget=componentAmounts.get("Other_Budget")
 		Reason=vReason
 		Reference_Number=vRef
 		Status="Draft"

@@ -1,0 +1,21 @@
+{
+  "status": "Installed and verified in native Development; full-field SDK/API binding, function compilation and Production promotion pending. See native-install-progress.json.",
+  "authority": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+  "form": "Budget_Item",
+  "fields": [
+    {"link_name":"Prelim_Labor_Budget","display_name":"Prelim (1) Labor","type":"USD","decimalplace":4,"maxchar":16,"required":false,"initial_value":null},
+    {"link_name":"Prelim_Materials_Budget","display_name":"Prelim (2) Materials","type":"USD","decimalplace":4,"maxchar":16,"required":false,"initial_value":null},
+    {"link_name":"Prelim_Equipment_Budget","display_name":"Prelim (3) Equipment","type":"USD","decimalplace":4,"maxchar":16,"required":false,"initial_value":null},
+    {"link_name":"Prelim_Subcontractor_Budget","display_name":"Prelim (4) Subcontractor","type":"USD","decimalplace":4,"maxchar":16,"required":false,"initial_value":null},
+    {"link_name":"Prelim_Other_Budget","display_name":"Prelim (5) Other","type":"USD","decimalplace":4,"maxchar":16,"required":false,"initial_value":null}
+  ],
+  "reports": [{"link_name":"All_Budget_Items","include_in":["list","quickview","detailview","export/API full fields"]}],
+  "existing_final_fields": ["Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"],
+  "preliminary_source": "Prelim_Budget_Ttl",
+  "default_allocation": {"Development":"Prelim_Other_Budget","Engineering":"Prelim_Labor_Budget"},
+  "default_timing": "Only the user's existing Preliminary edit/save operation; no scheduled or ongoing backfill automation",
+  "finalization": "Approved Dev/Eng tracks freeze complete Preliminary components into the existing Final component fields; an all-blank Preliminary allocation uses the department default from finalized Budget_Ttl. Partial/mismatched Preliminary allocation is unavailable and must not be inferred.",
+  "preserve": ["existing explicit allocations including partial/all-zero","Prelim_Budget_Ttl","Budget_Ttl","actual totals","approvals and statuses","Construction HeavyJob source/snapshot lifecycle"],
+  "scheduled_workflows_added": [],
+  "custom_apis_added": []
+}

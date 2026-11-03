@@ -1,0 +1,58 @@
+// NEW optional fields to merge into the EXISTING Budget_Item form in Development.
+// Not a complete form export. Preserve existing sections, fields and workflows.
+// Use the form builder's existing section/row; no defaults or scheduled actions.
+Prelim_Labor_Budget
+(
+ displayname = "Prelim (1) Labor"
+ type = USD
+ format = commadotwestern
+ decimalplace = 4
+ maxchar = 16
+ row = 1
+ column = 1
+ width = small
+)
+Prelim_Materials_Budget
+(
+ displayname = "Prelim (2) Materials"
+ type = USD
+ format = commadotwestern
+ decimalplace = 4
+ maxchar = 16
+ row = 1
+ column = 1
+ width = small
+)
+Prelim_Equipment_Budget
+(
+ displayname = "Prelim (3) Equipment"
+ type = USD
+ format = commadotwestern
+ decimalplace = 4
+ maxchar = 16
+ row = 1
+ column = 1
+ width = small
+)
+Prelim_Subcontractor_Budget
+(
+ displayname = "Prelim (4) Subcontractor"
+ type = USD
+ format = commadotwestern
+ decimalplace = 4
+ maxchar = 16
+ row = 1
+ column = 1
+ width = small
+)
+Prelim_Other_Budget
+(
+ displayname = "Prelim (5) Other"
+ type = USD
+ format = commadotwestern
+ decimalplace = 4
+ maxchar = 16
+ row = 1
+ column = 1
+ width = small
+)

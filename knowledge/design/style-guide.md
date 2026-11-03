@@ -566,6 +566,21 @@ all budget arithmetic on one horizontal table row, right-align tabular currency,
 and use green for nonnegative remaining budgets. It sits to the right on desktop
 and stacks on narrow screens with horizontal overflow contained inside its table.
 
+Budget matrices use three disclosure levels: categories, budget lines, then
+element rows. The shared toolbar cycles **Expand All Lines → Expand All Elements
+→ Collapse All**; each budget line also has a keyboard-accessible chevron.
+Indent the read-only children and label them **(1) Labor**, **(2) Materials**,
+**(3) Equipment**, **(4) Subcontractor**, and **(5) Other**. Retain matrix column
+alignment, mounted editors, parent totals, filters and remembered disclosures.
+Missing native element data displays a dash. The owner's explicit exception is
+Development → Other and Engineering → Labor when an allocation is entirely
+blank and its aggregate amount is known. Identify this attribution where it
+supplies context; preserve explicit partial/all-zero allocations and keep
+Construction detail unknown without its real source. Preliminary user edits
+save separate Preliminary component fields when the native schema/report is
+available; never reuse frozen Final fields for Preliminary. Use the shared
+keyed motion and numeric identity registries.
+
 
 Purchase Order item choices show a cost-code pill before Item Name, in numeric
 code order under visible major-code and Budget Category headings. Keep amount

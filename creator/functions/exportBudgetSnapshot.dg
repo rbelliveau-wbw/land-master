@@ -1,5 +1,5 @@
-				 string exportBudgetSnapshot(string budgetId, string exportType)
-                 {
+string exportBudgetSnapshot(string budgetId, string exportType)
+{
 	// Read-only, application-wide export. The existing OAuth2 API authenticates callers.
 	// No owner, User_Access, lifecycle or screen-filter restriction is applied here.
 	if(ifnull(exportType,"").trim().toUpperCase() == "ALL_DETAIL")
@@ -29,11 +29,12 @@
 					throughId = latestItem.ID;
 				}
 			}
-			// Null amounts count as zero. Retain credits and actual-only lines.
-			fullTotal = Budget_Item[(ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0)].count();
+			// Null amounts count as zero. Retain credits, actual-only lines and
+			// nonzero element fields even when signed components net to a zero parent.
+			fullTotal = Budget_Item[(ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)].count();
 			fullRows = List();
 			nextId = afterId;
-			for each fullItem in Budget_Item[(ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0)] sort by ID range from 0 to 199
+			for each fullItem in Budget_Item[(ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)] sort by ID range from 0 to 199
 			{
 				fullCategory = Budget_Category[ID == fullItem.Budget_Category];
 				fullBudget = Add_Budget[ID == fullCategory.Budget];
@@ -86,6 +87,7 @@
 				fullRow = Map();
 				fullRow.put("id",fullItem.ID.toString());
 				fullRow.put("values",fullValues);
+				fullRow.put("elements",thisapp.budgetElementExportRows(fullItem.ID));
 				fullRows.add(fullRow);
 				nextId = fullItem.ID;
 			}
@@ -97,24 +99,26 @@
 			fullResult.put("through",throughId.toString());
 			fullResult.put("hasMore",fullRows.size() == 200);
 			return fullResult.toString();
-		}
-		catch (fullExportError)
+		}		catch (fullExportError)
 		{
 			fullResult.put("ok",false);
 			fullResult.put("error","Full budget export failed: " + fullExportError.toString());
 			return fullResult.toString();
 		}
 	}
-
-
 	// An export persists a new Budget Attachment; it is not a read-only download.
 	if(zoho.loginuser != zoho.adminuser)
 	{
 		try
 		{
-			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting") { return "Budget export failed: this profile has read-only Budget access."; }
+			if(thisapp.permissions.profileForUser(zoho.loginuser) == "Construction Budgeting")
+			{
+				return "Budget export failed: this profile has read-only Budget access.";
+			}
+		}		catch (profileError)
+		{
+			return "Budget export failed: Budget access could not be verified.";
 		}
-		catch (profileError) { return "Budget export failed: Budget access could not be verified."; }
 	}
 	/********* MANUAL BUDGET EXPORT ENTRY POINT *********/
 	// Creates either a PDF or Excel-compatible .xls snapshot
@@ -257,7 +261,7 @@
 			pdfHtml = pdfHtml + "<td><div class='label'>Current Final Budget</div><div class='value grand'>" + grandFinalDisplay + "</div></td>";
 			pdfHtml = pdfHtml + "</tr></table>";
 			budgetCategories = Budget_Category[Budget == vBudgetId.toLong()] sort by Category_Code;
-			for each  cat in budgetCategories
+			for each cat in budgetCategories
 			{
 				categoryName = ifnull(cat.Budget_Category_Name,"Uncategorized");
 				categoryCode = ifnull(cat.Category_Code,"");
@@ -287,30 +291,30 @@
 				pdfHtml = pdfHtml + "</div>";
 				pdfHtml = pdfHtml + "<table class='lines'>";
 				pdfHtml = pdfHtml + "<thead><tr>";
-                                 if(isApprovedExport == false)
-                                 {
-                                     pdfHtml = pdfHtml + "<th style='width:7%;'>Code</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:20%;'>Budget Item</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:6%;text-align:left;'>Unit</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Cost per Unit</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Preliminary</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Unapproved</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>Final</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>HCSS Actuals</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:9%;'>GP Actuals</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:13%;'>Notes</th>";
-                                 }
-                                 else
-                                 {
-                                     pdfHtml = pdfHtml + "<th style='width:8%;'>Code</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:22%;'>Budget Item</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Preliminary</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Unapproved</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:11%;'>Final</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:11%;'>HCSS Actuals</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:11%;'>GP Actuals</th>";
-                                     pdfHtml = pdfHtml + "<th style='width:15%;'>Notes</th>";
-                                 }
+				if(isApprovedExport == false)
+				{
+					pdfHtml = pdfHtml + "<th style='width:7%;'>Code</th>";
+					pdfHtml = pdfHtml + "<th style='width:20%;'>Budget Item</th>";
+					pdfHtml = pdfHtml + "<th style='width:6%;text-align:left;'>Unit</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>Cost per Unit</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>Preliminary</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>Unapproved</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>Final</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>HCSS Actuals</th>";
+					pdfHtml = pdfHtml + "<th style='width:9%;'>GP Actuals</th>";
+					pdfHtml = pdfHtml + "<th style='width:13%;'>Notes</th>";
+				}
+				else
+				{
+					pdfHtml = pdfHtml + "<th style='width:8%;'>Code</th>";
+					pdfHtml = pdfHtml + "<th style='width:22%;'>Budget Item</th>";
+					pdfHtml = pdfHtml + "<th style='width:11%;'>Preliminary</th>";
+					pdfHtml = pdfHtml + "<th style='width:11%;'>Unapproved</th>";
+					pdfHtml = pdfHtml + "<th style='width:11%;'>Final</th>";
+					pdfHtml = pdfHtml + "<th style='width:11%;'>HCSS Actuals</th>";
+					pdfHtml = pdfHtml + "<th style='width:11%;'>GP Actuals</th>";
+					pdfHtml = pdfHtml + "<th style='width:15%;'>Notes</th>";
+				}
 				pdfHtml = pdfHtml + "</tr></thead><tbody>";
 				categoryItems = Budget_Item[Budget_Category == cat.ID] sort by Cost_Code;
 				for each  item in categoryItems
@@ -325,18 +329,18 @@
 					itemCodeSafe = itemCodeSafe.replaceAll("&","&amp;");
 					itemCodeSafe = itemCodeSafe.replaceAll("<","&lt;");
 					itemCodeSafe = itemCodeSafe.replaceAll(">","&gt;");
-                                     if(isApprovedExport == false)
-                                     {
-                                         unitSafe = ifnull(item.Unit,"");
-                                         unitSafe = unitSafe.replaceAll("&","&amp;");
-                                         unitSafe = unitSafe.replaceAll("<","&lt;");
-                                         unitSafe = unitSafe.replaceAll(">","&gt;");
-                                         perUnitDisplay = "";
-                                         if(item.Per_Unit != null)
-                                         {
-                                             perUnitDisplay = item.Per_Unit.toDecimal().text("$#,##0.00");
-                                         }
-                                     }
+					if(isApprovedExport == false)
+					{
+						unitSafe = ifnull(item.Unit,"");
+						unitSafe = unitSafe.replaceAll("&","&amp;");
+						unitSafe = unitSafe.replaceAll("<","&lt;");
+						unitSafe = unitSafe.replaceAll(">","&gt;");
+						perUnitDisplay = "";
+						if(item.Per_Unit != null)
+						{
+							perUnitDisplay = item.Per_Unit.toDecimal().text("$#,##0.00");
+						}
+					}
 					itemNote = ifnull(item.Description,"");
 					itemNote = itemNote.replaceAll("<br>","\n");
 					itemNote = itemNote.replaceAll("<br/>","\n");
@@ -380,11 +384,11 @@
 					pdfHtml = pdfHtml + "<tr>";
 					pdfHtml = pdfHtml + "<td class='code'>" + itemCodeSafe + "</td>";
 					pdfHtml = pdfHtml + "<td>" + itemNameSafe + "</td>";
-                                     if(isApprovedExport == false)
-                                     {
-                                         pdfHtml = pdfHtml + "<td style='text-align:left;'>" + unitSafe + "</td>";
-                                         pdfHtml = pdfHtml + "<td class='money'>" + perUnitDisplay + "</td>";
-                                     }
+					if(isApprovedExport == false)
+					{
+						pdfHtml = pdfHtml + "<td style='text-align:left;'>" + unitSafe + "</td>";
+						pdfHtml = pdfHtml + "<td class='money'>" + perUnitDisplay + "</td>";
+					}
 					pdfHtml = pdfHtml + "<td class='money'>" + prelimDisplay + "</td>";
 					pdfHtml = pdfHtml + "<td class='money'>" + unapprovedDisplay + "</td>";
 					pdfHtml = pdfHtml + "<td class='money'>" + finalDisplay + "</td>";
@@ -395,13 +399,22 @@
 				}
 				pdfHtml = pdfHtml + "</tbody></table></div>";
 			}
+			pdfHtml = pdfHtml + "<div class='approval-title'>Budget Elements</div>";
+			for each elementCategory in budgetCategories
+			{
+				for each elementItem in Budget_Item[Budget_Category == elementCategory.ID] sort by Cost_Code
+				{
+					elementName = ifnull(elementItem.Item_Name,"Budget Item").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+					pdfHtml = pdfHtml + "<div style='font-size:11px;font-weight:bold;margin-top:12px'>" + elementName + "</div>" + thisapp.budgetElementExportHtml(elementItem.ID);
+				}
+			}
 			pdfHtml = pdfHtml + "<div class='approval-title'>Approval History</div>";
 			pdfHtml = pdfHtml + "<table class='approval-table'>";
 			pdfHtml = pdfHtml + "<thead><tr>";
 			pdfHtml = pdfHtml + "<th>Track</th><th>Role</th><th>Approver</th><th>Status</th><th>Responded</th><th>Approval Notes</th>";
 			pdfHtml = pdfHtml + "</tr></thead><tbody>";
 			allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()] sort by Sort_Order;
-			for each  approvalRow in allApprovalRows
+			for each approvalRow in allApprovalRows
 			{
 				approvalTrackSafe = ifnull(approvalRow.Type1,"");
 				approvalTrackSafe = approvalTrackSafe.replaceAll("&","&amp;");
@@ -516,6 +529,7 @@
 		excelXml = excelXml + "<Style ss:ID='Title'><Font ss:FontName='Calibri' ss:Size='18' ss:Bold='1' ss:Color='#17385F'/></Style>";
 		excelXml = excelXml + "<Style ss:ID='Header'><Font ss:Bold='1' ss:Color='#17385F'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><Borders><Border ss:Position='Bottom' ss:LineStyle='Continuous' ss:Weight='1' ss:Color='#AAB9CC'/></Borders></Style>";
 		excelXml = excelXml + "<Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00;[Red]-$#,##0.00'/></Style>";
+		excelXml = excelXml + "<Style ss:ID='ElementMoney'><NumberFormat ss:Format='$#,##0.####;[Red]-$#,##0.####'/></Style>";
 		excelXml = excelXml + "<Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style>";
 		excelXml = excelXml + "</Styles>";
 		/********* SUMMARY WORKSHEET *********/
@@ -531,16 +545,16 @@
 		excelXml = excelXml + "</Table></Worksheet>";
 		/********* BUDGET DETAIL WORKSHEET *********/
 		excelXml = excelXml + "<Worksheet ss:Name='Budget Detail'><Table>";
-                             excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='180'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='65'/><Column ss:Width='100'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='260'/>";
+		excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='180'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='65'/><Column ss:Width='100'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='95'/><Column ss:Width='260'/>";
 		excelXml = excelXml + "<Row ss:StyleID='Header'>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Department</Data></Cell>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category Code</Data></Cell>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Category</Data></Cell>";
-                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost Code</Data></Cell>";
-                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Budget Item</Data></Cell>";
-                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Unit</Data></Cell>";
-                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost per Unit</Data></Cell>";
-                             excelXml = excelXml + "<Cell><Data ss:Type='String'>Preliminary</Data></Cell>";
+		excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost Code</Data></Cell>";
+		excelXml = excelXml + "<Cell><Data ss:Type='String'>Budget Item</Data></Cell>";
+		excelXml = excelXml + "<Cell><Data ss:Type='String'>Unit</Data></Cell>";
+		excelXml = excelXml + "<Cell><Data ss:Type='String'>Cost per Unit</Data></Cell>";
+		excelXml = excelXml + "<Cell><Data ss:Type='String'>Preliminary</Data></Cell>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Unapproved</Data></Cell>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Final</Data></Cell>";
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>HCSS Actuals</Data></Cell>";
@@ -548,7 +562,7 @@
 		excelXml = excelXml + "<Cell><Data ss:Type='String'>Notes</Data></Cell>";
 		excelXml = excelXml + "</Row>";
 		budgetCategories = Budget_Category[Budget == vBudgetId.toLong()] sort by Category_Code;
-		for each  cat in budgetCategories
+		for each cat in budgetCategories
 		{
 			departmentXml = ifnull(cat.Deparment,"");
 			departmentXml = departmentXml.replaceAll("&","&amp;");
@@ -583,17 +597,17 @@
 				itemNameXml = itemNameXml.replaceAll(">","&gt;");
 				itemNameXml = itemNameXml.replaceAll("\"","&quot;");
 				itemNameXml = itemNameXml.replaceAll("'","&apos;");
-                                 unitXml = ifnull(item.Unit,"");
-                                 unitXml = unitXml.replaceAll("&","&amp;");
-                                 unitXml = unitXml.replaceAll("<","&lt;");
-                                 unitXml = unitXml.replaceAll(">","&gt;");
-                                 unitXml = unitXml.replaceAll("\"","&quot;");
-                                 unitXml = unitXml.replaceAll("'","&apos;");
-                                 perUnitPriceCellXml = "<Cell/>";
-                                 if(item.Per_Unit != null)
-                                 {
-                                     perUnitPriceCellXml = "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + item.Per_Unit.toDecimal() + "</Data></Cell>";
-                                 }
+				unitXml = ifnull(item.Unit,"");
+				unitXml = unitXml.replaceAll("&","&amp;");
+				unitXml = unitXml.replaceAll("<","&lt;");
+				unitXml = unitXml.replaceAll(">","&gt;");
+				unitXml = unitXml.replaceAll("\"","&quot;");
+				unitXml = unitXml.replaceAll("'","&apos;");
+				perUnitPriceCellXml = "<Cell/>";
+				if(item.Per_Unit != null)
+				{
+					perUnitPriceCellXml = "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + item.Per_Unit.toDecimal() + "</Data></Cell>";
+				}
 				itemNoteXml = ifnull(item.Description,"");
 				itemNoteXml = itemNoteXml.replaceAll("<br>","\n");
 				itemNoteXml = itemNoteXml.replaceAll("<br/>","\n");
@@ -634,8 +648,8 @@
 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + categoryNameXml + "</Data></Cell>";
 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemCodeXml + "</Data></Cell>";
 				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + itemNameXml + "</Data></Cell>";
-                                 excelXml = excelXml + "<Cell><Data ss:Type='String'>" + unitXml + "</Data></Cell>";
-                                 excelXml = excelXml + perUnitPriceCellXml;
+				excelXml = excelXml + "<Cell><Data ss:Type='String'>" + unitXml + "</Data></Cell>";
+				excelXml = excelXml + perUnitPriceCellXml;
 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + prelimValue + "</Data></Cell>";
 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + unapprovedValue + "</Data></Cell>";
 				excelXml = excelXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + finalValue + "</Data></Cell>";
@@ -647,11 +661,47 @@
 		}
 		excelXml = excelXml + "</Table><WorksheetOptions xmlns='urn:schemas-microsoft-com:office:excel'><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions></Worksheet>";
 		/********* APPROVAL HISTORY WORKSHEET *********/
+		excelXml = excelXml + "<Worksheet ss:Name='Budget Elements'><Table>";
+		for each elementHeading in {"Department","Category","Cost Code","Budget Item","Element","Preliminary","Unapproved","Final","Approved Mods","Revised Final","HCSS Actuals","GP Actuals"}
+		{
+			excelXml = excelXml + "<Column ss:Width='110'/>";
+		}
+		excelXml = excelXml + "<Row ss:StyleID='Header'>";
+		for each elementHeading in {"Department","Category","Cost Code","Budget Item","Element","Preliminary","Unapproved","Final","Approved Mods","Revised Final","HCSS Actuals","GP Actuals"}
+		{
+			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + elementHeading + "</Data></Cell>";
+		}
+		excelXml = excelXml + "</Row>";
+		for each elementCategory in budgetCategories
+		{
+			for each elementItem in Budget_Item[Budget_Category == elementCategory.ID] sort by Cost_Code
+			{
+				for each elementEntry in thisapp.budgetElementExportRows(elementItem.ID)
+				{
+					excelXml = excelXml + "<Row>";
+					for each elementText in {ifnull(elementCategory.Deparment,""),ifnull(elementCategory.Budget_Category_Name,""),ifnull(elementItem.Cost_Code,"").toString(),ifnull(elementItem.Item_Name,"Budget Item")}
+					{
+						elementText = elementText.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\"","&quot;").replaceAll("'","&apos;");
+						excelXml = excelXml + "<Cell><Data ss:Type='String'>" + elementText + "</Data></Cell>";
+					}
+					elementIndex = 0;
+					for each elementValue in elementEntry.get("values")
+					{
+						if(elementIndex == 0) { excelXml = excelXml + "<Cell><Data ss:Type='String'>" + elementValue + "</Data></Cell>"; }
+						else if(elementValue == null) { excelXml = excelXml + "<Cell/>"; }
+						else { excelXml = excelXml + "<Cell ss:StyleID='ElementMoney'><Data ss:Type='Number'>" + elementValue + "</Data></Cell>"; }
+						elementIndex = elementIndex + 1;
+					}
+					excelXml = excelXml + "</Row>";
+				}
+			}
+		}
+		excelXml = excelXml + "</Table></Worksheet>";
 		excelXml = excelXml + "<Worksheet ss:Name='Approval History'><Table>";
 		excelXml = excelXml + "<Column ss:Width='110'/><Column ss:Width='80'/><Column ss:Width='220'/><Column ss:Width='90'/><Column ss:Width='110'/><Column ss:Width='320'/>";
 		excelXml = excelXml + "<Row ss:StyleID='Header'><Cell><Data ss:Type='String'>Track</Data></Cell><Cell><Data ss:Type='String'>Role</Data></Cell><Cell><Data ss:Type='String'>Approver</Data></Cell><Cell><Data ss:Type='String'>Status</Data></Cell><Cell><Data ss:Type='String'>Responded</Data></Cell><Cell><Data ss:Type='String'>Approval Notes</Data></Cell></Row>";
 		allApprovalRows = Budget_Approvals[Budget == vBudgetId.toLong()] sort by Sort_Order;
-		for each  approvalRow in allApprovalRows
+		for each approvalRow in allApprovalRows
 		{
 			approvalTrackXml = ifnull(approvalRow.Type1,"");
 			approvalTrackXml = approvalTrackXml.replaceAll("&","&amp;");
@@ -730,5 +780,5 @@
 	{
 		return "Budget export failed: " + exportError.toString();
 	}
-	return "gj";
-                 }
+	return "Budget export failed: the export did not finish.";
+}

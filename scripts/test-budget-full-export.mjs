@@ -20,7 +20,8 @@ assert.equal(all.length,201);assert.deepEqual(requests,[{after:'0',through:'0'},
 assert.deepEqual(progress,[[200,201],[201,201]]);
 assert.equal(all[0][15],'a\nb');
 const book=E.workbook(X,all),bytes=X.write(book,{type:'array',bookType:'xlsx'}),round=X.read(bytes,{type:'array',cellNF:true});
-assert.deepEqual(plain(round.SheetNames),['Budget Detail']);
+assert.deepEqual(plain(round.SheetNames),['Budget Detail','Budget Elements']);
+assert.equal(X.utils.sheet_to_json(round.Sheets['Budget Elements'],{header:1}).length,201*5+1,'all five element rows export separately from parent totals');
 const sheet=round.Sheets['Budget Detail'];
 assert.deepEqual(plain(X.utils.sheet_to_json(sheet,{header:1})[0]),plain(E.headers));
 assert.equal(sheet.A2.v,'=Project');assert.equal(sheet.A2.t,'s');assert.equal(sheet.A2.f,undefined,'text must not become an Excel formula');
@@ -69,6 +70,7 @@ nativeJs=nativeJs.replace(/\) desc range from 0 to 0/g,').reverse().slice(0,1)')
 const nativeContext=vm.createContext({});
 vm.runInContext(`
   var zoho={loginuser:'viewer-with-no-owned-budgets'},tables={},writes=0;
+  var thisapp={budgetElementExportRows(){return ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({code:String(index+1),label,values:[label,null,null,null,null,null,null,null]}));}};
   function ifnull(v,f){return v==null?f:v;}
   function List(){return [];}
   function Map(){return {put(k,v){this[k]=v;},get(k){return this[k]??null;},toString(){return JSON.stringify(this);}};}
@@ -102,6 +104,9 @@ assert.equal(first.rows[0].values[12],70,'only approved signed amounts contribut
 assert.equal(first.rows[1].values[0],'Second project','all budgets include another project and archived/unowned budgets');
 const nativeRows=await E.collect(async cursor=>nativeRead(cursor));assert.equal(nativeRows.length,201);
 assert.equal(nativeContext.writes,0);
+nativeContext.tables.Budget_Item.push({ID:'4410926000000009999',Budget_Category:'21',Item_Name:'Offsetting elements',Cost_Code:'02102',Budget_Ttl:0,Prelim_Budget_Ttl:0,Unapproved_Final_Budget_Ttl:0,HCSS_Actuals:0,PROJ_Actual:0,Labor_Budget:100,Other_Budget:-100,Description:'element-only detail'});
+const withOffsets=nativeRead({after:'0',through:'0'});assert.equal(withOffsets.total,202,'offsetting element fields retain a zero-parent row in native export totals');
+const offsetPage=nativeRead({after:first.rows.at(-1).id,through:withOffsets.through});assert.ok(offsetPage.rows.some(row=>row.id==='4410926000000009999'),'native cursor pages include element-only rows with full bounds');
 assert.equal(nativeRead({after:'bad',through:'0'}).ok,false);
 nativeContext.zoho.loginuser='';assert.equal(nativeRead({after:'0',through:'0'}).ok,false);
 const html=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');

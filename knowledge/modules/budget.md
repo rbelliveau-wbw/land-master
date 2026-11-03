@@ -1,3 +1,129 @@
+## Budget and PO Elements — 122.29.88, November 3, 2026
+
+Budget matrices now disclose categories, lines, then **(1) Labor**, **(2)
+Materials**, **(3) Equipment**, **(4) Subcontractor**, and **(5) Other**. The
+shared toolbar cycles **Expand All Lines → Expand All Elements → Collapse All**.
+Individual chevrons and keyboard activation work in single-phase and all-phase
+View/Edit. Category collapse, Search and Hide Empty hide matching descendants;
+parent inputs stay mounted with their drafts. Read-only children never enter
+parent item counts, totals or save targets. Shared keyed motion and numeric
+identities preserve record scope and reduced-motion behavior.
+
+### Preliminary Persistence and Final Lifecycle
+
+The owner's explicit department attribution is Development → Other and
+Engineering → Labor. Preliminary child amounts project immediately during an
+eligible edit. The existing user-triggered save persists the separate five
+**Prelim_*_Budget** fields when their complete native report keys are available.
+An existing single-element allocation is retained; partial/multiple-component
+allocations need review. Missing native fields/report columns retain the
+ordinary total save and an honest element-persistence notice. No background or
+scheduled backfill is installed.
+
+The new Budget_Item fields are **Prelim_Labor_Budget**,
+**Prelim_Materials_Budget**, **Prelim_Equipment_Budget**,
+**Prelim_Subcontractor_Budget** and **Prelim_Other_Budget**: optional USD,
+Max Digits 16, four decimal places, no initial value. All five were saved and
+verified in native **Development**: display/link names persisted through
+Done/reopen and form-preview input names. **All_Budget_Items** list/quick-view
+columns include all five; detail-view Configure Fields auto-included them and
+was verified, preserving existing report fields. Actual full-field SDK/API
+reads, user save/reload, function compilation and Production promotion remain
+pending. The schema/layout work changed no Budget Item data or Production
+records. See the handoff's native installation progress record.
+
+The existing **Labor_Budget** through **Other_Budget** remain frozen Final
+snapshots. The November 2 Creator export is authoritative for these native fields
+and component-aware functions; older extracted/generated sources can be stale.
+Complete saved components take precedence. An entirely blank Dev/Eng Final split
+may display the owner's department attribution from **Budget_Ttl**; partial
+explicit allocations remain unavailable. Approved Modification components supply
+signed deltas and Revised Final. Unallocated or mismatched legacy modifications
+never default into Other. Parent figures and four-place native precision remain
+intact.
+
+Updated native finalization checks every Dev/Eng Preliminary allocation before
+financial writes. Complete reconciled Preliminary amounts freeze into Final
+components; all-blank legacy Preliminary uses the finalized **Budget_Ttl** and
+department default. Partial/mismatched values fail preflight. Existing explicit
+Final snapshots, including partial/all-zero data, remain frozen. A new/cleared
+approval cycle invalidates only its Final components, retaining Preliminary.
+Construction keeps its assigned HeavyJob source and frozen-snapshot lifecycle.
+Existing approval decisions, targeted reconciliation and no-blind-replay guards
+remain; **syncBudgetApprovalStatus** is status-only.
+
+Construction Unapproved detail reuses the complete authorized Imports snapshot,
+joins exact Budget Item IDs, and accepts only **HeavyJob Budget** rows. Every
+assigned row needs five numeric components, and source Cost must match saved
+Unapproved because native application can lag. Completion patches mounted child
+values without replacing drafts. Construction actuals remain unknown without a
+real source split. Dev/Eng Unapproved and HCSS/GP actual children use the owner's
+explicit department attribution; this is not a newly measured source-system
+breakdown. All original totals and signed credits remain unchanged.
+
+### PO and Standalone Modification Detail
+
+PO pickers show full named labels while storing existing string identifiers 1–5.
+Summary retains aggregate calculations and adds five-element equations:
+**Final + Approved Mods = Modified Budget**, **Modified Budget − Existing POs =
+Available**, then **Available − This PO = Remaining**. Exact-cent own reservations
+are restored once. Pending automatic modifications, shortfalls and unallocated
+historical amounts remain distinct; missing component availability stays
+unknown. Native authorization, parent reservations and approval rules remain.
+
+Standalone modifications use the same named choices and preview **Final + Prior
+Mods + This Mod = Revised** across all five rows. The chosen element receives the
+unsigned amount; Increase/Decrease supplies its sign. Creation and admin update
+reuse the existing amount argument's **budget-components-v1** envelope,
+persisting all five fields before routing/mail. Legacy scalar callers remain
+compatible; automatic **PO:** modifications retain their governing PO. Existing
+approval progress and safe targeted recovery remain in place.
+
+Budget PDF/Excel, Export All Budgets, PO Excel downloads/attachments and approval
+emails use shared read-only element helpers. **ALL_DETAIL** retains its 16 parent
+value columns and adds element rows, including nonzero component records whose
+aggregate fields are zero. PO exports/mail use named labels and separate element
+math. Unknown native detail stays unavailable. Local render fixtures do not
+establish delivered email or native publication.
+
+### Native Handoff, One-Time Data and Rollback
+
+The [single Creator promotion handoff](../../docs/budget-elements-creator-promotion-2026-11-03.md)
+and linked manifest list five fields, additive report layouts and 14 function
+bodies in dependency order. No Custom API signature change or new endpoint is
+required. The stale extracted **poBudgetBalances.dg** must not overwrite its
+newer component-aware native prerequisite from the November 2 export. PMP
+publishes repository/main and Production widget assets; Creator promotion stays
+with the user.
+
+The requested [one-time backfill](../../docs/budget-element-backfill-2026-11-03.md)
+remains pending native application and verification. Its prepared Final plan
+contains 10,125 existing Dev/Eng rows, including 9,972 known zero Finals; blank
+Finals are excluded. Only exact record IDs and five blank target components are
+updated, preserving any explicit allocation and retaining rollback preimages.
+A separate Preliminary plan requires a fresh export with the new fields and
+uses **Prelim_Budget_Ttl** only. No values are substituted between tiers, and no
+scheduled or ongoing migration is added.
+
+Changed sources cover Budget matrix/Preliminary/manual Modification UI, PO labels
+and Summary, shared motion/numeric registries with synchronized copies, native
+snapshot/approval/Modification/export/email functions, planned schema/report
+fragments, tests, docs and release metadata. Focused native-shaped and desktop
+fixtures cover precision/signs, department defaults, persistence capability,
+legacy/unknown detail, drafts/filters, scoped lifecycle, PO reservation math,
+exports and immutable backfill plans. Relevant checks include the Budget
+elements, Preliminary, department-default, Modification, native lifecycle,
+exports/backfill, PO element and desktop browser suites, plus existing
+authorization and approval-progress checks. Full validation and Pages build are
+release requirements. Native installation, save/reload, finalization,
+compilation, publication and backfill results must be reported separately.
+
+Rollback Production Budget Manager to **122.29.86** and rebuild Pages, preserving
+the permanent URL, new fields and saved native data. If native code rollback is
+necessary, use saved prechange native bodies after reviewing later changes;
+never publish stale extracted prerequisites. Data rollback is a separate reviewed
+operation using exact preimages and explicit blank clearing.
+
 ## Always-visible attachment picker — 122.29.86, November 2, 2026
 
 Choose Files stays visible in Budget attachment modals/workspaces and saved or

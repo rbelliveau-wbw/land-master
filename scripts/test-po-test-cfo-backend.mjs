@@ -48,6 +48,9 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   function sendMail(message){if(mailFailure)throw Error('Test delivery failed');mails.push(clone(message));}
   function clone(value){return JSON.parse(JSON.stringify(value));}
   var thisapp={poCurrencyString(v){if(typeof v!=='string'||!/^\\d+(?:\\.\\d{1,2})?$/.test(v))return '';var parts=v.split('.');return parts[0]+'.'+(parts[1]||'').padEnd(2,'0');},recalcBudgetModifiedTotals(){rollups++;},recalcItemRevisedFinal(){rollups++;},poBudgetBalances(){return map({success:true,balances:[]});},approvalConfigurationSnapshot(){return map({success:true,configuration:{policies:[],roles:[],assignments:[]}});}};
+  // New read-only element producer has its own actual-source fixture; these
+  // older authorization/delivery cases retain their original PO-shaped tables.
+  thisapp.poElementExportRows=function(){return [];};
   var request=map(payload);
   thisapp.environment={type:environment};
   thisapp.permissions={profileForUser(){return '';}};
@@ -113,6 +116,15 @@ console.log('PO email URLs: absolute HTTPS Creator host, exact Dev/Stage/Prod pa
 // The same compact workbook is used for a read-only download and email.
 r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.equal(workbook.content,packet.Attachments.content);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
 const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_Description='General & <scope>';r=runtime({extraTables:withDescription});workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true);assert.match(workbook.content,/General &amp; &lt;scope&gt;/);assert.match(workbook.content,/SUM\(R9C8:R10C8\)/);assert.equal((workbook.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,6);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
+// The real delivery and attachment producers must retain all five element rows.
+// Actual native element data selection/math is tested separately, so inject its
+// documented readonly DTO here without changing these older approval fixtures.
+r=runtime({extraTables:emailTables});
+vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?55:0,index===4?10:100]})));};`,r.c);
+assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
+for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.content.includes(label));}
+assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.content,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
+assert.equal(r.c.mails[0].to,testCFO.email);assert.equal(r.c.mails.length,1);assert.equal(r.tables().PO_Item[0].Cost_Element,'5','outbound labels never change stored picklist codes');
 const descriptionPayload={action:'Submit',budgetId:'61',vendorId:'91',amount:'1.00',token:'description-test-000000001',requestDate:'2026-10-11',dateNeeded:'2026-10-12',lines:[{key:'line-1',budgetItemId:'71',description:'Inspection',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'1.00'}]};
 for(const description of ['', 'Header description\nSecond line', 'x'.repeat(1000), 'x'.repeat(1001), 1, []]){r=runtime();const result=r.run('poValidatePayload',JSON.stringify({...descriptionPayload,description}));assert.equal(result.success,typeof description==='string'&&description.length<=1000,JSON.stringify(result));assert.equal(r.c.writes,0);}
 // Owner-only policy preflight rejects a bad override before creating any audits/locks.

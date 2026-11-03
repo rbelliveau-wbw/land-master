@@ -1,0 +1,32 @@
+{
+  "observed_on": "2026-11-03",
+  "timezone": "America/Chicago",
+  "environment": "Development",
+  "status": "Native Development fields and report layouts verified; SDK full-field reads, function compilation, Production promotion and data backfill pending",
+  "form": "Budget_Item",
+  "saved_property_reopen_audit": {"fields_checked":5,"exact_link_names_verified":true,"max_digits_16_verified":true,"decimal_places_4_verified":true,"mandatory_unchecked_verified":true,"audit_only_no_data_changes":true},
+  "fields": [
+    {"link_name":"Prelim_Labor_Budget","display_name":"Prelim (1) Labor","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
+    {"link_name":"Prelim_Materials_Budget","display_name":"Prelim (2) Materials","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
+    {"link_name":"Prelim_Equipment_Budget","display_name":"Prelim (3) Equipment","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
+    {"link_name":"Prelim_Subcontractor_Budget","display_name":"Prelim (4) Subcontractor","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
+    {"link_name":"Prelim_Other_Budget","display_name":"Prelim (5) Other","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true}
+  ],
+  "report": {
+    "link_name": "All_Budget_Items",
+    "list_columns": "All five new fields saved and verified",
+    "quickview": "All five new fields saved and verified",
+    "detailview": "All five auto-included fields verified through Configure Fields",
+    "existing_fields_preserved": true,
+    "evidence": "tmp/budget-elements/creator-report-fields.jpg"
+  },
+  "full_field_sdk_api_response": "Not verified in this task",
+  "preliminary_save_reload": "Not verified in this task",
+  "functions_compiled_or_updated_natively_in_this_task": [],
+  "production_components_promoted_in_this_task": [],
+  "production_data_backfill": "Prepared only; no native import applied",
+  "budget_item_records_changed_in_this_task": 0,
+  "production_records_changed_in_this_task": 0,
+  "scheduled_workflows_added": [],
+  "new_custom_apis_added": []
+}

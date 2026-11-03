@@ -35,6 +35,7 @@ const context = vm.createContext({
   clearTimeout: () => {}, setTimeout: callback => { callback(); return 1; },
   setEdAutosave: () => {}, markInputState: () => {},
   flushBudgetDeferredEditorRefresh: () => {}, // The lazy-feature suite exercises actual refresh consumption separately.
+  closeFullBudgetExportMenu: () => {}, // The desktop suite owns the landing export-menu focus contract.
   sdkUpdateRecord: (_form, id, fields) => { writes.push({id, fields}); return Promise.resolve(); },
   CFG:{forms:{item:"Budget_Item"}}, auditLog: () => {}, setMsg: () => {}, toastShow: () => {},
   v: value => Math.round(Number(value) || 0), itemModAgg: () => ({approved:0}), canSubmitMod: () => false,
@@ -42,6 +43,8 @@ const context = vm.createContext({
   escAttr: value => String(value), window:{scrollTo: () => {}}, updateEditorActionVisibility: () => {}
 });
 vm.runInContext([
+  source.match(/var BUDGET_ELEMENTS\s*=\s*\[[\s\S]*?\];/)[0],
+  ...['budgetElementNumber','budgetElementSnapshot','budgetElementDepartmentIndex','budgetPrelimElementSnapshot','projectBudgetPrelimElements','budgetPrelimElementWrite','finishBudgetPrelimElementSave'].map(extractFunction),
   "var BUDGET_UNIT_CHOICES = ['Acre','LF','Lot'];",
   "var BUDGET_METRICS = [{f:'Lot_Total_Residential',label:'Lots',kind:'int'},{f:'Acres',label:'Acres',kind:'num'},{f:'Equiv_LF_of_Street',label:'Equiv. LF',kind:'num'},{f:'Lot_Price',label:'Lot Price',kind:'money'},{f:'Land_Cost',label:'Land Cost',kind:'money'}];",
   ...["budgetMetricEditable", "renderBudgetMetrics", "budgetUnitNumber", "budgetUnitRate", "budgetUnitMoney", "budgetPerUnitEnabled", "budgetPerUnitQuantity", "budgetPerUnitStatus", "syncBudgetPerUnitItem", "budgetItemCanEditPerUnit", "firstIncompleteBudgetPerUnit", "budgetPerUnitNavigationAllowed", "budgetPricingExportIssue", "recalcBudgetPerUnitItems", "queueBudgetPerUnitSave", "phaseItemRow", "renderProjectKpis", "updateProjectMatrixLive", "showView", "runExportBudgetSnapshot", "runStartApprovalChain"].map(extractFunction)

@@ -3,6 +3,7 @@
   "use strict";
   // Creator counts the decimal point in Max Digits: 13 integral digits + '.' + 2.
   var UOMS = [ "CY", "EA", "LB", "LF",  "LOTS", "LS", "S", "SET", "SF", "SY", "TN",   "VF", "WK"];
+  var ELEMENTS = [{id:"1",label:"(1) Labor"},{id:"2",label:"(2) Materials"},{id:"3",label:"(3) Equipment"},{id:"4",label:"(4) Subcontractor"},{id:"5",label:"(5) Other"}];
   var MAX_CENTS = 999999999999999n;
   function decimal(raw, label) {
     if (typeof raw !== "string" || !/^\d+(?:\.\d+)?$/.test(raw)) throw new Error((label || "Amount") + " must be an exact decimal string.");
@@ -111,5 +112,39 @@
       return {budgetItemId:id,verified:true,available:available,allocated:grouped[id],remaining:remaining,pending:pending,shortfall:shortfall>0n?shortfall:0n};
     });
   }
-  root.LMPO={uoms:UOMS,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations};
+  // Read-only element arithmetic mirrors the native poBudgetBalances contract.
+  // Unknown legacy allocations stay separate; an item total is never spread
+  // across elements or silently assigned to Other.
+  function elementAllocations(lines, balances, reservedLines, reservedModifications, defaultElements) {
+    var ids=Array.from(new Set(lines.filter(function(line){return !!line.budgetItemId;}).map(function(line){return line.budgetItemId;})));
+    function cents(value){if(typeof value!=="string"||! /^-?\d+$/.test(value))return null;return BigInt(value);}
+    return ids.map(function(id){
+      var balance=balances.find(function(row){return row.budgetItemId===id;}),parts=balance&&balance.componentBalances;
+      var unallocatedPO=balance?cents(balance.unallocatedIssuedCents):null,unallocatedMod=balance?cents(balance.unallocatedModificationCents):null;
+      var complete=!!(balance&&Array.isArray(parts)&&parts.length===5&&parts.every(function(part){return part&&typeof part.costElement==='string'&&/^[1-5]$/.test(part.costElement);})&&new Set(parts.map(function(part){return part.costElement;})).size===5);
+      var defaultElement=defaultElements&&defaultElements[id],derivedBaseline=!!(balance&&balance.componentBaselineAvailable!==true&&/^[1-5]$/.test(defaultElement)&&cents(balance.finalCents)!==null);
+      var ownUnknown=false;
+      (reservedLines||[]).filter(function(line){return line.budgetItemId===id;}).forEach(function(line){if(!/^[1-5]$/.test(line.costElement))ownUnknown=true;});
+      var elements=ELEMENTS.map(function(element){
+        var part=complete?parts.find(function(row){return row.costElement===element.id;}):null,final=part?cents(part.finalCents):null,mods=part?cents(part.modCents):null,issued=part?cents(part.issuedCents):null,available=part?cents(part.availableCents):null,pending=part?cents(part.pendingModificationCents):null;
+        if(derivedBaseline){final=element.id===defaultElement?cents(balance.finalCents):0n;if(mods!==null&&issued!==null)available=final+mods-issued;}
+        var own=0n,allocated=0n,ownPending=0n,currentKnown=true,pendingKnown=true;
+        (reservedLines||[]).forEach(function(line){if(line.budgetItemId===id&&line.costElement===element.id){try{own+=money(line.finalAmount);}catch(e){ownUnknown=true;}}});
+        lines.forEach(function(line){if(line.budgetItemId===id&&line.costElement===element.id){try{allocated+=money(line.finalAmount);}catch(e){currentKnown=false;}}});
+        (reservedModifications||[]).forEach(function(mod){
+          if(mod.budgetItemId!==id||mod.status==='Approved')return;
+          if(!mod.components||ELEMENTS.some(function(e){return typeof mod.components[e.id]!=='string';})){pendingKnown=false;return;}
+          try{ownPending+=money(mod.components[element.id]);}catch(e){pendingKnown=false;}
+        });
+        var baselineKnown=!!(balance&&(balance.componentBaselineAvailable===true||derivedBaseline)&&final!==null);
+        var nativeKnown=!!(complete&&baselineKnown&&mods!==null&&issued!==null&&available!==null&&pending!==null&&final+mods-issued===available);
+        var modified=nativeKnown?final+mods:null,otherPO=nativeKnown?issued-own:null,remainingPending=nativeKnown&&pendingKnown?pending-ownPending:null;
+        var verified=!!(nativeKnown&&unallocatedPO===0n&&unallocatedMod===0n&&!ownUnknown&&otherPO>=0n&&currentKnown);
+        var before=verified?available+own:null,remaining=verified?before-allocated:null,shortfall=verified&&remainingPending!==null&&remainingPending>=0n?allocated-before-remainingPending:null;
+        return {costElement:element.id,label:element.label,verified:verified,final:baselineKnown?final:null,modifications:nativeKnown?mods:null,modified:modified,existingPOs:nativeKnown&&!ownUnknown&&otherPO>=0n?otherPO:null,available:before,allocated:currentKnown?allocated:null,remaining:remaining,pending:verified&&remainingPending!==null&&remainingPending>=0n?remainingPending:null,shortfall:shortfall===null?null:shortfall>0n?shortfall:0n};
+      });
+      return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
+    });
+  }
+  root.LMPO={uoms:UOMS,elements:ELEMENTS,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);

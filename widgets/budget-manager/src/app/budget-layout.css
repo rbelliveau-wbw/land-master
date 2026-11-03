@@ -305,6 +305,32 @@ table.mx.phase-matrix .budget-rate-input{min-width:104px;padding:5px 4px;font-si
 table.mx.phase-matrix td:nth-child(n+5){padding:6px!important;font-size:11.5px!important;font-variant-numeric:tabular-nums;white-space:nowrap}
 table.mx.phase-matrix td:nth-child(n+5)>div:not(.mod-pend){padding:0!important;font-size:11.5px!important}
 /* Leave room for the inline saved check beside a seven-digit currency amount. */
+/* Element details retain the existing matrix columns and parent editors. */
+.budget-element-toggle{display:grid;place-items:center;flex:none;width:22px;height:24px;padding:0;border:0;border-radius:5px;background:transparent;color:#6884a4;cursor:pointer}
+.budget-element-toggle:hover{background:#e6eef8;color:var(--primary)}
+.budget-element-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.budget-element-toggle svg{width:14px;height:14px;transition:transform 200ms cubic-bezier(.22,.7,.25,1)}
+.budget-element-toggle[aria-expanded=true] svg{transform:rotate(90deg)}
+table.mx .budget-element-row td{background:#f8fafd;border-bottom:1px solid #e9eef5;padding:6px 10px;font-size:11.5px;font-variant-numeric:tabular-nums}
+table.mx .budget-element-row .budget-element-label{padding-left:44px;color:#5c7290;white-space:nowrap}
+table.mx .budget-element-row .budget-element-label span{border-left:2px solid #d8e4f2;padding-left:10px}
+table.mx .budget-element-amount{text-align:right;font-family:"SF Mono",monospace;color:#4d6482;white-space:nowrap}
+.budget-element-unknown{color:var(--faint)}
+.mod-element-picker{position:relative;flex:0 0 168px}
+#modElementToggle{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;min-height:39px;padding:7px 9px;border:1px solid #bfd3ec;border-radius:7px;background:#f5f9ff;color:var(--navy);font:600 11px inherit;text-align:left;cursor:pointer}
+#modElementToggle:focus-visible,.mod-element-menu button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.mod-element-menu{position:absolute;top:calc(100% + 4px);left:0;z-index:20;width:200px;padding:5px;background:#fff;border:1px solid #c8d9ee;border-radius:8px;box-shadow:0 8px 26px #12335b22}
+.mod-element-menu[hidden]{display:none}
+.mod-element-menu button{display:block;width:100%;padding:8px;border:0;border-radius:5px;background:transparent;text-align:left;font:inherit;font-size:12px;color:var(--navy);cursor:pointer}
+.mod-element-menu button:hover,.mod-element-menu button[aria-selected=true]{background:#e8f1ff}
+.mod-element-preview{width:100%;border-collapse:collapse;margin-top:13px;font-size:10.5px}
+.mod-element-preview th,.mod-element-preview td{padding:6px 4px;border-bottom:1px solid #deE8f5;text-align:right;font-variant-numeric:tabular-nums}
+.mod-element-preview th:first-child{text-align:left;white-space:nowrap}
+.mod-element-preview thead th{font-weight:700;font-size:9px;color:var(--muted)}
+.mod-element-preview tbody td{font-family:"SF Mono",monospace}
+.mod-element-preview tr.selected{background:#e5efff;color:var(--primary)}
+#mx tr.budget-element-row.element-collapsed,#mx tr.budget-element-row.cat-collapsed,#mx tr.budget-element-row.search-hidden{display:none}
+@media(prefers-reduced-motion:reduce){.budget-element-toggle svg{transition:none}}
 table.mx.phase-matrix .ci{min-width:128px;font-size:11.5px;padding:6px 5px}
 table.mx.phase-matrix .budget-computed-cost{font-size:11.5px;padding:0}
 table.mx.phase-matrix .revv,table.mx.phase-matrix .modv{font-size:11.5px}

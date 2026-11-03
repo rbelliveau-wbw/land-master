@@ -31,7 +31,7 @@
         each('[data-budget-metric] .v',node=>api.text(node,[scope,'metric',node.parentElement.dataset.budgetMetric]));
         table('#mx',id(scope,'matrix'),{
           skip:s.edPhaseIdx==='all'?1:4,context:s.tier,
-          row:row=>row.dataset.iid||row.dataset.ctog||(row.parentElement.tagName==='TFOOT'?'footer':clean(row.querySelector('.cn')||row.cells[0])),
+          row:row=>row.dataset.elementKey||row.dataset.iid||row.dataset.ctog||(row.parentElement.tagName==='TFOOT'?'footer':clean(row.querySelector('.cn')||row.cells[0])),
           column:(cell,c)=>cell.dataset.budgetItemId|| (s.edPhaseIdx==='all'?(project?.phases?.[c-1]?.ID||'total'):c)
         });
         each('#mx tr[data-iid] input[readonly]',input=>api.readonly(input,[scope,'item',input.closest('tr').dataset.iid,input.dataset.f||'preliminary']));
@@ -51,6 +51,7 @@
         const mod=id('modification',s.modModal?.budgetId||s.edBudget?.ID,s.modModal?.itemId||s.modModal?.item?.ID||'',s.modModal?.id||'draft');
         mark('#requestBalance .rv,#requestGPReference .rv,#requestAmountMax',mod);
         mark('#modPreview .rv',mod);
+        table('#modElementPreview',id(mod,'elements'),{row:row=>row.dataset.modElementRow});
         each('.po-overlay',overlay=>{
           const scope=id('po',api.identity(overlay));
           each('[data-po-total],[data-po-summary-total],[data-po-summary-count],[data-po-context] strong', (node,i)=>api.text(node,[scope,'summary',i]),overlay);
@@ -59,6 +60,7 @@
             each('input[readonly][data-po-field="finalAmount"]',input=>api.readonly(input,[scope,line,'amount']),row);
           },overlay);
           each('[data-po-summary] tbody tr',row=>{const code=clean(row.querySelector('th strong'));[...row.querySelectorAll('td')].forEach((cell,i)=>api.text(cell,[scope,'allocation',code||clean(row),i],'money'));},overlay);
+          each('[data-po-element-value]',node=>api.text(node,[scope,'element',node.dataset.budgetItem,node.dataset.element,node.dataset.metric],'money'),overlay);
         });
         ['territoryFilterCount','statusFilterCount','apprCt','importCt','multiNotesCount'].forEach(name=>api.id(name,'budget-counts'));
         badges('[data-budget-attachments]','data-budget-attachments');badges('[data-budget-comments]','data-budget-comments');

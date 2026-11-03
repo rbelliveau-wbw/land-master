@@ -16,6 +16,9 @@ GP Actuals, per-unit rate and modifications across every displayed phase. Keep
 negative amounts and individually nonzero modifications even when they net to
 zero. Keep per-unit setup/drafts and unknown data visible. Its existing incomplete
 per-unit navigation recovery clears filters before focusing the required field.
+Budget's saved element amounts also keep their parent line visible. Expanded
+element rows inherit their parent line's search, Hide Empty and category state;
+they do not become additional items or affect totals.
 
 Budget's phase and all-phases item lists use the shared keyed movement engine
 with `visibility:true` so filtered survivors move to their real positions.

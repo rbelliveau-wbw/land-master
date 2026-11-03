@@ -157,9 +157,44 @@ string sendModificationEmail(int modificationId, string action)
 		detailCard = detailCard + " &nbsp; | &nbsp; <b>Reference:</b> " + modRefSafe;
 	}
 	detailCard = detailCard + "</div>";
+	// Existing modifications keep their amount unallocated. Only show a split
+	// when the record actually contains component values.
+	componentLabels = {"(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other"};
+	componentValues = {modRec.Labor_Budget,modRec.Materials_Budget,modRec.Equipment_Budget,modRec.Subcontractor_Budget,modRec.Other_Budget};
+	componentIndex = 0;
+	for each  componentValue in componentValues
+	{
+		if(componentValue != null && componentValue != 0)
+		{
+			detailCard = detailCard + "<div style='margin-top:4px;font-size:13px;color:#475569;'>" + componentLabels.get(componentIndex) + ": " + signPrefix + "$" + componentValue.toString() + "</div>";
+		}
+		componentIndex = componentIndex + 1;
+	}
 	detailCard = detailCard + "<div style='margin-top:8px;font-size:13px;color:#475569;'><b>Reason:</b> " + modReasonSafe + "</div>";
 	detailCard = detailCard + "</div>";
 	linkBlock = "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Budget Page</a>";
+	if(modRec.Budget_Item != null)
+	{
+		changeParts = {"1":modRec.Labor_Budget,"2":modRec.Materials_Budget,"3":modRec.Equipment_Budget,"4":modRec.Subcontractor_Budget,"5":modRec.Other_Budget};
+		changeSign = 1; if(modType == "Decrease") { changeSign = -1; }
+		detailCard = detailCard + "<h3 style='font-size:14px;margin:16px 0 8px'>Element Details</h3><table style='width:100%;font-size:10px;border-collapse:collapse'><tr><th>Element</th><th>Final</th><th>Approved Mods</th><th>Current Revised</th><th>This Modification</th><th>Revised If Approved</th></tr>";
+		for each element in thisapp.budgetElementExportRows(modRec.Budget_Item.ID)
+		{
+			values = element.get("values");
+			change = changeParts.get(element.get("code"));
+			if(change != null) { change = changeSign * change; }
+			projected = null;
+			if(values.get(5) != null && change != null) { projected = values.get(5); if(modRec.Status != "Approved") { projected = projected + change; } }
+			detailCard = detailCard + "<tr><td style='padding:5px;border-bottom:1px solid #e2e8f0'>" + element.get("label") + "</td>";
+			for each amount in {values.get(3),values.get(4),values.get(5),change,projected}
+			{
+				display = "—"; if(amount != null) { display = amount.text("$#,##0.####"); }
+				detailCard = detailCard + "<td style='padding:5px;border-bottom:1px solid #e2e8f0;text-align:right'>" + display + "</td>";
+			}
+			detailCard = detailCard + "</tr>";
+		}
+		detailCard = detailCard + "</table>";
+	}
 	linkBlock = linkBlock + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	linkBlock = linkBlock + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
 	// ---- created / approved: notify the next pending approver ----

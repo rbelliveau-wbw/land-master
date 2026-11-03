@@ -87,7 +87,22 @@
 .po-summary footer>span{font-size:16px;font-weight:750;letter-spacing:.8px}.po-summary footer strong{font-size:28px}
 @media(max-width:550px){.po-total>strong{font-size:27px}.po-summary footer strong{font-size:25px}}
 
-.po-workspace .po-ledger-head,.po-workspace .po-line-fields{grid-template-columns:170px 150px minmax(170px,1fr) 54px 55px 45px 70px 90px 53px;min-width:940px}.po-workspace .po-lines{min-width:940px}
+.po-workspace .po-ledger-head,.po-workspace .po-line-fields{grid-template-columns:170px 150px minmax(170px,1fr) 54px 55px 142px 70px 90px 53px;min-width:1040px}.po-workspace .po-lines{min-width:1040px}
+
+/* Per-element math remains independent of the item-level PO total. */
+.po-element-summary{border-top:1px solid #ccdced;padding:12px 14px 5px;background:#fff}
+.po-element-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.po-element-heading h3{margin:0;color:#214f87;font-size:12px;font-weight:750;overflow-wrap:anywhere}
+.po-element-heading>span{flex:none;color:#7487a1;font-size:10px}
+.po-summary-element{padding:10px 11px;margin:0 0 9px;border:1px solid #dce6f2;border-radius:8px;background:#f8fbff}
+.po-summary-element h4{margin:0 0 8px;color:#214f87;font-size:11px;font-weight:700}
+.po-element-equation{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr) 12px minmax(0,1fr);gap:5px;align-items:center;margin:6px 0}
+.po-element-metric{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:11px;font-variant-numeric:tabular-nums}
+.po-element-metric small{font-size:9px;font-weight:500;color:#7487a1}
+.po-element-metric strong{font-size:11px;font-weight:650;color:#214f87;white-space:nowrap}
+.po-element-metric:last-child strong{color:#087c64}.po-element-metric strong.is-negative{color:#b45309}
+.po-math-sign{align-self:end;text-align:center;font-size:12px;font-weight:650;color:#8299b5;padding-bottom:1px}
+.po-element-notice{margin:5px 0 8px;font-size:10px;line-height:1.5;color:#94651f}
 
 .po-item-cell{display:block;align-self:center;min-width:0;padding:3px 5px;font-size:11px;line-height:18px;color:#41658f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 

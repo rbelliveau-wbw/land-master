@@ -1,0 +1,59 @@
+list poElementExportRows(string purchaseOrderId)
+{
+	rows = List();
+	if(!purchaseOrderId.matches("[0-9]+")) { return rows; }
+	po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
+	if(po.count() != 1 || ifnull(po.PO_Revision,"") == "") { return rows; }
+	balances = thisapp.poBudgetBalances(po.Budget.toString());
+	items = List();
+	for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
+	{
+		if(line.Budget_Item != null && !items.contains(line.Budget_Item.ID.toString())) { items.add(line.Budget_Item.ID.toString()); }
+	}
+	for each itemId in items
+	{
+		item = Budget_Item[ID == itemId.toLong()];
+		balance = Map();
+		if(balances.get("success") == true)
+		{
+			for each candidate in balances.get("balances") { if(candidate.get("budgetItemId") == itemId) { balance = candidate; } }
+		}
+		for each exported in thisapp.budgetElementExportRows(item.ID)
+		{
+			element = exported.get("code");
+			part = Map();
+			if(balance.get("componentBalances") != null)
+			{
+				for each candidate in balance.get("componentBalances") { if(candidate.get("costElement") == element) { part = candidate; } }
+			}
+			elementFinal = exported.get("values").get(3);
+			if(part.get("finalCents") != null) { elementFinal = part.get("finalCents").toDecimal() / 100.0; }
+			mods = null; modified = null; existing = null; available = null; remaining = null;
+			current = 0.0;
+			for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision && Budget_Item == item.ID && Cost_Element == element]
+			{
+				current = current + line.Final_Amount_Exact.toDecimal();
+			}
+			if(part.get("modCents") != null) { mods = part.get("modCents").toDecimal() / 100.0; }
+			if(elementFinal != null && mods != null) { modified = elementFinal + mods; }
+			if(part.get("issuedCents") != null)
+			{
+				existing = part.get("issuedCents").toDecimal() / 100.0;
+				if(po.PO_Commitment_State == "Reserved") { existing = existing - current; }
+				if(existing < 0) { existing = null; }
+			}
+			unallocatedIssued = null; unallocatedMods = null;
+			if(balance.get("unallocatedIssuedCents") != null) { unallocatedIssued = balance.get("unallocatedIssuedCents").toDecimal() / 100.0; }
+			if(balance.get("unallocatedModificationCents") != null) { unallocatedMods = balance.get("unallocatedModificationCents").toDecimal() / 100.0; }
+			if(modified != null && existing != null && unallocatedIssued == 0 && unallocatedMods == 0 && (balance.get("componentBaselineAvailable") == true || exported.get("finalComplete") == true))
+			{
+				available = modified - existing;
+				remaining = available - current;
+			}
+			values = List(); values.add(ifnull(item.Item_Name,"Budget Item")); values.add(exported.get("label")); values.add(elementFinal); values.add(mods); values.add(modified); values.add(existing); values.add(available); values.add(current); values.add(remaining);
+			entry = Map(); entry.put("budgetItemId",itemId); entry.put("costElement",element); entry.put("costCode",ifnull(item.Cost_Code,"").toString()); entry.put("values",values); entry.put("unallocatedIssued",unallocatedIssued); entry.put("unallocatedModifications",unallocatedMods);
+			rows.add(entry);
+		}
+	}
+	return rows;
+}

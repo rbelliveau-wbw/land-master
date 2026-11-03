@@ -571,6 +571,26 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 			finalizedCount = 0;
 			finalizedTotal = 0;
 			budgetCategoriesToFinalize = Budget_Category[Budget == vBudgetId.toLong()];
+			// A partial Preliminary allocation on a later item must not leave
+			// earlier items financially finalized. Check the whole Dev/Eng track.
+			if(vApprovalType == "Development")
+			{
+				for each preflightCategory in budgetCategoriesToFinalize
+				{
+					preflightDepartment = ifnull(preflightCategory.Deparment,"").trim().toLowerCase();
+					if(preflightDepartment.contains("development") || preflightDepartment.contains("engineering"))
+					{
+						for each preflightItem in Budget_Item[Budget_Category == preflightCategory.ID]
+						{
+							componentPreflight = thisapp.snapshotBudgetItemComponents(preflightItem.ID,false,true);
+							if(componentPreflight.get("ok") != true)
+							{
+								return "ERROR: Budget component snapshot could not be saved: " + componentPreflight.get("error");
+							}
+						}
+					}
+				}
+			}
 			for each  cat in budgetCategoriesToFinalize
 			{
 				deptKey = ifnull(cat.Deparment,"").trim().toLowerCase();
@@ -606,6 +626,11 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 						}
 						// Move Unapproved into Final.
 						itemToFinalize.Budget_Ttl=unapprovedVal;
+						componentSnapshot = thisapp.snapshotBudgetItemComponents(itemToFinalize.ID,false,false);
+						if(componentSnapshot.get("ok") != true)
+						{
+							return "ERROR: Budget component snapshot could not be saved: " + componentSnapshot.get("error");
+						}
 						// Once the track finishes, Unapproved must be zero.
 						itemToFinalize.Unapproved_Final_Budget_Ttl=0;
 						finalizedCount = finalizedCount + 1;

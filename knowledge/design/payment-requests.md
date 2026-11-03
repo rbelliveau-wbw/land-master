@@ -129,6 +129,40 @@ edits as well as range paste and fill-down. Double-click or F2 edits a cell;
 keyboard focus entering the ledger updates its active cell. Retain exact amounts,
 atomic paste validation and the 250-line limit.
 
+## Named Cost Elements and Budget Math
+
+Use the full labels **(1) Labor**, **(2) Materials**, **(3) Equipment**,
+**(4) Subcontractor**, and **(5) Other** in PO and standalone Modification
+pickers, selected values, detail rows, downloads and approval mail. Keep the
+stored PO element identifiers as strings 1–5. Five options need a compact
+single-select without a search field; preserve keyboard selection, focus and
+the existing draft/read-only/pending gates.
+
+Keep the PO Summary's authoritative aggregate table and add a separate named
+five-element section per Budget Item. Show the actual arithmetic as aligned
+equations: **Final + Approved Mods = Modified Budget**, **Modified Budget −
+Existing POs = Available**, and **Available − This PO = Remaining**. Right-align
+tabular currency, preserve exact-cent reservations and restore this saved PO's
+own allocation once. Keep pending automatic modifications and element
+shortfalls distinct. Unknown element balances and unallocated historical PO/mod
+amounts must remain visible as unavailable; do not turn missing detail into
+zero or replace the existing aggregate authorization with browser arithmetic.
+
+Standalone Modification entry uses the same labels and displays **Final + Prior
+Mods + This Mod = Revised** for all five elements. Highlight the chosen row;
+only it receives the current signed change. Increase/Decrease supplies the
+sign, while persisted component amounts remain unsigned. Prior modifications
+exclude the exact record being edited. Persist all five allocation values
+together through the existing native contract and retain the governing PO for
+automatic modifications. Missing/legacy component detail stays unknown.
+
+The owner-approved department attribution may fill an entirely blank saved
+Dev/Eng split: Development uses Other, Engineering uses Labor. Identify that
+attribution where it supplies PO context. Preserve explicit allocations,
+including partial/all-zero data; Construction has no corresponding inferred
+default. These detail surfaces leave source totals, approval routes, native
+permissions and parent reservation calculations unchanged.
+
 Saved PO View/Edit opens an explicit loading state. Hide entry fields, zero totals
 and the Summary until the exact snapshot and vendor roster arrive together. Read
 them in parallel. Failed loads show the error and Retry load; retain close/focus

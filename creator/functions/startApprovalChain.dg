@@ -149,6 +149,12 @@ string startApprovalChain(int budgetId, string approvalType)
 			{
 				// Starting or restarting this track invalidates its old Final.
 				itemToStage.Budget_Ttl=0;
+				// Frozen Final belongs to the old cycle; retain Preliminary parts.
+				itemToStage.Labor_Budget=null;
+				itemToStage.Materials_Budget=null;
+				itemToStage.Equipment_Budget=null;
+				itemToStage.Subcontractor_Budget=null;
+				itemToStage.Other_Budget=null;
 				affectedItemCount = affectedItemCount + 1;
 				if(vApprovalType == "Development")
 				{

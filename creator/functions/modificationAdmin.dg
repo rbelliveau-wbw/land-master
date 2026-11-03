@@ -279,20 +279,69 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		{
 			return "ERROR: Modification not found.";
 		}
+		vAmt = ifnull(amount,"").trim();
+		componentAmounts = Map();
+		hasComponentRequest = vAmt.startsWith("{");
+		if(vAmt != "")
+		{
+			if(hasComponentRequest)
+			{
+				try
+				{
+					componentRequest = vAmt.toMap();
+					if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
+					{
+						return "ERROR: Unsupported budget component request.";
+					}
+					componentSource = componentRequest.get("components");
+					componentFields = {"Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"};
+					vAmount = 0.0;
+					for each componentField in componentFields
+					{
+						componentRaw = componentSource.get(componentField);
+						if(componentRaw == null || componentRaw.toString().trim() == "")
+						{
+							return "ERROR: All five budget component values are required.";
+						}
+						componentValue = componentRaw.toString().toDecimal();
+						if(componentValue < 0 || componentValue.round(2) != componentValue)
+						{
+							return "ERROR: Budget components must be nonnegative amounts with at most two decimal places.";
+						}
+						componentAmounts.put(componentField,componentValue);
+						vAmount = vAmount + componentValue;
+					}
+				}
+				catch (componentError)
+				{
+					return "ERROR: Budget components must contain valid currency amounts.";
+				}
+			}
+			else
+			{
+				vAmount = vAmt.toDecimal();
+			}
+			if(vAmount <= 0)
+			{
+				return "ERROR: Amount must be greater than zero.";
+			}
+		}
 		vType = ifnull(modType,"").trim();
 		if(vType == "Increase" || vType == "Decrease")
 		{
 			modRec.Modification_Type=vType;
 		}
-		vAmt = ifnull(amount,"").trim();
 		if(vAmt != "")
 		{
-			vAmount = vAmt.toDecimal();
-			if(vAmount <= 0)
-			{
-				return "ERROR: Amount must be greater than zero.";
-			}
 			modRec.Amount=vAmount;
+			if(hasComponentRequest)
+			{
+				modRec.Labor_Budget=componentAmounts.get("Labor_Budget");
+				modRec.Materials_Budget=componentAmounts.get("Materials_Budget");
+				modRec.Equipment_Budget=componentAmounts.get("Equipment_Budget");
+				modRec.Subcontractor_Budget=componentAmounts.get("Subcontractor_Budget");
+				modRec.Other_Budget=componentAmounts.get("Other_Budget");
+			}
 		}
 		vReason = ifnull(reason,"").trim();
 		if(vReason != "")
