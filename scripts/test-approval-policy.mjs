@@ -59,7 +59,12 @@ for(const workflow of ['Pro Forma','Budget','Budget Modification','Contract','Pu
  assert.deepEqual(captured.route.map(row=>row.order),[1,2,3,4],workflow);
  assert.deepEqual(captured.route.map(row=>row.policyStepOrder),[1,2,2,3],workflow);
  assert.deepEqual(captured.route.slice(0,3).map(row=>row.assignmentId),['','',''],workflow);
- const noVP=clone(all);noVP.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(noVP,input),/exactly one VP/,workflow);
+ const noVP=clone(all);noVP.territories[0].vpUserAccessIds=[];assert.throws(()=>api.resolve(noVP,input),workflow==='Contract'?/at least one VP/:/exactly one VP/,workflow);
+ const bothVPs=clone(all);bothVPs.territories[0].vpUserAccessIds=['13','12','13'];
+ if(workflow==='Contract'){
+  const both=clone(api.resolve(bothVPs,input).route);assert.deepEqual(both.map(row=>row.userAccessId),['13','12','101','102','11']);assert.deepEqual(both.map(row=>row.policyStepOrder),[1,1,2,2,3]);assert.equal(new Set(both.map(row=>row.key)).size,both.length);
+  bothVPs.users.find(user=>user.id==='12').routingEnabled=false;assert.throws(()=>api.resolve(bothVPs,input),/unroutable/,'one inactive Contract VP blocks the whole route');
+ }else assert.throws(()=>api.resolve(bothVPs,input),/exactly one VP/,'non-Contract workflows retain one VP');
  const noManagers=clone(all);noManagers.territories[0].devMgrUserAccessIds=[];assert.throws(()=>api.resolve(noManagers,input),/at least one Dev Mgr/,workflow);
  assert.throws(()=>api.resolve(all,{...input,territory:'Unassigned'}),/one Territory record/,workflow);
  all.territories[0].vpUserAccessIds=['12'];all.territories[0].devMgrUserAccessIds=['101'];

@@ -185,6 +185,18 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("roles",roles);
 		return resp.toString();
 	}
+	// The creation hook must resolve the reserved legacy Development default
+	// before any new dispatch. Never silently fall back to the old recipient
+	// when a Territory VP/routing email is missing or the hook was not promoted.
+	for each defaultRow in Contract_Approvals[Contract1 == cid]
+	{
+		if(ifnull(defaultRow.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(defaultRow.Status,"") == "" || defaultRow.Status == "Not Sent") && ifnull(defaultRow.Approval_Action,"") == "" && defaultRow.Approval_Date == null)
+		{
+			resp.put("success",false);
+			resp.put("message","The Development approval still has its legacy default. Apply the Contract VP rule before sending approvals.");
+			return resp.toString();
+		}
+	}
 	attachedCount = Attachment[Contract1 == cid && Email_Attachment == true].count();
 	if(attachedCount == 0)
 	{

@@ -1408,3 +1408,20 @@ Regression coverage: both modules start open, independent collapse/reopen,
 retained rows and state on refresh, no record writes, desktop keyboard controls,
 centered rendered icons, repository validation and Pages build. Rollback:
 map Production Contract Management to **1.62.44** and rebuild Pages.
+
+## Parent Count Pills — 1.62.50, November 3, 2026
+
+Legal and Construction omit the parent pills that count child contract types.
+Child rows, type labels, parent links, grouping, filter context and parent locks
+remain. No Creator change is required for this presentation change.
+
+The separately prepared Contract Development-default adapter uses the published
+VP-only Contract Settings rule and every selected Territory VP. It retains other
+recipients and sent/decided history. Native compilation, created-only hooks,
+verification and owner promotion remain required; this hosted release does not
+reassign existing Production approvals. See the [native handoff](../../docs/contract-development-vp-routing-2026-11-03.md).
+
+Checks cover Legal/Construction parent pills, retained child hierarchy and
+parent assignment, plus Contract-only multi-VP preview and unchanged one-VP
+rules elsewhere. Full validation and Pages build are release gates.
+Rollback Contract Management Production to **1.62.49**.
