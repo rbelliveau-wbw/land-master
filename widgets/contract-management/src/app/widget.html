@@ -1978,16 +1978,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.50"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.50">
-<script src="interaction-motion.js?v=1.62.50"></script>
-<script src="interaction-surfaces.js?v=1.62.50"></script>
-<script src="number-edit-commit.js?v=1.62.50"></script>
-<script src="number-transitions.js?v=1.62.50"></script>
-<script src="number-surfaces.js?v=1.62.50"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.50">
-<link rel="stylesheet" href="report-layout.css?v=1.62.50">
-<link rel="stylesheet" href="construction-board.css?v=1.62.50">
+<script src="success-feedback.js?v=1.62.51"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.51">
+<script src="interaction-motion.js?v=1.62.51"></script>
+<script src="interaction-surfaces.js?v=1.62.51"></script>
+<script src="number-edit-commit.js?v=1.62.51"></script>
+<script src="number-transitions.js?v=1.62.51"></script>
+<script src="number-surfaces.js?v=1.62.51"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.51">
+<link rel="stylesheet" href="report-layout.css?v=1.62.51">
+<link rel="stylesheet" href="construction-board.css?v=1.62.51">
 </head>
 <body>
 
@@ -1996,7 +1996,7 @@ select.apr-in{cursor:pointer}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6"/><path d="M4 10h16"/></svg>
     Land Master
   </div>
-  <div class="crumb" id="crumb"><a onclick="goHome()">Contracts</a></div>
+  <div class="crumb" id="crumb"></div>
   <div class="spacer"></div>
   <span class="statusline"><span class="dot warn" id="statusdot"></span><span id="statustext">Loading…</span></span>
   <button class="auditbtn" id="auditToggle" onclick="toggleAudit()" title="Open the audit log"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg><span class="audit-n" id="auditCount"></span></button>
@@ -2036,7 +2036,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.50", pageSize: 200, maxPages: 25,
+  version: "1.62.51", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -10745,7 +10745,7 @@ function renderView(){
    can fix it, and offer nothing else. No list, no buttons that would fail, and
    crucially no demo mode pretending the writes worked. */
 function renderLocked(){
-  var c=$("crumb"); if(c) c.innerHTML='<strong>Contracts</strong>';
+  var c=$("crumb"); if(c) c.innerHTML='<strong>'+(constructionMode()?'Construction':'Contracts')+'</strong>';
   var rep=S.lockedReport?esc(S.lockedReport):"";
   $("view").innerHTML='<div class="lock-wrap"><div class="lock-card">'
     +'<div class="lock-badge">'
@@ -10842,7 +10842,7 @@ function contractBoot(){
       if(settled||token!==S.contractInitToken)return;var runtime=LMRuntime.apply(params);if(!runtime||runtime.environment==='UNKNOWN'||typeof runtime.user!=='string'||!runtime.user.trim()||runtime.user==='(unknown)')throw new Error('Creator did not identify the current actor and environment.');settled=true;clearTimeout(timer);resolve(runtime);
     }).catch(function(error){if(settled)return;settled=true;clearTimeout(timer);reject(error);});
   });
-  S.contractBootPromise=handshake.then(function(runtime){if(token!==S.contractInitToken)throw new Error('Creator initialization was superseded.');S.liveSDK=true;S.coreRefreshing=false;S.currentUser=runtime.user;S.usersLoaded=false;if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:'Contract Management',version:CFG.version,code:'CMW',apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var current=LMRuntime.current();return {environment:current.environment,user:current.user,sdkMode:S.liveSDK?'LIVE':'NO-SDK',view:S.view,section:S.homeSection};}});LMCriticalErrors.markReady();}LMPerf.end('contracts:handshake');return resolvePageParams();}).then(function(params){S.deepLink=params||{};S.workMode=initialWorkMode(S.deepLink);configurePageReports(S.deepLink);return loadData();}).catch(function(error){S.liveSDK=false;S.coreReady=false;S.coreRefreshing=false;contractControls();setStatus('err','Creator unavailable');auditLog('warn','Contracts native initialization failed',{note:errText(error)});return false;}).finally(function(){S.contractBootPromise=null;});
+  S.contractBootPromise=handshake.then(function(runtime){if(token!==S.contractInitToken)throw new Error('Creator initialization was superseded.');S.liveSDK=true;S.coreRefreshing=false;S.currentUser=runtime.user;S.usersLoaded=false;if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:'Contract Management',version:CFG.version,code:'CMW',apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var current=LMRuntime.current();return {environment:current.environment,user:current.user,sdkMode:S.liveSDK?'LIVE':'NO-SDK',view:S.view,section:S.homeSection};}});LMCriticalErrors.markReady();}LMPerf.end('contracts:handshake');return resolvePageParams();}).then(function(params){S.deepLink=params||{};S.workMode=initialWorkMode(S.deepLink);$("crumb").innerHTML='<a onclick="showContracts()">'+(constructionMode()?'Construction':'Contracts')+'</a>';configurePageReports(S.deepLink);return loadData();}).catch(function(error){S.liveSDK=false;S.coreReady=false;S.coreRefreshing=false;contractControls();setStatus('err','Creator unavailable');auditLog('warn','Contracts native initialization failed',{note:errText(error)});return false;}).finally(function(){S.contractBootPromise=null;});
   return S.contractBootPromise;
 }
 
