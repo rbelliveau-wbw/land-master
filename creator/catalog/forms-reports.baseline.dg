@@ -1,0 +1,1071 @@
+htmlpage html_snippet3()
+content
+<%{
+	%>
+<div id="lm-nav">
+<style>
+#lm-nav{--bg:#ffffff;--card:#ffffff;--border:#e3e6eb;--text:#1f2430;--muted:#6b7280;--brand:#2b6cff;--brand-ink:#fff;--edit:#5b667a;--chip:#eef1f6;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.10);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--text);background:var(--bg);box-sizing:border-box;padding:16px;line-height:1.4;-webkit-font-smoothing:antialiased;max-width:1200px;margin:0 auto;}
+#lm-nav *,#lm-nav *::before,#lm-nav *::after{box-sizing:border-box;}
+@media (prefers-color-scheme:dark){#lm-nav{--bg:#12151c;--card:#1b2029;--border:#2a3140;--text:#e7eaf0;--muted:#98a2b3;--brand:#4d82ff;--edit:#8a93a6;--chip:#222836;--shadow:0 1px 2px rgba(0,0,0,.5);}}
+#lm-nav .lm-envradio{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+#lm-nav h2.lm-title{font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em;}
+#lm-nav .lm-sub{color:var(--muted);font-size:13px;margin:3px 0 0;}
+#lm-nav .lm-envlabel{display:inline-block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:14px 12px 0 0;vertical-align:middle;}
+#lm-nav .lm-seg-btn{display:inline-block;vertical-align:middle;margin-top:14px;padding:7px 16px;font-size:13px;font-weight:600;color:var(--muted);background:var(--chip);border:1px solid var(--border);cursor:pointer;user-select:none;transition:background .12s,color .12s,border-color .12s;}
+#lm-nav label.seg-dev{border-radius:8px 0 0 8px;}
+#lm-nav label.seg-prod{border-radius:0 8px 8px 0;border-left:0;}
+#lm-nav #lm-dev:checked + label.seg-dev,#lm-nav #lm-prod:checked + label.seg-prod{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);}
+#lm-nav .lm-note{font-size:12px;color:var(--muted);margin:12px 0 0;padding-bottom:14px;border-bottom:1px solid var(--border);}
+#lm-nav .lm-note b{color:var(--text);}
+#lm-nav .lm-section{margin:16px 0 6px;}
+#lm-nav .lm-sec-head{display:flex;align-items:center;gap:8px;margin:4px 2px 10px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2;}
+#lm-nav .lm-sec-head h3{font-size:15px;font-weight:700;margin:0;}
+#lm-nav .lm-count{font-size:12px;color:var(--muted);background:var(--chip);border-radius:20px;padding:2px 9px;font-weight:600;}
+#lm-nav ul.lm-grid{list-style:none;margin:0;padding:0;display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));}
+#lm-nav .lm-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 11px;box-shadow:var(--shadow);}
+#lm-nav .lm-row-main{min-width:0;display:flex;flex-direction:column;gap:1px;}
+#lm-nav .lm-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#lm-nav .lm-link{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#lm-nav .lm-actions{display:flex;gap:6px;flex:none;}
+#lm-nav .lm-btn{text-decoration:none;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid transparent;white-space:nowrap;transition:.12s;}
+#lm-nav .lm-open{background:var(--brand);color:var(--brand-ink);}
+#lm-nav .lm-open:hover{filter:brightness(1.08);}
+#lm-nav .lm-edit{background:transparent;color:var(--edit);border-color:var(--border);}
+#lm-nav .lm-edit:hover{background:var(--chip);color:var(--text);}
+#lm-nav .lm-open.prod{display:none;}
+#lm-nav #lm-prod:checked ~ .lm-section .lm-open.dev{display:none;}
+#lm-nav #lm-prod:checked ~ .lm-section .lm-open.prod{display:inline-block;}
+</style>
+<h2 class="lm-title">Land Master &mdash; Forms &amp; Reports</h2>
+<p class="lm-sub">57 forms &middot; 70 reports &middot; quick links to open or edit every component</p>
+<span class="lm-envlabel">Environment</span><input type="radio" name="lmenv" id="lm-dev" class="lm-envradio" checked><label for="lm-dev" class="lm-seg-btn seg-dev">Development</label><input type="radio" name="lmenv" id="lm-prod" class="lm-envradio"><label for="lm-prod" class="lm-seg-btn seg-prod">Production</label><p class="lm-note"><b>Open</b> uses the selected environment. <b>Edit</b> always opens the builder (Development). Tip: press <b>Ctrl</b>+<b>F</b> (&#8984;F on Mac) to find a specific item.</p>
+<div class="lm-section">
+  <div class="lm-sec-head"><h3>Forms</h3><span class="lm-count">57</span></div>
+  <ul class="lm-grid">
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Budget</span><span class="lm-link">Add_Budget</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Add_Budget" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Add_Budget" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Add_Budget/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Builder</span><span class="lm-link">Builder</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Builder" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Builder" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Builder/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Builder Takedown</span><span class="lm-link">Builder_Takedown</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Builder_Takedown" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Builder_Takedown" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Builder_Takedown/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Company</span><span class="lm-link">Company</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Company" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Company" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Company/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Contract</span><span class="lm-link">Contract</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Contract" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Contract/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Equipment</span><span class="lm-link">Equipment</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Equipment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Equipment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Equipment/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Forecast</span><span class="lm-link">Forecast</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Forecast" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Forecast" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Forecast/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Forecast Year</span><span class="lm-link">Forecast_Year</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Forecast_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Forecast_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Forecast_Year/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Lots</span><span class="lm-link">Lots</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Lots/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Pro Forma</span><span class="lm-link">Add_Pro_Forma</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Add_Pro_Forma" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Add_Pro_Forma" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Add_Pro_Forma/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Project</span><span class="lm-link">Project</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Project" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Project" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Project/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Property</span><span class="lm-link">Property</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Property" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Property" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Property/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Subdivision</span><span class="lm-link">Subdivision</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Subdivision" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Subdivision" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Subdivision/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Takedown Schedule</span><span class="lm-link">Takedown_Schedule</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Takedown_Schedule" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Takedown_Schedule" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Takedown_Schedule/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Takedown Template</span><span class="lm-link">Takedown_Template</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Takedown_Template" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Takedown_Template" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Takedown_Template/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Tax Parcel Year</span><span class="lm-link">Tax_Parcel_Year</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Tax_Parcel_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Tax_Parcel_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Tax_Parcel_Year/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Tax Rate</span><span class="lm-link">Tax_Rate</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Tax_Rate" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Tax_Rate" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Tax_Rate/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Add Taxing Jurisdiction</span><span class="lm-link">Taxing_Jurisdiction</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Taxing_Jurisdiction" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Taxing_Jurisdiction" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Taxing_Jurisdiction/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Additional Items</span><span class="lm-link">Additional_Items</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Additional_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Additional_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Additional_Items/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Budget Approvals</span><span class="lm-link">Budget_Approvals</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Budget_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Budget_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Budget_Approvals/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Budget Category</span><span class="lm-link">Budget_Category</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Budget_Category" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Budget_Category" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Budget_Category/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Budget Import Item</span><span class="lm-link">Budget_Import_Item</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Budget_Import_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Budget_Import_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Budget_Import_Item/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Budget Item</span><span class="lm-link">Budget_Item</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Budget_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Budget_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Budget_Item/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Budget Months</span><span class="lm-link">Budget_Months</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Budget_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Budget_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Budget_Months/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Construction Cost Curve</span><span class="lm-link">Construction_Curve</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Construction_Curve" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Construction_Curve" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Construction_Curve/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contract Actions</span><span class="lm-link">Contract_Actions</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Contract_Actions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract_Actions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Contract_Actions/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contract Approvals</span><span class="lm-link">Contract_Approvals</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Contract_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Contract_Approvals/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contract Pricing</span><span class="lm-link">Contract_Pricing</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Contract_Pricing" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract_Pricing" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Contract_Pricing/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Attachment</span><span class="lm-link">Attachment</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Attachment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Attachment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Attachment/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contracts Management Search</span><span class="lm-link">Contracts_Management_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Contracts_Management_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contracts_Management_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Contracts_Management_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Equipment Maintenance Cost</span><span class="lm-link">Equipment_Maintenance_Cost</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Equipment_Maintenance_Cost" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Equipment_Maintenance_Cost" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Equipment_Maintenance_Cost/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Equipment Usage Year</span><span class="lm-link">Equipment_Usage_Year</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Equipment_Usage_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Equipment_Usage_Year" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Equipment_Usage_Year/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">External System Mapping</span><span class="lm-link">External_System_Mapping</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:External_System_Mapping" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:External_System_Mapping" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/External_System_Mapping/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Forecast Management</span><span class="lm-link">Forecast_Manager</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Forecast_Manager" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Forecast_Manager" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Forecast_Manager/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Forecast Search</span><span class="lm-link">Forecast_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Forecast_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Forecast_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Forecast_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Forecast Settings</span><span class="lm-link">Settings</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Settings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Settings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Settings/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Forecast Year Subform</span><span class="lm-link">Forecast_Year_Subform</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Forecast_Year_Subform" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Forecast_Year_Subform" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Forecast_Year_Subform/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Land Installments</span><span class="lm-link">Land_Installments</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Land_Installments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Land_Installments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Land_Installments/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">LOI Worksheet</span><span class="lm-link">LOI_Worksheet</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:LOI_Worksheet" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:LOI_Worksheet" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/LOI_Worksheet/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Lot Search</span><span class="lm-link">Lot_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Lot_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Lot_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Lot_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Forecasts</span><span class="lm-link">Mass_Create_Forecasts</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Create_Forecasts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Create_Forecasts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Create_Forecasts/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Lots</span><span class="lm-link">Mass_Create_Lots</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Create_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Create_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Create_Lots/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Lots Subform</span><span class="lm-link">Mass_Create_Lots_Subform</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Create_Lots_Subform" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Create_Lots_Subform" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Create_Lots_Subform/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Tax</span><span class="lm-link">Mass_Create_Tax</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Create_Tax" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Create_Tax" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Create_Tax/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Tax Rates</span><span class="lm-link">Mass_Create_Tax_Rates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Create_Tax_Rates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Create_Tax_Rates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Create_Tax_Rates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Update Lots</span><span class="lm-link">Mass_Update_Lots</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Update_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Update_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Update_Lots/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Update Tax</span><span class="lm-link">Mass_Update_Tax</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Mass_Update_Tax" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Mass_Update_Tax" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Mass_Update_Tax/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Milestone Name</span><span class="lm-link">Milestones</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Milestones" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Milestones" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Milestones/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Proforma Item</span><span class="lm-link">Proforma_Item</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Proforma_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Proforma_Item" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Proforma_Item/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Proforma Months</span><span class="lm-link">Proforma_Months</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Proforma_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Proforma_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Proforma_Months/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Proforma Phase</span><span class="lm-link">Proforma_Phase</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Proforma_Phase" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Proforma_Phase" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Proforma_Phase/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Redline Review</span><span class="lm-link">Redline_Review</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Redline_Review" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Redline_Review" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Redline_Review/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">System Search</span><span class="lm-link">System_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:System_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:System_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/System_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Tax Parcel Search</span><span class="lm-link">Tax_Parcel_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Tax_Parcel_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Tax_Parcel_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Tax_Parcel_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Tax Rate Template</span><span class="lm-link">Tax_Rate_Template</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Tax_Rate_Template" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Tax_Rate_Template" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Tax_Rate_Template/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Tax Table Search</span><span class="lm-link">Tax_Table_Search</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:Tax_Table_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Tax_Table_Search" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/Tax_Table_Search/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">User Access</span><span class="lm-link">User_Access</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Form:User_Access" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:User_Access" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/formbuilder/User_Access/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+  </ul>
+</div>
+<div class="lm-section">
+  <div class="lm-sec-head"><h3>Reports</h3><span class="lm-count">70</span></div>
+  <ul class="lm-grid">
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Active Builder Takedowns</span><span class="lm-link">Active_Builder_Takedowns</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Active_Builder_Takedowns" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Active_Builder_Takedowns" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Active_Builder_Takedowns/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Active Contracts</span><span class="lm-link">All_Contracts</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Contracts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Contracts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Contracts/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Active Lots</span><span class="lm-link">All_Active_Lots</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Active_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Active_Lots" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Active_Lots/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Active Lots - Contracts View</span><span class="lm-link">All_Active_Lots_Contracts_View</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Active_Lots_Contracts_View" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Active_Lots_Contracts_View" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Active_Lots_Contracts_View/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Active Lots - List View</span><span class="lm-link">All_Active_Lots_List_View</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Active_Lots_List_View" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Active_Lots_List_View" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Active_Lots_List_View/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Active Lots - Spreadsheet</span><span class="lm-link">All_Active_Lots_Spreadsheet</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Active_Lots_Spreadsheet" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Active_Lots_Spreadsheet" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Active_Lots_Spreadsheet/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Additional Items</span><span class="lm-link">All_Additional_Items</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Additional_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Additional_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Additional_Items/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budget Approvals</span><span class="lm-link">All_Budget_Approvals</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budget_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budget_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budget_Approvals/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budget Categories</span><span class="lm-link">All_Budget_Categories</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budget_Categories" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budget_Categories" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budget_Categories/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budget Import Items</span><span class="lm-link">All_Budget_Item_Imports</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budget_Item_Imports" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budget_Item_Imports" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budget_Item_Imports/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budget Items</span><span class="lm-link">All_Budget_Items</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budget_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budget_Items" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budget_Items/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budget Months</span><span class="lm-link">All_Budget_Months</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budget_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budget_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budget_Months/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Budgets</span><span class="lm-link">All_Budgets</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Budgets" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Budgets" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Budgets/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Builder Takedowns</span><span class="lm-link">All_Builder_Takedowns</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Builder_Takedowns" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Builder_Takedowns" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Builder_Takedowns/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Builders</span><span class="lm-link">All_Builders</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Builders" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Builders" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Builders/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Companies</span><span class="lm-link">All_Companies</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Companies" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Companies" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Companies/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Construction Cost Curves</span><span class="lm-link">All_Construction_Cost_Curves</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Construction_Cost_Curves" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Construction_Cost_Curves" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Construction_Cost_Curves/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Construction Curves</span><span class="lm-link">All_Construction_Curves</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Construction_Curves" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Construction_Curves" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Construction_Curves/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Contract Actions</span><span class="lm-link">All_Contract_Actions</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Contract_Actions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Contract_Actions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Contract_Actions/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Contract Approvals</span><span class="lm-link">All_Contract_Approvals</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Contract_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Contract_Approvals" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Contract_Approvals/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Attachments</span><span class="lm-link">All_Attachments</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Attachments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Attachments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Attachments/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Contracts</span><span class="lm-link">All_Contracts1</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Contracts1" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Contracts1" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Contracts1/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Equipment</span><span class="lm-link">All_Equipment</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Equipment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Equipment" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Equipment/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Equipment Maintenance Costs</span><span class="lm-link">All_Equipment_Maintenance_Costs</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Equipment_Maintenance_Costs" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Equipment_Maintenance_Costs" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Equipment_Maintenance_Costs/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Equipment Usage Years</span><span class="lm-link">All_Equipment_Usage_Years</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Equipment_Usage_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Equipment_Usage_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Equipment_Usage_Years/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All External System Mappings</span><span class="lm-link">All_External_System_Mappings</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_External_System_Mappings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_External_System_Mappings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_External_System_Mappings/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Forecast Managers</span><span class="lm-link">All_Forecast_Managers</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Forecast_Managers" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Forecast_Managers" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Forecast_Managers/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Forecast Searches</span><span class="lm-link">All_Forecast_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Forecast_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Forecast_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Forecast_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Forecast Years</span><span class="lm-link">All_Forecast_Years</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Forecast_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Forecast_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Forecast_Years/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Forecasts</span><span class="lm-link">All_Forecasts</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Forecasts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Forecasts" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Forecasts/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Land Installments</span><span class="lm-link">All_Land_Installments</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Land_Installments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Land_Installments" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Land_Installments/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Lot Searches</span><span class="lm-link">All_Lot_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Lot_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Lot_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Lot_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Lots - All Fields</span><span class="lm-link">All_Lots_All_Fields</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Lots_All_Fields" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Lots_All_Fields" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Lots_All_Fields/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Mass Update Taxes</span><span class="lm-link">All_Mass_Update_Taxes</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Mass_Update_Taxes" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Mass_Update_Taxes" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Mass_Update_Taxes/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Mass Updates</span><span class="lm-link">All_Mass_Updates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Mass_Updates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Mass_Updates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Mass_Updates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Milestones</span><span class="lm-link">All_Milestones</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Milestones" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Milestones" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Milestones/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Pro Formas</span><span class="lm-link">All_Pro_Formas</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Pro_Formas" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Pro_Formas" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Pro_Formas/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Proforma Months</span><span class="lm-link">All_Proforma_Months</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Proforma_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Proforma_Months" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Proforma_Months/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Proforma Phases</span><span class="lm-link">All_Proforma_Phases</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Proforma_Phases" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Proforma_Phases" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Proforma_Phases/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Projects</span><span class="lm-link">All_Projects</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Projects" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Projects" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Projects/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Property</span><span class="lm-link">All_Property</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Property" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Property" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Property/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Redline Reviews</span><span class="lm-link">All_Redline_Reviews</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Redline_Reviews" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Redline_Reviews" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Redline_Reviews/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Settings</span><span class="lm-link">All_Settings</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Settings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Settings" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Settings/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Subdivisions</span><span class="lm-link">All_Subdivisions</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Subdivisions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Subdivisions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Subdivisions/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All System Searches</span><span class="lm-link">All_System_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_System_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_System_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_System_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Takedown Schedules</span><span class="lm-link">All_Takedown_Schedules</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Takedown_Schedules" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Takedown_Schedules" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Takedown_Schedules/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Takedown Templates</span><span class="lm-link">All_Takedown_Templates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Takedown_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Takedown_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Takedown_Templates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Tax Parcel Searches</span><span class="lm-link">All_Tax_Parcel_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Tax_Parcel_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Tax_Parcel_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Tax_Parcel_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Tax Parcel Years</span><span class="lm-link">All_Tax_Parcel_Years</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Tax_Parcel_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Tax_Parcel_Years" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Tax_Parcel_Years/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Tax Rate Templates</span><span class="lm-link">All_Tax_Rate_Templates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Tax_Rate_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Tax_Rate_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Tax_Rate_Templates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Tax Rates</span><span class="lm-link">All_Tax_Rates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Tax_Rates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Tax_Rates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Tax_Rates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Tax Searches</span><span class="lm-link">All_Tax_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Tax_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Tax_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Tax_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Taxing Jurisdictions</span><span class="lm-link">All_Taxing_Jurisdictions</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Taxing_Jurisdictions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Taxing_Jurisdictions" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Taxing_Jurisdictions/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All Templates</span><span class="lm-link">All_Templates</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Templates" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Templates/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">All_Pro_Formas_All_Fields</span><span class="lm-link">All_Pro_Formas_All_Fields</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Pro_Formas_All_Fields" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Pro_Formas_All_Fields" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Pro_Formas_All_Fields/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Behind Takedown Schedules</span><span class="lm-link">Behind_Takedown_Schedules</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Behind_Takedown_Schedules" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Behind_Takedown_Schedules" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Behind_Takedown_Schedules/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contract Pricing Report</span><span class="lm-link">Contract_Pricing_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Contract_Pricing_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Contract_Pricing_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Contract_Pricing_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contracts Board</span><span class="lm-link">All_Contracts_v2</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:All_Contracts_v2" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:All_Contracts_v2" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/All_Contracts_v2/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Contracts Management Search Report</span><span class="lm-link">Contracts_Management_Search_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Contracts_Management_Search_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Contracts_Management_Search_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Contracts_Management_Search_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Forecast Year Subform Report</span><span class="lm-link">Forecast_Year_Subform_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Forecast_Year_Subform_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Forecast_Year_Subform_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Forecast_Year_Subform_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">LOI Worksheet Report</span><span class="lm-link">LOI_Worksheet_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:LOI_Worksheet_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:LOI_Worksheet_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/LOI_Worksheet_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Lots in Queue</span><span class="lm-link">Lots_in_Queue</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Lots_in_Queue" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Lots_in_Queue" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Lots_in_Queue/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Forecasts Report</span><span class="lm-link">Mass_Create_Forecasts_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Mass_Create_Forecasts_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Mass_Create_Forecasts_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Mass_Create_Forecasts_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Lots Report</span><span class="lm-link">Mass_Create_Lots_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Mass_Create_Lots_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Mass_Create_Lots_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Mass_Create_Lots_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Lots Subform Report</span><span class="lm-link">Mass_Create_Lots_Subform_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Mass_Create_Lots_Subform_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Mass_Create_Lots_Subform_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Mass_Create_Lots_Subform_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Tax Rates Report</span><span class="lm-link">Mass_Create_Tax_Rates_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Mass_Create_Tax_Rates_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Mass_Create_Tax_Rates_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Mass_Create_Tax_Rates_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Mass Create Tax Report</span><span class="lm-link">Mass_Create_Tax_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Mass_Create_Tax_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Mass_Create_Tax_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Mass_Create_Tax_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Proforma Item Report</span><span class="lm-link">Proforma_Item_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Proforma_Item_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Proforma_Item_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Proforma_Item_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">Saved Searches</span><span class="lm-link">Saved_Searches</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:Saved_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:Saved_Searches" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/Saved_Searches/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+<li class="lm-row">
+  <div class="lm-row-main"><span class="lm-name">User Access</span><span class="lm-link">User_Access_Report</span></div>
+  <div class="lm-actions">
+    <a class="lm-btn lm-open dev" href="https://creatorapp.zoho.com/wbdevelopment/environment/development/land-master/#Report:User_Access_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-open prod" href="https://creatorapp.zoho.com/wbdevelopment/land-master/#Report:User_Access_Report" target="_blank" rel="noopener">Open</a>
+    <a class="lm-btn lm-edit" href="https://creator.zoho.com/appbuilder/wbdevelopment/land-master/reportbuilder/User_Access_Report/edit" target="_blank" rel="noopener">Edit</a>
+  </div>
+</li>
+  </ul>
+</div>
+</div>
+<%
+
+}%>

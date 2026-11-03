@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+const {chromium}=createRequire(import.meta.url)('playwright');
+const html=fs.readFileSync('creator/pages/forms-reports/forms-reports.html','utf8');
+const inventory=JSON.parse(fs.readFileSync('creator/catalog/forms-reports.inventory.json','utf8'));
+const output=path.resolve('tmp/forms-reports');fs.mkdirSync(output,{recursive:true});
+const browser=await chromium.launch({channel:'chrome',headless:true}),page=await browser.newPage({viewport:{width:1580,height:980}}),errors=[];
+page.on('pageerror',e=>errors.push(e.message));
+try{
+  await page.setContent(html);
+  assert.equal(await page.locator('#lm-prod').isChecked(),true);
+  const count=inventory.forms.length+inventory.reports.length;
+  assert.equal(await page.locator('.lm-open.prod:visible').count(),count);assert.equal(await page.locator('.lm-open.dev:visible').count(),0);
+  assert.ok((await page.locator('.lm-open:visible').first().getAttribute('href')).includes('/land-master/#Form:'));
+  await page.locator('label[for=lm-dev]').click();assert.equal(await page.locator('#lm-dev').isChecked(),true);
+  assert.equal(await page.locator('.lm-open.dev:visible').count(),count);assert.equal(await page.locator('.lm-open.prod:visible').count(),0);
+  for(const href of await page.locator('.lm-open:visible').evaluateAll(nodes=>nodes.map(n=>n.href)))assert.ok(href.includes('/environment/development/land-master/#'));
+  for(const href of await page.locator('.lm-edit').evaluateAll(nodes=>nodes.map(n=>n.href)))assert.ok(href.startsWith('https://creator.zoho.com/appbuilder/wbdevelopment/land-master/'));
+  await page.locator('label[for=lm-prod]').click();
+  const form=inventory.forms.find(f=>f.link_name==='Add_Budget')||inventory.forms[0],card=page.locator(`[data-form="${form.link_name}"]`),help=card.locator('.lm-name-help'),tip=help.locator('[role=tooltip]');
+  assert.equal(await tip.isVisible(),false);await help.hover();await tip.waitFor({state:'visible'});assert.ok((await tip.innerText()).length>30);await page.screenshot({path:path.join(output,'form-purpose-tooltip.png')});
+  await page.mouse.move(1,1);await tip.waitFor({state:'hidden'});await help.focus();await tip.waitFor({state:'visible'});
+  await card.locator('summary').click();assert.equal(await card.locator('details').getAttribute('open'),'');
+  assert.equal(await card.locator('tbody tr[data-f]').count(),form.fields.length);await page.screenshot({path:path.join(output,'form-fields.png')});await card.locator('tbody tr').last().scrollIntoViewIfNeeded();
+  const geometry=await card.locator('.lm-field-scroll').evaluate(node=>{const r=node.getBoundingClientRect(),last=node.querySelector('tbody tr:last-child').getBoundingClientRect();return {height:r.height,clientHeight:node.clientHeight,scrollHeight:node.scrollHeight,lastBottom:last.bottom,containerBottom:r.bottom};});
+  assert.ok(geometry.height<=372,'all fields use a bounded native scroller');assert.ok(geometry.lastBottom<=geometry.containerBottom+2,'the last field remains reachable');
+  await card.locator('summary').click();assert.equal(await card.locator('details').getAttribute('open'),null);
+  await page.emulateMedia({reducedMotion:'reduce'});await card.locator('summary').click();assert.equal(await card.locator('details').getAttribute('open'),'');
+  await card.locator('summary').click();await page.locator('#lm-nav').scrollIntoViewIfNeeded();await page.mouse.move(1,1);await page.locator('label[for=lm-prod]').click();
+  await page.screenshot({path:path.join(output,'forms-reports.png')});
+  assert.deepEqual(errors,[]);
+  console.log(`Forms & Reports desktop: Production default, ${count} exact Open/Edit routes, environment switch, hover/keyboard purpose, all-field disclosure/scrolling, reduced motion and script-free render passed.`);
+}catch(error){await page.screenshot({path:path.join(output,'failure.png')});throw error;}finally{await browser.close();}
