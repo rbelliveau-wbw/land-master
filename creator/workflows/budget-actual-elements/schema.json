@@ -224,5 +224,23 @@
     }
   ],
   "custom_apis_added": [],
-  "permissions_added": []
+  "permissions_added": [],
+  "actual_value_policy": {
+    "authority": "User direction November 3, 2026: elements and totals need not reconcile",
+    "element_total_equality_required": false,
+    "residual_amount_blocks_import_or_rollup": false,
+    "preserve_original_total": true,
+    "preserve_selected_source_elements": true,
+    "hcss_other": "Actual_Misc1_Cost",
+    "hcss_ignored_cost_columns": [
+      "ActualTruckingCost",
+      "Actual_Supply_Cost",
+      "Actual_Misc2_Cost",
+      "Actual_Misc3_Cost"
+    ],
+    "gp_unknown_element_identity_count_guard_retained": true,
+    "derive_or_redistribute_residual": false,
+    "source_precision_or_data_changes": false
+  },
+  "independent_value_policy_functions_verified_in_development": true
 }

@@ -45,10 +45,14 @@ Development view `2107789000029311186`. GP elements pivot native **Cost_Element*
 1–5 into one row per existing job/cost key. HCSS Other uses the selected **Misc1**
 source. Existing total columns, GP code ranges, Construction's positive-cost
 filter/two-decimal total and Development's signed nonzero costs are preserved.
-Unclassified or unreconciled source rows fail before business writes; no
-residual is silently assigned to Other or used to change a canonical total.
-Amounts and residuals normalize to native four-decimal storage before validation,
-so sub-storage floating-point residue does not become a false discrepancy.
+The user's November 3 rule saves the five source elements and original actual
+total independently; the elements do not need to sum to the total. HCSS Other
+is Misc 1, and Trucking, Supplies, Misc 2 and Misc 3 are ignored. The historical
+409 differing HCSS element sums are informational and do not block the revised
+import or rollup. Amounts retain native four-decimal storage; no residual is
+allocated, implied element calculated or source precision setting changed.
+Required numeric values, source/key ownership and GP unsupported Cost_Element
+identity checks remain active.
 
 The three imports use the existing export queue and **Settings.Next_Workflow_Run**
 anchor. Each run captures **Current_Batch** 0–4 and native **Subdivision.ID % 5**
@@ -77,8 +81,12 @@ in the [installation record](../../creator/workflows/budget-actual-elements/nati
 and [promotion manifest](../../creator/workflows/budget-actual-elements/promotion-manifest.json).
 **Creator Production promotion remains pending and user-controlled.** PMP
 publishes repository/frontend releases and Production mappings. No new Custom
-API, credentials or permissions are required. Source anomalies remain blocked
-and logged; no source data correction or financial-record test write is implied.
+API, credentials or permissions are required. Operational, identity and required
+data failures remain logged; element/total differences alone are accepted.
+Both revised actuals functions were saved, compiled and independently
+reopened with exact whitespace-normalized current candidates and the old amount
+gates absent, as recorded in the installation record. No source data correction
+or financial-record test write is implied.
 
 Regression coverage includes renamed/legacy staging keys, native source/group
 isolation, signed and zero measured vectors, missing/partial detail, cross-chunk
@@ -88,7 +96,13 @@ Settings logs. SQL fixtures preserve source totals and filters. Full repository
 validation and Pages build are release gates; offline fixtures are distinct from
 Creator compilation, native performance and live financial acceptance.
 
-Frontend rollback: restore Production Budget Manager **122.29.90** and Settings
+The original actuals frontend feature was published in **c7bc9193**. The later
+independent element/total rule changes backend functions and documentation only;
+it requires no new widget release or mapping change and preserves concurrent
+widget releases.
+
+For rollback of the complete original frontend feature, restore Production
+Budget Manager **122.29.90** and Settings
 Manager **1.6.4** through the permanent widget mappings. Development follows the
 latest-release policy. Native rollback must restore the five staging names and
 all matching callers/schedule actions together from the preserved prechange

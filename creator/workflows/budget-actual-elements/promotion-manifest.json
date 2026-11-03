@@ -1,7 +1,7 @@
 {
   "contract": "budget-actual-elements-promotion-v1",
   "prepared_on": "2026-11-03",
-  "status": "Installed and compiled in Creator Development with independent native source/layout/schedule verification complete. Complete read-only Analytics parent/group/key comparisons passed. Actual scheduled financial writes and Production performance were not executed. User promotes Creator components; repository PMP is separate.",
+  "status": "Installed and verified in Creator Development, including the revised independent element/total policy. Both revised functions saved, compiled and independently reopened with exact whitespace-normalized candidate matches. Complete original-parent Analytics audits passed. Scheduled financial writes and Production performance were not executed. User promotes Creator components; repository PMP is separate.",
   "schema": "creator/workflows/budget-actual-elements/schema.json",
   "native_install_progress": "creator/workflows/budget-actual-elements/native-install-progress.json",
   "pmp_boundary": "PMP publishes repository main and Production widget mappings. The user promotes Creator components; do not publish Creator to Stage/Production from PMP.",
@@ -287,22 +287,60 @@
     "development_disabled_verified": true
   },
   "frontend_releases": {
-    "status": "Prepared for root PMP publication after latest-main integration; publication evidence is recorded by the release handoff",
-    "candidate": {
+    "status": "The original actuals frontend feature was published in c7bc9193; CI 41721263437 and Pages 41721263457 succeeded. These are historical feature versions, not current/latest mappings. The independent element/total policy revision changes backend functions and documentation only; it requires no frontend release or mapping change and preserves concurrent releases.",
+    "published_feature_versions": {
       "budget-manager": "122.29.91",
       "settings-manager": "1.6.6"
     },
-    "rollback": {
+    "original_feature_rollback": {
       "budget-manager": "122.29.90",
       "settings-manager": "1.6.4"
-    }
+    },
+    "published_commit": "c7bc9193",
+    "ci_run": "41721263437",
+    "pages_run": "41721263457",
+    "independent_value_revision_requires_frontend_release": false
   },
   "production_creator_promoted": false,
   "verification_scope": "All three complete parent/group/key query audits; native field IDs/report bindings; compiled function/batch/timeout body reopens; independently reopened anchored schedule actions/properties and disabled originals. No scheduled financial write/performance run.",
   "component_source_quality": {
     "hcss_existing_residual_groups": 409,
-    "guard": "Preflight rejects source-component discrepancies and reports them to Workflow Log; original totals are retained and no difference is redistributed.",
+    "guard": "Historical element-sum differences are informational and do not block imports or rollups. Save each selected source element and original total independently. HCSS Other is Misc 1; Trucking, Supplies, Misc 2 and Misc 3 are ignored. Required numeric/source identity and GP unsupported-element classification checks remain active. No residual allocation or source precision/data edits.",
     "source_precision_cause_confirmed": false,
     "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json"
+  },
+  "actual_value_policy": {
+    "authority": "User direction November 3, 2026: elements and totals need not reconcile",
+    "element_total_equality_required": false,
+    "residual_amount_blocks_import_or_rollup": false,
+    "preserve_original_total": true,
+    "preserve_selected_source_elements": true,
+    "hcss_other": "Actual_Misc1_Cost",
+    "hcss_ignored_cost_columns": [
+      "ActualTruckingCost",
+      "Actual_Supply_Cost",
+      "Actual_Misc2_Cost",
+      "Actual_Misc3_Cost"
+    ],
+    "gp_unknown_element_identity_count_guard_retained": true,
+    "derive_or_redistribute_residual": false,
+    "source_precision_or_data_changes": false
+  },
+  "function_revisions_pending_native_verification": [],
+  "independent_value_policy_native_verification": {
+    "status": "Verified in native Development",
+    "functions": [
+      "budgetActualImportRun",
+      "budgetImportedActualElements"
+    ],
+    "saved_compiled_and_independently_reopened": true,
+    "source_comparison": "Exact whitespace-normalized match to current repository candidates",
+    "old_amount_equality_and_residual_gates_absent": true,
+    "worker_saved_characters": 14727,
+    "helper_native_characters": 1915,
+    "helper_candidate_characters": 1913,
+    "helper_character_difference": "Formatting only; normalized source is exact",
+    "financial_job_manually_executed": false,
+    "creator_production_promotion_owner": "User"
   }
 }

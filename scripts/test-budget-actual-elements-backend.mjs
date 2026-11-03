@@ -31,6 +31,7 @@ function fixture(imports=[],itemExtra={}){
     Array.prototype.count=Array.prototype.size=function(){return this.length;};
     String.prototype.toLong=Number.prototype.toLong=function(){return BigInt(this);};
     Number.prototype.round=function(n){var factor=10**n;return Math.round(this*factor)/factor;};
+    Number.prototype.toDecimal=function(){if(!Number.isFinite(Number(this)))throw Error('Invalid native decimal');return Number(this);};
     function record(form,row){return new Proxy(row,{get(o,k){if(k==='valueOf')return ()=>BigInt(o.ID);if(k==='toString')return ()=>String(o.ID);if(k==='Budget'){var budget=tables.Add_Budget.find(b=>b.ID==o[k]);return budget?record('Add_Budget',budget):null;}if(k==='Budget_Item')return {valueOf:()=>BigInt(o[k])};return o[k]??null;},set(o,k,v){writes.push({form,id:o.ID,field:k});o[k]=v;return true;}});}
     function query(form,predicate){var rows=(tables[form]||[]).map(row=>record(form,row)).filter(predicate);return new Proxy(rows,{get(a,k){if(k==='sum')return field=>a.reduce((sum,row)=>sum+Number(row[field]??0),0);return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;}});}
     thisapp.workflowRunLog=function(event){events.push(JSON.parse(JSON.stringify(event)));return {id:'90071992547409981'};};
@@ -47,8 +48,12 @@ h=fixture();result=h.read('HeavyJob');assert.equal(result.complete,false);assert
 h=fixture([row(31,'HeavyJob',50)]);result=h.read('HeavyJob');assert.equal(result.total,50);assert.equal(result.complete,false);assert.equal(result.legacyRows,1);h.apply();assert.equal(h.row().HCSS_Actuals,50);assert.equal(h.row().HCSS_Labor_Actuals,null,'legacy totals never fabricate a zero split');
 h=fixture([row(31,'HeavyJob',0,[0,0,0,0,0])]);assert.equal(h.read('HeavyJob').complete,true,'explicit all-zero split remains measured');
 h=fixture([row(31,'Great Plains',10,[10.0049,0,0,0,0])]);assert.equal(h.read('Great Plains').complete,true,'GP Construction cents total does not discard four-place measured amount');
-h=fixture([row(31,'Great Plains',-10.12,[-10.1234,0,0,0,0])]);assert.equal(h.read('Great Plains').complete,true,'reconciliation retains signed amounts');
-for(const broken of [row(31,'Great Plains',10,[10.006,0,0,0,0]),row(31,'Great Plains',10,[10.0049,0,0,0,0],{Minor_Code:4101}),row(31,'Great Plains',10,[10,null,0,0,0])]){
+h=fixture([row(31,'Great Plains',-10.12,[-10.1234,0,0,0,0])]);assert.equal(h.read('Great Plains').complete,true,'independent fields retain signed amounts');
+for(const source of ['HeavyJob','Great Plains'])for(const [cost,values] of [[123.4567,[1,2,3,4,5]],[0,[10,0,-4,0,0]],[-9.8765,[0,0,0,0,0]]]){
+  h=fixture([row(31,source,cost,values,{Minor_Code:4101})]);result=h.read(source);assert.equal(result.complete,true);assert.equal(result.total,cost);assert.deepEqual(result.components,parts(values),'selected elements do not absorb any parent difference');
+  h.apply();const prefix=source==='HeavyJob'?'HCSS':'GP',parent=source==='HeavyJob'?'HCSS_Actuals':'PROJ_Actual';saved=h.row();assert.equal(saved[parent],cost);assert.deepEqual(components.map(name=>saved[prefix+'_'+name+'_Actuals']),values);assert.equal(h.events().length,0,'a parent/element difference is permitted and creates no failure log');
+}
+for(const broken of [row(31,'Great Plains',10,[10,null,0,0,0]),row(31,'Great Plains',null,[10,0,0,0,0])]){
   h=fixture([broken]);assert.throws(()=>h.apply(),/elements/i);assert.equal(h.writes().length,0,'invalid source is rejected before any Budget Item fields change');
   const events=h.events();assert.equal(events.length,2);assert.equal(events[1].status,'Failed');assert.equal(events[1].reference,itemId);assert.equal(events[1].counts.failed,1);assert.match(events[1].message,/Great Plains/);assert.match(events[1].details,/batch size=100/);
 }
@@ -62,4 +67,4 @@ assert.ok(schema.preserve_fields.includes('Budget_Item.Labor_Budget'));
 const manifest=JSON.parse(fs.readFileSync(root+'promotion-manifest.json','utf8'));assert.equal(manifest.batch_workflow.batch_size,100);for(const entry of manifest.functions)assert.ok(fs.existsSync(entry.source));
 const snapshot=fs.readFileSync('creator/functions/snapshotBudgetItemComponents.dg','utf8'),exports=fs.readFileSync('creator/functions/budgetElementExportRows.dg','utf8');
 for(const field of components){assert.ok(snapshot.includes(`sourceImport.${field}`));assert.ok(!snapshot.includes(`sourceImport.${field}_Budget`));assert.ok(exports.includes(`source.${field}`));}
-console.log('PASS: actual source preflight + native batch execute/failure, long IDs, source isolation, legacy unknown vs explicit zero, signed values, 4-place elements/cents totals, before-write rejection, durable Workflow Log and additive schema contracts.');
+console.log('PASS: independent actual parent/selected element amounts, no residual redistribution, source preflight + native batch execute/failure, long IDs, legacy unknown vs explicit zero, signed precision, before-write completeness rejection, durable Workflow Log and additive schema contracts.');

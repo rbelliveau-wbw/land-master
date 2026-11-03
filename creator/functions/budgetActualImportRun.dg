@@ -96,13 +96,7 @@ string budgetActualImportRun(string auditId)
 		costColumn = "Total_Actuals";
 		descriptionColumn = "Cost_Code_Description";
 		codeMarker = "-GP-";
-		tolerance = 0.00005;
-		if(workflow == "Budgets_Import_Load_GP_Co")
-		{
-			// This source's established parent total rounds to two decimal places.
-			tolerance = 0.00500001;
-		}
-		else if(workflow == "Budgets_Import_Load_HCSS_")
+		if(workflow == "Budgets_Import_Load_HCSS_")
 		{
 			systemName = "HeavyJob";
 			dataSource = "HeavyJob";
@@ -163,11 +157,10 @@ string budgetActualImportRun(string auditId)
 					throw "GP Development returned an out-of-scope cost code: " + recordKey;
 				}
 			}
-			// Normalize to the destination's four-decimal Currency precision before
-			// checking the split. Ignore only sub-storage floating-point residue.
+			// Preserve the parent and each selected element independently at the
+			// destination's four-decimal precision. Differences are allowed.
 			total = rec.get(costColumn).toDecimal().round(4);
 			parts = List();
-			componentTotal = 0.0;
 			for each  element in {"Labor","Materials","Equipment","Subcontractor","Other"}
 			{
 				if(rec.get(element) == null || rec.get(element).toString().trim() == "")
@@ -176,22 +169,16 @@ string budgetActualImportRun(string auditId)
 				}
 				amount = rec.get(element).toDecimal().round(4);
 				parts.add(amount);
-				componentTotal = componentTotal + amount;
 			}
-			if(rec.get("Unclassified_Actuals") == null || rec.get("Unclassified_Actuals").toDecimal().round(4) != 0)
-			{
-				throw "Actual source contains an unclassified amount; key=" + recordKey + "; residual=" + ifnull(rec.get("Unclassified_Actuals"),"missing");
-			}
+			// HCSS selects Misc 1 as Other. Trucking, Supplies, Misc 2 and Misc 3
+			// are intentionally ignored; never redistribute a total difference.
+			// Unclassified_Actuals is diagnostic only and does not block import.
 			if(systemName == "Great Plains")
 			{
 				if(rec.get("Unclassified_Count") == null || rec.get("Unclassified_Count").toDecimal() != 0)
 				{
 					throw "GP actual source contains an unknown Cost_Element; key=" + recordKey;
 				}
-			}
-			if((componentTotal - total).abs() >= tolerance)
-			{
-				throw "Actual source elements do not reconcile to the preserved total; key=" + recordKey + "; total=" + total + "; elements=" + componentTotal;
 			}
 			expected = state.get("actualScope").get(job);
 			if(expected == null)

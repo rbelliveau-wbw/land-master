@@ -7,6 +7,12 @@ and `Great Plains` for GP actuals. GP Development and GP Construction remain
 separate Analytics inputs; both roll up into the existing GP total and five GP
 element amounts on their matched Budget Item.
 
+The user's November 3 rule treats the five source element amounts and the
+original actual total as independent values. Their sum does not need to equal
+the total, and neither value is derived from the other. HCSS Other is Misc 1;
+Trucking, Supplies, Misc 2 and Misc 3 are ignored. No residual is allocated and
+no source data or precision setting is changed.
+
 ## Native Components
 
 Use [schema.json](schema.json) and
@@ -65,13 +71,13 @@ The new private read-only `budgetImportedActualElements` helper checks each
 matched `Great Plains` and `HeavyJob` source collection before any fields on the
 item change. All five present element amounts are summed by source; source
 rows with all five blank retain their old total but make the entire measured
-split unavailable. Partial or mismatched populated rows fail before the item's
+split unavailable. Partial or nonnumeric populated rows fail before the item's
 first write. Explicit zero allocations remain complete, and signed source
-amounts retain their signs. GP Construction cost codes 3000–3999 reconcile at
-the existing rounded-cent source total while retaining four-place elements;
-other rows reconcile at four places. No rounding residual is silently added to
-Other. Exports read complete saved measured allocations directly; they do not
-reject them by comparing separately rounded parent totals after the native save.
+amounts retain their signs. The five elements and original source total are
+saved independently at their native precision. No equality or residual-amount
+gate applies to HCSS or GP actuals, including GP Construction's existing
+cent-rounded total. The GP unsupported `Cost_Element` count remains a separate
+classification guard. Exports read complete saved measured allocations directly.
 
 The batch preserves `PROJ_Actual`, `HCSS_Actuals`, Cost to Complete, Percent
 Complete and the existing approved/unapproved Construction budget behavior.
@@ -106,13 +112,19 @@ their expected enqueue routes and Settings date field, Run Always, Daily,
 America/Chicago and no end date verified. Each has one compiled action and an
 enabled state; their original fixed-date schedules remain disabled and retained.
 The Timeout action was also closed/reopened with an exact normalized source
-match. Native Development installation is complete. No financial job was manually
-executed, and Creator Production promotion remains with the user.
+match. The revised `budgetActualImportRun` and
+`budgetImportedActualElements` bodies for independent elements and totals were
+also saved, compiled and independently reopened with exact whitespace-normalized
+candidate matches; the old amount gates are absent. Native Development
+installation is complete. No financial job was manually executed, and Creator
+Production promotion remains with the user.
 
 Complete Analytics comparisons preserve every original parent group, total and
-import key in all three sources. HCSS still has 409 existing component residual
-groups. Preflight reports those source discrepancies to Workflow Log and retains
-the original totals; no difference is allocated to another element. See the
+import key in all three sources. The historical HCSS audit found 409 groups whose
+selected elements differ from the total. These are informational under the
+user's independent-value rule and must not block the revised import or rollup.
+The original total and selected elements remain exactly their own source values.
+See the
 [source audit evidence](analytics/source-audit-evidence.json). The scheduled
 financial write path and Production batch performance have not been exercised.
 
@@ -143,8 +155,8 @@ node scripts/test-budget-element-exports.mjs
 
 The focused runtime executes the checked-in preflight and batch source with
 native-shaped records. It covers long IDs, source isolation, legacy unknown
-versus explicit zero, signed amounts, four-place values with cent-rounded GP
-Construction totals, invalid later-source rejection before writes, durable
+versus explicit zero, signed amounts, independent totals and four-place elements
+with cent-rounded GP Construction totals, invalid later-source rejection before writes, durable
 failure log calls and additive schema. The lifecycle/export suites retain
 Construction snapshot behavior, frozen budget values, measured actual exports,
 parent totals and unknown allocations. Native compilation, report responses
@@ -160,11 +172,18 @@ and restore the snapshot/export helpers from the prechange native copies (the
 repository `rollback/` files are review baselines from the November 2 catalog
 and prechange HEAD). Reopen/compile all restored callers before resuming.
 
-Keep the ten additive actual fields and any measured values when rolling back;
+This independent-value policy revision changes backend functions and
+documentation only. It requires no frontend release, mapping change or frontend
+rollback; preserve concurrent widget releases. The original actuals frontend
+feature was published in `c7bc9193` with successful CI and Pages runs.
+
+Keep the ten additive actual fields and any measured values when rolling back
+the complete original feature;
 do not delete fields or financial data. Revert the companion widget Production
 mappings to Budget Manager `122.29.90` and Settings Manager `1.6.4`; these preserve
-the unrelated features present before this release. The current PMP candidates
-are Budget Manager `122.29.91` and Settings Manager `1.6.6`. Restore
+the unrelated features present before that feature release. Its published
+frontend versions were Budget Manager `122.29.91` and Settings Manager `1.6.6`;
+these are historical feature versions, not current/latest mappings. Restore
 the matching native failure action too; do not leave both old and replacement
 application schedules active. Disable the new anchored wrappers before
 re-enabling the preserved original fixed-date schedules. No record deletion or automatic financial replay

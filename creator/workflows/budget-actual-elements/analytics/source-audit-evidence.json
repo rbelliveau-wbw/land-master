@@ -9,10 +9,9 @@
     "mapped_source_rows": 1817,
     "misc1_nonzero_rows": 158,
     "other_bucket_nonzero_rows": 0,
-    "precision_observation": "Materials values in the preview appear as whole amounts while parent totals and other cost columns retain cents. The source column type/precision is under investigation; this is not a confirmed cause.",
-    "guard": "Keep the original TotalActualCost and Unclassified_Actuals residual. Mismatches must surface through the existing Workflow Log failure path; never redistribute the difference.",
+    "guard": "Historical residual metrics are informational only. Import the five selected source elements and original total independently; no amount equality gate, inferred element or residual allocation.",
     "underlying_source_data_modified": false,
-    "complete_query_audits_live_status": "Complete: native summaries, saved-view per-group comparisons and baseline/candidate duplicate import-key checks passed. Original parent data is preserved; 409 HCSS component discrepancies remain visible and guarded.",
+    "complete_query_audits_live_status": "Complete: native original-parent summaries, saved-view group comparisons and unique import-key checks passed. The historical 409 differing element sums are accepted independently of their parent totals under the new user rule.",
     "private_financial_preview_retained": true,
     "component_discrepancies_detected": true
   },
@@ -21,7 +20,7 @@
     "construction_view_id": "2107789000031077002",
     "development_filter": "4000 <= code < 5000 OR 8000 <= code < 9000; nonzero signed costs",
     "construction_filter": "3000 <= code < 4000; positive costs only; original total rounded to two decimals",
-    "unclassified_guard": "Both signed Unclassified_Actuals and Unclassified_Count are emitted; a zero net amount cannot hide cancelling unknown element rows."
+    "unclassified_guard": "Unclassified_Actuals is informational and does not gate amount equality. Unclassified_Count remains a separate unsupported Cost_Element identity guard."
   },
   "complete_live_summary_audits": {
     "evidence_source": "Primary agent native Execute Query results on November 3, 2026; audit text was not saved over source queries.",
@@ -87,8 +86,8 @@
     "execution_mode": "Execute Query only; audit text was never saved over the existing source queries",
     "underlying_source_tables_modified": false,
     "source_precision_cause_confirmed": false,
-    "unresolved_component_issue": "409 HCSS groups have existing source-component discrepancies; keep the residual guard and original totals. No redistribution or underlying source precision edit was performed.",
-    "editor_cleanup": "Complete: discarded execute-only audit text using No in each save prompt; all three editors returned to the workspace. The saved additive source queries were not overwritten by audit SQL."
+    "editor_cleanup": "Complete: discarded execute-only audit text using No in each save prompt; all three editors returned to the workspace. The saved additive source queries were not overwritten by audit SQL.",
+    "historical_component_difference_policy": "The 409 historical HCSS element-sum differences are informational and do not block the revised importer or rollup. Original totals and selected components remain independent. No source data or precision setting was edited."
   },
   "local_verification": {
     "command": "python creator/workflows/budget-actual-elements/analytics/verify_read_only_audits.py",
@@ -100,5 +99,40 @@
     "path": "tmp/actuals-install/private-source-audit-evidence.json",
     "git_ignored": true,
     "contains": "Full native financial totals, component amounts and record-level examples. Keep local; do not publish."
+  },
+  "actual_value_policy": {
+    "authority": "User direction November 3, 2026: elements and totals need not reconcile",
+    "element_total_equality_required": false,
+    "residual_amount_blocks_import_or_rollup": false,
+    "preserve_original_total": true,
+    "preserve_selected_source_elements": true,
+    "hcss_other": "Actual_Misc1_Cost",
+    "hcss_ignored_cost_columns": [
+      "ActualTruckingCost",
+      "Actual_Supply_Cost",
+      "Actual_Misc2_Cost",
+      "Actual_Misc3_Cost"
+    ],
+    "gp_unknown_element_identity_count_guard_retained": true,
+    "derive_or_redistribute_residual": false,
+    "source_precision_or_data_changes": false
+  },
+  "policy_native_revision_status": {
+    "status": "Verified in native Development",
+    "functions": [
+      "budgetActualImportRun",
+      "budgetImportedActualElements"
+    ],
+    "saved_compiled_and_independently_reopened": true,
+    "source_comparison": "Exact whitespace-normalized match to current repository candidates",
+    "old_amount_equality_and_residual_gates_absent": true,
+    "worker_saved_characters": 14727,
+    "helper_native_characters": 1915,
+    "helper_candidate_characters": 1913,
+    "helper_character_difference": "Formatting only; normalized source is exact",
+    "financial_job_manually_executed": false,
+    "creator_production_promotion_owner": "User",
+    "supersedes_prior_reconciliation_policy": true,
+    "authority": "../native-install-progress.json"
   }
 }

@@ -1,7 +1,7 @@
 {
   "contract": "budget-actual-elements-native-install-v1",
   "updated_on": "2026-11-03",
-  "status": "Development installation and native verification complete. Five existing Import fields renamed in place; ten new Budget Item fields and both quick/detail report bindings verified; all 14 function bodies ready; new anchored schedules and original disabled states independently verified; native Budget batch and Timeout actions saved/compiled and reopened with exact source matches. No Creator Stage/Production promotion or manually executed financial job.",
+  "status": "Development installation and native verification complete, including both revised independent element/total functions. Five Import fields renamed in place; ten Budget Item fields and report bindings verified; all 14 function bodies ready; anchored schedules, original disabled states and native batch/Timeout actions verified. Revised worker and helper saved, compiled and independently reopened with exact whitespace-normalized current candidates; old amount gates absent. No Creator Stage/Production promotion or manually executed financial job.",
   "import_field_renames_saved": [
     {
       "from": "Labor_Budget",
@@ -91,13 +91,13 @@
     "workflowExportWake",
     "workflowExportDispatch",
     "workflowExportPlan",
-    "budgetActualImportRun",
     "workflowExportRun",
     "workflowExportTick",
     "workflowExportEnqueue",
-    "budgetImportedActualElements",
     "snapshotBudgetItemComponents",
-    "budgetElementExportRows"
+    "budgetElementExportRows",
+    "budgetActualImportRun",
+    "budgetImportedActualElements"
   ],
   "workflows_reopened": [
     {
@@ -177,13 +177,13 @@
     "workflowExportWake",
     "workflowExportDispatch",
     "workflowExportPlan",
-    "budgetActualImportRun",
     "workflowExportRun",
     "workflowExportTick",
     "workflowExportEnqueue",
-    "budgetImportedActualElements",
     "snapshotBudgetItemComponents",
-    "budgetElementExportRows"
+    "budgetElementExportRows",
+    "budgetActualImportRun",
+    "budgetImportedActualElements"
   ],
   "function_revisions_pending_reinstall": [],
   "evidence_authority": "Root agent live IAB installation and complete read-only Analytics audit reports; this child did not operate a browser or run a mutating job.",
@@ -196,8 +196,15 @@
   "function_source_checks": [
     {
       "name": "budgetActualImportRun",
-      "result": "Root reported corrected body saved/reopened and exact whitespace-normalized match",
-      "saved_characters": 15243
+      "result": "Current independent-value body saved, compiled and independently reopened; exact whitespace-normalized candidate match; old amount equality/residual gates absent",
+      "saved_characters": 14727
+    },
+    {
+      "name": "budgetImportedActualElements",
+      "result": "Current independent-value body saved, compiled and independently reopened; exact whitespace-normalized candidate match; old amount equality/residual gates absent",
+      "native_characters": 1915,
+      "candidate_characters": 1913,
+      "difference": "Formatting only"
     }
   ],
   "schedules_pending": {
@@ -313,11 +320,44 @@
   ],
   "component_source_quality": {
     "hcss_existing_residual_groups": 409,
-    "guard": "Preflight rejects source-component discrepancies and reports them to Workflow Log; original totals are retained and no difference is redistributed.",
     "source_precision_cause_confirmed": false,
-    "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json"
+    "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json",
+    "policy": "The historical 409 HCSS element-sum differences are informational, accepted independently of the original total, and must not block the revised importer or rollup. HCSS Other is Misc 1; Trucking, Supplies, Misc 2 and Misc 3 are ignored. No residual is allocated and no source precision/data is edited."
   },
   "creator_promotion_required": true,
   "creator_promotion_owner": "User",
-  "joint_promotion_requirement": "Promote field renames/additions, report bindings, matching function/batch/timeout changes and the original schedule disabled-state changes together with the three new anchored wrappers."
+  "joint_promotion_requirement": "Promote field renames/additions, report bindings, matching function/batch/timeout changes and the original schedule disabled-state changes together with the three new anchored wrappers.",
+  "actual_value_policy": {
+    "authority": "User direction November 3, 2026: elements and totals need not reconcile",
+    "element_total_equality_required": false,
+    "residual_amount_blocks_import_or_rollup": false,
+    "preserve_original_total": true,
+    "preserve_selected_source_elements": true,
+    "hcss_other": "Actual_Misc1_Cost",
+    "hcss_ignored_cost_columns": [
+      "ActualTruckingCost",
+      "Actual_Supply_Cost",
+      "Actual_Misc2_Cost",
+      "Actual_Misc3_Cost"
+    ],
+    "gp_unknown_element_identity_count_guard_retained": true,
+    "derive_or_redistribute_residual": false,
+    "source_precision_or_data_changes": false
+  },
+  "independent_value_policy_native_verification": {
+    "status": "Verified in native Development",
+    "functions": [
+      "budgetActualImportRun",
+      "budgetImportedActualElements"
+    ],
+    "saved_compiled_and_independently_reopened": true,
+    "source_comparison": "Exact whitespace-normalized match to current repository candidates",
+    "old_amount_equality_and_residual_gates_absent": true,
+    "worker_saved_characters": 14727,
+    "helper_native_characters": 1915,
+    "helper_candidate_characters": 1913,
+    "helper_character_difference": "Formatting only; normalized source is exact",
+    "financial_job_manually_executed": false,
+    "creator_production_promotion_owner": "User"
+  }
 }

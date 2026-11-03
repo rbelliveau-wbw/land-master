@@ -4,12 +4,20 @@
 ## 122.29.91 — Source Actual Elements
 
 Element detail reads the five saved `HCSS_*_Actuals` and five `GP_*_Actuals`
-fields on Budget Item. The native import validates each source row; complete
-saved splits retain their four-decimal amounts even when several GP Construction
-rows round their parent totals separately. Missing, partial or invalid detail
-stays unavailable for every department; the parent actual totals remain unchanged.
-The widget does not apply another aggregate equality gate. Offsetting element amounts keep a line visible under
+fields on Budget Item. The native import and rollup save the five source elements
+and original parent total independently, following the user's November 3 rule.
+The elements need not sum to that total. HCSS Other uses Misc 1; Trucking,
+Supplies, Misc 2 and Misc 3 are ignored. Complete saved amounts retain four
+decimals, while missing, partial or invalid detail stays unavailable for every
+department. No residual is allocated or implied element calculated. The revised
+functions were saved, compiled and independently reopened in Development;
+Creator Production promotion remains with the user. The actuals handoff records
+the verified current bodies.
+Offsetting element amounts keep a line visible under
 Hide Empty. Existing disclosure and keyed number-transition surfaces are reused.
+This section records the original published feature version. The later
+independent-value backend revision requires no frontend release or mapping
+change; preserve concurrent widget releases.
 
 Budget Import Item components use `Labor`, `Materials`, `Equipment`,
 `Subcontractor` and `Other`; `Data_Source` supplies their meaning. The Budget

@@ -8,25 +8,27 @@ grouping and ordering. The corresponding original queries are in `baseline/`.
 GP elements use numeric `Cost_Element` 1 through 5. Development retains signed
 nonzero costs and its existing code ranges. Construction retains positive costs
 only, codes 3000 through 3999, and its existing two-place parent total. Component
-amounts retain source precision. Its component sum is rounded to two places only
-when comparing with that existing rounded total. Unknown elements remain in the
-original total and are exposed by amount and count; cancelling unknown amounts
-cannot pass the count guard.
+amounts retain source precision independently of that total. No element-sum or
+residual-amount equality is required. The historical audit's rounded comparison
+is informational only. Unsupported GP elements remain a separate classification
+check through `Unclassified_Count`; cancelling amounts cannot hide an unsupported
+numeric element identity.
 
 HCSS Other uses `Actual_Misc1_Cost`, following the user's requested source check:
 the native preview found 158 nonzero Misc 1 rows and no nonzero Trucking, Supplies,
 Misc 2 or Misc 3 rows among 1,817 mapped rows. The first four source columns are
 `ActualLaborCost`, `ActualMaterialCost`, `ActualEquipmentCost` and
 `ActualSubcontractCost`. `ActualLaborEquipCost` is a combined amount and is excluded
-to avoid double counting. The two explicitly named Other alternatives remain
-review artifacts; neither is a separate installation target.
+to avoid double counting. The user's final rule selects Misc 1 for Other and
+ignores Trucking, Supplies, Misc 2 and Misc 3. The two explicitly named Other
+alternatives remain review artifacts; neither is a separate installation target.
 
-The HCSS source preview has existing differences between its original total
-and selected components. Row-level differences have both signs; Materials appears
-at whole-number precision in the inspected results. The cause remains under
-investigation. Preserve the source values and original parent total. Do not
-allocate the discrepancy. `Unclassified_Actuals` retains it for the existing
-Workflow Log failure path. Public verification status and counts are in
+The user's November 3 rule accepts the five source elements and original parent
+total independently. Their sum need not equal the total. `Unclassified_Actuals`
+and historical residual counts are informational and must not block the revised
+import or rollup. No implied element is calculated from the total, no residual is
+allocated, and no source precision setting is changed. Public verification
+status and counts are in
 `source-audit-evidence.json`. Full financial evidence and record examples remain
 local in the git-ignored `tmp/actuals-install/private-source-audit-evidence.json`.
 
@@ -71,9 +73,13 @@ as net amounts. Per-group and duplicate audits also completed successfully in
 native Analytics for all three sources: zero changed, missing or added original
 groups; zero changes to projected metadata or per-group totals; and zero duplicate
 import keys in either baseline or saved candidate. The complete original parent
-data is preserved. HCSS's 409 component discrepancies remain visible and guarded;
-the underlying source precision cause is unconfirmed, and no source values or
-precision settings were edited. All six compatible audits used Execute Query only
+data is preserved. The historical HCSS count of 409 differing element sums is
+informational under the independent-value rule; its cause remains unconfirmed,
+and no source values or precision settings were edited. The revised importer
+and rollup helper were saved, compiled and independently reopened in Development
+with exact whitespace-normalized current candidates and the old amount gates
+absent. Creator Production promotion remains user-owned. All six compatible
+audits used Execute Query only
 and were never saved. Financial values remain in the ignored private evidence.
 
 Local verification:

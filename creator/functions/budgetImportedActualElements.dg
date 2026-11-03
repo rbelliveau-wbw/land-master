@@ -14,13 +14,12 @@ map budgetImportedActualElements(int budgetItemId, string dataSource)
 	{
 		parts = {"Labor":source.Labor,"Materials":source.Materials,"Equipment":source.Equipment,"Subcontractor":source.Subcontractor,"Other":source.Other};
 		present = 0;
-		rowTotal = 0.0;
 		for each key in components.keys()
 		{
 			if(parts.get(key) != null)
 			{
 				present = present + 1;
-				rowTotal = rowTotal + parts.get(key);
+				parts.put(key,parts.get(key).toDecimal());
 			}
 		}
 		if(present == 0)
@@ -36,17 +35,8 @@ map budgetImportedActualElements(int budgetItemId, string dataSource)
 			{
 				throw "Incomplete actual elements; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
 			}
-			// GP Construction keeps its original two-place total; retain all four
-			// places in measured elements without allocating its rounding residual.
-			matchesTotal = rowTotal.round(4) == source.Cost.round(4);
-			if(dataSource == "Great Plains" && source.Minor_Code >= 3000 && source.Minor_Code < 4000)
-			{
-				matchesTotal = rowTotal.round(2) == source.Cost.round(2);
-			}
-			if(matchesTotal != true)
-			{
-				throw "Actual elements do not reconcile; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
-			}
+			// Sum every selected source field independently from the saved Cost.
+			// Their difference is allowed and is never allocated to another field.
 			for each key in components.keys()
 			{
 				components.put(key,components.get(key) + parts.get(key));

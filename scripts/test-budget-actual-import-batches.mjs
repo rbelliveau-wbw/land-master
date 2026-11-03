@@ -110,7 +110,7 @@ for(const source of ['const','dev','hcss']) {
   assert.throws(()=>vm.runInContext('workflowExportPlan(fixtureWorkflow,0)',h.context),error=>String(error).includes('ambiguous'),'same-system duplicates outside the selected group still fail before export');
 }
 
-for(const breakRow of [row=>{delete row.Other;},row=>{row.Other='invalid';},row=>{row.Unclassified_Actuals=-4.2;},row=>{row.Unclassified_Count=1;},row=>{row.Other=100;},row=>{row.WS_Job_Number_Trim='UNMAPPED';}]) {
+for(const breakRow of [row=>{delete row.Other;},row=>{row.Other='invalid';},row=>{row.Unclassified_Count=1;},row=>{row.Total_Actuals=null;},row=>{row.WS_Job_Number_Trim='UNMAPPED';}]) {
   const rows=Array.from({length:151},(_,i)=>sourceRow(i));breakRow(rows[150]);const h=harness(rows);h.execute();
   assert.throws(()=>{while(h.json('JSON.parse(tables.Workflow_Run_Log[0].Export_State).actualPhase')==='preflight')h.advance();});assert.equal(h.json('writes').length,0,'a malformed later source row cannot partially apply earlier valid rows');
   const event=h.json('events.at(-1)');assert.equal(event.status,'Failed');assert.equal(event.counts.failed,1);assert.match(event.details,/batch=0; phase=preflight; source row=151/);
@@ -138,13 +138,22 @@ for(const breakRow of [row=>{delete row.Other;},row=>{row.Other='invalid';},row=
 }
 {
   const h=harness([sourceRow(0,'const',{Labor:1.1299})]);h.execute();h.advance();assert.equal(h.json('tables.Budget_Import_Item[0].Labor'),1.1299,'GP Construction raw element precision is preserved beside its rounded total');
-  const dev=harness([sourceRow(0,'dev',{Labor:1.1299})],{source:'dev'});assert.throws(dev.execute,'GP Development cannot use Construction rounding tolerance');
+  const dev=harness([sourceRow(0,'dev',{Labor:1.1299})],{source:'dev'});dev.execute();dev.advance();assert.equal(dev.json('tables.Budget_Import_Item[0].Labor'),1.1299);assert.equal(dev.json('tables.Budget_Import_Item[0].Cost'),10,'GP Development selected amounts are independent from its preserved parent');
 }
 {
   const h=harness([sourceRow(0,'hcss',{Labor:1.12500000001,Unclassified_Actuals:-1e-10})],{source:'hcss'});h.execute();h.advance();
-  assert.equal(h.json('tables.Budget_Import_Item[0].Labor'),1.125,'source float residue normalizes to native four-place amounts before reconciliation');
-  const mismatch=harness([sourceRow(0,'hcss',{Unclassified_Actuals:0.01})],{source:'hcss'});assert.throws(mismatch.execute,error=>String(error).includes('unclassified'));assert.equal(mismatch.json('writes').length,0,'a representable residual remains blocked before writes');
-  const rounded=harness([sourceRow(0,'dev',{Labor:1.125049,Other:4.000049,Total_Actuals:10.000098})],{source:'dev'});assert.throws(rounded.execute,error=>String(error).includes('reconcile'),'unrounded inputs cannot pass a split that stops reconciling at destination precision');
+  assert.equal(h.json('tables.Budget_Import_Item[0].Labor'),1.125,'source values normalize independently to native four-place storage');
+  const rounded=harness([sourceRow(0,'dev',{Labor:1.125049,Other:4.000049,Total_Actuals:10.000098})],{source:'dev'});rounded.execute();rounded.advance();assert.equal(rounded.json('tables.Budget_Import_Item[0].Cost'),10.0001);assert.equal(rounded.json('tables.Budget_Import_Item[0].Labor'),1.125);assert.equal(rounded.json('tables.Budget_Import_Item[0].Other'),4,'rounding the parent never reallocates a difference into Other');
+}
+for(const source of ['const','dev','hcss']){
+  const amountKey=source==='hcss'?'TotalActualCost':'Total_Actuals';
+  const parent=source==='const'?77.12:-77.1234;
+  const selected={Labor:'1.1250',Materials:'0',Equipment:'-2.2500',Subcontractor:'3.1250',Other:'4.0000'};
+  const rows=[sourceRow(0,source,{...selected,[amountKey]:parent,Unclassified_Actuals:123.45}),sourceRow(1,source,{Labor:0,Materials:0,Equipment:0,Subcontractor:0,Other:0,[amountKey]:5,Unclassified_Actuals:null})];
+  const h=harness(rows,{source});h.execute();assert.equal(h.json('writes').length,0,'independent amounts still complete full-source preflight before writes');h.advance();
+  assert.equal(h.json('tables.Workflow_Run_Log[0].Run_Status'),'Success');
+  const saved=h.json('tables.Budget_Import_Item');assert.equal(saved[0].Cost,parent);assert.deepEqual(names.map(name=>saved[0][name]),[1.125,0,-2.25,3.125,4],'nonzero diagnostic residual cannot change any selected field');assert.equal(saved[1].Cost,5);assert.deepEqual(names.map(name=>saved[1][name]),[0,0,0,0,0],'a positive parent does not fabricate any selected element amounts');
+  assert.equal(h.json('events.some(event=>event.status==="Failed"||event.status==="Partial")'),false,'permitted differences do not produce failures');
 }
 {
   const existing={ID:'90071992547409972',Code:'0007-Job-GP-3000',Data_Source:'Great Plains',Subdivision_Code:'PHASE-0007',Major_Code:3000,Minor_Code:3000,Budget_Item:'90071992547409973',Cost_Code_Description:'Keep Saved Description',Cost:10};
@@ -228,4 +237,4 @@ for(const wrapper of promotion.actual_import_schedule_wrappers){
   assert.ok(promotion.original_actual_schedule_retention.names.includes(wrapper.route_key));
   assert.ok(captured.new_schedules_created.some(entry=>entry.name===wrapper.name&&entry.route_key===wrapper.route_key),'declarations match the names actually captured in native Creator');
 }
-console.log('PASS: shipped actual import body: all-source bounded preflight before writes, 25-row apply continuations, immutable export reuse, cross-chunk duplicates, source/mapping/schema/element guards, signed precision, native unknown-write no replay, deadline, empty-source protection and Workflow Log failure context.');
+console.log('PASS: independent parent/selected actual amounts with no residual allocation, all-source bounded preflight before writes, 25-row apply, immutable export reuse, duplicate/mapping/completeness/GP-classification guards, signed precision, unknown-write no replay, deadline, empty-source protection and Workflow Log failure context.');

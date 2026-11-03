@@ -5,11 +5,15 @@
 Automation's schedule impact list includes HCSS actuals, GP Construction actuals
 and GP Development actuals. Current Batch describes the shared budget source
 group; the existing timer remains its only owner. Imports capture the group and
-use bounded source processing. Query/import/preflight/apply and hard-timeout
-failures remain visible through the existing Workflow Log screen and configured
+use bounded source processing. Five selected elements and the original actual
+total are independent; a difference between their amounts alone is accepted.
+Query/import/preflight/apply and hard-timeout failures remain visible through
+the existing Workflow Log screen and configured
 failure recipients. Native schedule/queue changes require Creator promotion;
 this widget change does not alter Settings values, log permissions or polling.
 Frontend rollback: **1.6.4** through the permanent widget URL.
+This is the original published feature version. The later independent-value
+backend revision requires no frontend release or mapping change.
 
 ## 1.6.3 — renamed batch timer
 
