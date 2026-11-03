@@ -1,0 +1,61 @@
+map budgetImportedActualElements(int budgetItemId, string dataSource)
+{
+	// Read-only preflight used by the existing 100-record native Budget batch.
+	// Every Import row retains its source identity; the five columns are generic.
+	if(dataSource != "HeavyJob" && dataSource != "Great Plains")
+	{
+		throw "Unsupported actual source: " + dataSource;
+	}
+	sources = Budget_Import_Item[Budget_Item == budgetItemId.toLong() && Data_Source == dataSource];
+	components = {"Labor":0.0,"Materials":0.0,"Equipment":0.0,"Subcontractor":0.0,"Other":0.0};
+	complete = sources.count() > 0;
+	legacyCount = 0;
+	for each source in sources
+	{
+		parts = {"Labor":source.Labor,"Materials":source.Materials,"Equipment":source.Equipment,"Subcontractor":source.Subcontractor,"Other":source.Other};
+		present = 0;
+		rowTotal = 0.0;
+		for each key in components.keys()
+		{
+			if(parts.get(key) != null)
+			{
+				present = present + 1;
+				rowTotal = rowTotal + parts.get(key);
+			}
+		}
+		if(present == 0)
+		{
+			// Existing total-only imports remain readable during the migration.
+			// They must never masquerade as measured all-zero allocations.
+			complete = false;
+			legacyCount = legacyCount + 1;
+		}
+		else
+		{
+			if(present != 5 || source.Cost == null)
+			{
+				throw "Incomplete actual elements; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
+			}
+			// GP Construction keeps its original two-place total; retain all four
+			// places in measured elements without allocating its rounding residual.
+			matchesTotal = rowTotal.round(4) == source.Cost.round(4);
+			if(dataSource == "Great Plains" && source.Minor_Code >= 3000 && source.Minor_Code < 4000)
+			{
+				matchesTotal = rowTotal.round(2) == source.Cost.round(2);
+			}
+			if(matchesTotal != true)
+			{
+				throw "Actual elements do not reconcile; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
+			}
+			for each key in components.keys()
+			{
+				components.put(key,components.get(key) + parts.get(key));
+			}
+		}
+	}
+	if(complete != true)
+	{
+		components = {"Labor":null,"Materials":null,"Equipment":null,"Subcontractor":null,"Other":null};
+	}
+	return {"complete":complete,"components":components,"rows":sources.count(),"legacyRows":legacyCount,"total":sources.sum(Cost),"costToComplete":sources.sum(Cost_to_Complete)};
+}

@@ -29,7 +29,7 @@ const context = vm.createContext({S: state, budgetModsReady: () => true, findIte
 vm.runInContext(`var BUDGET_ELEMENTS = ${definitions[1]};\n` + [
   'v', 'cleanVal', 'isObj', 'rawPath', 'firstRaw', 'lookupId', 'lookupMatchesId', 'catDept',
   'modStatusOf', 'modSignedAmount', 'modsForItem', 'budgetElementNumber',
-  'budgetElementSnapshot', 'budgetElementDepartmentIndex', 'budgetElementValues', 'budgetPrelimElementSnapshot', 'budgetElementImportedSnapshot', 'budgetElementModAmounts', 'budgetElementKey',
+  'budgetElementSnapshot', 'budgetImportElementSnapshot', 'budgetActualElementSnapshot', 'budgetElementDepartmentIndex', 'budgetElementValues', 'budgetPrelimElementSnapshot', 'budgetElementImportedSnapshot', 'budgetElementModAmounts', 'budgetElementKey',
   'budgetLineItemIds', 'budgetElementCell', 'budgetElementRowsHtml',
   'budgetUnitNumber', 'budgetUnitMoney', 'esc', 'escAttr', 'assignImportItem'
 ].map(extract).join('\n'), context);
@@ -64,6 +64,13 @@ for (const missing of fields) {
   assert.equal(context.budgetElementSnapshot(incomplete), null, `blank ${missing} cannot fabricate zero`);
 }
 assert.equal(context.budgetElementSnapshot(null), null);
+const importFields = fields.map(field => field.replace(/_Budget$/, ''));
+const importParts = values => Object.fromEntries(importFields.map((field, index) => [field, values[index]]));
+assert.deepEqual(plain(context.budgetImportElementSnapshot(importParts(['1.1250', 2, 3, -4, 5]))), [1.125, 2, 3, -4, 5], 'renamed source-agnostic import fields retain signed native precision');
+assert.deepEqual(plain(context.budgetImportElementSnapshot(snapshot)), [100.1234, 200, 0, -0.1234, 50], 'old Production report keys remain readable before Creator promotion');
+assert.deepEqual(plain(context.budgetImportElementSnapshot({...snapshot, ...importParts([1, 2, 3, 4, 5])})), [1, 2, 3, 4, 5], 'renamed fields take precedence over legacy values');
+assert.equal(context.budgetImportElementSnapshot({...snapshot, ...importParts([1, 2, 3, 4, null])}), null, 'a blank renamed field cannot fall back to a stale old value');
+assert.equal(context.budgetElementSnapshot(importParts([1, 2, 3, 4, 5])), null, 'source-agnostic import fields never replace Budget Item frozen Final fields');
 
 const importTarget = {ID: BID, Unapproved_Final_Budget_Ttl: '25.5000', ...snapshot};
 const imported = (ID, assigned, amount, values, overrides = {}) => ({
@@ -81,6 +88,8 @@ state.importItems = [
   imported('4410926000005159204', {}, '100', [20, 20, 20, 20, 20], {Cost_Code_Description: 'Clearing'})
 ];
 assert.deepEqual(plain(context.budgetElementImportedSnapshot(importTarget)), [1.5, 3, 5, 7, 9], 'sum only assigned HeavyJob Budget rows, with native 4-decimal precision');
+state.importItems = state.importItems.map(rec => ({...rec, ...importParts(fields.map(field => rec[field]))}));
+assert.deepEqual(plain(context.budgetElementImportedSnapshot(importTarget)), [1.5, 3, 5, 7, 9], 'renamed fields preserve the exact-assignment and HeavyJob Budget source filters');
 importsAllowed = false;
 assert.equal(context.budgetElementImportedSnapshot(importTarget), null, 'cached import values remain unavailable after permission denial');
 importsAllowed = true;
@@ -139,7 +148,7 @@ for (const label of ['(1) Labor', '(2) Materials', '(3) Equipment', '(4) Subcont
 assert.doesNotMatch(phaseRows, /\birow\b|data-iid=|data-budget-item-ids=|<input|data-id=/, 'child detail cannot enter parent totals, edits or saves');
 assert.ok(phaseRows.includes('$100.1234'), 'Final snapshot values retain native four-decimal precision under their element');
 assert.ok(phaseRows.includes('Preliminary has no element breakdown'), 'no Preliminary split is inferred from the Final snapshot');
-assert.ok(phaseRows.includes('Construction actuals have no element breakdown'), 'no actual split is inferred from a Construction Final snapshot');
+assert.ok(phaseRows.includes('Saved HCSS actual elements; unavailable until all five source amounts are saved'), 'no actual split is inferred from a Construction Final snapshot');
 const projectRow = {dataset: {budgetItemIds: `${BID},${OTHER}`}, cells: [{dataset:{}}, {dataset:{budgetItemId:BID}}, {dataset:{budgetItemId:OTHER}}, {dataset:{}}]};
 const projectRows = context.budgetElementRowsHtml(projectRow);
 assert.ok(projectRows.includes('$101.1234'), 'all-phase element totals sum matching native phase values at their saved precision');
@@ -147,5 +156,13 @@ state.tier = 'prelim';
 const prelimRows = context.budgetElementRowsHtml(projectRow);
 assert.doesNotMatch(prelimRows, /\$100\.12|\$101\.12/, 'Preliminary tier cannot display Final amounts as Preliminary');
 assert.equal(JSON.stringify(items), before, 'revealing elements cannot mutate parent amounts or native snapshots');
+
+const actualParts = (prefix, values) => Object.fromEntries(importFields.map((field,index) => [prefix+'_'+field+'_Actuals',values[index]]));
+items[BID] = {...items[BID], HCSS_Actuals: '15.125', PROJ_Actual: '17.875', ...actualParts('HCSS',['1.125',2,3,4,5]), ...actualParts('GP',['2.875',2,3,4,6])};
+const measuredBefore = JSON.stringify(items[BID]);
+const measuredRows = [...context.budgetElementRowsHtml({dataset:{iid:BID}}).matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map(row => [...row[1].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(cell => cell[1]));
+assert.equal(measuredRows[0][9], '$1.125', 'phase element row renders the saved HCSS amount in the HCSS column');
+assert.equal(measuredRows[0][10], '$2.875', 'phase element row renders its independently saved GP amount in the GP column');
+assert.equal(JSON.stringify(items[BID]), measuredBefore, 'rendering measured elements never rewrites parent or component fields');
 
 console.log('Budget elements: native mapping, unknown/zero/precision, frozen snapshots, current assigned imports, signed approved modifications, legacy/mismatch safety, string identities, five read-only children and phase-total isolation passed.');

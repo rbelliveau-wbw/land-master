@@ -15,7 +15,7 @@ string workflowExportTick(string auditId)
 	}
 	state = run.Export_State.toMap();
 	workflow = state.get("workflow");
-	allowed = {"Daily_Crew_Timecards","Daily_Crew_Labor","Update_Budgets_w_Projects1","Sync_Final_Acceptance_Due","Update_Projects_Start_End","Budgets_Check_HCSS_Budget1","Budgets_Import_Load_GP_Co","Budgets_Import_Load_HCSS_1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_CTC_C"};
+	allowed = {"Daily_Crew_Timecards","Daily_Crew_Labor","Update_Budgets_w_Projects1","Sync_Final_Acceptance_Due","Update_Projects_Start_End","Budgets_Check_HCSS_Budget1","Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_CTC_C"};
 	if(state.get("version") != 1 || state.get("phase") != "waiting" || !allowed.contains(workflow))
 	{
 		return "Not waiting";
@@ -24,6 +24,32 @@ string workflowExportTick(string auditId)
 	if(!thisapp.workflowExportClaim(auditId + "|tick|" + tick))
 	{
 		return "Claim not acknowledged; no replay";
+	}
+	if(state.get("actualPhase") != null)
+	{
+		try
+		{
+			actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
+			validActualPhase = state.get("actualPhase") == "preflight" || state.get("actualPhase") == "apply";
+			if(!actualWorkflows.contains(workflow) || validActualPhase != true)
+			{
+				throw "Invalid actual import continuation.";
+			}
+			state.put("phase","processing");
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Resuming actual element " + state.get("actualPhase"),"exportState":state.toString(),"clearResume":true});
+		}
+		catch(actualResumeError)
+		{
+			actualStatus = "Failed";
+			if(state.get("actualWriteAttempted") == true)
+			{
+				actualStatus = "Partial";
+			}
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":actualStatus,"stage":"Actual import continuation refused","message":actualResumeError.toString(),"details":"Source=" + workflow + "; batch=" + state.get("batch") + "; cursor=" + state.get("actualIndex") + ". No ambiguous continuation was replayed.","counts":{"failed":1},"clearResume":true});
+			throw actualResumeError;
+		}
+		// Keep the helper's independent Failed/Partial handling outside this catch.
+		return thisapp.budgetActualImportRun(auditId);
 	}
 	// Budget successors have no Analytics work. They execute only after the
 	// preceding action has its own durable successful acknowledgement.

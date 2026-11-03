@@ -1,6 +1,14 @@
 
 # Land Master Development Instructions
 
+## Browser Ownership — User Direction November 3, 2026
+
+- ALWAYS use the agent-owned in-app browser for browser work.
+- Never control, inspect, navigate, or reuse the user's personal browser unless
+  the user explicitly requests that exception for the current task.
+- This applies to every delegated agent. If a child cannot access the agent-owned
+  browser, the parent performs browser work; do not fall back to native Chrome.
+
 Land Master is a production Zoho Creator application used for projects, subdivisions, properties, budgets, pro formas, contracts, approvals, taxes, lots, and forecasting.
 
 ## Authority order

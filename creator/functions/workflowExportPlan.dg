@@ -1,6 +1,7 @@
 map workflowExportPlan(string workflow, int capturedBatch)
 {
 	requests = List();
+	actualScope = Map();
 	if(workflow == "Daily_Crew_Timecards")
 	{
 		cutoff = zoho.currentdate.subMonth(3);
@@ -150,47 +151,91 @@ map workflowExportPlan(string workflow, int capturedBatch)
 			requests.add({"view":"2107789000023687048","config":config,"allowEmpty":true});
 		}
 	}
-	else if(workflow == "Budgets_Import_Load_GP_Co")
+	else if(workflow == "Budgets_Import_Load_GP_Co" || workflow == "Budgets_Import_Great_Plai1" || workflow == "Budgets_Import_Load_HCSS_")
 	{
-		config = Map();
-		config.put("responseFormat","json");
-		cols = List();
-		cols.add("WS_Job_Number_Trim");
-		cols.add("Cost_Code_Number_1");
-		cols.add("Cost_Code_Number_2");
-		cols.add("Cost_Code_Description");
-		cols.add("Total_Actuals");
-		config.put("selectedColumns",cols);
-		requests.add({"view":"2107789000031077002","config":config,"allowEmpty":false});
+		if(capturedBatch < 0 || capturedBatch > 4)
+		{
+			throw "Actual import batch must be 0 through 4.";
+		}
+		systemName = "Great Plains";
+		viewId = "2107789000031077002";
+		viewName = "GP - Const Cost Actuals";
+		jobColumn = "WS_Job_Number_Trim";
+		cols = {"WS_Job_Number_Trim","Cost_Code_Number_1","Cost_Code_Number_2","Cost_Code_Description","Total_Actuals","Labor","Materials","Equipment","Subcontractor","Other","Unclassified_Actuals","Unclassified_Count"};
+		if(workflow == "Budgets_Import_Great_Plai1")
+		{
+			viewId = "2107789000029311186";
+			viewName = "Great Plains - Development Costs for Budget";
+		}
+		else if(workflow == "Budgets_Import_Load_HCSS_")
+		{
+			systemName = "HeavyJob";
+			viewId = "2107789000023717814";
+			viewName = "HeavyJob Actual Costs joined w/ Subdivs";
+			jobColumn = "H.JobCode";
+			cols = {"Major Code","H.Minor Code","TotalActualCost","J.JobCodeFinal","H.JobCode","CostCodeDescription","Labor","Materials","Equipment","Subcontractor","Other","Unclassified_Actuals"};
+		}
+		// Capture scope once before export. Native ID modulo keeps related rows together.
+		budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
+		batchIds = List();
+		codeCounts = Map();
+		for each  subdivision in Subdivision[Subdivision_Code in budgetCodes]
+		{
+			code = ifnull(subdivision.Subdivision_Code,"").toString();
+			if(code != "")
+			{
+				codeCounts.put(code,ifnull(codeCounts.get(code),0) + 1);
+				if(subdivision.ID % 5 == capturedBatch)
+				{
+					batchIds.add(subdivision.ID);
+				}
+			}
+		}
+		for each  mapping in External_System_Mapping[External_System == systemName && Subdivision1 in batchIds]
+		{
+			job = ifnull(mapping.External_Code,"").toString().trim();
+			if(job != "")
+			{
+				if(mapping.Subdivision1 != null && batchIds.contains(mapping.Subdivision1.ID))
+				{
+					code = ifnull(mapping.Subdivision1.Subdivision_Code,"").toString();
+					if(codeCounts.get(code) != 1)
+					{
+						throw "Actual import subdivision code is ambiguous: " + code;
+					}
+					actualScope.put(job,{"id":mapping.Subdivision1.ID.toString(),"code":code});
+				}
+			}
+		}
+		jobSql = "";
+		selectedJobs = actualScope.keys().sort(true);
+		for each  job in selectedJobs
+		{
+			matchingJobs = External_System_Mapping[External_System == systemName && External_Code == job];
+			if(matchingJobs.count() != 1)
+			{
+				throw "Actual import external mapping is ambiguous: " + job;
+			}
+			if(jobSql != "")
+			{
+				jobSql = jobSql + ",";
+			}
+			jobSql = jobSql + "'" + job.replaceAll("'","''",true) + "'";
+		}
+		if(selectedJobs.size() > 0)
+		{
+			config = {"responseFormat":"json","selectedColumns":cols};
+			config.put("criteria","(\"" + viewName + "\".\"" + jobColumn + "\" IN (" + jobSql + "))");
+			requests.add({"view":viewId,"config":config,"allowEmpty":true});
+		}
 	}
 	else if(workflow == "Budgets_Import_Load_HCSS_1")
 	{
 		config = Map();
 		config.put("responseFormat","json");
-		cols = List();
-		cols.add("H.zzz_CostCodeID_Guid");
-		cols.add("H.Major Code");
-		cols.add("H.Minor Code");
-		cols.add("H.Total Budget Decimal");
-		cols.add("J.JobCodeFinal");
-		cols.add("H.JobCode");
-		cols.add("H.CostCodeDescription");
+		cols = {"H.zzz_CostCodeID_Guid","H.Major Code","H.Minor Code","H.Total Budget Decimal","H.BudgetedLabor","H.BudgetedMaterial","H.BudgetedEquipment","H.BudgetedSubcontract","H.Budget_Misc1_Cost","J.JobCodeFinal","H.JobCode","H.CostCodeDescription"};
 		config.put("selectedColumns",cols);
 		requests.add({"view":"2107789000023687048","config":config,"allowEmpty":false});
-	}
-	else if(workflow == "Budgets_Import_Load_HCSS_")
-	{
-		config = Map();
-		config.put("responseFormat","json");
-		cols = List();
-		cols.add("Major Code");
-		cols.add("H.Minor Code");
-		cols.add("TotalActualCost");
-		cols.add("J.JobCodeFinal");
-		cols.add("H.JobCode");
-		cols.add("CostCodeDescription");
-		config.put("selectedColumns",cols);
-		requests.add({"view":"2107789000023717814","config":config,"allowEmpty":false});
 	}
 	else if(workflow == "Budgets_Import_Load_CTC_C")
 	{
@@ -209,5 +254,5 @@ map workflowExportPlan(string workflow, int capturedBatch)
 	{
 		throw "Unknown export workflow: " + workflow;
 	}
-	return {"requests":requests,"batch":capturedBatch};
+	return {"requests":requests,"batch":capturedBatch,"actualScope":actualScope};
 }

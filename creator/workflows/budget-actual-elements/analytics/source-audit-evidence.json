@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-03",
+  "evidence_source": "Read-only native Analytics previews reported by the primary agent",
+  "hcss": {
+    "view_id": "2107789000023717814",
+    "selected_query": "hcss-actuals.sql",
+    "selected_other_source": "Actual_Misc1_Cost",
+    "selection_basis": "The user requested checking actual source use and matching budgets when Misc 1 predominates.",
+    "mapped_source_rows": 1817,
+    "misc1_nonzero_rows": 158,
+    "other_bucket_nonzero_rows": 0,
+    "precision_observation": "Materials values in the preview appear as whole amounts while parent totals and other cost columns retain cents. The source column type/precision is under investigation; this is not a confirmed cause.",
+    "guard": "Keep the original TotalActualCost and Unclassified_Actuals residual. Mismatches must surface through the existing Workflow Log failure path; never redistribute the difference.",
+    "underlying_source_data_modified": false,
+    "complete_query_audits_live_status": "Complete: native summaries, saved-view per-group comparisons and baseline/candidate duplicate import-key checks passed. Original parent data is preserved; 409 HCSS component discrepancies remain visible and guarded.",
+    "private_financial_preview_retained": true,
+    "component_discrepancies_detected": true
+  },
+  "gp": {
+    "development_view_id": "2107789000029311186",
+    "construction_view_id": "2107789000031077002",
+    "development_filter": "4000 <= code < 5000 OR 8000 <= code < 9000; nonzero signed costs",
+    "construction_filter": "3000 <= code < 4000; positive costs only; original total rounded to two decimals",
+    "unclassified_guard": "Both signed Unclassified_Actuals and Unclassified_Count are emitted; a zero net amount cannot hide cancelling unknown element rows."
+  },
+  "complete_live_summary_audits": {
+    "evidence_source": "Primary agent native Execute Query results on November 3, 2026; audit text was not saved over source queries.",
+    "all_original_row_counts_and_grand_totals_match": true,
+    "hcss": {
+      "baseline_group_rows": 1800,
+      "candidate_group_rows": 1800,
+      "residual_group_rows": 409,
+      "original_grand_total_preserved": true,
+      "private_residual_amounts_retained": true
+    },
+    "gp_construction": {
+      "baseline_group_rows": 1660,
+      "candidate_group_rows": 1660,
+      "residual_group_rows": 0,
+      "unclassified_element_rows": 0,
+      "original_grand_total_preserved": true
+    },
+    "gp_development": {
+      "baseline_group_rows": 235,
+      "candidate_group_rows": 235,
+      "negative_group_rows": 6,
+      "residual_group_rows": 0,
+      "unclassified_element_rows": 0,
+      "original_grand_total_preserved": true,
+      "negative_group_total_preserved": true
+    },
+    "remaining_live_checks": [],
+    "native_parser_constraints": [
+      "Qualify columns whenever a table alias is defined",
+      "Comparisons with two derived source queries were rejected; saved-view variants use only one derived baseline source and a direct saved query table per LEFT JOIN branch",
+      "Run saved-view audits in a different query editor from the saved view being read to prevent self-reference"
+    ]
+  },
+  "complete_live_group_and_identity_audits": {
+    "status": "Complete; all six compatible saved-view audits executed successfully in native Analytics",
+    "date": "2026-11-03",
+    "source_preservation": "Every original row count, grand total, original group key, projected metadata value and per-group four-place total is unchanged. Baseline and saved candidate import identities are unique.",
+    "hcss": {
+      "group_comparison_query": "audits/hcss-actuals-saved-view-group-comparison.sql",
+      "executed_in": "GP Development query editor",
+      "changed_or_missing_or_added_groups": 0,
+      "duplicate_key_query": "audits/hcss-actuals-saved-view-duplicate-keys.sql",
+      "baseline_duplicate_import_keys": 0,
+      "candidate_duplicate_import_keys": 0
+    },
+    "gp_construction": {
+      "group_comparison_query": "audits/gp-construction-costs-saved-view-group-comparison.sql",
+      "executed_in": "HCSS query editor",
+      "changed_or_missing_or_added_groups": 0,
+      "duplicate_key_query": "audits/gp-construction-costs-saved-view-duplicate-keys.sql",
+      "baseline_duplicate_import_keys": 0,
+      "candidate_duplicate_import_keys": 0
+    },
+    "gp_development": {
+      "group_comparison_query": "audits/gp-development-costs-saved-view-group-comparison.sql",
+      "executed_in": "HCSS query editor",
+      "changed_or_missing_or_added_groups": 0,
+      "duplicate_key_query": "audits/gp-development-costs-saved-view-duplicate-keys.sql",
+      "baseline_duplicate_import_keys": 0,
+      "candidate_duplicate_import_keys": 0
+    },
+    "execution_mode": "Execute Query only; audit text was never saved over the existing source queries",
+    "underlying_source_tables_modified": false,
+    "source_precision_cause_confirmed": false,
+    "unresolved_component_issue": "409 HCSS groups have existing source-component discrepancies; keep the residual guard and original totals. No redistribution or underlying source precision edit was performed.",
+    "editor_cleanup": "Complete: discarded execute-only audit text using No in each save prompt; all three editors returned to the workspace. The saved additive source queries were not overwritten by audit SQL."
+  },
+  "local_verification": {
+    "command": "python creator/workflows/budget-actual-elements/analytics/verify_read_only_audits.py",
+    "tests_passed": 18,
+    "scope": "SQLite execution of the actual portable SELECT/CASE/SUM SQL, original projection parity, signed credits, range/mapping filters, unknown elements, duplicate keys, cancelling residuals, deliberately changed per-group totals/keys and explicit Zoho derived-table alias qualification.",
+    "does_not_establish": "Native Zoho Analytics compilation or complete live query audit results."
+  },
+  "private_financial_evidence": {
+    "path": "tmp/actuals-install/private-source-audit-evidence.json",
+    "git_ignored": true,
+    "contains": "Full native financial totals, component amounts and record-level examples. Keep local; do not publish."
+  }
+}

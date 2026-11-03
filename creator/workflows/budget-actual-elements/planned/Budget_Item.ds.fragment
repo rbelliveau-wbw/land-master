@@ -1,0 +1,112 @@
+// Add only these fields inside the existing Budget_Item section at row 1.
+// This is an additive merge fragment; do not replace the form.
+HCSS_Labor_Actuals
+(
+	displayname = "HCSS (1) Labor Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+HCSS_Materials_Actuals
+(
+	displayname = "HCSS (2) Materials Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+HCSS_Equipment_Actuals
+(
+	displayname = "HCSS (3) Equipment Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+HCSS_Subcontractor_Actuals
+(
+	displayname = "HCSS (4) Subcontractor Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+HCSS_Other_Actuals
+(
+	displayname = "HCSS (5) Other Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+GP_Labor_Actuals
+(
+	displayname = "GP (1) Labor Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+GP_Materials_Actuals
+(
+	displayname = "GP (2) Materials Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+GP_Equipment_Actuals
+(
+	displayname = "GP (3) Equipment Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+GP_Subcontractor_Actuals
+(
+	displayname = "GP (4) Subcontractor Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)
+GP_Other_Actuals
+(
+	displayname = "GP (5) Other Actuals"
+	type = USD
+	format = commadotwestern
+	decimalplace = 4
+	maxchar = 16
+	row = 1
+	column = 1
+	width = small
+)

@@ -1,0 +1,31 @@
+string workflowExportDispatch(string wakeupId)
+{
+	if(!wakeupId.matches("[0-9]+"))
+	{
+		throw "Wake-up requires a record ID.";
+	}
+	wake = Workflow_Export_Lock[ID == wakeupId.toLong()];
+	if(wake.count() != 1 || wake.Wake_At == null || wake.Wake_At > zoho.currenttime)
+	{
+		return "Inactive wake-up";
+	}
+	key = ifnull(wake.Claim_Key,"").toString();
+	if(!key.matches("[0-9]+[|]wake[|][0-9]+[|](0|2)"))
+	{
+		return "Not a continuation wake-up";
+	}
+	parts = key.toList("|");
+	auditId = parts.get(0);
+	expectedTick = parts.get(2).toLong();
+	run = Workflow_Run_Log[ID == auditId.toLong()];
+	if(run.count() != 1 || run.Run_Status != "Running" || run.Resume_At == null)
+	{
+		return "Inactive run";
+	}
+	state = run.Export_State.toMap();
+	if(state.get("version") != 1 || state.get("phase") != "waiting" || state.get("tick") != expectedTick)
+	{
+		return "Stale wake-up";
+	}
+	return thisapp.workflowExportTick(auditId);
+}

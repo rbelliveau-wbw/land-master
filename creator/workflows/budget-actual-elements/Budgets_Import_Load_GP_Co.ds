@@ -1,0 +1,18 @@
+Budgets_GP_Construction_A as "Budgets - GP Construction Actuals - Batches"
+{
+	type = schedule
+	form = Settings
+	start = Next_Workflow_Run
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions
+		{
+			on load
+			(
+				thisapp.workflowExportEnqueue("Budgets_Import_Load_GP_Co");
+			)
+		}
+	}
+}

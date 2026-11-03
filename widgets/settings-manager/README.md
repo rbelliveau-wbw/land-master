@@ -1,5 +1,16 @@
 # Settings Manager
 
+## 1.6.6 — Actuals Batch Scheduling
+
+Automation's schedule impact list includes HCSS actuals, GP Construction actuals
+and GP Development actuals. Current Batch describes the shared budget source
+group; the existing timer remains its only owner. Imports capture the group and
+use bounded source processing. Query/import/preflight/apply and hard-timeout
+failures remain visible through the existing Workflow Log screen and configured
+failure recipients. Native schedule/queue changes require Creator promotion;
+this widget change does not alter Settings values, log permissions or polling.
+Frontend rollback: **1.6.4** through the permanent widget URL.
+
 ## 1.6.3 — renamed batch timer
 
 The Automation impact list uses **Next Workflow Run/Next Batch** and the Current

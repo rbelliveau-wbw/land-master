@@ -1,0 +1,12 @@
+// Merge these references once into the existing list, quickview and detailview.
+// Preserve every current field, action, criteria, permission and layout setting.
+HCSS_Labor_Actuals as "HCSS (1) Labor Actuals"
+HCSS_Materials_Actuals as "HCSS (2) Materials Actuals"
+HCSS_Equipment_Actuals as "HCSS (3) Equipment Actuals"
+HCSS_Subcontractor_Actuals as "HCSS (4) Subcontractor Actuals"
+HCSS_Other_Actuals as "HCSS (5) Other Actuals"
+GP_Labor_Actuals as "GP (1) Labor Actuals"
+GP_Materials_Actuals as "GP (2) Materials Actuals"
+GP_Equipment_Actuals as "GP (3) Equipment Actuals"
+GP_Subcontractor_Actuals as "GP (4) Subcontractor Actuals"
+GP_Other_Actuals as "GP (5) Other Actuals"

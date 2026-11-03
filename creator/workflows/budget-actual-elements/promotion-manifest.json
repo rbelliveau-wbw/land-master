@@ -1,0 +1,308 @@
+{
+  "contract": "budget-actual-elements-promotion-v1",
+  "prepared_on": "2026-11-03",
+  "status": "Installed and compiled in Creator Development with independent native source/layout/schedule verification complete. Complete read-only Analytics parent/group/key comparisons passed. Actual scheduled financial writes and Production performance were not executed. User promotes Creator components; repository PMP is separate.",
+  "schema": "creator/workflows/budget-actual-elements/schema.json",
+  "native_install_progress": "creator/workflows/budget-actual-elements/native-install-progress.json",
+  "pmp_boundary": "PMP publishes repository main and Production widget mappings. The user promotes Creator components; do not publish Creator to Stage/Production from PMP.",
+  "functions": [
+    {
+      "name": "workflowRunLog",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "map",
+      "arguments": "map event",
+      "source": "creator/functions/workflowRunLog.dg"
+    },
+    {
+      "name": "analyticsExportRows",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "list",
+      "arguments": "string viewId, map config, string auditId, bool allowEmpty",
+      "source": "creator/functions/analyticsExportRows.dg"
+    },
+    {
+      "name": "workflowPreparedExportRows",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "list",
+      "arguments": "string viewId, map config, string auditId, bool allowEmpty",
+      "source": "creator/functions/workflowPreparedExportRows.dg"
+    },
+    {
+      "name": "workflowExportClaim",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "bool",
+      "arguments": "string claimKey",
+      "source": "creator/functions/workflowExportClaim.dg"
+    },
+    {
+      "name": "workflowExportWake",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "string",
+      "arguments": "string auditId, int tick, string resumeAt",
+      "source": "creator/functions/workflowExportWake.dg"
+    },
+    {
+      "name": "workflowExportDispatch",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "string",
+      "arguments": "string wakeupId",
+      "source": "creator/functions/workflowExportDispatch.dg"
+    },
+    {
+      "name": "workflowExportPlan",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "map",
+      "arguments": "string workflow, int capturedBatch",
+      "source": "creator/functions/workflowExportPlan.dg"
+    },
+    {
+      "name": "budgetActualImportRun",
+      "kind": "new private bounded actual importer",
+      "return_type": "string",
+      "arguments": "string auditId",
+      "source": "creator/functions/budgetActualImportRun.dg"
+    },
+    {
+      "name": "workflowExportRun",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "string",
+      "arguments": "string queuedAuditId",
+      "source": "creator/functions/workflowExportRun.dg"
+    },
+    {
+      "name": "workflowExportTick",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "string",
+      "arguments": "string auditId",
+      "source": "creator/functions/workflowExportTick.dg"
+    },
+    {
+      "name": "workflowExportEnqueue",
+      "kind": "existing native queue prerequisite / updated body",
+      "return_type": "string",
+      "arguments": "string workflow",
+      "source": "creator/functions/workflowExportEnqueue.dg"
+    },
+    {
+      "name": "budgetImportedActualElements",
+      "kind": "new private read-only helper",
+      "return_type": "map",
+      "arguments": "int budgetItemId, string dataSource",
+      "source": "creator/functions/budgetImportedActualElements.dg"
+    },
+    {
+      "name": "snapshotBudgetItemComponents",
+      "kind": "existing native helper",
+      "return_type": "map",
+      "arguments": "int itemId, bool initializeOnly, bool dryRun",
+      "source": "creator/functions/snapshotBudgetItemComponents.dg"
+    },
+    {
+      "name": "budgetElementExportRows",
+      "kind": "existing private read-only helper",
+      "return_type": "list",
+      "arguments": "int budgetItemId",
+      "source": "creator/functions/budgetElementExportRows.dg"
+    }
+  ],
+  "batch_workflow": {
+    "name": "Budgets_Apply_Cost_to_Bud",
+    "display_name": "Budgets - Apply Cost to Budget Lines",
+    "existing": true,
+    "form": "Budget_Item",
+    "criteria": "Template_Item == false",
+    "frequency": "daily",
+    "batch_size": 100,
+    "execute_source": "creator/workflows/budget-actual-elements/Budgets_Apply_Cost_to_Bud.action-1.dg",
+    "failure_source": "creator/workflows/budget-actual-elements/Budgets_Apply_Cost_to_Bud.failure.dg",
+    "failure_log": "Existing workflowRunLog -> Workflow_Run_Log -> Settings Workflow Log",
+    "preserve": "Existing schedule identity/time, scope, Construction approval behavior, native error state and Settings Workflow Log notification configuration",
+    "development_verified": {
+      "execute_saved_compiled_and_reopened_match": true,
+      "failure_saved_compiled_and_reopened_match": true,
+      "unchanged_properties": {
+        "form": "Budget_Item",
+        "criteria": "Template_Item == false",
+        "frequency": "daily",
+        "start": "11/27/2025 09:45:35",
+        "batch_size": 100
+      },
+      "manually_executed": false
+    }
+  },
+  "installation_order": [
+    "Keep Development scheduled executions suspended and preserve prechange native field/report/function/workflow/query copies.",
+    "Rename five Budget_Import_Item fields in place using schema.json; never delete/recreate fields.",
+    "Add ten optional blank USD16/4 Budget_Item actual fields; preserve all existing budget component names and values.",
+    "Verify renamed All_Budget_Item_Imports bindings and add ten fields once to All_Budget_Items list/quickview/detailview/API layouts.",
+    "Install/compile existing prerequisites workflowRunLog, analyticsExportRows, workflowPreparedExportRows, workflowExportClaim, workflowExportWake and workflowExportDispatch in dependency order.",
+    "Install/compile workflowExportPlan, new budgetActualImportRun, workflowExportRun, workflowExportTick and workflowExportEnqueue; source processing is limited to 25 rows per execution.",
+    "Install/compile budgetImportedActualElements, snapshotBudgetItemComponents and budgetElementExportRows after field prerequisites exist.",
+    "Save/verify the reviewed Analytics queries and nine read-only source audits without running a mutating import.",
+    "Disable and retain the three original fixed-date actual schedules; create three distinctly named Settings.Next_Workflow_Run anchored wrappers with their unchanged workflowExportEnqueue route keys. Capture the real native names/IDs. Promote old disabled states and new wrappers together. Update the existing Workflow_Log_Timeout action; preserve timer ownership.",
+    "Update execute and on-failure actions of the existing native 100-record Budgets_Apply_Cost_to_Bud batch; preserve identity/schedule.",
+    "Reopen saved native components and execute read-only previews; leave Production data and Creator promotion to the user."
+  ],
+  "rollback": "creator/workflows/budget-actual-elements/README.md#rollback",
+  "actual_imports": {
+    "captured_groups": 5,
+    "group_rule": "Native Subdivision.ID % 5, captured once from Settings.Current_Batch",
+    "rows_per_execution": 25,
+    "phases": [
+      "complete-source preflight",
+      "apply after all source rows validate"
+    ],
+    "source_export": "Reuse the same completed immutable Analytics export job in every continuation",
+    "deadline_minutes": 120,
+    "watchdog_minutes_per_chunk": 10,
+    "identity": "Existing job + source marker + minor cost code; independent durable claims reject duplicate source rows and duplicate/unknown continuation replay",
+    "failure_log": "Existing Workflow Log in Settings: source, captured group, phase, source row/key, acknowledged operation counts and actual exception"
+  },
+  "actual_import_schedule_wrappers": [
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "existing": false,
+      "schedule_source": "creator/workflows/budget-actual-elements/Budgets_Import_Load_HCSS_.ds",
+      "action_source": "creator/workflows/budget-actual-elements/Budgets_Import_Load_HCSS_.action-1.dg",
+      "entrypoint": "workflowExportEnqueue(\"Budgets_Import_Load_HCSS_\")",
+      "anchor": "Settings.Next_Workflow_Run",
+      "scope": "Captured Current_Batch; existing timer owns rotation",
+      "route_key": "Budgets_Import_Load_HCSS_",
+      "replaces_disabled_schedule": "Budgets_Import_Load_HCSS_",
+      "native_name_status": "Created in Development and captured from native UI by root",
+      "schedule_source_status": "Declaration uses the actual new native name/display. Filename intentionally retains the unchanged queue route key.",
+      "display_name": "Budgets - HCSS Actuals - Batches",
+      "run_mode": "Always",
+      "end_date": null,
+      "development_action_saved_compiled": true,
+      "development_list_enabled_verified": true,
+      "development_list_action_count": 1,
+      "development_action_reopened_verified": true,
+      "development_properties_reopened_verified": true,
+      "time_zone": "America/Chicago"
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "existing": false,
+      "schedule_source": "creator/workflows/budget-actual-elements/Budgets_Import_Load_GP_Co.ds",
+      "action_source": "creator/workflows/budget-actual-elements/Budgets_Import_Load_GP_Co.action-1.dg",
+      "entrypoint": "workflowExportEnqueue(\"Budgets_Import_Load_GP_Co\")",
+      "anchor": "Settings.Next_Workflow_Run",
+      "scope": "Captured Current_Batch; existing timer owns rotation",
+      "route_key": "Budgets_Import_Load_GP_Co",
+      "replaces_disabled_schedule": "Budgets_Import_Load_GP_Co",
+      "native_name_status": "Created in Development and captured from native UI by root",
+      "schedule_source_status": "Declaration uses the actual new native name/display. Filename intentionally retains the unchanged queue route key.",
+      "display_name": "Budgets - GP Construction Actuals - Batches",
+      "run_mode": "Always",
+      "end_date": null,
+      "development_action_saved_compiled": true,
+      "development_list_enabled_verified": true,
+      "development_list_action_count": 1,
+      "development_action_reopened_verified": true,
+      "development_properties_reopened_verified": true,
+      "time_zone": "America/Chicago"
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "existing": false,
+      "schedule_source": "creator/workflows/budget-actual-elements/Budgets_Import_Great_Plai1.ds",
+      "action_source": "creator/workflows/budget-actual-elements/Budgets_Import_Great_Plai1.action-1.dg",
+      "entrypoint": "workflowExportEnqueue(\"Budgets_Import_Great_Plai1\")",
+      "anchor": "Settings.Next_Workflow_Run",
+      "scope": "Captured Current_Batch; existing timer owns rotation",
+      "route_key": "Budgets_Import_Great_Plai1",
+      "replaces_disabled_schedule": "Budgets_Import_Great_Plai1",
+      "native_name_status": "Created in Development and captured from native UI by root",
+      "schedule_source_status": "Declaration uses the actual new native name/display. Filename intentionally retains the unchanged queue route key.",
+      "display_name": "Budgets - GP Development Actuals - Batches",
+      "run_mode": "Always",
+      "end_date": null,
+      "development_action_saved_compiled": true,
+      "development_list_enabled_verified": true,
+      "development_list_action_count": 1,
+      "development_action_reopened_verified": true,
+      "development_properties_reopened_verified": true,
+      "time_zone": "America/Chicago"
+    }
+  ],
+  "timeout_workflow": {
+    "name": "Workflow_Log_Timeout",
+    "existing": true,
+    "schedule_source": "creator/workflows/budget-actual-elements/Workflow_Log_Timeout.ds",
+    "action_source": "creator/workflows/budget-actual-elements/Workflow_Log_Timeout.action-1.dg",
+    "preserve": "Existing 30-minute timeout for other workflows; defer actual imports only while their valid owned continuation/watchdog remains within the original 120-minute deadline",
+    "development_save_compile_acknowledged": true,
+    "development_reopened_source_verified": true
+  },
+  "analytics_sources": [
+    {
+      "name": "GP Construction",
+      "view_id": "2107789000031077002",
+      "source": "creator/workflows/budget-actual-elements/analytics/gp-construction-costs.sql",
+      "preserve": "Original scope/grouping/positive-only filter and cent-rounded Total_Actuals"
+    },
+    {
+      "name": "GP Development",
+      "view_id": "2107789000029311186",
+      "source": "creator/workflows/budget-actual-elements/analytics/gp-development-costs.sql",
+      "preserve": "Original scope/grouping/signed nonzero filter and Total_Actuals"
+    },
+    {
+      "name": "HCSS Actuals",
+      "view_id": "2107789000023717814",
+      "source": "creator/workflows/budget-actual-elements/analytics/hcss-actuals.sql",
+      "preserve": "Confirmed parent identity/grouping/total; root-owned mapping selection remains documented in analytics README"
+    }
+  ],
+  "read_only_sql_audits": [
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-construction-costs-saved-view-duplicate-keys.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-construction-costs-saved-view-group-comparison.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-construction-costs-summary.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-development-costs-saved-view-duplicate-keys.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-development-costs-saved-view-group-comparison.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/gp-development-costs-summary.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/hcss-actuals-saved-view-duplicate-keys.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/hcss-actuals-saved-view-group-comparison.sql",
+    "creator/workflows/budget-actual-elements/analytics/audits/hcss-actuals-summary.sql"
+  ],
+  "tests": [
+    "node scripts/test-budget-actual-elements-backend.mjs",
+    "node scripts/test-budget-actual-import-batches.mjs",
+    "node scripts/test-budget-element-lifecycle.mjs",
+    "node scripts/test-budget-element-exports.mjs",
+    "python creator/workflows/budget-actual-elements/analytics/verify_gp_queries.py",
+    "python creator/workflows/budget-actual-elements/analytics/verify_hcss_queries.py",
+    "python creator/workflows/budget-actual-elements/analytics/verify_read_only_audits.py"
+  ],
+  "original_actual_schedule_retention": {
+    "policy": "Retain all three original fixed-date schedules as disabled rollback components; do not delete them. Native Properties cannot convert their trigger type.",
+    "names": [
+      "Budgets_Import_Load_HCSS_",
+      "Budgets_Import_Load_GP_Co",
+      "Budgets_Import_Great_Plai1"
+    ],
+    "publication_requirement": "Promote each original disabled-state change together with its new Settings.Next_Workflow_Run wrapper; never activate both.",
+    "route_keys_changed": false,
+    "development_disabled_verified": true
+  },
+  "frontend_releases": {
+    "status": "Prepared for root PMP publication after latest-main integration; publication evidence is recorded by the release handoff",
+    "candidate": {
+      "budget-manager": "122.29.91",
+      "settings-manager": "1.6.6"
+    },
+    "rollback": {
+      "budget-manager": "122.29.90",
+      "settings-manager": "1.6.4"
+    }
+  },
+  "production_creator_promoted": false,
+  "verification_scope": "All three complete parent/group/key query audits; native field IDs/report bindings; compiled function/batch/timeout body reopens; independently reopened anchored schedule actions/properties and disabled originals. No scheduled financial write/performance run.",
+  "component_source_quality": {
+    "hcss_existing_residual_groups": 409,
+    "guard": "Preflight rejects source-component discrepancies and reports them to Workflow Log; original totals are retained and no difference is redistributed.",
+    "source_precision_cause_confirmed": false,
+    "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json"
+  }
+}

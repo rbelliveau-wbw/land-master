@@ -4,19 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.88"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.91"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.88"></script>
-<script src="po-grid.js?v=122.29.88"></script>
-<script src="po-controller.js?v=122.29.88"></script>
-<script src="po-progress.js?v=122.29.88"></script>
-<script src="po-ui.js?v=122.29.88"></script>
-<script src="request-attachments.js?v=122.29.88"></script>
-<script src="full-budget-export.js?v=122.29.88"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.88">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.88">
+<script src="po-domain.js?v=122.29.91"></script>
+<script src="po-grid.js?v=122.29.91"></script>
+<script src="po-controller.js?v=122.29.91"></script>
+<script src="po-progress.js?v=122.29.91"></script>
+<script src="po-ui.js?v=122.29.91"></script>
+<script src="request-attachments.js?v=122.29.91"></script>
+<script src="full-budget-export.js?v=122.29.91"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.91">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.91">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1842,15 +1842,15 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.88">
-<script src="success-feedback.js?v=122.29.88"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.88">
-<script src="interaction-motion.js?v=122.29.88"></script>
-<script src="interaction-surfaces.js?v=122.29.88"></script>
-<script src="number-edit-commit.js?v=122.29.88"></script>
-<script src="number-transitions.js?v=122.29.88"></script>
-<script src="number-surfaces.js?v=122.29.88"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.88">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.91">
+<script src="success-feedback.js?v=122.29.91"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.91">
+<script src="interaction-motion.js?v=122.29.91"></script>
+<script src="interaction-surfaces.js?v=122.29.91"></script>
+<script src="number-edit-commit.js?v=122.29.91"></script>
+<script src="number-transitions.js?v=122.29.91"></script>
+<script src="number-surfaces.js?v=122.29.91"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.91">
 </head>
 <body>
 
@@ -2749,7 +2749,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.88", code:"BMW",
+  widget:"Budget Manager", version:"122.29.91", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -10046,6 +10046,29 @@ function budgetElementSnapshot(item) {
   var values = BUDGET_ELEMENTS.map(function(element){return budgetElementNumber(item[element.field]);});
   return values.every(function(value){return value !== null;}) ? values : null;
 }
+function budgetImportElementSnapshot(item) {
+  if (!item) return null;
+  // The same element buckets belong to budget or actual imports according to
+  // Data_Source. Keep old reports readable until the Creator rename is promoted;
+  // an available new key, including a blank one, always wins over its old name.
+  var values = BUDGET_ELEMENTS.map(function(element){
+    var field = element.field.replace(/_Budget$/,"");
+    return budgetElementNumber(item[Object.prototype.hasOwnProperty.call(item,field) ? field : element.field]);
+  });
+  return values.every(function(value){return value !== null;}) ? values : null;
+}
+function budgetActualElementSnapshot(item, field) {
+  if (!item) return null;
+  var prefix = field === "HCSS_Actuals" ? "HCSS" : field === "PROJ_Actual" ? "GP" : "";
+  if (!prefix) return null;
+  var values = BUDGET_ELEMENTS.map(function(element){
+    return budgetElementNumber(item[prefix+"_"+element.field.replace(/_Budget$/,"")+"_Actuals"]);
+  });
+  // Native imports validate each source row before saving this measured split.
+  // Several GP Construction rows can round their parent totals separately, so
+  // a widget equality gate would incorrectly hide valid four-decimal detail.
+  return values.every(function(value){return value !== null;}) ? values : null;
+}
 function budgetElementDepartmentIndex(item) {
   if (!item) return null;
   var categoryId = lookupId(item.Budget_Category) || (typeof item.Budget_Category === "string" ? cleanVal(item.Budget_Category) : ""), category = null;
@@ -10058,6 +10081,7 @@ function budgetElementDepartmentIndex(item) {
 }
 function budgetElementValues(item, field) {
   if (!item) return null;
+  if (field === "HCSS_Actuals" || field === "PROJ_Actual") return budgetActualElementSnapshot(item,field);
   if (field === "Prelim_Budget_Ttl") {
     if (item._prelimElementDraft) return item._prelimElementDraft;
     var prelim = budgetPrelimElementSnapshot(item);
@@ -10128,7 +10152,7 @@ function budgetElementImportedSnapshot(item) {
   }
   var rows = S.elementImportIndex[String(item.ID)] || [], total = 0, values = [0,0,0,0,0], complete = rows.length > 0;
   rows.forEach(function(rec){
-    var parts = budgetElementSnapshot(rec), cost = budgetElementNumber(rec.Cost);
+    var parts = budgetImportElementSnapshot(rec), cost = budgetElementNumber(rec.Cost);
     if (!parts || cost === null) { complete = false; return; }
     total += cost; parts.forEach(function(n,index){values[index] += n;});
   });
@@ -10176,7 +10200,7 @@ function budgetElementRowsHtml(row) {
         budgetElementCell(unap ? unap[index] : imported[0] ? imported[0][index] : null,"Department mapping or assigned HeavyJob Budget components matching saved Unapproved") + budgetElementCell(amount,"Saved Final allocation or department default") +
         budgetElementCell(mods[0].unallocated ? null : mods[0].amounts[index],mods[0].unallocated ? "An approved modification has no complete element allocation" : "Approved element modifications") +
         budgetElementCell(amount === null || mods[0].unallocated ? null : amount+mods[0].amounts[index],"Final plus approved element modifications") +
-        budgetElementCell(hcss ? hcss[index] : null,"Department-mapped HCSS actuals; Construction actuals have no element breakdown") + budgetElementCell(gp ? gp[index] : null,"Department-mapped GP actuals; Construction actuals have no element breakdown");
+        budgetElementCell(hcss ? hcss[index] : null,"Saved HCSS actual elements; unavailable until all five source amounts are saved") + budgetElementCell(gp ? gp[index] : null,"Saved GP actual elements; unavailable until all five source amounts are saved");
     } else {
       var sum = 0, complete = true;
       Array.prototype.slice.call(row.cells,1,-1).forEach(function(cell){
@@ -10392,6 +10416,7 @@ function applyCatFilter() {
 function budgetItemHasAmounts(it) {
   if (!it) return true;
   if (["Prelim_Budget_Ttl", "Unapproved_Final_Budget_Ttl", "Budget_Ttl", "HCSS_Actuals", "PROJ_Actual", "Per_Unit", "Labor_Budget", "Materials_Budget", "Equipment_Budget", "Subcontractor_Budget", "Other_Budget"].some(function (field) { return budgetUnitNumber(it[field]) !== 0; })) return true;
+  if (["HCSS","GP"].some(function(source){return ["Labor","Materials","Equipment","Subcontractor","Other"].some(function(element){return budgetUnitNumber(it[source+"_"+element+"_Actuals"]) !== 0;});})) return true;
   if (it._perUnit === true || cleanVal(it.Unit)) return true; // Keep per-unit setup and drafts reachable.
   if (!budgetModsReady()) return true;
   return modsForItem(it.ID).some(function (m) { return modSignedAmount(m) !== 0; });
@@ -14493,7 +14518,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.88",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.91",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

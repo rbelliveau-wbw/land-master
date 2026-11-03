@@ -11,11 +11,15 @@ const rows=[row('zero','Empty'),row('credit','Reimbursement'),row('actual','Actu
 const categories=[category('dev',rows.slice(0,4)),category('eng',rows.slice(4)),category('con',[row('zero2','Unused')])];
 const items={zero:{ID:'zero',Per_Unit:0},zero2:{ID:'zero2'},credit:{ID:'credit',Budget_Ttl:'($1,250.50)'},actual:{ID:'actual',HCSS_Actuals:'0.01'},mod:{ID:'mod'},p1:{ID:'p1'},p2:{ID:'p2',Unapproved_Final_Budget_Ttl:1},draft:{ID:'draft',_perUnit:true}};
 const modifications={mod:[{amount:500},{amount:-500}]};
+items.zero.HCSS_Labor_Actuals = '5.1250'; items.zero.HCSS_Materials_Actuals = '-5.1250';
 const elements={itemSearch:{value:''},budgetHideEmpty:{classList:classes(),setAttribute(k,v){this[k]=v;}},budgetEmptyItems:{hidden:true}};
 const context={S:{catFilter:'all',hideEmptyItems:true},$:id=>elements[id],document:{querySelectorAll:()=>categories},cleanVal:v=>String(v??'').trim(),budgetModsReady:()=>true,modsForItem:id=>modifications[id]||[],modSignedAmount:m=>m.amount,findItemById:id=>items[id]||null};
 vm.createContext(context);
 vm.runInContext(['budgetUnitNumber','budgetItemHasAmounts','applyBudgetItemFilters'].map(extract).join('\n'),context);
 const hidden=r=>r.classList.contains('search-hidden');
+context.applyBudgetItemFilters();
+assert.equal(hidden(rows[0]),false,'offsetting actual elements stay reachable even when aggregate actuals are zero');
+delete items.zero.HCSS_Labor_Actuals; delete items.zero.HCSS_Materials_Actuals;
 context.applyBudgetItemFilters();
 assert.equal(hidden(rows[0]),true,'native numeric zero per-unit default must not keep an empty row');
 for(const r of rows.slice(1))assert.equal(hidden(r),false,'keep credits, any actuals, cancelling modifications, other phases, drafts and unknown data');

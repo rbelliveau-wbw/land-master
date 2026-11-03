@@ -1,3 +1,108 @@
+## Source Actual Elements — Budget 122.29.91 and Settings 1.6.6
+
+Budget Item actual detail now reads five saved **HCSS_*_Actuals** fields and five
+saved **GP_*_Actuals** fields for Labor, Materials, Equipment, Subcontractor and
+Other. All five finite values are required for a source split. Missing, blank,
+partial or invalid values remain unavailable for every department; actuals no
+longer inherit the Development → Other or Engineering → Labor budget defaults.
+Complete saved native vectors remain visible without another widget aggregate
+equality gate: multiple GP Construction rows can round their parent totals
+separately while their element amounts retain four decimals. Parent actual
+totals and signed credits retain their existing definitions. Hide Empty keeps
+offsetting nonzero actual elements reachable. Existing disclosure, keyed motion
+and number-transition surfaces are reused.
+
+Budget Import Item's existing fields are renamed in place to **Labor**,
+**Materials**, **Equipment**, **Subcontractor** and **Other**. Their existing
+**Data_Source** identifies HeavyJob Budget, HeavyJob actuals or Great Plains
+actuals. Budget Item and Modification **Labor_Budget** through **Other_Budget**
+retain their budget meanings and native names. The widget prefers the renamed
+staging key, including an explicit blank, and reads its old `*_Budget` key
+only when the new key is absent. Assigned Construction Unapproved imports still
+require the exact Budget Item lookup and **HeavyJob Budget** source.
+
+Three separate Analytics inputs feed those staging buckets: HCSS actuals view
+`2107789000023717814`, GP Construction view `2107789000031077002` and GP
+Development view `2107789000029311186`. GP elements pivot native **Cost_Element**
+1–5 into one row per existing job/cost key. HCSS Other uses the selected **Misc1**
+source. Existing total columns, GP code ranges, Construction's positive-cost
+filter/two-decimal total and Development's signed nonzero costs are preserved.
+Unclassified or unreconciled source rows fail before business writes; no
+residual is silently assigned to Other or used to change a canonical total.
+Amounts and residuals normalize to native four-decimal storage before validation,
+so sub-storage floating-point residue does not become a false discrepancy.
+
+The three imports use the existing export queue and **Settings.Next_Workflow_Run**
+anchor. Each run captures **Current_Batch** 0–4 and native **Subdivision.ID % 5**
+scope once; the existing timer remains the only cursor owner. The completed
+Analytics job and captured mapping scope stay fixed through every continuation.
+All source rows pass bounded **25-row preflight** chunks before any staging
+amount is applied; writes also process at most **25 source rows** per execution.
+Independent unique-key claims detect duplicates across chunks and prevent
+ambiguous writes from replaying. A fixed original **120-minute deadline** and
+per-tick ten-minute watchdog bound execution. Existing staging subdivision/cost
+identities and Budget Item lookups are never silently reassigned.
+
+The existing **Budgets_Apply_Cost_to_Bud** native batch remains **100 Budget
+Items** per batch and rolls up HCSS and GP elements separately. Query/export,
+preflight/apply, mapping, classification, duplicate, native batch and timeout
+failures use the existing **workflowRunLog → Workflow_Run_Log → Settings
+Workflow Log** path. Logs retain the available source, captured batch, source
+key/cursor and acknowledged counts; uncertain operations require review before
+a manual retry. Existing failure recipients and access rules remain unchanged.
+
+Development schema installation has verified the five renamed existing import
+fields and ten new optional blank **USD 16/4** Budget Item actual fields. This
+does not establish Production Creator availability or a completed live actuals
+import. Native function/schedule compilation and acceptance evidence are tracked
+in the [installation record](../../creator/workflows/budget-actual-elements/native-install-progress.json)
+and [promotion manifest](../../creator/workflows/budget-actual-elements/promotion-manifest.json).
+**Creator Production promotion remains pending and user-controlled.** PMP
+publishes repository/frontend releases and Production mappings. No new Custom
+API, credentials or permissions are required. Source anomalies remain blocked
+and logged; no source data correction or financial-record test write is implied.
+
+Regression coverage includes renamed/legacy staging keys, native source/group
+isolation, signed and zero measured vectors, missing/partial detail, cross-chunk
+duplicates, 25-row bounds, whole-source preflight, immutable export reuse,
+identity conflicts, native precision, unknown-write no replay, deadlines and
+Settings logs. SQL fixtures preserve source totals and filters. Full repository
+validation and Pages build are release gates; offline fixtures are distinct from
+Creator compilation, native performance and live financial acceptance.
+
+Frontend rollback: restore Production Budget Manager **122.29.90** and Settings
+Manager **1.6.4** through the permanent widget mappings. Development follows the
+latest-release policy. Native rollback must restore the five staging names and
+all matching callers/schedule actions together from the preserved prechange
+sources; retain the ten additive actual fields and their data. See the
+[actuals handoff](../../creator/workflows/budget-actual-elements/README.md).
+
+## Grouped PO Summary — 122.29.90, November 3, 2026
+
+The PO Summary now groups once per exact Budget Item/base cost code. Each header
+places the code/name, Available, This PO and Remaining on one horizontal row,
+without an element count. Affected elements start visible below it; each opens
+the selected vertical calculation list. Repeated PO lines for an element share
+one child row. Native aggregate allocations supply parent figures, including
+untouched element budgets, so showing several elements never repeats the item
+budget or multiplies the PO total. Component arithmetic, own-reservation credit,
+pending-modification reconciliation and unknown/legacy notices are reused.
+
+Disclosures retain their state, scroll and focus through price/quantity edits.
+Native details receive shared disclosure motion; explicit item/element numeric
+keys retain field-exit Sliding push and reduced motion. The shared numeric
+registry copies are synchronized. The existing Requests, PO domain, save,
+approval, export and email contracts are unchanged. No Creator forms, fields,
+functions or Custom APIs change; no Creator promotion is required.
+
+Desktop fixture coverage includes multiple codes/elements, duplicate lines,
+affected-only children, authoritative parent values, exact-cent saved reservation
+credit, one-row/no-overflow headers, omitted element counts, retained disclosure
+edits and zero native writes. The PO Summary, PO element/domain/browser, entry
+and design-doc checks passed, along with full `npm run validate` and
+`npm run build:pages`. Roll back only
+the Budget Manager Production mapping to **122.29.88** and rebuild Pages.
+
 ## Budget and PO Elements — 122.29.88, November 3, 2026
 
 ## Verified Production Backfill — November 3, 2026
@@ -88,10 +193,10 @@ Construction Unapproved detail reuses the complete authorized Imports snapshot,
 joins exact Budget Item IDs, and accepts only **HeavyJob Budget** rows. Every
 assigned row needs five numeric components, and source Cost must match saved
 Unapproved because native application can lag. Completion patches mounted child
-values without replacing drafts. Construction actuals remain unknown without a
-real source split. Dev/Eng Unapproved and HCSS/GP actual children use the owner's
-explicit department attribution; this is not a newly measured source-system
-breakdown. All original totals and signed credits remain unchanged.
+values without replacing drafts. Dev/Eng Unapproved retains the owner's
+department attribution. HCSS/GP actual children now use only the complete saved
+source vectors described above; missing or partial actual splits remain unknown
+for every department. All original totals and signed credits remain unchanged.
 
 ### PO and Standalone Modification Detail
 

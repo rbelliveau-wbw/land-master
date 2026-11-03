@@ -1,0 +1,17 @@
+Budgets_Import_Load_HCSS_ as "Budgets - Import/Load HCSS Job Cost Summary"
+{
+	type =  schedule
+	start = "2025-10-06 07:11:47"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			thisapp.workflowExportEnqueue("Budgets_Import_Load_HCSS_");
+		)
+		}
+	}
+}

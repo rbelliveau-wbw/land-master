@@ -69,17 +69,17 @@ map snapshotBudgetItemComponents(int itemId, bool initializeOnly, bool dryRun)
 		sourceComplete = sourceCount > 0;
 		for each sourceImport in sourceImports
 		{
-			if(sourceImport.Labor_Budget == null || sourceImport.Materials_Budget == null || sourceImport.Equipment_Budget == null || sourceImport.Subcontractor_Budget == null || sourceImport.Other_Budget == null)
+			if(sourceImport.Labor == null || sourceImport.Materials == null || sourceImport.Equipment == null || sourceImport.Subcontractor == null || sourceImport.Other == null)
 			{
 				sourceComplete = false;
 			}
 			else
 			{
-				laborTotal = laborTotal + sourceImport.Labor_Budget;
-				materialsTotal = materialsTotal + sourceImport.Materials_Budget;
-				equipmentTotal = equipmentTotal + sourceImport.Equipment_Budget;
-				subcontractorTotal = subcontractorTotal + sourceImport.Subcontractor_Budget;
-				otherTotal = otherTotal + sourceImport.Other_Budget;
+				laborTotal = laborTotal + sourceImport.Labor;
+				materialsTotal = materialsTotal + sourceImport.Materials;
+				equipmentTotal = equipmentTotal + sourceImport.Equipment;
+				subcontractorTotal = subcontractorTotal + sourceImport.Subcontractor;
+				otherTotal = otherTotal + sourceImport.Other;
 			}
 		}
 	}

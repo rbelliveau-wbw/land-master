@@ -1,6 +1,33 @@
 
 # Budget Manager
 
+## 122.29.91 — Source Actual Elements
+
+Element detail reads the five saved `HCSS_*_Actuals` and five `GP_*_Actuals`
+fields on Budget Item. The native import validates each source row; complete
+saved splits retain their four-decimal amounts even when several GP Construction
+rows round their parent totals separately. Missing, partial or invalid detail
+stays unavailable for every department; the parent actual totals remain unchanged.
+The widget does not apply another aggregate equality gate. Offsetting element amounts keep a line visible under
+Hide Empty. Existing disclosure and keyed number-transition surfaces are reused.
+
+Budget Import Item components use `Labor`, `Materials`, `Equipment`,
+`Subcontractor` and `Other`; `Data_Source` supplies their meaning. The Budget
+widget prefers those keys and reads legacy `*_Budget` keys only when the new key
+is absent, keeping the Production widget compatible before Creator promotion.
+HeavyJob Budget snapshots remain filtered by source and exact item assignment;
+the rename does not affect frozen Budget Item or Modification `*_Budget` fields.
+The actuals queries, imports, native rollup, renamed fields and additive report
+columns require Creator installation/promotion. Insights retains its existing
+aggregate GP/HCSS inputs and needs no source change.
+
+Focused checks: `test-budget-elements.mjs`,
+`test-budget-department-elements.mjs` and `test-budget-hide-empty.mjs` exercise
+renamed/legacy import keys, source/assignment isolation, measured signed/zero
+actuals, rounding, unknown detail and offsetting elements. Frontend rollback is
+the previous Budget Manager release `122.29.90`; Creator rollback must restore
+the matching field names and native callers together.
+
 Release `122.29.85` pushes saved Lots, Acres and Equiv. LF through the authenticated
 `Sync_Budget_Metric_to_Projects` Custom API, matching Subdivision Code to Projects
 Project Code. Confirmed success says **Budget saved · Projects updated.** Creator

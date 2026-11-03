@@ -1,0 +1,160 @@
+map snapshotBudgetItemComponents(int itemId, bool initializeOnly, bool dryRun)
+{
+	// Reuse the November 2 native frozen-Final snapshot lifecycle. Development
+	// and Engineering use separate Preliminary components; Construction keeps
+	// its existing assigned HeavyJob Budget source. Never update totals here.
+	result = {"ok":false,"ready":false,"applied":false};
+	snapshotItem = Budget_Item[ID == itemId.toLong()];
+	if(snapshotItem.count() != 1 || snapshotItem.Budget_Category == null)
+	{
+		result.put("error","Budget item or category not found.");
+		return result;
+	}
+	snapshotCategory = Budget_Category[ID == snapshotItem.Budget_Category];
+	if(snapshotCategory.count() != 1)
+	{
+		result.put("error","Budget category not found.");
+		return result;
+	}
+	snapshotDepartment = ifnull(snapshotCategory.Deparment,"").trim().toLowerCase();
+	isConstruction = snapshotDepartment.contains("construction");
+	isEngineering = snapshotDepartment.contains("engineering");
+	isDevelopment = snapshotDepartment.contains("development");
+	if(isConstruction != true && isEngineering != true && isDevelopment != true)
+	{
+		result.put("ok",true);
+		result.put("reason","Outside a supported Budget department.");
+		return result;
+	}
+	if(initializeOnly)
+	{
+		snapshotBudget = Add_Budget[ID == snapshotCategory.Budget];
+		if(snapshotBudget.count() != 1)
+		{
+			result.put("error","Budget not found.");
+			return result;
+		}
+		approved = snapshotBudget.Development_Budget_Approval_Status == "Approved";
+		if(isConstruction)
+		{
+			approved = snapshotBudget.Const_Budget_Approval_Status == "Approved";
+		}
+		if(approved != true)
+		{
+			result.put("ok",true);
+			result.put("reason","The Budget track is not approved.");
+			return result;
+		}
+	}
+	// Any explicit snapshot, including a partial or all-zero snapshot, belongs
+	// to its existing approval cycle. Only a new-cycle action may clear it.
+	if(snapshotItem.Labor_Budget != null || snapshotItem.Materials_Budget != null || snapshotItem.Equipment_Budget != null || snapshotItem.Subcontractor_Budget != null || snapshotItem.Other_Budget != null)
+	{
+		result.put("ok",true);
+		result.put("reason","A frozen component snapshot already exists.");
+		return result;
+	}
+	laborTotal = 0.0;
+	materialsTotal = 0.0;
+	equipmentTotal = 0.0;
+	subcontractorTotal = 0.0;
+	otherTotal = 0.0;
+	sourceCount = 0;
+	sourceComplete = false;
+	if(isConstruction)
+	{
+		// Preserve native Construction semantics, precision and unavailable state.
+		sourceImports = Budget_Import_Item[Budget_Item == snapshotItem.ID && Data_Source == "HeavyJob Budget"];
+		sourceCount = sourceImports.count();
+		sourceComplete = sourceCount > 0;
+		for each sourceImport in sourceImports
+		{
+			if(sourceImport.Labor_Budget == null || sourceImport.Materials_Budget == null || sourceImport.Equipment_Budget == null || sourceImport.Subcontractor_Budget == null || sourceImport.Other_Budget == null)
+			{
+				sourceComplete = false;
+			}
+			else
+			{
+				laborTotal = laborTotal + sourceImport.Labor_Budget;
+				materialsTotal = materialsTotal + sourceImport.Materials_Budget;
+				equipmentTotal = equipmentTotal + sourceImport.Equipment_Budget;
+				subcontractorTotal = subcontractorTotal + sourceImport.Subcontractor_Budget;
+				otherTotal = otherTotal + sourceImport.Other_Budget;
+			}
+		}
+	}
+	else
+	{
+		finalAmount = snapshotItem.Budget_Ttl;
+		// The actual finalization callers use this non-writing preflight before
+		// moving staged Unapproved into Final. Initialization still uses Final.
+		if(dryRun == true && initializeOnly != true)
+		{
+			finalAmount = ifnull(snapshotItem.Unapproved_Final_Budget_Ttl,0);
+		}
+		if(finalAmount == null)
+		{
+			result.put("error","Final Budget amount is unavailable.");
+			return result;
+		}
+		preliminaryParts = {snapshotItem.Prelim_Labor_Budget,snapshotItem.Prelim_Materials_Budget,snapshotItem.Prelim_Equipment_Budget,snapshotItem.Prelim_Subcontractor_Budget,snapshotItem.Prelim_Other_Budget};
+		for each preliminaryPart in preliminaryParts
+		{
+			if(preliminaryPart != null)
+			{
+				sourceCount = sourceCount + 1;
+			}
+		}
+		if(sourceCount > 0 && sourceCount != 5)
+		{
+			result.put("error","Preliminary element allocation is incomplete. Review the Budget item before finalizing.");
+			return result;
+		}
+		if(sourceCount == 5)
+		{
+			laborTotal = snapshotItem.Prelim_Labor_Budget;
+			materialsTotal = snapshotItem.Prelim_Materials_Budget;
+			equipmentTotal = snapshotItem.Prelim_Equipment_Budget;
+			subcontractorTotal = snapshotItem.Prelim_Subcontractor_Budget;
+			otherTotal = snapshotItem.Prelim_Other_Budget;
+			componentTotal = laborTotal + materialsTotal + equipmentTotal + subcontractorTotal + otherTotal;
+			if(componentTotal.round(4) != finalAmount.round(4))
+			{
+				result.put("error","Preliminary element amounts do not match the amount being finalized.");
+				return result;
+			}
+		}
+		else if(isEngineering)
+		{
+			laborTotal = finalAmount;
+		}
+		else
+		{
+			otherTotal = finalAmount;
+		}
+		sourceComplete = true;
+	}
+	result.put("ok",true);
+	result.put("itemId",snapshotItem.ID.toString());
+	result.put("sourceCount",sourceCount);
+	result.put("ready",sourceComplete);
+	if(sourceComplete)
+	{
+		result.put("components",{"Labor_Budget":laborTotal,"Materials_Budget":materialsTotal,"Equipment_Budget":equipmentTotal,"Subcontractor_Budget":subcontractorTotal,"Other_Budget":otherTotal});
+		result.put("wouldWrite",true);
+		if(dryRun != true)
+		{
+			snapshotItem.Labor_Budget=laborTotal;
+			snapshotItem.Materials_Budget=materialsTotal;
+			snapshotItem.Equipment_Budget=equipmentTotal;
+			snapshotItem.Subcontractor_Budget=subcontractorTotal;
+			snapshotItem.Other_Budget=otherTotal;
+			result.put("applied",true);
+		}
+	}
+	else
+	{
+		result.put("reason","Assigned HCSS component values are not available.");
+	}
+	return result;
+}

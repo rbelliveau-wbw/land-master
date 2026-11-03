@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 const F=['Labor_Budget','Materials_Budget','Equipment_Budget','Subcontractor_Budget','Other_Budget'];
 const P=F.map(name=>'Prelim_'+name), parts=(values,fields=F)=>Object.fromEntries(fields.map((name,index)=>[name,values[index]]));
+const importParts=values=>parts(values,F.map(name=>name.replace('_Budget','')));
 function compile(name) {
   let source=fs.readFileSync(`creator/functions/${name}.dg`,'utf8');
   source=source.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)?'recordValues('+body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')+')':whole);
@@ -58,10 +59,10 @@ h=fixture({Budget_Item:[item(id.devItem,id.dev,{Budget_Ttl:0,...parts(Object.val
 h=fixture();const untouched=h.rows();assert.equal(h.snapshot(id.devItem,false,true).ready,true);assert.deepEqual(h.rows(),untouched);assert.equal(h.writes().length,0);
 h=fixture({Add_Budget:[{ID:id.budget,Development_Budget_Approval_Status:'Pending',Const_Budget_Approval_Status:'Approved'}]});assert.equal(h.snapshot(id.devItem,true).ready,false);assert.equal(h.writes().length,0);
 
-const imports=[{ID:'90071992547409971',Budget_Item:id.constructionItem,Data_Source:'HeavyJob Budget',...parts([1.1234,2,3,4,5])},{ID:'90071992547409972',Budget_Item:id.constructionItem,Data_Source:'HeavyJob Budget',...parts([0.0001,0,0,0,0])},{ID:'90071992547409973',Budget_Item:id.devItem,Data_Source:'HeavyJob Budget',...parts([100,100,100,100,100])},{ID:'90071992547409974',Budget_Item:id.constructionItem,Data_Source:'Great Plains',...parts([200,200,200,200,200])}];
+const imports=[{ID:'90071992547409971',Budget_Item:id.constructionItem,Data_Source:'HeavyJob Budget',...importParts([1.1234,2,3,4,5])},{ID:'90071992547409972',Budget_Item:id.constructionItem,Data_Source:'HeavyJob Budget',...importParts([0.0001,0,0,0,0])},{ID:'90071992547409973',Budget_Item:id.devItem,Data_Source:'HeavyJob Budget',...importParts([100,100,100,100,100])},{ID:'90071992547409974',Budget_Item:id.constructionItem,Data_Source:'Great Plains',...importParts([200,200,200,200,200])}];
 h=fixture({Budget_Import_Item:imports});const construction=h.snapshot(id.constructionItem);assert.equal(construction.applied,true);assert.equal(construction.sourceCount,2);assert.deepEqual(Object.values(construction.components),[1.1235,2,3,4,5],'Construction retains exact assigned source sums without a new reconciliation rule');
 h=fixture();assert.equal(h.snapshot(id.constructionItem).ready,false);assert.equal(h.writes().length,0,'missing Construction source remains unavailable');
-h=fixture({Budget_Import_Item:[{...imports[0],Labor_Budget:null}]});assert.equal(h.snapshot(id.constructionItem).ready,false);assert.equal(h.writes().length,0);
+h=fixture({Budget_Import_Item:[{...imports[0],Labor:null}]});assert.equal(h.snapshot(id.constructionItem).ready,false);assert.equal(h.writes().length,0);
 
 // Execute the real track function, preserving the opposite approval track and
 // source Preliminary amounts. This catches cross-phase/department leakage.

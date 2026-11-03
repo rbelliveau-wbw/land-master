@@ -10,7 +10,7 @@ function compile(source){
   const head=s.match(/^\s*(map|list)\s+(\w+)\(([^)]*)\)\s*\{/),args=head[3].split(',').map(arg=>arg.trim().split(/\s+/).at(-1));
   s=s.replace(head[0],`function ${head[2]}(${args.join(',')}){`);
   s=s.replace(/invokeurl\s*\[([\s\S]*?)\]/g,(_,request)=>'fixtureHttp({'+request.trim().split('\n').map(line=>line.trim()).filter(Boolean).map(line=>line.replace(/^type\s*:\s*(\w+)$/,(_,type)=>'type:"'+type+'"')).join(',')+'})');
-  s=s.replace(/\{\s*((?:(?:STRINGTOKEN\d+END|\d+)\s*,\s*)+(?:STRINGTOKEN\d+END|\d+))\s*\}/g,'[$1]');
+  s=s.replace(/\{\s*((?:(?:STRINGTOKEN\d+END|\d+)\s*,\s*)*(?:STRINGTOKEN\d+END|\d+))\s*\}/g,'[$1]');
   s=s.replace(/for each\s+(\w+) in ([^\n{]+)/g,'for ($1 of $2)');
   const variables=[...new Set([...s.matchAll(/(?<![.\w])([A-Za-z_]\w*)\s*=(?!=)/g)].map(match=>match[1]).concat([...s.matchAll(/for \((\w+) of/g)].map(match=>match[1])))].filter(name=>!args.includes(name));
   s=s.replace(`function ${head[2]}(${args.join(',')}){`,`function ${head[2]}(${args.join(',')}){var ${variables.join(',')};`);
@@ -24,7 +24,7 @@ function runtime(name,responder,environment='Development'){
     function ifnull(value,fallback){return value==null?fallback:value;}
     function Map(){return {};}
     function List(){return [];}
-    Object.defineProperties(Object.prototype,{get:{value:function(key){return this[key]??null;}},put:{value:function(key,value){this[key]=value;}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});
+    Object.defineProperties(Object.prototype,{get:{value:function(key){return this[key]??null;}},put:{value:function(key,value){this[key]=value;}},remove:{value:function(key){delete this[key];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});
     Array.prototype.size=function(){return this.length;};Array.prototype.get=function(key){return this[key]??null;};Array.prototype.contains=function(value){return this.includes(value);};Array.prototype.add=function(value){this.push(value);};
     String.prototype.toMap=function(){return JSON.parse(this);};String.prototype.matches=function(pattern){return new RegExp('^(?:'+pattern+')$').test(this);};String.prototype.left=function(count){if(count>this.length)throw new Error('Native left index out of range');return this.slice(0,count);};String.prototype.lengthCall=function(){return this.length;};
     var zoho={currenttime:{toString(){return '10/21/2026 11:30:00 AM';}}};
@@ -45,6 +45,16 @@ function analytics(sequence=['1004'],data={data:[{Code:'EA04',Cost:42}]}){let po
   return ok({status:'success',data:{jobId:'90001',jobCode:sequence[Math.min(poll++,sequence.length-1)],jobStatus:'Fixture export'}});
 };}
 const args=['view-id',{selectedColumns:['Code','Cost']},'4410926000000000001',false];
+{
+  const h=runtime('analyticsExportRows',analytics(['1004']));
+  assert.equal(h.execute([args[0],{...args[1],_resumeJobId:'90001'},...args.slice(2)]).length,1);
+  assert.equal(h.calls.some(call=>call.url.includes('/views/')),false,'a completed export continuation never substitutes a newly created source job');
+  assert.equal(h.calls.length,2,'prepared job uses one completion check and its captured download');
+  assert.equal(h.delays.length,0);
+  const pending=runtime('analyticsExportRows',analytics(['1002']));
+  assert.throws(()=>pending.execute([args[0],{...args[1],_resumeJobId:'90001'},...args.slice(2)]),error=>String(error).includes('No replacement job'));
+  assert.equal(pending.calls.length,1);assert.equal(pending.delays.length,0,'a prepared source never restarts the old blocking polling loop');
+}
 {
   const h=runtime('analyticsExportRows',analytics(['1001','1002','1004']));
   assert.equal(h.execute(args).length,1);assert.equal(h.delays.length,2);

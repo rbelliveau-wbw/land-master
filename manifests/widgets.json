@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-30T02:17:36.912Z",
+  "generated_at": "2026-11-03T21:09:34.744Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.88",
+      "version": "122.29.91",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "501eaccfe4ad2abecbe5eeb919f70261b9e02016630f344a45a250e0acdaf980",
+      "source_sha256": "bb3930f35637e75e2b43e27fdebeffde295ee477a8b3dba4d0c780bd442cc138",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -220,13 +220,13 @@
       "slug": "settings-manager",
       "name": "Settings Manager",
       "module": "settings",
-      "version": "1.6.4",
+      "version": "1.6.6",
       "description": "Settings workspace with left navigation, dedicated screens and integrated approval administration.",
       "source_entry": "widgets/settings-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Settings",
-      "source_sha256": "652c148e281b1e828177103eeafc52046ccecb216cf19407df06db2a1518b903",
+      "source_sha256": "18e9a1ee86da9d67b2766af00425da46f30de32985b6354564c5dd44542377ba",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

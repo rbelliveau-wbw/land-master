@@ -1,0 +1,4 @@
+// Native on-failure action also catches execution failures outside a row's catch,
+// including batch runtime/statement limits. Preserve native failure reporting.
+batchAudit = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows"});
+thisapp.workflowRunLog({"action":"finish","id":batchAudit.get("id"),"status":"Failed","stage":"Native Batch Failure","counts":{"failed":1},"message":"The native Budget Item actuals batch failed.","details":"Batch size=100; sources=Great Plains and HeavyJob. Some batches may have completed. Open Creator's failed execution for the native batch number, failed rows and runtime error; inspect any item-specific Workflow Log entry before retrying. No automatic replay."});

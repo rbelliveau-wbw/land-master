@@ -26,7 +26,7 @@ const state = {edBudget: {ID: B1}, categories: {
 const context = vm.createContext({S:state});
 vm.runInContext(`var BUDGET_ELEMENTS=${map[1]};\n` + [
   'cleanVal','isObj','rawPath','firstRaw','lookupId','catDept','budgetElementNumber',
-  'budgetElementSnapshot','budgetElementDepartmentIndex','budgetElementValues','budgetPrelimElementSnapshot'
+  'budgetElementSnapshot','budgetActualElementSnapshot','budgetElementDepartmentIndex','budgetElementValues','budgetPrelimElementSnapshot'
 ].map(extract).join('\n'), context);
 const plain = value => JSON.parse(JSON.stringify(value));
 const fields = ['Labor_Budget','Materials_Budget','Equipment_Budget','Subcontractor_Budget','Other_Budget'];
@@ -44,7 +44,7 @@ assert.equal(context.budgetElementDepartmentIndex({ID:'fallback',Budget_Category
 assert.equal(context.budgetElementDepartmentIndex({ID:'fallback',Budget_Category:{},Department:'Development'}),4,'an empty lookup can use native Department');
 assert.equal(context.budgetElementDepartmentIndex({ID:'fallback',Budget_Category:{zc_display_value:'Development'}}),null,'a lookup label without exact identity cannot invent a department');
 
-const aggregateFields=['Prelim_Budget_Ttl','Unapproved_Final_Budget_Ttl','Budget_Ttl','HCSS_Actuals','PROJ_Actual'];
+const aggregateFields=['Prelim_Budget_Ttl','Unapproved_Final_Budget_Ttl','Budget_Ttl'];
 for (const [record,index] of [[dev,4],[eng,0]]) {
   for (const field of aggregateFields) {
     for (const [raw,expected] of [['123.4567',123.4567],['($1,200.1234)',-1200.1234],[0,0],['0.0000',0]]) {
@@ -68,8 +68,24 @@ for (const field of fields) {
   assert.equal(context.budgetElementValues({...eng,Budget_Ttl:100,[field]:'25.0000'},'Budget_Ttl'),null,`partial explicit ${field} cannot be reassigned`);
 }
 assert.deepEqual(plain(context.budgetElementValues({...dev,...parts([null,'',null,'',null]),Budget_Ttl:'75.1250'},'Budget_Ttl')),[0,0,0,0,75.125],'wholly absent snapshot fields retain the documented department fallback');
-assert.deepEqual(plain(context.budgetElementValues({...explicit,HCSS_Actuals:'60'},'HCSS_Actuals')),[0,0,0,0,60],'actuals follow the department rule instead of budget proportions');
-assert.deepEqual(plain(context.budgetElementValues({...eng,...parts([0,0,0,0,100]),PROJ_Actual:'80'},'PROJ_Actual')),[80,0,0,0,0],'an explicit budget allocation never becomes a fabricated actual split');
+const actualFields = ['Labor','Materials','Equipment','Subcontractor','Other'];
+const actualParts = (prefix, values) => Object.fromEntries(actualFields.map((element,index) => [prefix+'_'+element+'_Actuals',values[index]]));
+for (const [prefix, field] of [['HCSS','HCSS_Actuals'], ['GP','PROJ_Actual']]) {
+  for (const record of [dev, eng, con]) {
+    const base = {...record,...parts([0,0,0,0,100]),[field]:'80'};
+    assert.equal(context.budgetElementValues(base,field),null,'aggregate actuals never inherit a department or Final budget split');
+    const measured = {...base,...actualParts(prefix,['25.1234','30','-5.1234','10','20'])}, before = JSON.stringify(measured);
+    assert.deepEqual(plain(context.budgetElementValues(measured,field)),[25.1234,30,-5.1234,10,20],'complete source actuals remain measured, signed and independent of department');
+    assert.equal(JSON.stringify(measured),before,'reading measured actuals does not mutate a parent record');
+    assert.equal(context.budgetElementValues({...measured,[prefix+'_Other_Actuals']:null},field),null,'partial actuals stay unavailable');
+    assert.equal(context.budgetElementValues({...measured,[prefix+'_Other_Actuals']:'invalid'},field),null,'nonnumeric actuals stay unavailable');
+    assert.deepEqual(plain(context.budgetElementValues({...measured,[field]:'80.01'},field)),[25.1234,30,-5.1234,10,20],'complete saved measured amounts remain visible when multiple source totals round separately');
+    assert.deepEqual(plain(context.budgetElementValues({...measured,[field]:'80.0049'},field)),[25.1234,30,-5.1234,10,20],'a two-decimal source total can reconcile without rounding away four-decimal elements');
+    assert.deepEqual(plain(context.budgetElementValues({...measured,[field]:'80.0051'},field)),[25.1234,30,-5.1234,10,20],'native per-source validation owns reconciliation instead of a widget aggregate equality gate');
+    assert.deepEqual(plain(context.budgetElementValues({...base,[field]:0,...actualParts(prefix,[0,0,0,0,0])},field)),[0,0,0,0,0],'a complete measured zero split is known');
+    assert.deepEqual(plain(context.budgetElementValues({...base,[field]:0,...actualParts(prefix,[5,-5,0,0,0])},field)),[5,-5,0,0,0],'offsetting actuals retain both signed elements');
+  }
+}
 
 // The PO baseline fallback must be more conservative than a new-entry default:
 // native componentBaselineAvailable=false also describes partial snapshots.

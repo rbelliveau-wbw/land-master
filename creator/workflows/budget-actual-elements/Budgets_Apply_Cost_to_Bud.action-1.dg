@@ -1,0 +1,53 @@
+// Existing native batch: Budget_Item[Template_Item == false], 100 records.
+// Both sources are checked before any field on this item is changed.
+actualWriteAttempted = false;
+actualSource = "Great Plains";
+try
+{
+	gpActualElements = thisapp.budgetImportedActualElements(input.ID,"Great Plains");
+	actualSource = "HeavyJob";
+	hcssActualElements = thisapp.budgetImportedActualElements(input.ID,"HeavyJob");
+	gpComponents = gpActualElements.get("components");
+	hcssComponents = hcssActualElements.get("components");
+	actualSource = "Creator Budget Item";
+	actualWriteAttempted = true;
+	input.PROJ_Actual = gpActualElements.get("total");
+	input.HCSS_Actuals = hcssActualElements.get("total");
+	input.GP_Labor_Actuals = gpComponents.get("Labor");
+	input.GP_Materials_Actuals = gpComponents.get("Materials");
+	input.GP_Equipment_Actuals = gpComponents.get("Equipment");
+	input.GP_Subcontractor_Actuals = gpComponents.get("Subcontractor");
+	input.GP_Other_Actuals = gpComponents.get("Other");
+	input.HCSS_Labor_Actuals = hcssComponents.get("Labor");
+	input.HCSS_Materials_Actuals = hcssComponents.get("Materials");
+	input.HCSS_Equipment_Actuals = hcssComponents.get("Equipment");
+	input.HCSS_Subcontractor_Actuals = hcssComponents.get("Subcontractor");
+	input.HCSS_Other_Actuals = hcssComponents.get("Other");
+	input.Cost_to_Complete = hcssActualElements.get("costToComplete");
+	input.Percent_Complete = Budget_Import_Item[Budget_Item == input.ID].sum(Percent_Complete);
+	// Preserve the existing Construction budget approval lifecycle exactly.
+	if(input.Department == "Construction")
+	{
+		constBudgetCost = Budget_Import_Item[Budget_Item == input.ID && Data_Source == "HeavyJob Budget"].sum(Cost);
+		if(constBudgetCost == null) { constBudgetCost = 0; }
+		constApprovalStatus = ifnull(input.Budget.Const_Budget_Approval_Status,"Not Sent");
+		if(constApprovalStatus == "Approved")
+		{
+			input.Unapproved_Final_Budget_Ttl = 0;
+		}
+		else
+		{
+			input.Unapproved_Final_Budget_Ttl = constBudgetCost;
+		}
+	}
+}
+catch(actualError)
+{
+	// workflowRunLog persists independently from the failing batch transaction.
+	// Log failures only; thousands of successful items do not create log noise.
+	actualAudit = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows"});
+	actualStatus = "Failed";
+	if(actualWriteAttempted) { actualStatus = "Partial"; }
+	thisapp.workflowRunLog({"action":"finish","id":actualAudit.get("id"),"status":actualStatus,"stage":"Apply Actual Elements","reference":input.ID.toString(),"counts":{"received":1,"processed":1,"created":0,"updated":0,"skipped":0,"failed":1},"message":actualError.toString(),"details":"Source=" + actualSource + "; Budget Item=" + input.ID + "; batch size=100. Native writes may roll back. Review the failed batch before retrying; no automatic replay."});
+	throw actualError;
+}

@@ -1,0 +1,63 @@
+			Budgets_Apply_Cost_to_Bud
+			{
+    			display name = "Budgets - Apply Cost to Budget Lines"
+    			type = batchworkflow
+    			form = Budget_Item[Template_Item == false]
+    			event = "On Schedule"
+    			start = "11/27/2025 09:45:35"
+    			frequency = daily
+    			batch size = 100
+    			status = active
+    			on execute 
+    			{
+					actions 
+					{
+						custom deluge script
+						(
+											input.PROJ_Actual = Budget_Import_Item[Budget_Item == input.ID && Data_Source == "Great Plains"].sum(Cost);
+										input.HCSS_Actuals = Budget_Import_Item[Budget_Item == input.ID && Data_Source == "HeavyJob"].sum(Cost);
+										input.Cost_to_Complete = Budget_Import_Item[Budget_Item == input.ID && Data_Source == "HeavyJob"].sum(Cost_to_Complete);
+										input.Percent_Complete = Budget_Import_Item[Budget_Item == input.ID].sum(Percent_Complete);
+										if(input.Department == "Construction")
+										{
+											constBudgetCost = Budget_Import_Item[Budget_Item == input.ID && Data_Source == "HeavyJob Budget"].sum(Cost);
+											if(constBudgetCost == null)
+											{
+												constBudgetCost = 0;
+											}
+											constApprovalStatus = ifnull(input.Budget.Const_Budget_Approval_Status,"Not Sent");
+											if(constApprovalStatus == "Approved")
+											{
+												// Construction budget has completed approval.
+												// Route imported HeavyJob Budget value to Final.
+												//Final Numbers no longer updating in real time 7/30/2026
+												//input.Budget_Ttl = constBudgetCost;
+												input.Unapproved_Final_Budget_Ttl = 0;
+											}
+											else
+											{
+												// Construction budget is Not Sent / Pending / Rejected.
+												// Route imported HeavyJob Budget value to Unapproved.
+												input.Unapproved_Final_Budget_Ttl = constBudgetCost;
+											}
+										}
+						)
+					}
+    			}
+    			on failure 
+    			{
+					actions 
+					{
+						custom deluge script
+						(
+											sendmail
+										[
+											from :"Notifications@wbdevelopment.com"
+											to :"rbelliveau@wbdevelopment.com"
+											subject :"[Land Master] Batch workflow FAILED - Budgets - Apply Cost to Budget Lines"
+											message :"<h2>Batch workflow failure</h2><p><b>Application:</b> Land Master<br><b>Workflow:</b> Budgets - Apply Cost to Budget Lines<br><b>Form:</b> Budget Item<br><b>Failure detected at:</b> " + zoho.currenttime.toString("yyyy-MM-dd HH:mm:ss") + " (application time)<br><b>Batch size:</b> 100 records</p><p><b>What was running:</b> Applying imported Great Plains and HeavyJob costs, cost to complete, and percent complete to budget lines; updating unapproved construction budget totals based on approval status.</p><p>The batch workflow ended with a failure. Some batches may have completed successfully; review the failed batches before rerunning.</p><p><b>Error details:</b> Open Land Master &gt; Settings &gt; Logs, filter for Batch Workflows and this workflow at the time above, and open the failed execution. Zoho records the error message and available failed-batch details there.</p><p><a href='https://creator.zoho.com/appbuilder/wbdevelopment/land-master/Budget_Item/batchprocess/Budgets_Apply_Cost_to_Bud/edit'>Open this batch workflow</a></p>"
+										]
+						)
+					}
+    			}
+			}

@@ -1,0 +1,323 @@
+{
+  "contract": "budget-actual-elements-native-install-v1",
+  "updated_on": "2026-11-03",
+  "status": "Development installation and native verification complete. Five existing Import fields renamed in place; ten new Budget Item fields and both quick/detail report bindings verified; all 14 function bodies ready; new anchored schedules and original disabled states independently verified; native Budget batch and Timeout actions saved/compiled and reopened with exact source matches. No Creator Stage/Production promotion or manually executed financial job.",
+  "import_field_renames_saved": [
+    {
+      "from": "Labor_Budget",
+      "to": "Labor",
+      "method": "Existing native field link-name rename in place; reported saved via Done by root"
+    },
+    {
+      "from": "Materials_Budget",
+      "to": "Materials",
+      "method": "Existing native field link-name rename in place; reported saved via Done by root"
+    },
+    {
+      "from": "Equipment_Budget",
+      "to": "Equipment",
+      "method": "Existing native field link-name rename in place; reported saved via Done by root"
+    },
+    {
+      "from": "Subcontractor_Budget",
+      "to": "Subcontractor",
+      "method": "Existing native field link-name rename in place; reported saved via Done by root"
+    },
+    {
+      "from": "Other_Budget",
+      "to": "Other",
+      "method": "Existing native field link-name rename in place; reported saved via Done by root"
+    }
+  ],
+  "budget_item_actual_fields_saved": [
+    "HCSS_Labor_Actuals",
+    "HCSS_Materials_Actuals",
+    "HCSS_Equipment_Actuals",
+    "HCSS_Subcontractor_Actuals",
+    "HCSS_Other_Actuals",
+    "GP_Labor_Actuals",
+    "GP_Materials_Actuals",
+    "GP_Equipment_Actuals",
+    "GP_Subcontractor_Actuals",
+    "GP_Other_Actuals"
+  ],
+  "reports_reopened": [
+    {
+      "name": "All_Budget_Items",
+      "layouts": [
+        "quickview",
+        "detailview"
+      ],
+      "actual_fields_verified": [
+        "HCSS_Labor_Actuals",
+        "HCSS_Materials_Actuals",
+        "HCSS_Equipment_Actuals",
+        "HCSS_Subcontractor_Actuals",
+        "HCSS_Other_Actuals",
+        "GP_Labor_Actuals",
+        "GP_Materials_Actuals",
+        "GP_Equipment_Actuals",
+        "GP_Subcontractor_Actuals",
+        "GP_Other_Actuals"
+      ],
+      "full_native_sdk_response_captured": false
+    },
+    {
+      "name": "All_Budget_Item_Imports",
+      "layouts": [
+        "quickview",
+        "detailview"
+      ],
+      "renamed_fields_verified": [
+        "Labor",
+        "Materials",
+        "Equipment",
+        "Subcontractor",
+        "Other"
+      ],
+      "binding_identity_check": "Root verified the same existing native field IDs before/after in-place rename; Code field 4410926000001488111; element IDs reported with suffixes below.",
+      "element_field_id_suffixes": {
+        "Labor": "5679003",
+        "Materials": "5679004",
+        "Equipment": "5679005",
+        "Subcontractor": "5679006",
+        "Other": "5679007"
+      },
+      "full_native_sdk_response_captured": false
+    }
+  ],
+  "functions_compiled": [
+    "workflowExportClaim",
+    "workflowExportWake",
+    "workflowExportDispatch",
+    "workflowExportPlan",
+    "budgetActualImportRun",
+    "workflowExportRun",
+    "workflowExportTick",
+    "workflowExportEnqueue",
+    "budgetImportedActualElements",
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows"
+  ],
+  "workflows_reopened": [
+    {
+      "name": "Budgets_Apply_Cost_to_Bud",
+      "execute_action_saved_compiled": true,
+      "execute_action_closed_reopened_match": "Whitespace-normalized exact match to candidate",
+      "failure_action_saved_compiled": true,
+      "failure_action_closed_reopened_match": "Whitespace-normalized exact match to candidate",
+      "properties_verified_unchanged": {
+        "form": "Budget_Item",
+        "criteria": "Template_Item == false",
+        "frequency": "daily",
+        "start": "11/27/2025 09:45:35",
+        "batch_size": 100
+      },
+      "manual_execution_performed": false
+    },
+    {
+      "name": "Workflow_Log_Timeout",
+      "saved_compiled": true,
+      "closed_reopened_source_match": "Full native clipboard body equals candidate after whitespace normalization"
+    },
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "action_route_key": "Budgets_Import_Load_HCSS_",
+      "independent_closed_reopened_action_verified": true,
+      "properties_verified": {
+        "form": "Settings",
+        "date_field": "Next_Workflow_Run",
+        "run_mode": "Always",
+        "frequency": "daily",
+        "time_zone": "America/Chicago",
+        "end_date": null
+      }
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "action_route_key": "Budgets_Import_Load_GP_Co",
+      "independent_closed_reopened_action_verified": true,
+      "properties_verified": {
+        "form": "Settings",
+        "date_field": "Next_Workflow_Run",
+        "run_mode": "Always",
+        "frequency": "daily",
+        "time_zone": "America/Chicago",
+        "end_date": null
+      }
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "action_route_key": "Budgets_Import_Great_Plai1",
+      "independent_closed_reopened_action_verified": true,
+      "properties_verified": {
+        "form": "Settings",
+        "date_field": "Next_Workflow_Run",
+        "run_mode": "Always",
+        "frequency": "daily",
+        "time_zone": "America/Chicago",
+        "end_date": null
+      }
+    }
+  ],
+  "read_only_checks": [
+    {
+      "scope": "All three actual source parent/group/duplicate comparisons",
+      "result": "Root reported zero changed, missing or added original groups and zero duplicate import keys for all three sources. No original parent projection changed. Component residual results remain distinct from parent preservation.",
+      "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json"
+    }
+  ],
+  "production_creator_promoted": false,
+  "business_record_writes_performed": false,
+  "functions_reopened_verified": [
+    "workflowRunLog",
+    "analyticsExportRows",
+    "workflowPreparedExportRows",
+    "workflowExportClaim",
+    "workflowExportWake",
+    "workflowExportDispatch",
+    "workflowExportPlan",
+    "budgetActualImportRun",
+    "workflowExportRun",
+    "workflowExportTick",
+    "workflowExportEnqueue",
+    "budgetImportedActualElements",
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows"
+  ],
+  "function_revisions_pending_reinstall": [],
+  "evidence_authority": "Root agent live IAB installation and complete read-only Analytics audit reports; this child did not operate a browser or run a mutating job.",
+  "functions_pending_reopen": [],
+  "function_prerequisites_verified_identical_without_replacement": [
+    "workflowRunLog",
+    "analyticsExportRows",
+    "workflowPreparedExportRows"
+  ],
+  "function_source_checks": [
+    {
+      "name": "budgetActualImportRun",
+      "result": "Root reported corrected body saved/reopened and exact whitespace-normalized match",
+      "saved_characters": 15243
+    }
+  ],
+  "schedules_pending": {
+    "actions_pending_save_compile": [],
+    "property_reopens_pending": [],
+    "action_reopens_pending": []
+  },
+  "workflows_pending": [],
+  "original_schedules_disabled_verified": [
+    {
+      "name": "Budgets_Import_Load_HCSS_",
+      "enabled_checkbox": false,
+      "retained": true,
+      "deleted": false,
+      "evidence": "Root observed each original native schedule checkbox false"
+    },
+    {
+      "name": "Budgets_Import_Load_GP_Co",
+      "enabled_checkbox": false,
+      "retained": true,
+      "deleted": false,
+      "evidence": "Root observed each original native schedule checkbox false"
+    },
+    {
+      "name": "Budgets_Import_Great_Plai1",
+      "enabled_checkbox": false,
+      "retained": true,
+      "deleted": false,
+      "evidence": "Root observed each original native schedule checkbox false"
+    }
+  ],
+  "new_schedules_created": [
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "display_name": "Budgets - HCSS Actuals - Batches",
+      "route_key": "Budgets_Import_Load_HCSS_",
+      "form": "Settings",
+      "date_field": "Next_Workflow_Run",
+      "frequency": "daily",
+      "run_mode": "Always",
+      "end_date": null,
+      "action_saved_compiled": true,
+      "action_reopened_verified": true,
+      "properties_reopened_verified": true,
+      "enabled_checkbox": true,
+      "listed_actions": 1,
+      "list_date_field_verified": "Next Workflow Run",
+      "time_zone": "America/Chicago",
+      "route_reopened_matches_expected": true
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "display_name": "Budgets - GP Construction Actuals - Batches",
+      "route_key": "Budgets_Import_Load_GP_Co",
+      "form": "Settings",
+      "date_field": "Next_Workflow_Run",
+      "frequency": "daily",
+      "run_mode": "Always",
+      "end_date": null,
+      "action_saved_compiled": true,
+      "action_reopened_verified": true,
+      "properties_reopened_verified": true,
+      "enabled_checkbox": true,
+      "listed_actions": 1,
+      "list_date_field_verified": "Next Workflow Run",
+      "time_zone": "America/Chicago",
+      "route_reopened_matches_expected": true
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "display_name": "Budgets - GP Development Actuals - Batches",
+      "route_key": "Budgets_Import_Great_Plai1",
+      "form": "Settings",
+      "date_field": "Next_Workflow_Run",
+      "frequency": "daily",
+      "run_mode": "Always",
+      "end_date": null,
+      "action_saved_compiled": true,
+      "action_reopened_verified": true,
+      "properties_reopened_verified": true,
+      "enabled_checkbox": true,
+      "listed_actions": 1,
+      "list_date_field_verified": "Next Workflow Run",
+      "time_zone": "America/Chicago",
+      "route_reopened_matches_expected": true
+    }
+  ],
+  "timeout_action": {
+    "name": "Workflow_Log_Timeout",
+    "saved_compiled_update_acknowledged": true,
+    "independently_reopened_verified": true,
+    "closed_reopened_source_match": "Full native clipboard body equals candidate after whitespace normalization"
+  },
+  "local_screenshot_evidence": {
+    "git_ignored": true,
+    "paths": [
+      "tmp/actuals-install/actuals-schedule-proof.jpg",
+      "tmp/actuals-install/gp-development-schedule-proof.jpg",
+      "tmp/actuals-install/actuals-batch-properties.jpg",
+      "tmp/actuals-install/budget-actual-fields.jpg",
+      "tmp/actuals-install/actuals-report-fields.jpg"
+    ]
+  },
+  "analytics_editor_cleanup": {
+    "audit_text_saved_over_source_queries": false,
+    "execute_only_text_discarded_using_no": true,
+    "all_three_editors_returned_to_workspace": true,
+    "saved_additive_source_queries_previously_verified": true
+  },
+  "verification_limits": [
+    "Scheduled financial writes and Production batch performance were not executed.",
+    "A full native widget SDK response for the new report fields was not captured; native field/layout bindings and compatibility fallbacks were verified separately."
+  ],
+  "component_source_quality": {
+    "hcss_existing_residual_groups": 409,
+    "guard": "Preflight rejects source-component discrepancies and reports them to Workflow Log; original totals are retained and no difference is redistributed.",
+    "source_precision_cause_confirmed": false,
+    "evidence": "creator/workflows/budget-actual-elements/analytics/source-audit-evidence.json"
+  },
+  "creator_promotion_required": true,
+  "creator_promotion_owner": "User",
+  "joint_promotion_requirement": "Promote field renames/additions, report bindings, matching function/batch/timeout changes and the original schedule disabled-state changes together with the three new anchored wrappers."
+}

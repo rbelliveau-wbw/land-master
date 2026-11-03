@@ -138,15 +138,25 @@ stored PO element identifiers as strings 1–5. Five options need a compact
 single-select without a search field; preserve keyboard selection, focus and
 the existing draft/read-only/pending gates.
 
-Keep the PO Summary's authoritative aggregate table and add a separate named
-five-element section per Budget Item. Show the actual arithmetic as aligned
-equations: **Final + Approved Mods = Modified Budget**, **Modified Budget −
-Existing POs = Available**, and **Available − This PO = Remaining**. Right-align
-tabular currency, preserve exact-cent reservations and restore this saved PO's
-own allocation once. Keep pending automatic modifications and element
-shortfalls distinct. Unknown element balances and unallocated historical PO/mod
-amounts must remain visible as unavailable; do not turn missing detail into
-zero or replace the existing aggregate authorization with browser arithmetic.
+Group the PO Summary once per Budget Item/base cost code, with affected elements
+visible underneath by default. The owner's November 3 selection replaces the
+separate aggregate table and repeated equation cards. Put the code/name,
+**Available**, **This PO**, and **Remaining** together on one horizontal header
+row. Omit per-item element counts. Retain the overall cost-code count and PO
+total. Each element has those same three amounts and an expandable vertical
+calculation: **Final + Approved Mods = Modified Budget**, **Modified Budget −
+Existing POs = Available**, then **Available − This PO = Remaining**.
+
+Parent values use the authoritative aggregate allocation including untouched
+elements; never add only the visible element balances to manufacture a parent
+total. Consolidate repeated lines by exact Budget Item and element identity.
+Keep disclosure state, scroll and focus when amount edits refresh the Summary.
+Use native disclosures for shared motion and stable item/element numeric slots
+for Sliding push. Right-align tabular currency, preserve exact-cent reservations
+and restore this saved PO's own allocation once. Keep pending automatic
+modifications and element shortfalls distinct. Unknown balances and unallocated
+historical PO/mod amounts stay visibly unavailable; never turn missing detail
+into zero or replace aggregate authorization with browser arithmetic.
 
 Standalone Modification entry uses the same labels and displays **Final + Prior
 Mods + This Mod = Revised** for all five elements. Highlight the chosen row;

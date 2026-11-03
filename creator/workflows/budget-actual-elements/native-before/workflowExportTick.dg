@@ -1,0 +1,236 @@
+string workflowExportTick(string auditId)
+{
+	if(!auditId.matches("[0-9]+"))
+	{
+		throw "Export tick requires a run ID.";
+	}
+	run = Workflow_Run_Log[ID == auditId.toLong()];
+	if(run.count() != 1 || run.Run_Status != "Running" || run.Resume_At == null)
+	{
+		return "Inactive";
+	}
+	if(run.Resume_At > zoho.currenttime)
+	{
+		return "Not due";
+	}
+	state = run.Export_State.toMap();
+	workflow = state.get("workflow");
+	allowed = {"Daily_Crew_Timecards","Daily_Crew_Labor","Update_Budgets_w_Projects1","Sync_Final_Acceptance_Due","Update_Projects_Start_End","Budgets_Check_HCSS_Budget1","Budgets_Import_Load_GP_Co","Budgets_Import_Load_HCSS_1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_CTC_C"};
+	if(state.get("version") != 1 || state.get("phase") != "waiting" || !allowed.contains(workflow))
+	{
+		return "Not waiting";
+	}
+	tick = state.get("tick");
+	if(!thisapp.workflowExportClaim(auditId + "|tick|" + tick))
+	{
+		return "Claim not acknowledged; no replay";
+	}
+	// Budget successors have no Analytics work. They execute only after the
+	// preceding action has its own durable successful acknowledgement.
+	budgetAction = state.get("budgetAction");
+	if(budgetAction != null)
+	{
+		try 
+		{
+			if(workflow != "Update_Budgets_w_Projects1" || (budgetAction != 2 && budgetAction != 3))
+			{
+				throw "Invalid Budget continuation action.";
+			}
+			predecessorId = ifnull(state.get("predecessor"),"").toString();
+			if(!predecessorId.matches("[0-9]+"))
+			{
+				throw "Budget continuation has no predecessor.";
+			}
+			predecessor = Workflow_Run_Log[ID == predecessorId.toLong()];
+			if(predecessor.count() != 1 || (predecessor.Run_Status != "Success" && predecessor.Run_Status != "Skipped") || predecessor.Workflow_Name != "Update Budgets w/ Projects Info - Budget (action " + (budgetAction - 1) + "/3)")
+			{
+				throw "Budget predecessor did not complete; no successor writes started.";
+			}
+			if(!thisapp.workflowExportClaim(auditId + "|process"))
+			{
+				return "Processing claim not acknowledged; no replay";
+			}
+			state.put("phase","processing");
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Processing Budget action " + budgetAction,"exportState":state.toString(),"clearResume":true});
+		}		catch (predecessorError)
+		{
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Budget continuation refused","message":predecessorError.toString(),"counts":{"failed":1},"clearResume":true});
+			throw predecessorError;
+		}
+		return thisapp.workflowExportRun(auditId);
+	}
+	try 
+	{
+		// A fixed deadline belongs to the original run, not to each poll.
+		if(zoho.currenttime.toLong() >= state.get("deadline").toLong())
+		{
+			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Timed Out","stage":"Analytics export deadline","message":"Analytics sources did not complete within the 15-minute export window. No business writes started.","counts":{"failed":1},"clearResume":true});
+			return "Expired";
+		}
+		state.put("phase","polling");
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Checking Analytics export","exportState":state.toString(),"clearResume":true});
+		headers = {"ZANALYTICS-ORGID":"700732567"};
+		pending = false;
+		activeJobs = 0;
+		for each  existingRequest in state.get("requests")
+		{
+			if(existingRequest.get("code") != "1004" && ifnull(existingRequest.get("job"),"") != "")
+			{
+				activeJobs = activeJobs + 1;
+			}
+		}
+		for each  request in state.get("requests")
+		{
+			if(request.get("code") != "1004")
+			{
+				jobId = ifnull(request.get("job"),"").toString();
+				if(jobId == "" && activeJobs < 2)
+				{
+					exportConfig = request.get("config");
+					exportConfig.put("responseFormat","json");
+					exportConfig.put("keyValueFormat",true);
+					params = {"CONFIG":exportConfig.toString()};
+					startHttp = invokeurl
+					[
+						url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/views/" + request.get("view") + "/data"
+						type :GET
+						parameters:params
+						headers:headers
+						detailed:true
+						connection:"zoho_analytics_connection"
+					];
+					if(startHttp.get("responseCode") != 200)
+					{
+						throw "Analytics export creation HTTP " + startHttp.get("responseCode");
+					}
+					startBody = startHttp.get("responseText").toString().toMap();
+					if(startBody.get("status") != "success" || startBody.get("data") == null)
+					{
+						throw "Analytics rejected export creation; view=" + request.get("view");
+					}
+					jobId = ifnull(startBody.get("data").get("jobId"),"").toString();
+					if(jobId == "")
+					{
+						throw "Analytics returned no export job ID.";
+					}
+					request.put("job",jobId);
+					activeJobs = activeJobs + 1;
+					savedRequests = List();
+					for each  savedRequest in state.get("requests")
+					{
+						if(savedRequest.get("view") == request.get("view"))
+						{
+							savedRequests.add(request);
+						}
+						else
+						{
+							savedRequests.add(savedRequest);
+						}
+					}
+					state.put("requests",savedRequests);
+					// Commit the acknowledged job before any further external call.
+					thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Waiting for Analytics export","reference":jobId,"exportState":state.toString()});
+				}
+				if(jobId == "")
+				{
+					pending = true;
+					continue;
+				}
+				statusHttp = invokeurl
+				[
+					url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
+					type :GET
+					headers:headers
+					detailed:true
+					connection:"zoho_analytics_connection"
+				];
+				if(statusHttp.get("responseCode") != 200)
+				{
+					throw "Analytics job-status HTTP " + statusHttp.get("responseCode") + "; job=" + jobId;
+				}
+				statusBody = statusHttp.get("responseText").toString().toMap();
+				if(statusBody.get("status") != "success" || statusBody.get("data") == null)
+				{
+					throw "Invalid Analytics job-status response; job=" + jobId;
+				}
+				job = statusBody.get("data");
+				if(ifnull(job.get("jobId"),"").toString() != jobId)
+				{
+					throw "Analytics status identified a different job.";
+				}
+				code = ifnull(job.get("jobCode"),"").toString();
+				request.put("code",code);
+				request.put("checkedAt",zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"));
+				savedRequests = List();
+				for each  savedRequest in state.get("requests")
+				{
+					if(savedRequest.get("view") == request.get("view"))
+					{
+						savedRequests.add(request);
+					}
+					else
+					{
+						savedRequests.add(savedRequest);
+					}
+				}
+				state.put("requests",savedRequests);
+				if(code == "1001" || code == "1002")
+				{
+					// A pending source must not prevent the other source from
+					// starting or being checked during this same execution.
+					pending = true;
+				}
+				else if(code != "1004")
+				{
+					throw "Analytics export failed; job=" + jobId + "; code=" + code + "; status=" + job.get("jobStatus");
+				}
+				else
+				{
+					activeJobs = activeJobs - 1;
+				}
+			}
+		}
+		if(pending)
+		{
+			if(zoho.currenttime.toLong() >= state.get("deadline").toLong())
+			{
+				throw "Analytics export deadline reached before completion.";
+			}
+			state.put("phase","arming");
+			state.put("tick",tick + 1);
+			nextCheck = zoho.currenttime.addMinutes(1);
+			deadline = state.get("deadlineAt").toDateTime("MM/dd/yyyy hh:mm:ss a");
+			if(nextCheck > deadline)
+			{
+				nextCheck = deadline;
+			}
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving continuation wake-ups","exportState":state.toString(),"clearResume":true});
+			thisapp.workflowExportWake(auditId,tick + 1,nextCheck.toString("MM/dd/yyyy hh:mm:ss a"));
+			if(nextCheck <= zoho.currenttime)
+			{
+				throw "Continuation wake-up window elapsed before handoff acknowledgement.";
+			}
+			state.put("phase","waiting");
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Waiting for Analytics exports","exportState":state.toString(),"resumeAt":nextCheck.toString("MM/dd/yyyy hh:mm:ss a")});
+			return "Pending Analytics exports";
+		}
+		if(zoho.currenttime.toLong() >= state.get("deadline").toLong())
+		{
+			throw "Analytics export deadline reached before processing.";
+		}
+		if(!thisapp.workflowExportClaim(auditId + "|process"))
+		{
+			return "Processing claim not acknowledged; no replay";
+		}
+		state.put("phase","processing");
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Processing completed Analytics sources","exportState":state.toString(),"clearResume":true});
+	}	catch (exportError)
+	{
+		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Analytics export","message":exportError.toString(),"details":"No business writes started. Unknown requests and claimed continuations are never replayed automatically.","counts":{"failed":1},"clearResume":true});
+		throw exportError;
+	}
+	// Deliberately outside the export catch. Preserve the importer's native
+	// rollback/rethrow behavior and independent Partial/Failed audit handling.
+	result = thisapp.workflowExportRun(auditId);
+	return result;
+}

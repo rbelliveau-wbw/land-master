@@ -1,0 +1,228 @@
+{
+  "contract": "budget-actual-elements-v1",
+  "prepared_on": "2026-11-03",
+  "status": "Installed and verified in Creator Development: five existing Import field link names renamed in place, ten new USD16/4 Budget Item actual fields, and quick/detail report bindings verified. Source field IDs/data and USD14/4 Import properties preserved. Production Creator promotion remains with the user; full widget SDK response capture and actual scheduled writes were not performed.",
+  "authority": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+  "import_form": "Budget_Import_Item",
+  "import_renames": [
+    {
+      "from": "Labor_Budget",
+      "to": "Labor",
+      "display_name": "(1) Labor",
+      "preserve_properties": {
+        "type": "USD",
+        "maxchar": 14,
+        "decimalplace": 4,
+        "required": false,
+        "initial_value": null,
+        "existing_native_field_id": true
+      }
+    },
+    {
+      "from": "Materials_Budget",
+      "to": "Materials",
+      "display_name": "(2) Materials",
+      "preserve_properties": {
+        "type": "USD",
+        "maxchar": 14,
+        "decimalplace": 4,
+        "required": false,
+        "initial_value": null,
+        "existing_native_field_id": true
+      }
+    },
+    {
+      "from": "Equipment_Budget",
+      "to": "Equipment",
+      "display_name": "(3) Equipment",
+      "preserve_properties": {
+        "type": "USD",
+        "maxchar": 14,
+        "decimalplace": 4,
+        "required": false,
+        "initial_value": null,
+        "existing_native_field_id": true
+      }
+    },
+    {
+      "from": "Subcontractor_Budget",
+      "to": "Subcontractor",
+      "display_name": "(4) Subcontractor",
+      "preserve_properties": {
+        "type": "USD",
+        "maxchar": 14,
+        "decimalplace": 4,
+        "required": false,
+        "initial_value": null,
+        "existing_native_field_id": true
+      }
+    },
+    {
+      "from": "Other_Budget",
+      "to": "Other",
+      "display_name": "(5) Other",
+      "preserve_properties": {
+        "type": "USD",
+        "maxchar": 14,
+        "decimalplace": 4,
+        "required": false,
+        "initial_value": null,
+        "existing_native_field_id": true
+      }
+    }
+  ],
+  "rename_policy": "Rename existing field link names in place; preserve field IDs, values, USD format, 14 digits and 4 decimal places, optional state and report bindings. Do not delete/recreate or copy financial data.",
+  "actual_form": "Budget_Item",
+  "actual_fields": [
+    {
+      "link_name": "HCSS_Labor_Actuals",
+      "display_name": "HCSS (1) Labor Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "HCSS_Materials_Actuals",
+      "display_name": "HCSS (2) Materials Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "HCSS_Equipment_Actuals",
+      "display_name": "HCSS (3) Equipment Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "HCSS_Subcontractor_Actuals",
+      "display_name": "HCSS (4) Subcontractor Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "HCSS_Other_Actuals",
+      "display_name": "HCSS (5) Other Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "GP_Labor_Actuals",
+      "display_name": "GP (1) Labor Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "GP_Materials_Actuals",
+      "display_name": "GP (2) Materials Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "GP_Equipment_Actuals",
+      "display_name": "GP (3) Equipment Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "GP_Subcontractor_Actuals",
+      "display_name": "GP (4) Subcontractor Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    },
+    {
+      "link_name": "GP_Other_Actuals",
+      "display_name": "GP (5) Other Actuals",
+      "type": "USD",
+      "maxchar": 16,
+      "decimalplace": 4,
+      "required": false,
+      "initial_value": null
+    }
+  ],
+  "source_discriminator": {
+    "HeavyJob": "HCSS Actuals",
+    "Great Plains": "GP Actuals",
+    "HeavyJob Budget": "Construction Budget"
+  },
+  "preserve_fields": [
+    "Budget_Item.Labor_Budget",
+    "Budget_Item.Materials_Budget",
+    "Budget_Item.Equipment_Budget",
+    "Budget_Item.Subcontractor_Budget",
+    "Budget_Item.Other_Budget",
+    "Budget_Item.HCSS_Actuals",
+    "Budget_Item.PROJ_Actual",
+    "Budget_Import_Item.Cost",
+    "Budget_Import_Item.Code",
+    "Budget_Import_Item.Data_Source"
+  ],
+  "reports": [
+    {
+      "link_name": "All_Budget_Item_Imports",
+      "form": "Budget_Import_Item",
+      "renamed_fields": [
+        "Labor",
+        "Materials",
+        "Equipment",
+        "Subcontractor",
+        "Other"
+      ],
+      "include_in": [
+        "list columns",
+        "quickview",
+        "detailview",
+        "full-field API/export"
+      ]
+    },
+    {
+      "link_name": "All_Budget_Items",
+      "form": "Budget_Item",
+      "new_fields": [
+        "HCSS_Labor_Actuals",
+        "HCSS_Materials_Actuals",
+        "HCSS_Equipment_Actuals",
+        "HCSS_Subcontractor_Actuals",
+        "HCSS_Other_Actuals",
+        "GP_Labor_Actuals",
+        "GP_Materials_Actuals",
+        "GP_Equipment_Actuals",
+        "GP_Subcontractor_Actuals",
+        "GP_Other_Actuals"
+      ],
+      "include_in": [
+        "list columns",
+        "quickview",
+        "detailview",
+        "full-field API/export"
+      ]
+    }
+  ],
+  "custom_apis_added": [],
+  "permissions_added": []
+}

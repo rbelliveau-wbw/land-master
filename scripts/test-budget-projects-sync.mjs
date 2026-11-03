@@ -100,13 +100,24 @@ for(const statement of ['subdiv.Acres=acres;','subdiv.Lot_Total_Residential=lotT
   expectedImport=expectedImport.replace(removal,'');
 }
 expectedImport=expectedImport.replace('subdiv.Projects_Status=status;','subdiv.Projects_Status=status;\n\t\t\t\t\t\t\t// Budget owns Acres, residential lots, and street LF. Do not import those quantities.');
-// The existing export-recovery work subsequently added continuations and cost
-// branches in Creator. Preserve that current native body outside the new crew
-// dispatch, while retaining the Budget-owned quantity prohibitions below.
-const currentNative=fs.readFileSync('creator/crew-locations/native-before/workflowExportRun.foreman-20261030.dg','utf8').replace(/\r\n/g,'\n');
-const crewBranch='\tif(runKey == "Daily_Crew_Timecards" || runKey == "Daily_Crew_Labor")\n\t{\n\t\tcrewResult = thisapp.crewSyncTimecardsRun(false,auditId);\n\t\tif(runKey == "Daily_Crew_Timecards") { thisapp.workflowExportEnqueue("Daily_Crew_Labor"); }\n\t\treturn crewResult.toString();\n\t}\n\telse if(runKey == "Update_Budgets_w_Projects1")';
-assert.equal(importProcessor.split(crewBranch).length,2,'exactly one crew continuation branch');
-assert.equal(importProcessor.replace(crewBranch,'\tif(runKey == "Update_Budgets_w_Projects1")'),currentNative,'preserve every existing native import/recovery branch outside the crew delegation');
+// Preserve the complete November2 native body, allowing only this task's three
+// actual-source delegations and source-agnostic Budget_Import_Item field names.
+// Budget Item budget fields and every unrelated import/recovery branch remain
+// covered by the full-body comparison rather than a few presence assertions.
+const currentNative=fs.readFileSync('creator/workflows/budget-actual-elements/native-before/workflowExportRun.dg','utf8').replace(/\r\n/g,'\n');
+let expectedProcessor=currentNative;
+function branchBounds(text,name,next){const start=text.indexOf('\n\telse if(runKey == "'+name+'")'),end=text.indexOf('\n\telse if(runKey == "'+next+'")',start);assert.ok(start>=0&&end>start,'native branch boundaries are exact');return {start,end};}
+let bounds=branchBounds(expectedProcessor,'Budgets_Import_Load_GP_Co','Budgets_Import_Load_HCSS_1');
+expectedProcessor=expectedProcessor.slice(0,bounds.start)+'\n\telse if(runKey == "Budgets_Import_Load_GP_Co" || runKey == "Budgets_Import_Great_Plai1" || runKey == "Budgets_Import_Load_HCSS_")\n\t{\n\t\treturn thisapp.budgetActualImportRun(auditId);\n\t}\n'+expectedProcessor.slice(bounds.end+1);
+bounds=branchBounds(expectedProcessor,'Budgets_Import_Load_HCSS_','Budgets_Import_Load_CTC_C');
+expectedProcessor=expectedProcessor.slice(0,bounds.start)+expectedProcessor.slice(bounds.end);
+bounds=branchBounds(expectedProcessor,'Budgets_Import_Load_HCSS_1','Budgets_Import_Load_CTC_C');
+let budgetImportBranch=expectedProcessor.slice(bounds.start,bounds.end);
+for(const field of ['Labor','Materials','Equipment','Subcontractor','Other'])budgetImportBranch=budgetImportBranch.replaceAll(field+'_Budget',field);
+expectedProcessor=expectedProcessor.slice(0,bounds.start)+budgetImportBranch+expectedProcessor.slice(bounds.end);
+function nativeTokens(text){return text.match(/"(?:\\.|[^"\\])*"|\/\/[^\n]*|\/\*[\s\S]*?\*\/|[^\s]/g).filter(token=>!token.startsWith('//')&&!token.startsWith('/*')).join('');}
+assert.equal((importProcessor.match(/if\(runKey == "Daily_Crew_Timecards" \|\| runKey == "Daily_Crew_Labor"\)/g)||[]).length,1,'exactly one Crew continuation branch');
+assert.equal(nativeTokens(importProcessor),nativeTokens(expectedProcessor),'preserve the full native import/recovery body outside the authorized actual delegations and staging renames');
 assert.doesNotMatch(importProcessor,/\b(?:subdiv|budgCat|budG)\.(?:Acres|Lot_Total_Residential|Equiv_LF_of_Street)\s*=/,'scheduled imports cannot overwrite Budget-owned quantities');
 assert.match(importProcessor,/subdiv\.Projects_Status=status;/,'preserve Subdivision status imports');
 assert.match(deluge,/type :PATCH/);

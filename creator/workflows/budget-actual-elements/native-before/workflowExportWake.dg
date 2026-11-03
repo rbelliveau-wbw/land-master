@@ -1,0 +1,64 @@
+string workflowExportWake(string auditId, int tick, string resumeAt)
+{
+	if(!auditId.matches("[0-9]+") || tick < 0)
+	{
+		throw "Invalid continuation wake-up identity.";
+	}
+	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+	environments = {"development","stage","production"};
+	if(!environments.contains(runtimeType))
+	{
+		throw "Unknown Creator environment for export wake-up.";
+	}
+	headers = {"Content-Type":"application/json"};
+	if(runtimeType != "production")
+	{
+		headers.put("environment",runtimeLink);
+	}
+	due = resumeAt.toDateTime("MM/dd/yyyy hh:mm:ss a");
+	// Each callback has a new immutable date row. Never move a callback's own
+	// date while it executes. The backup competes for the SAME tick claim.
+	for each  delay in {0,2}
+	{
+		claimKey = auditId + "|wake|" + tick + "|" + delay;
+		existing = Workflow_Export_Lock[Claim_Key == claimKey];
+		if(existing.count() > 0)
+		{
+			throw "Wake-up already exists; no ambiguous queue replay: " + claimKey;
+		}
+		payload = {"data":{"Claim_Key":claimKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Wake_At":due.addMinutes(delay).toString("MM/dd/yyyy hh:mm:ss a")}};
+		http = invokeurl
+		[
+			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+			type :POST
+			parameters:payload.toString()
+			headers:headers
+			detailed:true
+			connection:"workflow_audit_admin"
+		];
+		if(http.get("responseCode") < 200 || http.get("responseCode") >= 300)
+		{
+			throw "Wake-up creation HTTP " + http.get("responseCode");
+		}
+		body = http.get("responseText").toString().toMap();
+		ack = body;
+		if(body.get("result") != null)
+		{
+			if(body.get("result").size() != 1 || body.get("data") != null)
+			{
+				throw "Ambiguous wake-up acknowledgement.";
+			}
+			ack = body.get("result").get(0);
+		}
+		if(ifnull(body.get("code"),"").toString() != "3000" || ifnull(ack.get("code"),"").toString() != "3000" || ack.get("data") == null || ack.get("error") != null || body.get("error") != null)
+		{
+			throw "Wake-up creation was not acknowledged.";
+		}
+		if(!ifnull(ack.get("data").get("ID"),"").toString().matches("[0-9]+"))
+		{
+			throw "Wake-up acknowledgement has no record ID.";
+		}
+	}
+	return "Primary and backup wake-ups queued";
+}

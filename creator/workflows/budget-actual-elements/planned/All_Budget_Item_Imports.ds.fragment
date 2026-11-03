@@ -1,0 +1,8 @@
+// Existing five field IDs/data remain attached to the report after native
+// in-place link-name renames. Repair only bindings that Creator does not update.
+// Ensure these appear once in list/quickview/detailview/full-field API response.
+Labor as "(1) Labor"
+Materials as "(2) Materials"
+Equipment as "(3) Equipment"
+Subcontractor as "(4) Subcontractor"
+Other as "(5) Other"
