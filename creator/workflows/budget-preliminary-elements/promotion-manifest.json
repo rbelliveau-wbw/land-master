@@ -1,7 +1,7 @@
 {
   "contract": "budget-elements-creator-promotion-v1",
   "prepared_on": "2026-11-03",
-  "status": "Promoted through Stage and Production as Creator 9.142 after explicit user authorization: five fields, one report and 12 functions (18 components). Development normal Preliminary save persisted all five elements with unchanged totals and Final. Read-only ALL_DETAIL passed for 90 rows. One-time Production backfill remains blocked at the native upload control; no Production records changed. Live approval finalization and email delivery were not exercised.",
+  "status": "Creator Stage/Production 9.142 published. User completed both one-time imports; fresh Production report audit passed for all 10,125 Final and 988 Preliminary allocations across 10,279 unique items. All 24,516 record IDs and every other exported field are unchanged. Live approval finalization/email delivery remain unexercised.",
   "native_install_progress": "creator/workflows/budget-preliminary-elements/native-install-progress.json",
   "development_function_editor_saves_acknowledged": [
     "snapshotBudgetItemComponents",

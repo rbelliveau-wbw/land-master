@@ -1,5 +1,26 @@
 # One-Time Budget Element Backfill
 
+## Verified Production Backfill — November 3, 2026
+
+The user completed both imports after the importer-control handoff. A fresh
+Production `All_Budget_Items` JSON export was compared with the pre-import
+snapshot and both exact-ID update files. All **10,125 Final** and **988
+Preliminary** allocations match, and every split reconciles to its corresponding
+current line total. Development allocations are Other; Engineering allocations
+are Labor. These tier counts cover **10,279 distinct updated Budget Items**.
+
+All **24,516 unique record IDs** remain present, with no added or removed records.
+Across all **34 exported fields**, the only changes are the planned ten component
+fields on their intended rows. Totals, actuals, department codes, and all other
+exported values are unchanged. No data correction or import replay was needed.
+The agent performed no Production record writes; the user applied the imports.
+Audit metadata/history and separate approval records were not part of this export.
+Local evidence: `tmp/budget-elements/backfill/post-import-audit.json` and
+`production-after-import.json` in the same directory; keep raw records uncommitted.
+
+The earlier preparation/handoff notes below describe the prior state; their
+pending/unapplied statements are superseded by this verified result.
+
 The user authorized a one-time initialization of existing Development and
 Engineering Budget Item element amounts, preserving every existing explicit
 allocation. This is separate from Creator code promotion and adds no scheduled

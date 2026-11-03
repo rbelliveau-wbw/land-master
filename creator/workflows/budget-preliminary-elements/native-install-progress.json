@@ -2,7 +2,7 @@
   "observed_on": "2026-11-03",
   "timezone": "America/Chicago",
   "environment": "Development, Stage and Production",
-  "status": "Promoted through Stage and Production as Creator 9.142 after explicit user authorization: five fields, one report and 12 functions (18 components). Development normal Preliminary save persisted all five elements with unchanged totals and Final. Read-only ALL_DETAIL passed for 90 rows. One-time Production backfill remains blocked at the native upload control; no Production records changed. Live approval finalization and email delivery were not exercised.",
+  "status": "Creator Stage/Production 9.142 published. User completed both one-time imports; fresh Production report audit passed for all 10,125 Final and 988 Preliminary allocations across 10,279 unique items. All 24,516 record IDs and every other exported field are unchanged. Live approval finalization/email delivery remain unexercised.",
   "form": "Budget_Item",
   "saved_property_reopen_audit": {
     "fields_checked": 5,
@@ -255,10 +255,10 @@
     "sendModificationEmail",
     "sendPurchaseOrderEmail"
   ],
-  "production_data_backfill": "Fresh 9.142 snapshot replanned: 10,125 Final and 988 Preliminary rows prepared separately; neither uploaded nor applied.",
-  "native_import_interaction_block": "Retried after 9.142 promotion: Local storage AX and screenshot coordinate clicks returned Click target is no longer available; actual file input was hidden and its click timed out. No chooser or upload completed and no import was submitted.",
-  "budget_item_records_changed_in_this_task": 1,
-  "production_records_changed_in_this_task": 0,
+  "production_data_backfill": "User-applied imports verified in full against fresh Production export; 10,125 Final and 988 Preliminary allocations match and reconcile to their corresponding totals.",
+  "native_import_interaction_block": "Agent importer controls remained unavailable; user completed imports. This is no longer a backfill blocker.",
+  "budget_item_records_changed_in_this_task": 10280,
+  "production_records_changed_in_this_task": 10279,
   "scheduled_workflows_added": [],
   "new_custom_apis_added": [],
   "functions_verified_already_compatible": [
@@ -311,5 +311,23 @@
     "all_five_preliminary_fields_present": true,
     "local_path": "tmp/budget-elements/backfill/production-9142-before.json",
     "sha256": "28fe1045052f171979b887c82de2922972eb13f2a921d2255baeafd152864840"
+  },
+  "production_backfill_audit": {
+    "observed_on": "2026-11-03",
+    "performed_by": "User imported; agent performed explicit read-only before/after audit",
+    "source_rows": 24516,
+    "after_rows": 24516,
+    "distinct_updated_items": 10279,
+    "final_allocations": 10125,
+    "preliminary_allocations": 988,
+    "all_expected_values_match": true,
+    "all_splits_reconcile_to_current_totals": true,
+    "added_records": 0,
+    "removed_records": 0,
+    "unexpected_exported_field_changes": 0,
+    "compared_fields": 34,
+    "after_sha256": "ea01d696571c613526aca278ad58965655d5b36e90015d5884df5ccd2a1cc6e6",
+    "local_evidence": "tmp/budget-elements/backfill/post-import-audit.json",
+    "limitation": "Checks the 34 fields included in All_Budget_Items export; does not claim audit-history/metadata or separate approval records were compared."
   }
 }
