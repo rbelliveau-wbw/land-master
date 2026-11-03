@@ -4,9 +4,14 @@ The five Preliminary fields and `All_Budget_Items` layouts were saved and
 verified in native **Development** on November 3. Exact display/link names
 survived Done/reopen, and form-preview input names confirmed the bindings. See
 [native installation progress](native-install-progress.json). Actual SDK/API
-full-field responses, save/reload, native function compilation, Production
-promotion and data backfill remain unverified or pending. No Budget Item data
-records were changed. The November 2 export predates these new fields.
+full-field responses, save/reload, Production promotion and data backfill remain
+unverified or pending. All 14 Development function requirements are ready:
+12 editor saves were acknowledged without compiler errors; two existing
+modification functions already matched the candidate and were preserved.
+The user explicitly approved the remaining native Development setup.
+A read-only native ALL_DETAIL execution returned 90 parent rows, each with
+five labeled elements and the original 16 parent columns. No Budget Item
+records changed and no emails were sent. The November 2 export predates the fields.
 
 The five optional fields in [schema.json](schema.json) are present on the
 existing `Budget_Item` form in Development. Retain them; do not create duplicates.
@@ -47,9 +52,9 @@ partial or all-zero values. A new approval cycle clears Final components while
 retaining Preliminary components. Construction keeps its existing HeavyJob
 source and frozen-snapshot behavior.
 
-PMP publishes repository/frontend changes only. The user installs/promotes these
-Creator fields, report changes and lifecycle functions together. Compile and
-verify native read/save/reload in Development before selecting only these
+PMP publishes repository/frontend changes only. Development setup is complete;
+the user promotes these Creator fields, report changes and functions together.
+Verify native read/save/reload in Development before selecting only these
 components for promotion. A local fixture does not establish live compilation
 or saved behavior. Check that an input save updates the correct exact item ID,
 keeps every total unchanged, and that each report returns the five fields.
@@ -72,8 +77,8 @@ preservation, no total/actual writes from the helper, read-only preflight,
 Construction source parity, whole-track validation and isolated new-cycle
 clearing. Check `node scripts/test-budget-approval-permissions.mjs` and
 `node scripts/test-send-approval-progress.mjs` for existing authorization and
-reconciliation behavior. Native Creator compilation and end-to-end finalization
-are still required after installation; these local checks do not imply them.
+reconciliation behavior. Native Creator compilation is complete; end-to-end finalization
+acceptance remains pending. These local checks do not establish live writes.
 
 For an explicitly requested one-time existing-record backfill, use
 `scripts/prepare-budget-element-backfill.mjs` with `--tier preliminary` only

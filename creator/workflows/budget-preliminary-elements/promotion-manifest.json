@@ -1,54 +1,259 @@
 {
   "contract": "budget-elements-creator-promotion-v1",
   "prepared_on": "2026-11-03",
-  "status": "Native Development fields and report layouts verified; full-field SDK/API binding, native function compilation, Production promotion and data backfill pending",
+  "status": "Development fields/report layouts verified; all 14 function requirements ready: 12 native editor saves acknowledged without compiler errors and two existing bodies verified already compatible. Read-only ALL_DETAIL execution passed for 90 rows with five elements each. Full SDK save/reload, approval acceptance, Production promotion and backfill remain pending.",
   "native_install_progress": "creator/workflows/budget-preliminary-elements/native-install-progress.json",
+  "development_function_editor_saves_acknowledged": [
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows",
+    "budgetElementExportHtml",
+    "poElementExportRows",
+    "applyBudgetTrackFinalState",
+    "handleApprovalAction",
+    "startApprovalChain",
+    "exportBudgetSnapshot",
+    "poExcelWorkbook",
+    "sendApprovalEmail",
+    "sendModificationEmail",
+    "sendPurchaseOrderEmail"
+  ],
+  "development_functions_pending_approval": [],
+  "native_function_executions_performed": [
+    {
+      "name": "exportBudgetSnapshot",
+      "mode": "ALL_DETAIL",
+      "read_only": true,
+      "result": "90 rows, five labeled elements and original 16 parent columns per row; ok true, hasMore false",
+      "invokes": "budgetElementExportRows"
+    }
+  ],
+  "production_creator_changes_performed": [],
   "pmp_boundary": "Repository main/production widget publication does not promote Creator components. Creator promotion remains user-controlled.",
   "authority": "creator/exports/Land_Master_2026-11-02-catalog.ds",
   "schema": {
     "form": "Budget_Item",
     "fields": [
-      {"link_name":"Prelim_Labor_Budget","display_name":"Prelim (1) Labor","type":"USD","max_digits":16,"decimal_places":4,"required":false,"initial_value":null},
-      {"link_name":"Prelim_Materials_Budget","display_name":"Prelim (2) Materials","type":"USD","max_digits":16,"decimal_places":4,"required":false,"initial_value":null},
-      {"link_name":"Prelim_Equipment_Budget","display_name":"Prelim (3) Equipment","type":"USD","max_digits":16,"decimal_places":4,"required":false,"initial_value":null},
-      {"link_name":"Prelim_Subcontractor_Budget","display_name":"Prelim (4) Subcontractor","type":"USD","max_digits":16,"decimal_places":4,"required":false,"initial_value":null},
-      {"link_name":"Prelim_Other_Budget","display_name":"Prelim (5) Other","type":"USD","max_digits":16,"decimal_places":4,"required":false,"initial_value":null}
+      {
+        "link_name": "Prelim_Labor_Budget",
+        "display_name": "Prelim (1) Labor",
+        "type": "USD",
+        "max_digits": 16,
+        "decimal_places": 4,
+        "required": false,
+        "initial_value": null
+      },
+      {
+        "link_name": "Prelim_Materials_Budget",
+        "display_name": "Prelim (2) Materials",
+        "type": "USD",
+        "max_digits": 16,
+        "decimal_places": 4,
+        "required": false,
+        "initial_value": null
+      },
+      {
+        "link_name": "Prelim_Equipment_Budget",
+        "display_name": "Prelim (3) Equipment",
+        "type": "USD",
+        "max_digits": 16,
+        "decimal_places": 4,
+        "required": false,
+        "initial_value": null
+      },
+      {
+        "link_name": "Prelim_Subcontractor_Budget",
+        "display_name": "Prelim (4) Subcontractor",
+        "type": "USD",
+        "max_digits": 16,
+        "decimal_places": 4,
+        "required": false,
+        "initial_value": null
+      },
+      {
+        "link_name": "Prelim_Other_Budget",
+        "display_name": "Prelim (5) Other",
+        "type": "USD",
+        "max_digits": 16,
+        "decimal_places": 4,
+        "required": false,
+        "initial_value": null
+      }
     ],
     "source": "creator/workflows/budget-preliminary-elements/planned/Budget_Item.ds.fragment",
-    "preserve_existing_fields": ["Prelim_Budget_Ttl","Budget_Ttl","Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget","HCSS_Actuals","PROJ_Actual"]
+    "preserve_existing_fields": [
+      "Prelim_Budget_Ttl",
+      "Budget_Ttl",
+      "Labor_Budget",
+      "Materials_Budget",
+      "Equipment_Budget",
+      "Subcontractor_Budget",
+      "Other_Budget",
+      "HCSS_Actuals",
+      "PROJ_Actual"
+    ]
   },
   "reports": [
     {
       "link_name": "All_Budget_Items",
       "form": "Budget_Item",
-      "fields": ["Prelim_Labor_Budget","Prelim_Materials_Budget","Prelim_Equipment_Budget","Prelim_Subcontractor_Budget","Prelim_Other_Budget"],
-      "include_once_in": ["list columns","quickview","detailview","full-field API/export response"],
+      "fields": [
+        "Prelim_Labor_Budget",
+        "Prelim_Materials_Budget",
+        "Prelim_Equipment_Budget",
+        "Prelim_Subcontractor_Budget",
+        "Prelim_Other_Budget"
+      ],
+      "include_once_in": [
+        "list columns",
+        "quickview",
+        "detailview",
+        "full-field API/export response"
+      ],
       "source": "creator/workflows/budget-preliminary-elements/planned/All_Budget_Items.ds.fragment",
       "preserve": "Every existing field, action, filter, permission and layout setting outside this additive field inclusion"
     }
   ],
   "functions": [
-    {"name":"snapshotBudgetItemComponents","return_type":"map","arguments":"int itemId, bool initializeOnly, bool dryRun","source":"creator/functions/snapshotBudgetItemComponents.dg","kind":"Existing native helper captured and extended","purpose":"Frozen Final snapshot for Dev/Eng and existing Construction source; read-only preflight"},
-    {"name":"budgetElementExportRows","return_type":"list","arguments":"int budgetItemId","source":"creator/functions/budgetElementExportRows.dg","kind":"New private read-only helper","purpose":"Canonical five-element Budget export rows"},
-    {"name":"budgetElementExportHtml","return_type":"string","arguments":"int budgetItemId","source":"creator/functions/budgetElementExportHtml.dg","kind":"New private read-only helper","purpose":"Element detail for existing Budget/Modification emails"},
-    {"name":"poElementExportRows","return_type":"list","arguments":"string purchaseOrderId","source":"creator/functions/poElementExportRows.dg","kind":"New private read-only helper","purpose":"Current PO allocation and optional native component balances"},
-    {"name":"applyBudgetTrackFinalState","return_type":"string","arguments":"string budgetId, string approvalType, string action","source":"creator/functions/applyBudgetTrackFinalState.dg","kind":"Existing function; signature unchanged","purpose":"Scoped whole-track preflight, finalization and Final snapshot clearing"},
-    {"name":"handleApprovalAction","return_type":"string","arguments":"string budgetId, string approvalId, string approvalAction, string approvalNote","source":"creator/functions/handleApprovalAction.dg","kind":"Existing function; signature unchanged","purpose":"Existing approval finalization invokes the component snapshot lifecycle"},
-    {"name":"startApprovalChain","return_type":"string","arguments":"int budgetId, string approvalType","source":"creator/functions/startApprovalChain.dg","kind":"Existing function; signature unchanged","purpose":"A new approval cycle clears old Final components while retaining Preliminary components"},
-    {"name":"createBudgetModification","return_type":"string","arguments":"int itemId, string modType, string amount, string reason, string reference, string effectiveDate, string track","source":"creator/functions/createBudgetModification.dg","kind":"Existing function; signature unchanged","purpose":"Reuse native budget-components-v1 envelope and persist components before routing/mail"},
-    {"name":"modificationAdmin","return_type":"string","arguments":"string action, int modificationId, int budgetId, string modType, string amount, string reason, string reference, string effectiveDate","source":"creator/functions/modificationAdmin.dg","kind":"Existing function; signature unchanged","purpose":"Validated component update with retained permissions, PO isolation and approved rollups"},
-    {"name":"exportBudgetSnapshot","return_type":"string","arguments":"string budgetId, string exportType","source":"creator/functions/exportBudgetSnapshot.dg","kind":"Existing function; signature unchanged","purpose":"Budget PDF/Excel and additive ALL_DETAIL elements rows"},
-    {"name":"poExcelWorkbook","return_type":"map","arguments":"string purchaseOrderId","source":"creator/functions/poExcelWorkbook.dg","kind":"Existing function; signature unchanged","purpose":"Named element labels and element math detail in PO Excel"},
-    {"name":"sendApprovalEmail","return_type":"string","arguments":"int budgetId, int approvalId","source":"creator/functions/sendApprovalEmail.dg","kind":"Existing function; signature unchanged","purpose":"Budget element details without changing recipients or delivery guards"},
-    {"name":"sendModificationEmail","return_type":"string","arguments":"int modificationId, string action","source":"creator/functions/sendModificationEmail.dg","kind":"Existing function; signature unchanged","purpose":"Manual Modification selected allocation and per-element math"},
-    {"name":"sendPurchaseOrderEmail","return_type":"string","arguments":"string purchaseOrderId","source":"creator/functions/sendPurchaseOrderEmail.dg","kind":"Existing function; signature unchanged","purpose":"Named PO element labels and per-element detail"}
+    {
+      "name": "snapshotBudgetItemComponents",
+      "return_type": "map",
+      "arguments": "int itemId, bool initializeOnly, bool dryRun",
+      "source": "creator/functions/snapshotBudgetItemComponents.dg",
+      "kind": "Existing native helper captured and extended",
+      "purpose": "Frozen Final snapshot for Dev/Eng and existing Construction source; read-only preflight"
+    },
+    {
+      "name": "budgetElementExportRows",
+      "return_type": "list",
+      "arguments": "int budgetItemId",
+      "source": "creator/functions/budgetElementExportRows.dg",
+      "kind": "New private read-only helper",
+      "purpose": "Canonical five-element Budget export rows"
+    },
+    {
+      "name": "budgetElementExportHtml",
+      "return_type": "string",
+      "arguments": "int budgetItemId",
+      "source": "creator/functions/budgetElementExportHtml.dg",
+      "kind": "New private read-only helper",
+      "purpose": "Element detail for existing Budget/Modification emails"
+    },
+    {
+      "name": "poElementExportRows",
+      "return_type": "list",
+      "arguments": "string purchaseOrderId",
+      "source": "creator/functions/poElementExportRows.dg",
+      "kind": "New private read-only helper",
+      "purpose": "Current PO allocation and optional native component balances"
+    },
+    {
+      "name": "applyBudgetTrackFinalState",
+      "return_type": "string",
+      "arguments": "string budgetId, string approvalType, string action",
+      "source": "creator/functions/applyBudgetTrackFinalState.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Scoped whole-track preflight, finalization and Final snapshot clearing"
+    },
+    {
+      "name": "handleApprovalAction",
+      "return_type": "string",
+      "arguments": "string budgetId, string approvalId, string approvalAction, string approvalNote",
+      "source": "creator/functions/handleApprovalAction.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Existing approval finalization invokes the component snapshot lifecycle"
+    },
+    {
+      "name": "startApprovalChain",
+      "return_type": "string",
+      "arguments": "int budgetId, string approvalType",
+      "source": "creator/functions/startApprovalChain.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "A new approval cycle clears old Final components while retaining Preliminary components"
+    },
+    {
+      "name": "createBudgetModification",
+      "return_type": "string",
+      "arguments": "int itemId, string modType, string amount, string reason, string reference, string effectiveDate, string track",
+      "source": "creator/functions/createBudgetModification.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Reuse native budget-components-v1 envelope and persist components before routing/mail"
+    },
+    {
+      "name": "modificationAdmin",
+      "return_type": "string",
+      "arguments": "string action, int modificationId, int budgetId, string modType, string amount, string reason, string reference, string effectiveDate",
+      "source": "creator/functions/modificationAdmin.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Validated component update with retained permissions, PO isolation and approved rollups"
+    },
+    {
+      "name": "exportBudgetSnapshot",
+      "return_type": "string",
+      "arguments": "string budgetId, string exportType",
+      "source": "creator/functions/exportBudgetSnapshot.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Budget PDF/Excel and additive ALL_DETAIL elements rows"
+    },
+    {
+      "name": "poExcelWorkbook",
+      "return_type": "map",
+      "arguments": "string purchaseOrderId",
+      "source": "creator/functions/poExcelWorkbook.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Named element labels and element math detail in PO Excel"
+    },
+    {
+      "name": "sendApprovalEmail",
+      "return_type": "string",
+      "arguments": "int budgetId, int approvalId",
+      "source": "creator/functions/sendApprovalEmail.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Budget element details without changing recipients or delivery guards"
+    },
+    {
+      "name": "sendModificationEmail",
+      "return_type": "string",
+      "arguments": "int modificationId, string action",
+      "source": "creator/functions/sendModificationEmail.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Manual Modification selected allocation and per-element math"
+    },
+    {
+      "name": "sendPurchaseOrderEmail",
+      "return_type": "string",
+      "arguments": "string purchaseOrderId",
+      "source": "creator/functions/sendPurchaseOrderEmail.dg",
+      "kind": "Existing function; signature unchanged",
+      "purpose": "Named PO element labels and per-element detail"
+    }
   ],
   "compile_order": [
-    ["Budget_Item new fields","All_Budget_Items additive report fields"],
-    ["snapshotBudgetItemComponents","budgetElementExportRows"],
-    ["budgetElementExportHtml","poElementExportRows"],
-    ["applyBudgetTrackFinalState","handleApprovalAction","startApprovalChain","createBudgetModification","modificationAdmin"],
-    ["exportBudgetSnapshot","poExcelWorkbook","sendApprovalEmail","sendModificationEmail","sendPurchaseOrderEmail"]
+    [
+      "Budget_Item new fields",
+      "All_Budget_Items additive report fields"
+    ],
+    [
+      "snapshotBudgetItemComponents",
+      "budgetElementExportRows"
+    ],
+    [
+      "budgetElementExportHtml",
+      "poElementExportRows"
+    ],
+    [
+      "applyBudgetTrackFinalState",
+      "handleApprovalAction",
+      "startApprovalChain",
+      "createBudgetModification",
+      "modificationAdmin"
+    ],
+    [
+      "exportBudgetSnapshot",
+      "poExcelWorkbook",
+      "sendApprovalEmail",
+      "sendModificationEmail",
+      "sendPurchaseOrderEmail"
+    ]
   ],
   "native_prerequisites": [
     {
@@ -56,11 +261,43 @@
       "role": "Existing optional component-aware PO availability reader",
       "authoritative_expected_body": "creator/exports/Land_Master_2026-11-02-catalog.ds",
       "warning": "The extracted creator/functions/poBudgetBalances.dg is older aggregate-only source. Do not overwrite a newer native function with that stale file.",
-      "optional_shape": ["componentBalances[].costElement","componentBalances[].finalCents","componentBalances[].modCents","componentBalances[].issuedCents","unallocatedIssuedCents","unallocatedModificationCents"],
+      "optional_shape": [
+        "componentBalances[].costElement",
+        "componentBalances[].finalCents",
+        "componentBalances[].modCents",
+        "componentBalances[].issuedCents",
+        "unallocatedIssuedCents",
+        "unallocatedModificationCents"
+      ],
       "on_missing_or_failed_shape": "Keep canonical five rows and current PO allocation; optional element Modified/Existing/Available/Remaining stay unavailable. Existing aggregate totals remain authoritative."
     },
-    {"name":"Budget_Import_Item existing fields","fields":["Budget_Item","Data_Source","Cost","Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"]},
-    {"name":"Budget_Modification existing fields","fields":["Budget_Item","Status","Modification_Type","Amount","Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"]}
+    {
+      "name": "Budget_Import_Item existing fields",
+      "fields": [
+        "Budget_Item",
+        "Data_Source",
+        "Cost",
+        "Labor_Budget",
+        "Materials_Budget",
+        "Equipment_Budget",
+        "Subcontractor_Budget",
+        "Other_Budget"
+      ]
+    },
+    {
+      "name": "Budget_Modification existing fields",
+      "fields": [
+        "Budget_Item",
+        "Status",
+        "Modification_Type",
+        "Amount",
+        "Labor_Budget",
+        "Materials_Budget",
+        "Equipment_Budget",
+        "Subcontractor_Budget",
+        "Other_Budget"
+      ]
+    }
   ],
   "custom_api_signatures_changed": [],
   "custom_apis_added": [],
@@ -76,7 +313,26 @@
     "planner": "scripts/prepare-budget-element-backfill.mjs",
     "handoff": "docs/budget-element-backfill-2026-11-03.md"
   },
-  "development_native_checks_completed": ["Saved/reopened exact display and link names for all five fields","Saved/reopened Max Digits 16, Decimal Places 4, Mandatory unchecked for every field","Persisted list/quickview columns and detail-view Configure Fields inclusion for all five","Preserved existing report fields; zero Budget Item data changes"],
-  "native_checks_still_required": ["Verify actual full-field SDK/API response includes five Preliminary keys","Compile all functions in dependency order","Verify existing API bindings without changing signatures","User-controlled save/reload and Dev/Eng finalization acceptance","User-controlled Production promotion and matching schema/report verification","Read-only approval reconciliation after promotion","No test email or write performed solely to infer deployment","Explicit read-only audit after any settled one-time backfill; never blindly replay unknown import results"],
-  "rollback": "Restore the prior widget mapping and saved prechange native bodies when necessary; retain fields, report columns and saved component data. Use exact data preimages for a separately authorized one-time data rollback. Never deploy stale extracted prerequisite functions."
+  "development_native_checks_completed": [
+    "Saved/reopened exact display and link names for all five fields",
+    "Saved/reopened Max Digits 16, Decimal Places 4, Mandatory unchecked for every field",
+    "Persisted list/quickview columns and detail-view Configure Fields inclusion for all five",
+    "Preserved existing report fields; zero Budget Item data changes",
+    "12 function editor saves acknowledged without compiler errors; two existing modification functions already exactly candidate-compatible",
+    "Read-only ALL_DETAIL native execution returned 90 complete parent rows, five labeled elements each, original 16 parent columns; no data changes or email sends"
+  ],
+  "native_checks_still_required": [
+    "Verify actual full-field SDK/API response includes five Preliminary keys",
+    "Verify existing API bindings without changing signatures",
+    "User-controlled save/reload and Dev/Eng finalization acceptance",
+    "User-controlled Production promotion and matching schema/report verification",
+    "Read-only approval reconciliation after promotion",
+    "No test email or write performed solely to infer deployment",
+    "Resolve native importer file-input interaction and explicitly audit any settled one-time backfill; never blindly replay unknown import results"
+  ],
+  "rollback": "Restore the prior widget mapping and saved prechange native bodies when necessary; retain fields, report columns and saved component data. Use exact data preimages for a separately authorized one-time data rollback. Never deploy stale extracted prerequisite functions.",
+  "development_functions_verified_already_compatible": [
+    "createBudgetModification",
+    "modificationAdmin"
+  ]
 }

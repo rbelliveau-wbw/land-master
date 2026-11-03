@@ -32,22 +32,35 @@ The November 2 catalog lists only this report for `Budget_Item`.
 Use [the merge fragments and progress record](../creator/workflows/budget-preliminary-elements/README.md)
 to review the existing fields; do not recreate them or replace the form/report.
 The existing `Labor_Budget` through `Other_Budget` remain frozen Final values.
-Native function bodies have not been compiled/updated in this task, and
-Production promotion and one-time data application remain pending. No Budget
-Item data records or Production records were changed by the Development schema
-and layout work.
+All 14 function requirements are now ready in Development. Twelve functions
+were saved and compiled without errors: nine existing functions updated and
+three new private helpers added. The existing `createBudgetModification` and
+`modificationAdmin` bodies already matched the candidate, so neither was changed.
+Every updated existing native body was compared with the November 2 export
+before replacement, and local prechange copies were retained.
+
+The user explicitly authorized the remaining Development installation after
+the initial approval-review block. That block is resolved. Production Creator
+promotion remains user-controlled. No Budget Item data or Production records
+were changed and no emails were sent.
 
 ## Compile and Promote in Dependency Order
 
-After the fields/report are saved, compare the current native editors with each
-listed source file and compile this dependency order:
+Development setup is complete in this order:
 
 1. `snapshotBudgetItemComponents` and `budgetElementExportRows`.
 2. `budgetElementExportHtml` and `poElementExportRows`.
-3. `applyBudgetTrackFinalState`, `handleApprovalAction`, `startApprovalChain`,
-   `createBudgetModification`, and `modificationAdmin`.
+3. `applyBudgetTrackFinalState`, `handleApprovalAction`, `startApprovalChain`;
+   `createBudgetModification` and `modificationAdmin` verified already compatible.
 4. `exportBudgetSnapshot`, `poExcelWorkbook`, `sendApprovalEmail`,
-   `sendModificationEmail`, and `sendPurchaseOrderEmail`.
+   `sendModificationEmail` and `sendPurchaseOrderEmail`.
+
+A direct native read-only `exportBudgetSnapshot` execution using `ALL_DETAIL`
+and cursor `{"after":"0","through":"0"}` returned `ok: true`, all 90
+qualifying Development parent rows and `hasMore: false`. Each row retained
+the original 16 parent values and included all five labeled element rows.
+This exercises `budgetElementExportRows` with native records; it does not prove
+SDK report-field responses, financial saves, approvals or email delivery.
 
 `snapshotBudgetItemComponents` already exists in the November 2 native export;
 its extracted source is now captured and extended. The three export-row/HTML
@@ -66,8 +79,9 @@ remain readable beside the existing aggregate totals.
 
 Promote only the reviewed fields, additive report layout changes and compiled
 function set through the normal Creator process. PMP publishes the repository
-widget and leaves Creator promotion to the user. No successful native compile,
-publication, delivered approval email or live write is implied by local tests.
+widget and leaves Creator promotion to the user. The native compile
+acknowledgements and read-only export check are distinct from full acceptance;
+no delivered approval email or successful live financial write is claimed.
 
 ## Acceptance and One-Time Data
 
@@ -92,8 +106,10 @@ for existing records. Final and Preliminary plans are distinct, contain only
 record ID plus their five target fields, preserve any explicit allocation, and
 have local rollback preimages. The prepared Production export/plan is not an
 applied-backfill claim. The native importer file-input interaction had not
-completed when this handoff was written; no Production application is recorded
-here. Do not replay an unknown import result without a read-only audit.
+completed when this handoff was written: the cross-origin file input/label
+returned “Click target no longer available,” and no import was submitted. No
+Production application is recorded here. Do not replay an unknown import result
+without a read-only audit.
 
 Verify user save/reload, report keys, named elements, manual modification details,
 PO/budget exports and normal approval lifecycle in Development. After Creator

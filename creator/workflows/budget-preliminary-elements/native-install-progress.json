@@ -2,15 +2,72 @@
   "observed_on": "2026-11-03",
   "timezone": "America/Chicago",
   "environment": "Development",
-  "status": "Native Development fields and report layouts verified; SDK full-field reads, function compilation, Production promotion and data backfill pending",
+  "status": "Development fields/report layouts verified; all 14 function requirements ready: 12 native editor saves acknowledged without compiler errors and two existing bodies verified already compatible. Read-only ALL_DETAIL execution passed for 90 rows with five elements each. Full SDK save/reload, approval acceptance, Production promotion and backfill remain pending.",
   "form": "Budget_Item",
-  "saved_property_reopen_audit": {"fields_checked":5,"exact_link_names_verified":true,"max_digits_16_verified":true,"decimal_places_4_verified":true,"mandatory_unchecked_verified":true,"audit_only_no_data_changes":true},
+  "saved_property_reopen_audit": {
+    "fields_checked": 5,
+    "exact_link_names_verified": true,
+    "max_digits_16_verified": true,
+    "decimal_places_4_verified": true,
+    "mandatory_unchecked_verified": true,
+    "audit_only_no_data_changes": true
+  },
   "fields": [
-    {"link_name":"Prelim_Labor_Budget","display_name":"Prelim (1) Labor","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
-    {"link_name":"Prelim_Materials_Budget","display_name":"Prelim (2) Materials","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
-    {"link_name":"Prelim_Equipment_Budget","display_name":"Prelim (3) Equipment","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
-    {"link_name":"Prelim_Subcontractor_Budget","display_name":"Prelim (4) Subcontractor","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true},
-    {"link_name":"Prelim_Other_Budget","display_name":"Prelim (5) Other","type":"USD","max_digits":16,"decimal_places":4,"initial_value":null,"required":false,"saved_and_reopened":true,"form_preview_link_name_verified":true}
+    {
+      "link_name": "Prelim_Labor_Budget",
+      "display_name": "Prelim (1) Labor",
+      "type": "USD",
+      "max_digits": 16,
+      "decimal_places": 4,
+      "initial_value": null,
+      "required": false,
+      "saved_and_reopened": true,
+      "form_preview_link_name_verified": true
+    },
+    {
+      "link_name": "Prelim_Materials_Budget",
+      "display_name": "Prelim (2) Materials",
+      "type": "USD",
+      "max_digits": 16,
+      "decimal_places": 4,
+      "initial_value": null,
+      "required": false,
+      "saved_and_reopened": true,
+      "form_preview_link_name_verified": true
+    },
+    {
+      "link_name": "Prelim_Equipment_Budget",
+      "display_name": "Prelim (3) Equipment",
+      "type": "USD",
+      "max_digits": 16,
+      "decimal_places": 4,
+      "initial_value": null,
+      "required": false,
+      "saved_and_reopened": true,
+      "form_preview_link_name_verified": true
+    },
+    {
+      "link_name": "Prelim_Subcontractor_Budget",
+      "display_name": "Prelim (4) Subcontractor",
+      "type": "USD",
+      "max_digits": 16,
+      "decimal_places": 4,
+      "initial_value": null,
+      "required": false,
+      "saved_and_reopened": true,
+      "form_preview_link_name_verified": true
+    },
+    {
+      "link_name": "Prelim_Other_Budget",
+      "display_name": "Prelim (5) Other",
+      "type": "USD",
+      "max_digits": 16,
+      "decimal_places": 4,
+      "initial_value": null,
+      "required": false,
+      "saved_and_reopened": true,
+      "form_preview_link_name_verified": true
+    }
   ],
   "report": {
     "link_name": "All_Budget_Items",
@@ -22,11 +79,184 @@
   },
   "full_field_sdk_api_response": "Not verified in this task",
   "preliminary_save_reload": "Not verified in this task",
-  "functions_compiled_or_updated_natively_in_this_task": [],
+  "functions_compiled_or_updated_natively_in_this_task": [
+    "snapshotBudgetItemComponents",
+    "budgetElementExportRows",
+    "budgetElementExportHtml",
+    "poElementExportRows",
+    "applyBudgetTrackFinalState",
+    "handleApprovalAction",
+    "startApprovalChain",
+    "exportBudgetSnapshot",
+    "poExcelWorkbook",
+    "sendApprovalEmail",
+    "sendModificationEmail",
+    "sendPurchaseOrderEmail"
+  ],
+  "function_editor_saves": [
+    {
+      "name": "snapshotBudgetItemComponents",
+      "signature": "map snapshotBudgetItemComponents(int itemId, bool initializeOnly, bool dryRun)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/snapshotBudgetItemComponents-native-before.dg",
+      "native_before_characters": 3281,
+      "native_before_matched_november_2_export": true,
+      "normalized_native_before_sha256": "0efbf5f36fdaff6d92189d93386f8f5060704f4cf0bc708fa930c3826f1ca306"
+    },
+    {
+      "name": "budgetElementExportRows",
+      "signature": "list budgetElementExportRows(int budgetItemId)",
+      "operation": "Created private Default namespace read-only helper in Development",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": true
+    },
+    {
+      "name": "budgetElementExportHtml",
+      "signature": "string budgetElementExportHtml(int budgetItemId)",
+      "operation": "Created private Default namespace read-only helper in Development",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false
+    },
+    {
+      "name": "poElementExportRows",
+      "signature": "list poElementExportRows(string purchaseOrderId)",
+      "operation": "Created private Default namespace read-only helper in Development",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false
+    },
+    {
+      "name": "applyBudgetTrackFinalState",
+      "signature": "string applyBudgetTrackFinalState(string budgetId, string approvalType, string action)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/applyBudgetTrackFinalState-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "handleApprovalAction",
+      "signature": "string handleApprovalAction(string budgetId, string approvalId, string approvalAction, string approvalNote)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/handleApprovalAction-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "startApprovalChain",
+      "signature": "string startApprovalChain(int budgetId, string approvalType)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/startApprovalChain-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "exportBudgetSnapshot",
+      "signature": "string exportBudgetSnapshot(string budgetId, string exportType)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": true,
+      "native_before_file": "tmp/budget-elements/exportBudgetSnapshot-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "poExcelWorkbook",
+      "signature": "map poExcelWorkbook(string purchaseOrderId)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/poExcelWorkbook-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "sendApprovalEmail",
+      "signature": "string sendApprovalEmail(int budgetId, int approvalId)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/sendApprovalEmail-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "sendModificationEmail",
+      "signature": "string sendModificationEmail(int modificationId, string action)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/sendModificationEmail-native-before.dg",
+      "native_before_matched_november_2_export": true
+    },
+    {
+      "name": "sendPurchaseOrderEmail",
+      "signature": "string sendPurchaseOrderEmail(string purchaseOrderId)",
+      "operation": "Updated existing native Development body",
+      "save_acknowledged_without_compiler_error": true,
+      "done_returned_to_function_list": true,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/sendPurchaseOrderEmail-native-before.dg",
+      "native_before_matched_november_2_export": true
+    }
+  ],
+  "functions_pending_in_development": [],
+  "remaining_development_setup_approval": {
+    "status": "Explicit user approval received; remaining Development setup completed",
+    "user_reply": "Yes you can -- you're adding 12 functions?",
+    "prior_automatic_review_rejection_resolved": true,
+    "production_promotion_authorized": false
+  },
   "production_components_promoted_in_this_task": [],
   "production_data_backfill": "Prepared only; no native import applied",
+  "native_import_interaction_block": "The cross-origin native importer file input/label could not be targeted; attempts returned Click target no longer available. No import was submitted.",
   "budget_item_records_changed_in_this_task": 0,
   "production_records_changed_in_this_task": 0,
   "scheduled_workflows_added": [],
-  "new_custom_apis_added": []
+  "new_custom_apis_added": [],
+  "functions_verified_already_compatible": [
+    {
+      "name": "createBudgetModification",
+      "native_body_matches_candidate": true,
+      "native_body_matches_november_2_export": true,
+      "saved_in_this_task": false,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/createBudgetModification-native-before.dg"
+    },
+    {
+      "name": "modificationAdmin",
+      "native_body_matches_candidate": true,
+      "native_body_matches_november_2_export": true,
+      "saved_in_this_task": false,
+      "executed_in_this_task": false,
+      "native_before_file": "tmp/budget-elements/modificationAdmin-native-before.dg"
+    }
+  ],
+  "read_only_runtime_check": {
+    "function": "exportBudgetSnapshot",
+    "arguments": {
+      "budgetId": "{\"after\":\"0\",\"through\":\"0\"}",
+      "exportType": "ALL_DETAIL"
+    },
+    "ok": true,
+    "parent_rows": 90,
+    "every_parent_has_original_16_columns": true,
+    "every_parent_has_five_labeled_elements": true,
+    "has_more": false,
+    "records_changed": 0,
+    "emails_sent": 0,
+    "local_evidence": "tmp/budget-elements/development-all-detail-result.json",
+    "limitation": "Direct native function execution; does not verify SDK/report API fields, financial save/reload, approval routing, email delivery or Production publication."
+  }
 }
