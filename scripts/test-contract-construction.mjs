@@ -44,8 +44,21 @@ for(const receipt of [JSON.stringify({code:3000,result:[{code:2932,data:{Descrip
 }
 
 {
- const h=await ready(),secret='private-record-value@example.test',shape=h.c.contractResponseShape(JSON.stringify({code:3000,result:[{code:3000,data:{ID:NEW,Approver:secret,Token:secret}}]})),text=JSON.stringify(shape);
- assert.match(text,/"code":"3000"/);assert.match(text,/recordIdType/);assert.doesNotMatch(text,new RegExp(secret));assert.ok(!text.includes(NEW),'response shape never logs a record identifier');assert.ok(text.length<3000);
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true}),secret='private-record-value@example.test';fixture(h);draft(h);
+ const receipt={code:2932,details:{responseText:JSON.stringify({nativeEnvelopeMarker:true,errors:[{code:2932,error:{Contract_Name:secret},data:{ID:NEW,Approver:secret,Token:secret}}]})}};
+ h.api.addRecords=async()=>receipt;await h.c.constructionSubmitForm();
+ const entry=h.c.S.audit.find(row=>row.message==='Creator mutation response shape');assert.ok(entry,'the actual native-write path emits its sanitized diagnostic');
+ const shape=entry.meta.replyShape,text=JSON.stringify(entry.meta);
+ assert.equal(shape.type,'object');assert.equal(shape.code,'2932');assert.ok(Array.from(shape.keys).includes('details'));
+ assert.ok(shape.members.some(member=>member.slot==='responseText'&&member.shape==='string'&&member.length>0),'native responseText remains visible after audit sanitization');
+ assert.ok(shape.members.some(member=>member.slot==='json'&&Array.from(member.keys||[]).includes('nativeEnvelopeMarker')),'unknown native field names survive without their values');
+ assert.ok(shape.members.some(member=>member.slot==='errors'&&member.shape==='array'));
+ assert.ok(shape.members.some(member=>member.slot==='0'&&member.code==='2932'));
+ assert.ok(shape.members.some(member=>member.slot==='error'&&Array.from(member.keys||[]).includes('Contract_Name')),'nested field-error keys remain visible');
+ assert.ok(shape.members.some(member=>member.slot==='data'&&member.recordIdType==='string'));
+ assert.doesNotMatch(text,new RegExp(secret));assert.ok(!text.includes(NEW),'sanitized audit shape never logs a record identifier');assert.ok(!text.includes('[redacted]')&&!text.includes('[omitted]'),'ordinary audit privacy rules retain the diagnostic metadata');assert.ok(text.length<4000);
+ const cycle={code:3000};cycle.response=cycle;h.c.auditLog('info','Diagnostic bounds',{replyShape:h.c.contractResponseShape(cycle)});
+ assert.match(JSON.stringify(h.c.S.audit[0].meta),/"shape":"cycle"/);
 }
 
 // An actual transport failure must not masquerade as revoked create access.

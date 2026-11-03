@@ -1,3 +1,13 @@
+## Native Response Shape Diagnostics — 1.62.47, November 3, 2026
+
+The controlled Production Cameron Ranch retry reproduced the unresolved native
+create failure on 1.62.46. The first shape diagnostic was hidden by the standard
+audit redactor. The diagnostic now uses bounded, flat metadata members so nested
+native keys, numeric error codes and value types survive actual audit sanitizing;
+record values, IDs and tokens remain excluded. The focused regression exercises
+the native mutation through the real audit sanitizer. This diagnostic-only
+release does not change validation, authorization or write replay behavior.
+
 ## Native Responses and Access Refresh — 1.62.46, November 3, 2026
 
 Resolved native write replies may be JSON text, result arrays or empty bodies.
@@ -1390,3 +1400,18 @@ Regression coverage: both modules start open, independent collapse/reopen,
 retained rows and state on refresh, no record writes, desktop keyboard controls,
 centered rendered icons, repository validation and Pages build. Rollback:
 map Production Contract Management to **1.62.44** and rebuild Pages.
+## Development VP Defaults and Parent Pills — November 3, 2026
+
+Contract Management removes the parent pills that count child contract types
+in Legal and Construction. Child rows, type labels, parent links, grouping,
+filter context and parent-assignment locks remain. No Creator deployment is
+needed for this presentation change. Rollback is hosted `1.62.46`.
+
+The owner's Contract Settings rule uses every selected Territory VP for the
+legacy Development default while preserving Travis Parks and other recipients.
+The new native helper replaces only untouched defaults; sent/decided routes
+remain unchanged. This native routing is prepared in source and still requires
+Development compilation, created-only hook installation, verification and owner
+promotion. Existing Production approvals were not changed by the hosted release.
+See the [exact installation, verification and rollback handoff](../../docs/contract-development-vp-routing-2026-11-03.md).
+
