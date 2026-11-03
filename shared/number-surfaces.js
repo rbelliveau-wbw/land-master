@@ -60,6 +60,7 @@
             each('input[readonly][data-po-field="finalAmount"]',input=>api.readonly(input,[scope,line,'amount']),row);
           },overlay);
           each('[data-po-summary] tbody tr',row=>{const code=clean(row.querySelector('th strong'));[...row.querySelectorAll('td')].forEach((cell,i)=>api.text(cell,[scope,'allocation',code||clean(row),i],'money'));},overlay);
+          each('[data-po-item-value]',node=>api.text(node,[scope,'allocation',node.dataset.budgetItem,node.dataset.metric],'money'),overlay);
           each('[data-po-element-value]',node=>api.text(node,[scope,'element',node.dataset.budgetItem,node.dataset.element,node.dataset.metric],'money'),overlay);
         });
         ['territoryFilterCount','statusFilterCount','apprCt','importCt','multiNotesCount'].forEach(name=>api.id(name,'budget-counts'));

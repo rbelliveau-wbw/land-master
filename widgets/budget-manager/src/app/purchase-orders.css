@@ -89,20 +89,41 @@
 
 .po-workspace .po-ledger-head,.po-workspace .po-line-fields{grid-template-columns:170px 150px minmax(170px,1fr) 54px 55px 142px 70px 90px 53px;min-width:1040px}.po-workspace .po-lines{min-width:1040px}
 
-/* Per-element math remains independent of the item-level PO total. */
-.po-element-summary{border-top:1px solid #ccdced;padding:12px 14px 5px;background:#fff}
-.po-element-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
-.po-element-heading h3{margin:0;color:#214f87;font-size:12px;font-weight:750;overflow-wrap:anywhere}
-.po-element-heading>span{flex:none;color:#7487a1;font-size:10px}
-.po-summary-element{padding:10px 11px;margin:0 0 9px;border:1px solid #dce6f2;border-radius:8px;background:#f8fbff}
-.po-summary-element h4{margin:0 0 8px;color:#214f87;font-size:11px;font-weight:700}
-.po-element-equation{display:grid;grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr) 12px minmax(0,1fr);gap:5px;align-items:center;margin:6px 0}
-.po-element-metric{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:11px;font-variant-numeric:tabular-nums}
-.po-element-metric small{font-size:9px;font-weight:500;color:#7487a1}
-.po-element-metric strong{font-size:11px;font-weight:650;color:#214f87;white-space:nowrap}
-.po-element-metric:last-child strong{color:#087c64}.po-element-metric strong.is-negative{color:#b45309}
-.po-math-sign{align-self:end;text-align:center;font-size:12px;font-weight:650;color:#8299b5;padding-bottom:1px}
-.po-element-notice{margin:5px 0 8px;font-size:10px;line-height:1.5;color:#94651f}
+/* One authoritative item header; affected elements disclose their calculation. */
+.po-summary-group{border-bottom:1px solid #d5e1ee;background:#fff}
+.po-summary-group:last-child{border-bottom:0}
+.po-summary-group-heading,.po-summary-element-heading,.po-summary-element-columns{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,1fr));gap:9px;align-items:center}
+.po-summary-group-heading{padding:14px 15px;background:#f4f8fe;list-style:none;cursor:pointer}
+.po-summary summary::-webkit-details-marker{display:none}
+.po-summary summary:focus-visible{outline:2px solid #6399e8;outline-offset:-3px}
+.po-summary-item-name{display:flex;align-items:center;gap:7px;min-width:0}
+.po-summary-item-name>span:last-child{min-width:0}
+.po-summary-item-name strong{display:block;color:#214f87;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.po-summary-item-label{display:block;margin-top:3px;color:#5c7597;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.po-summary-chevron{display:grid;place-items:center;flex:none;width:12px;height:12px;color:#5c7597}
+.po-summary-chevron svg{display:block;width:12px;height:12px;transform:rotate(-90deg);transition:transform 200ms cubic-bezier(.22,.7,.25,1)}
+.po-summary details[open]>summary>.po-summary-item-name>.po-summary-chevron svg,.po-summary details[open]>summary>.po-summary-element-name>.po-summary-chevron svg{transform:rotate(0)}
+.po-summary-item-metric,.po-element-metric{min-width:0;display:flex;flex-direction:column;gap:4px;font-variant-numeric:tabular-nums;text-align:right}
+.po-summary-item-metric small{font-size:10px;color:#5c7597;white-space:nowrap}
+.po-summary-item-metric strong{font-size:12px;color:#214f87;font-weight:700;white-space:nowrap}
+.po-summary-item-metric:last-child strong,.po-summary-element-heading>.po-element-metric:last-child strong{color:#087c64}
+.po-summary-item-metric strong.is-negative,.po-element-metric strong.is-negative{color:#b45309}
+.po-summary-group-body{padding:5px 15px 10px}
+.po-summary-element-columns{padding:7px 0;font-size:10px;color:#7487a1}
+.po-summary-element-columns span:not(:first-child){text-align:right}
+.po-summary-element{padding:0;margin:0;border:0;border-top:1px solid #e2eaf4;border-radius:0;background:#fff}
+.po-summary-element-heading{padding:10px 0;list-style:none;cursor:pointer}
+.po-summary-element-name{display:flex;align-items:center;gap:5px;min-width:0;font-size:11px;color:#41658f}
+.po-element-metric strong{font-size:11px;font-weight:600;color:#214f87;white-space:nowrap}
+.po-summary-element-heading .po-element-metric small{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.po-element-calculation{padding:7px 12px 10px;margin:0 0 8px 17px;border-radius:7px;background:#f4f8fe}
+.po-element-calculation-row>.po-element-metric{display:flex;flex-direction:row;justify-content:space-between;gap:15px;padding:5px 0;text-align:left}
+.po-element-calculation small{font-size:11px;color:#5c7597}
+.po-element-calculation .is-subtotal{margin-top:4px;border-top:1px solid #dce6f2;padding-top:4px}
+.po-element-calculation .is-subtotal:last-child strong{color:#087c64}
+.po-element-calculation .is-subtotal:last-child strong.is-negative{color:#b45309}
+.po-element-notice{margin:6px 0 8px;font-size:10px;line-height:1.5;color:#94651f}
+@media(prefers-reduced-motion:reduce){.po-summary-chevron svg{transition:none}}
 
 .po-item-cell{display:block;align-self:center;min-width:0;padding:3px 5px;font-size:11px;line-height:18px;color:#41658f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 

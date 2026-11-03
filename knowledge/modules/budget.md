@@ -1,3 +1,29 @@
+## Grouped PO Summary — 122.29.90, November 3, 2026
+
+The PO Summary now groups once per exact Budget Item/base cost code. Each header
+places the code/name, Available, This PO and Remaining on one horizontal row,
+without an element count. Affected elements start visible below it; each opens
+the selected vertical calculation list. Repeated PO lines for an element share
+one child row. Native aggregate allocations supply parent figures, including
+untouched element budgets, so showing several elements never repeats the item
+budget or multiplies the PO total. Component arithmetic, own-reservation credit,
+pending-modification reconciliation and unknown/legacy notices are reused.
+
+Disclosures retain their state, scroll and focus through price/quantity edits.
+Native details receive shared disclosure motion; explicit item/element numeric
+keys retain field-exit Sliding push and reduced motion. The shared numeric
+registry copies are synchronized. The existing Requests, PO domain, save,
+approval, export and email contracts are unchanged. No Creator forms, fields,
+functions or Custom APIs change; no Creator promotion is required.
+
+Desktop fixture coverage includes multiple codes/elements, duplicate lines,
+affected-only children, authoritative parent values, exact-cent saved reservation
+credit, one-row/no-overflow headers, omitted element counts, retained disclosure
+edits and zero native writes. The PO Summary, PO element/domain/browser, entry
+and design-doc checks passed, along with full `npm run validate` and
+`npm run build:pages`. Roll back only
+the Budget Manager Production mapping to **122.29.88** and rebuild Pages.
+
 ## Budget and PO Elements — 122.29.88, November 3, 2026
 
 ## Verified Production Backfill — November 3, 2026
