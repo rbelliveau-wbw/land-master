@@ -23,6 +23,26 @@ for(const receipt of [JSON.stringify({code:2898,message:'Permission denied'}),{c
  const result=await h.c.constructionSubmitForm();assert.ok(result.error);assert.match(String(result.error),/Permission denied/);assert.equal(sends,1);assert.ok(!h.reports.All_Contracts1.some(row=>row.ID===NEW));
 }
 
+// Production SDK2 can return its actual failure text as an error-array entry.
+// Message extraction is diagnostic only; native code and no-replay rules remain.
+const native3001={code:3001,error:['Invalid value for Date Needed.']};
+for(const receipt of [native3001,JSON.stringify(native3001),{code:3000,result:[native3001]},{code:3000,details:{output:JSON.stringify(native3001)}},{code:3000,responseText:JSON.stringify(native3001)},{code:3001,errors:['Invalid value for Date Needed.']}]){
+ const h=await ready();let sends=0;h.api.addRecords=async()=>{sends++;return receipt;};
+ await assert.rejects(h.c.createRecord('Contract',{Contract_Name:'Native error fixture',Contract_Type:'DA',Territory:'North Austin'}),error=>{
+  assert.match(error.message,/Invalid value for Date Needed\./);assert.match(error.message,/Creator 3001/);assert.equal(error.code,'3001');assert.equal(error.noReplay,true);assert.equal(error.uncertain,true);return true;
+ });
+ await assert.rejects(h.c.createRecord('Contract',{Contract_Name:'Native error fixture',Contract_Type:'DA',Territory:'North Austin'}));
+ assert.equal(sends,1,'actual native rejection retains the original duplicate-send guard');
+}
+{
+ const h=await ready(),reply={code:3000,data:{ID:NEW,error:['Saved business field must stay opaque.'],errors:['Business data must not become an error.']}};
+ assert.equal(h.c.contractNativeErrorText(reply),'');assert.equal(h.c.contractWriteFailed(reply),false);
+ assert.equal(h.c.contractNativeErrorText('Plain text is not native failure evidence.'),'');
+ const cycle={code:3001,error:['Bounded native rejection.']};cycle.response=cycle;
+ assert.equal(h.c.contractNativeErrorText(cycle),'Bounded native rejection.');
+ assert.ok(h.c.contractNativeErrorText({code:3001,error:['x'.repeat(2000)]}).length<=1200);
+}
+
 for(const receipt of [JSON.stringify({code:3000,result:[{code:2932,data:{Description:'Description exceeds the field capacity.'}}]}),{code:3000,details:{output:JSON.stringify({code:2932,message:'Native field validation failed.',data:{Date_Needed:'Enter a valid date.'}})}}]){
  const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);draft(h);let sends=0;h.api.addRecords=async()=>{sends++;return receipt;};
  const result=await h.c.constructionSubmitForm();assert.ok(result.error);assert.match(String(result.error),/Description exceeds|Enter a valid date/,'the actual field rejection reaches the retained save result');assert.equal(sends,1);assert.ok(!h.reports.All_Contracts1.some(row=>row.ID===NEW));

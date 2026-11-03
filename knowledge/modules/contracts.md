@@ -1,3 +1,11 @@
+## Native Error Arrays — 1.62.49, November 3, 2026
+
+The controlled Production retry returned native code 3001 with an error array.
+Contract diagnostics now retain bounded text from native error/errors arrays,
+including normal native wrappers. Business record data remains opaque, and
+failure detection, native codes and duplicate-send guards remain unchanged.
+No Creator form, field, function or Custom API change is required.
+
 ## Native Response Shape Diagnostics — 1.62.48, November 3, 2026
 
 The controlled Production Cameron Ranch retry reproduced the unresolved native
