@@ -1,5 +1,32 @@
 # Crew Management
 
+## 1.10.2 — Rough Cut picker and location details
+
+Next Rough Cut Starts includes exact milestone starts through 24 months and
+excludes New status only from its choices. Crew-assigned schedules and existing
+saved selections remain visible. The phase-name location pin follows the Data
+Insights territory-card pattern and displays the already-read Project lookup
+label, territory, phase and project status without another request. Missing
+lookup display text is shown as Unavailable. The Forecast controller is private
+and dashboard-specific, so Crew uses a small adapter of the same interaction and
+style with its own authorized phase model and shared popover motion.
+
+Only widget source, tests, design/module documentation, manifest/version and
+immutable release/environment mappings change. Existing All_Subdivisions fields
+Project, Territory, Subdivision_Name, Phase, Subphase, Projects_Status and Status
+are read; Milestones.Start_Date supplies the picker window. No forms, fields,
+functions, Custom APIs, permissions or Creator deployment change.
+
+Regression checks cover inclusive date boundaries, New normalization, saved
+selection exclusion, crew/table visibility, lookup identities, card hover/focus,
+pinning, Escape, close/outside dismissal, scrolling and desktop positioning.
+The isolated 1320 × 800 desktop browser check passed hover-to-card continuity,
+keyboard opening/focus return, click pinning, all dismissal paths, centered close
+geometry and escaped lookup display text with no browser errors. Native Creator
+reads/writes were not rerun for this presentation-only release.
+Rollback: set Production crew-locations to immutable 1.10.1; retain all native
+records and pending schedule drafts.
+
 ## 1.10.1 — Explicit Schedule Save and Refresh
 
 Milestones & Tasks keeps Save and Refresh at the top right of both schedule views.
@@ -326,8 +353,9 @@ The assignment range is today minus seven days through today, inclusive, in
 America/Chicago. It is queried separately from the Gantt horizon. Date arithmetic
 uses calendar-day ordinals, including DST, leap years and clamped month ends.
 Horizons include 6/12/24 months and the reference's All future dates. Selecting
-several uses the widest; clearing returns to twelve months. Upcoming phase
-eligibility always uses exact Rough Cut M starts within twelve months.
+several uses the widest; clearing returns to twenty-four months. Upcoming phase
+eligibility uses exact Rough Cut M starts within twenty-four months, excluding
+New project status from the picker only.
 
 Crew Assigned Phases unions with individually selected phases, then intersects
 crew and territory restrictions. An explicit cleared selection means an empty view. First load without saved preferences

@@ -53,6 +53,16 @@ outline, including prefilled values; permission and date guards still determine
 whether each cell is editable.
 
 Keep Crew, Next Rough Cut Starts, Territory, Section and Dates in one filter row.
+Next Rough Cut Starts offers exact milestone starts from today through 24 months,
+inclusive, and excludes the displayed project status New (trim/case insensitive).
+This exclusion applies only to picker options, including retained selections;
+crew-assigned visibility, saved phase selections and the editing table retain
+their existing meaning. The Dates timeline horizon remains independently selected.
+Place the Data Insights location pin beside each timeline phase name. Its anchored
+territory card shows the authorized Project lookup display, phase and project
+status. Reuse the navy header, centered SVG close, hover/focus opening, click pinning,
+Escape/outside dismissal and shared popover motion. Do not infer unavailable
+project names from IDs or subdivision text, and do not fetch or write on hover.
 Use searchable checkbox multi-selects with stable IDs, clear actions, keyboard
 navigation and preserved selected options. The lower grid follows these filters;
 Show all projects releases its phase/section link while retaining its own filters

@@ -1,0 +1,8 @@
+{
+  "widget": "crew-locations",
+  "version": "1.10.2",
+  "created_at": "2026-11-03T18:24:49.865Z",
+  "source": "widgets/crew-locations/src/app/widget.html",
+  "source_sha256": "3d881a6a8a920512cd37a93cd0745bf8de033e418bf191d7a2c025087fcfac73",
+  "status": "candidate"
+}

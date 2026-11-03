@@ -151,6 +151,7 @@
   function defaultFilters(){const filters=M.defaults();if(S.model&&S.capabilities?.sources?.crews===false)filters.phases=M.upcoming(S.model,filters,S.day).map(p=>p.id);return filters;}
   function restoreView(){try{const x=JSON.parse(localStorage.getItem(preferenceKey()));if(!x)return;const f=M.defaults();for(const key of ['crews','phases','territories','sections','horizons'])if(Array.isArray(x.filters?.[key]))f[key]=x.filters[key].filter(v=>typeof v==='string'||typeof v==='number');for(const key of Object.keys(f.table))if(Array.isArray(x.filters?.table?.[key]))f.table[key]=x.filters.table[key].filter(v=>typeof v==='string');f.sections=f.sections.filter(v=>M.SECTIONS.some(s=>s.key===v));f.horizons=f.horizons.filter(v=>[6,12,24,'all'].includes(v));f.showAll=x.filters.showAll===true;if(!x.layoutVersion&&f.horizons.length===1&&f.horizons[0]===12)f.horizons=[24];S.preferencesLoaded=true;S.filters=f;S.hidden=new Set((x.hidden||[]).filter(v=>M.STAGES.some(s=>['start','days','end'].includes(v.slice(s.length+1))&&v.startsWith(s+':'))));}catch{}}
   async function load(){
+    closeLocationCard();
     if(S.busy||S.managementBusy||S.managementUnknown||S.operation?.unknown||S.drag||drafts?.saving||activeScheduleInput())return;
     const generation=++S.generation;S.loading=true;controls();message('Loading schedule…','busy');
     try{
@@ -169,7 +170,7 @@
     if(key==='stageJump')return M.tableStages(f).filter(stage=>['start','days','end'].some(field=>M.visible(S.hidden,stage,field))).map(stage=>({id:stage,label:stage}));
     if(key==='crews')return [...model.crews.values()].map(c=>({id:c.id,label:c.code}));
     if(key==='phases'){
-      opts.push({id:'assigned',label:'Crew Assigned Phases'});const included=new Map(M.upcoming(model,f,S.day).map(p=>[p.id,p]));for(const id of f.phases){const p=model.byId.get(id);if(p)included.set(id,p);}
+      opts.push({id:'assigned',label:'Crew Assigned Phases'});const included=new Map(M.upcoming(model,f,S.day).map(p=>[p.id,p]));for(const id of f.phases){const p=model.byId.get(id);if(p&&M.norm(M.displayStatus(p))!=='new')included.set(id,p);}
       return [...opts,...[...included.values()].sort((a,b)=>(a.records.M['Rough Cut']?.start??Infinity)-(b.records.M['Rough Cut']?.start??Infinity)||phaseName(a).localeCompare(phaseName(b))).map(p=>({id:p.id,label:phaseName(p)+' · '+p.code,detail:M.us(p.records.M['Rough Cut']?.start)+' · '+p.territory}))];
     }
     if(key==='territories')return [...new Set(model.phases.map(p=>p.territory))].sort().map(v=>({id:v,label:v||'(No territory)'}));
@@ -206,12 +207,39 @@
   const recordKey=r=>r.type+':'+r.id;
   const numeric=(n,key)=>n==null?'':'<span data-crew-number="'+esc(key)+'">'+esc(n)+'</span>';
   function tooltip(x){const name=M.SECTIONS.find(s=>s.key===x.section).name;return name+' · '+x.startRecord.type+' · '+x.startRecord.stage+' Start '+(M.us(x.start)||'missing')+' → '+x.endRecord.stage+' End '+(M.us(x.end)||'missing')+(x.start!=null&&x.end!=null?' · '+(x.end-x.start)+' days':'');}
+  // Data Insights territory-card pattern, using the authorized Crew phase snapshot.
+  const pin='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 8c0 4-6 9-6 9S4 12 4 8a6 6 0 1 1 12 0Z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+  const locationButton=p=>'<button type="button" class="crew-info-trigger" data-crew-info="'+esc(p.id)+'" aria-label="Location details for '+esc(phaseName(p))+'" aria-haspopup="dialog" aria-controls="crewInfoCard" aria-expanded="false">'+pin+'</button>';
+  let cardTimer,cardTrigger=null,cardPinned=false,restoringLocationFocus=false;
+  function closeLocationCard(restore=false){clearTimeout(cardTimer);const card=$('crewInfoCard');if(card)card.hidden=true;if(cardTrigger)cardTrigger.setAttribute('aria-expanded','false');const trigger=cardTrigger;cardTrigger=null;cardPinned=false;if(restore&&trigger?.isConnected){restoringLocationFocus=true;trigger.focus();restoringLocationFocus=false;}}
+  function openLocationCard(trigger,pinned=false){
+    const p=S.model?.byId.get(trigger.dataset.crewInfo);if(!p||!S.ready)return;
+    clearTimeout(cardTimer);if(cardTrigger&&cardTrigger!==trigger)cardTrigger.setAttribute('aria-expanded','false');cardPinned=pinned||(cardTrigger===trigger&&cardPinned);cardTrigger=trigger;trigger.setAttribute('aria-expanded','true');
+    $('crewInfoTitle').textContent=p.territory||'Territory unavailable';
+    $('crewInfoBody').innerHTML='<dl>'+[['Project',p.projectName||'Unavailable'],['Phase',phaseName(p)],['Project Status',M.displayStatus(p)]].map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>';
+    const card=$('crewInfoCard');card.hidden=false;const rect=trigger.getBoundingClientRect();card.style.left=Math.max(8,Math.min(rect.left,innerWidth-card.offsetWidth-8))+'px';card.style.top=Math.max(8,Math.min(rect.bottom+5,innerHeight-card.offsetHeight-8))+'px';
+  }
+  function bindLocationCard(){
+    const host=$('gantt'),card=$('crewInfoCard'),selector='[data-crew-info]';
+    const queueClose=()=>{clearTimeout(cardTimer);if(!cardPinned)cardTimer=setTimeout(()=>{if(!card.contains(document.activeElement))closeLocationCard();},180);};
+    host.addEventListener('click',event=>{const trigger=event.target.closest(selector);if(trigger)openLocationCard(trigger,true);});
+    host.addEventListener('pointerover',event=>{const trigger=event.target.closest(selector);if(trigger&&event.pointerType!=='touch'&&!trigger.contains(event.relatedTarget))openLocationCard(trigger);});
+    host.addEventListener('pointerout',event=>{const trigger=event.target.closest(selector);if(trigger&&!trigger.contains(event.relatedTarget))queueClose();});
+    host.addEventListener('focusin',event=>{const trigger=event.target.closest(selector);if(trigger&&!restoringLocationFocus)openLocationCard(trigger);});
+    host.addEventListener('focusout',event=>{if(event.target.closest(selector))queueClose();});
+    card.addEventListener('pointerenter',()=>clearTimeout(cardTimer));card.addEventListener('pointerleave',queueClose);
+    card.addEventListener('focusin',()=>clearTimeout(cardTimer));card.addEventListener('focusout',queueClose);
+    $('crewInfoClose').addEventListener('click',()=>closeLocationCard(true));
+    document.addEventListener('pointerdown',event=>{if(cardTrigger&&!card.contains(event.target)&&!cardTrigger.contains(event.target))closeLocationCard();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&cardTrigger){event.preventDefault();closeLocationCard(true);}});
+    document.addEventListener('scroll',()=>closeLocationCard(),true);window.addEventListener('resize',()=>closeLocationCard());
+  }
   function renderGantt(){
     const phases=M.selected(S.model,S.filters),from=S.day,allEnd=Math.max(M.months(from,12),...[...S.model.records.values()].flatMap(r=>[r.start??from,r.end??from])),to=Math.max(...(S.filters.horizons.length?S.filters.horizons:[24]).map(v=>v==='all'?allEnd:M.months(from,v))),axis=M.calendarAxis(from,to),ticks=axis.ticks,pos=axis.position;S.axis=axis;
     const grid=ticks.map(t=>'<i class="gridline" style="left:'+pos(t.start)+'%"></i>').join('');
     let html='<div class="gantt-scroll" tabindex="0" role="region" aria-label="Scroll crew timeline"><div class="gantt-grid" style="min-width:'+Math.max(700,272+ticks.length*48)+'px"><div class="gantt-head"><div class="phase-head">Project / Phase</div><div class="axis-calendar"><div class="axis-years">'+axis.years.map(y=>'<span style="width:'+(y.months/ticks.length*100)+'%">'+y.year+'</span>').join('')+'</div><div class="months">'+ticks.map((t,i)=>'<div class="month'+(i===0?' current':'')+'" title="'+M.us(t.start)+'–'+M.us(t.end)+'" style="width:'+(100/ticks.length)+'%">'+esc(t.label.split(' ')[0])+'</div>').join('')+'</div></div></div>';
     for(const p of phases)for(const type of ['M','T']){
-      const unavailable=type==='T'&&S.capabilities.sources.tasks===false,data=M.intervals(p,type,S.filters.sections,S.hidden),label=type==='M'?'<strong>'+esc(phaseName(p))+'</strong><small>'+esc(p.code+' · '+p.territory)+'<span class="row-type">Milestones</span></small>':'<span class="row-type">Tasks</span>'+badges(p);
+      const unavailable=type==='T'&&S.capabilities.sources.tasks===false,data=M.intervals(p,type,S.filters.sections,S.hidden),label=type==='M'?'<div class="phase-identity"><strong>'+esc(phaseName(p))+'</strong>'+locationButton(p)+'</div><small>'+esc(p.code+' · '+p.territory)+'<span class="row-type">Milestones</span></small>':'<span class="row-type">Tasks</span>'+badges(p);
       html+='<div class="gantt-row '+(type==='M'?'milestone':'task')+(unavailable?' task-unavailable':'')+'" data-phase="'+p.id+'" data-row-type="'+type+'"><div class="gantt-label">'+label+'</div><div class="lane" data-from="'+from+'" data-to="'+to+'">'+grid;
       if(unavailable)html+='<span class="source-unavailable">Task source unavailable</span>';else if(data.missing.length)html+='<span class="missing-note" title="'+esc(data.missing.join('\n'))+'">'+(data.intervals.length?'Partial / hidden boundaries':'Dates unavailable')+'</span>';
       for(const x of data.intervals){const title=tooltip(x)+(x.start!=null&&x.start<from||x.end!=null&&x.end>to?' · clipped; source dates retained':''),key=recordKey(x.startRecord)+':'+x.section+':'+x.endRecord.id;
@@ -256,7 +284,7 @@
     $('restoreChips').innerHTML=[...S.hidden].map(key=>'<button class="restore-chip" data-restore="'+esc(key)+'">Restore '+esc(key.replace(':',' '))+'</button>').join('');
     requestAnimationFrame(()=>{$('tableTopScroll').firstElementChild.style.width=$('scheduleTable').scrollWidth+'px';});
   }
-  function render(filters=true){if(!S.model)return;$('app').dataset.tasksAvailable=String(S.capabilities.sources.tasks!==false);windowLabel();if(filters)renderFilters();else document.querySelectorAll('[data-filter]').forEach(button=>{button.querySelector('span').innerHTML=selectionMarkup(button.dataset.filter,button.dataset.empty);});renderGantt();renderTable();const issues=[...S.model.issues,...(S.capabilities.dependencies||[])];$('issueList').innerHTML='<ul>'+issues.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>';controls();}
+  function render(filters=true){closeLocationCard();if(!S.model)return;$('app').dataset.tasksAvailable=String(S.capabilities.sources.tasks!==false);windowLabel();if(filters)renderFilters();else document.querySelectorAll('[data-filter]').forEach(button=>{button.querySelector('span').innerHTML=selectionMarkup(button.dataset.filter,button.dataset.empty);});renderGantt();renderTable();const issues=[...S.model.issues,...(S.capabilities.dependencies||[])];$('issueList').innerHTML='<ul>'+issues.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ul>';controls();}
   function openOperation(op){S.operation=op;S.busy=true;root.LMSuccess?.clear?.();closePicker();message('Saving milestone changes…','saving');$('operationTitle').textContent='Saving schedule';$('operationStages').textContent='Validate changes → Save dates → Confirm destinations';$('operationStatus').textContent='Validating '+op.changes.length+' source records…';$('operationResults').innerHTML=op.changes.map(c=>'<li data-result="'+esc(c.type+':'+c.recordId)+'">'+esc(c.stage)+' · pending</li>').join('');$('operationProgress').style.width='0%';$('operationProgress').parentElement.setAttribute('aria-valuenow','0');$('checkOperation').hidden=true;$('closeOperation').disabled=true;$('doneOperation').disabled=true;controls();}
   function finishOperation(data,error){
     S.busy=false;const op=S.operation;op.unknown=error?.unknown===true||data?.unknown===true;op.result=data||error?.data;if(!error&&data?.state==='saved')drafts?.confirm(op.operationId,data);else if(error)drafts?.fail(op.operationId,error);
@@ -310,6 +338,7 @@
   async function requestRefresh(){const input=activeScheduleInput();if(input&&!await edit(input))return;if(drafts?.dirty){$('scheduleRefreshCount').textContent=drafts.count+' edited record'+(drafts.count===1?' has':'s have')+' pending changes.';$('scheduleRefreshDialog').showModal();$('scheduleKeepEditing').focus();return;}return refreshSchedule();}
   function refreshSchedule(){return root.LMMotion?LMMotion.refresh($('app'),load,{allowed:()=>!S.busy&&!drafts?.saving}):load();}
   function bind(){
+    bindLocationCard();
     $('scheduleViews').onclick=e=>{const b=e.target.closest('[data-schedule-view]');if(b)scheduleView(b.dataset.scheduleView);};
     $('scheduleViews').onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const view=e.key==='Home'?'timeline':e.key==='End'?'editor':$('app').dataset.scheduleView==='timeline'?'editor':'timeline';scheduleView(view);$(view==='timeline'?'timelineView':'editorView').focus({preventScroll:true});};
     scheduleView('timeline');

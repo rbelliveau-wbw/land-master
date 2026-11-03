@@ -38,7 +38,7 @@
   const displayStatus=p=>p.projectsStatus||p.status||'Unknown';
   function defaults(){return {crews:[],phases:['assigned'],territories:[],sections:SECTIONS.map(s=>s.key),horizons:[24],showAll:false,table:{projects:[],codes:[],territories:[],statuses:[]}};}
   function normalize(data){
-    const issues=[],phases=(data.subdivisions||[]).map(r=>({id:id(r.ID),name:String(r.Subdivision_Name||''),code:String(r.Subdivision_Code||''),phase:r.Phase??'',subphase:r.Subphase||'',parentId:id(r.Project),territory:String(r.Territory||''),status:String(r.Status||''),projectsStatus:String(r.Projects_Status||''),projectId:id(r.Project_ID),lots:r.Total_Lots??null,residentialLots:r.Lot_Total_Residential??null,records:{M:{},T:{}},crews:[]}));
+    const issues=[],phases=(data.subdivisions||[]).map(r=>({id:id(r.ID),name:String(r.Subdivision_Name||''),code:String(r.Subdivision_Code||''),phase:r.Phase??'',subphase:r.Subphase||'',parentId:id(r.Project),projectName:typeof r.Project==='object'&&r.Project?String(r.Project.display_value||r.Project.zc_display_value||r.Project.Name||''):'',territory:String(r.Territory||''),status:String(r.Status||''),projectsStatus:String(r.Projects_Status||''),projectId:id(r.Project_ID),lots:r.Total_Lots??null,residentialLots:r.Lot_Total_Residential??null,records:{M:{},T:{}},crews:[]}));
     const byId=new Map(phases.map(p=>[p.id,p])),records=new Map();
     function add(rows,type){for(const raw of rows||[]){
       const phaseId=id(raw.Subdivision1),p=byId.get(phaseId),key=stage(type==='M'?raw.Milestone_Name:raw.Stage_Key),recordId=id(raw.ID);
@@ -63,7 +63,7 @@
     model.phases.forEach(p=>p.crews.sort((a,b)=>a.code.localeCompare(b.code)));
   }
   function restricted(p,f){return (!f.crews.length||p.crews.some(c=>f.crews.includes(c.id)))&&(!f.territories.length||f.territories.includes(p.territory));}
-  function upcoming(model,f,day){return model.phases.filter(p=>{const r=p.records.M['Rough Cut'];return r&&!r.invalid&&r.start!=null&&r.start>=day&&r.start<=months(day,12)&&restricted(p,f);}).sort((a,b)=>a.records.M['Rough Cut'].start-b.records.M['Rough Cut'].start||a.name.localeCompare(b.name));}
+  function upcoming(model,f,day){return model.phases.filter(p=>{const r=p.records.M['Rough Cut'];return norm(displayStatus(p))!=='new'&&r&&!r.invalid&&r.start!=null&&r.start>=day&&r.start<=months(day,24)&&restricted(p,f);}).sort((a,b)=>a.records.M['Rough Cut'].start-b.records.M['Rough Cut'].start||a.name.localeCompare(b.name));}
   function selected(model,f){return model.phases.filter(p=>restricted(p,f)&&(f.phases.includes(p.id)||f.phases.includes('assigned')&&p.crews.length));}
   function tablePhases(model,f){const tf=f.table,statuses=tf.statuses.map(norm);return (f.showAll?model.phases:selected(model,f)).filter(p=>(!tf.projects.length||tf.projects.includes(p.id))&&(!tf.codes.length||tf.codes.includes(p.code))&&(!tf.territories.length||tf.territories.includes(p.territory))&&(statuses.length?(sold(p)?[p.status,p.projectsStatus].some(s=>soldStatus(s)&&statuses.includes(norm(s))):statuses.includes(norm(displayStatus(p)))):!sold(p)));}
   function tableStages(f){return f.showAll||SECTIONS.every(s=>f.sections.includes(s.key))?STAGES:STAGES.filter(key=>SECTIONS.some(s=>f.sections.includes(s.key)&&s.stages.includes(key)));}

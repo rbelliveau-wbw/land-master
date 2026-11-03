@@ -8,7 +8,7 @@ test('Chicago assignment window, DST transition, month clamping and leap years',
 test('Stable string identities preserve phases and subphases',()=>{const m=normalized();assert.equal(m.phases.length,6);assert.notEqual(m.phases[1].id,m.phases[2].id);assert.equal(m.phases[1].parentId,m.phases[2].parentId);assert.throws(()=>M.id(90071992547409930),/unsafe/);});
 test('Inclusive crew assignment window, deduplicated badges, independent sources',()=>{const m=normalized();assert.equal(m.phases[0].crews.length,1);assert.equal(m.phases[1].crews.length,2);assert.equal(m.phases[2].crews.length,0);assert.equal(m.phases[0].records.T['Rough Cut'],undefined);assert.notEqual(m.phases[0].records.M['Road Prep'].start,m.phases[0].records.T['Road Prep'].start);});
 test('Crew-assigned/upcoming union and intersection filters',()=>{const m=normalized(),f=M.defaults();assert.equal(M.selected(m,f).length,3);f.phases.push(m.phases[2].id);assert.equal(M.selected(m,f).length,4);f.territories=['Waco'];assert.equal(M.selected(m,f).length,2);f.crews=[m.phases[1].crews[0].id];assert.equal(M.selected(m,f).length,1);f.phases=[];assert.equal(M.selected(m,f).length,0);});
-test('Upcoming choices use only exact Rough Cut M starts in twelve months',()=>{const m=normalized(),f=M.defaults(),upcoming=M.upcoming(m,f,day);assert.ok(upcoming.some(p=>p.id===m.phases[2].id));assert.ok(!upcoming.some(p=>p.id===m.phases[5].id));assert.ok(!upcoming.some(p=>p.id===m.phases[0].id));const raw=crewFixture();raw.milestones.find(r=>r.Subdivision1.ID===raw.subdivisions[2].ID&&r.Milestone_Name==='Rough Cut').Start_Date='';raw.tasks.push({...raw.tasks[0],ID:'99000000000000001',Subdivision1:{ID:raw.subdivisions[2].ID},Stage_Key:'Rough Cut',Start_Date:'11/01/2026'});assert.ok(!M.upcoming(M.normalize(raw),f,day).some(p=>p.id===raw.subdivisions[2].ID));});
+test('Upcoming choices use only exact Rough Cut M starts in twenty-four months',()=>{const m=normalized(),f=M.defaults(),upcoming=M.upcoming(m,f,day);assert.ok(upcoming.some(p=>p.id===m.phases[2].id));assert.ok(upcoming.some(p=>p.id===m.phases[5].id));assert.ok(!upcoming.some(p=>p.id===m.phases[0].id));const raw=crewFixture();raw.milestones.find(r=>r.Subdivision1.ID===raw.subdivisions[2].ID&&r.Milestone_Name==='Rough Cut').Start_Date='';raw.tasks.push({...raw.tasks[0],ID:'99000000000000001',Subdivision1:{ID:raw.subdivisions[2].ID},Stage_Key:'Rough Cut',Start_Date:'11/01/2026'});assert.ok(!M.upcoming(M.normalize(raw),f,day).some(p=>p.id===raw.subdivisions[2].ID));});
 test('Table follows phase/section selection; Show all preserves own filters and sold-out default',()=>{const m=normalized(),f=M.defaults();f.sections=['rough'];assert.deepEqual([...M.tableStages(f)],['Rough Cut']);assert.equal(M.tablePhases(m,f).length,3);f.showAll=true;assert.equal(M.tablePhases(m,f).length,5);assert.equal(M.tableStages(f).length,12);f.table.statuses=[M.displayStatus(m.phases[3])];assert.equal(M.tablePhases(m,f).length,1);assert.ok(M.locked(M.tablePhases(m,f)[0]));f.showAll=false;assert.equal(M.tablePhases(m,f).length,0);});
 test('A stale operational status cannot implicitly include a sold-out phase',()=>{const m=normalized(),f=M.defaults(),p=m.phases[0];p.status='Sold Out';p.projectsStatus='Road Prep';f.showAll=true;f.table.statuses=['road prep'];assert.ok(!M.tablePhases(m,f).some(row=>row.id===p.id));f.table.statuses=['sold out'];assert.ok(M.tablePhases(m,f).some(row=>row.id===p.id));assert.equal(M.displayStatus(p),'Road Prep');assert.ok(M.locked(p));});
 test('Every calendar month is labeled from first partial month',()=>{const ticks=M.monthTicks(day,M.months(day,12));assert.equal(ticks.length,13);assert.equal(ticks[0].start,day);assert.equal(ticks[0].label,'Oct 2026');assert.equal(ticks[12].label,'Oct 2027');});
@@ -77,5 +77,28 @@ test('Controller defaults and native identity-only acknowledgements preserve rea
  const luminance=color=>{const channels=color.slice(1).match(/../g).map(value=>parseInt(value,16)/255).map(value=>value<=.04045?value/12.92:((value+.055)/1.055)**2.4);return .2126*channels[0]+.7152*channels[1]+.0722*channels[2];};
  for(const background of ['#ffffff','#ffff00','#000000','#102a46']){const ink=api.badgeInk(background),light=Math.max(luminance(background),luminance(ink)),dark=Math.min(luminance(background),luminance(ink));assert.ok((light+.05)/(dark+.05)>=4.5,'badge code is readable on '+background);}
  assert.notEqual(api.badgeInk('#ffffff').toLowerCase(),'#ffffff','white crew colors retain visible badge text');
+});
+test('Upcoming picker includes the 24-month boundary, excludes New, and preserves assigned schedules',()=>{
+ const m=normalized(),f=M.defaults(),p=m.phases[1],r=p.records.M['Rough Cut'];
+ for(const [start,expected] of [[day-1,false],[day,true],[M.months(day,18),true],[M.months(day,24),true],[M.months(day,24)+1,false]]){
+  r.start=start;assert.equal(M.upcoming(m,f,day).includes(p),expected);
+ }
+ r.start=day;p.projectsStatus=' New ';assert.ok(!M.upcoming(m,f,day).includes(p));assert.ok(M.selected(m,f).includes(p));
+ f.showAll=true;assert.ok(M.tablePhases(m,f).includes(p));
+ p.projectsStatus='';p.status='NEW';assert.ok(!M.upcoming(m,f,day).includes(p));
+ p.projectsStatus='Renewal';assert.ok(M.upcoming(m,f,day).includes(p));
+ f.territories=['Temple'];assert.ok(!M.upcoming(m,f,day).includes(p));
+});
+test('Saved New phase selections cannot re-enter the picker; project lookup display retains exact identity',()=>{
+ const raw=crewFixture();raw.subdivisions[1].Project={ID:'90071992547409002',display_value:'Turnbo Ranch'};
+ const scope=vm.createContext({Date,Intl,Map,Set,Number,String,Object,Math,document:{getElementById:()=>null}});scope.window=scope;
+ vm.runInContext(source,scope);
+ const app=fs.readFileSync('widgets/crew-locations/src/app/crew-app.js','utf8');vm.runInContext(app.replace('root.CrewApp=Object.freeze({start,state:S,','root.CrewApp=Object.freeze({start,state:S,allOptions,'),scope);
+ const state=scope.CrewApp.state;state.model=scope.CrewModel.normalize(raw);state.day=day;
+ const p=state.model.phases[1];assert.equal(p.parentId,'90071992547409002');assert.equal(p.projectName,'Turnbo Ranch');
+ p.projectsStatus='New';state.filters.phases.push(p.id);
+ assert.ok(!scope.CrewApp.allOptions('phases').some(option=>option.id===p.id));assert.ok(scope.CrewModel.selected(state.model,state.filters).includes(p));
+ assert.ok(scope.CrewApp.allOptions('phases').some(option=>option.id==='assigned'));
+ assert.equal(state.model.phases[0].projectName,'','missing display text is not inferred from a phase name or ID');
 });
 console.log('Passed '+checks+' Crew Locations scheduling and contract groups. Deluge compilation/live installation are separate checks.');
