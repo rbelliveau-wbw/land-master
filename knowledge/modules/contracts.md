@@ -1313,3 +1313,25 @@ The existing native picker and upload pipeline are reused; no forms, fields, fun
 Custom APIs or Creator deployment change. Focused checks cover allowed owners,
 non-owners, completed records, pending work and file input routing. Full repository
 validation and Pages build are required. Rollback: Contract Management 1.62.41.
+
+### Minimal contracted lot popup - 1.62.44, November 3, 2026
+
+The Choose Lots legend and claimed-lot hover badge say **Contracted**. The
+approved Minimal popup uses its lot code as identity, puts size and **Buyer**
+on a compact line, then shows the linked contract name and builder / status once.
+It removes the repeated Block/Lot rows and both redundant contract-warning
+paragraphs. Missing-code lots retain Block, and optional Base Price, Address
+and Notes remain available. Other lot-state popup details retain their layout.
+
+Changed files: `widgets/contract-management/src/app/widget.html`, its widget
+config, `manifests/widgets.json`, `deploy/environments.json`, this module guide,
+the general style guide, and immutable release `contract-management/1.62.44`.
+Existing Lots display fields and linked Contract name/builder/status are reused;
+no forms, fields, functions, Custom APIs or Creator deployment changes.
+
+Regression: actual lot-claim selection safety, parent/reverse association locks,
+backfill, picker permissions, Master/Amendment lot types, desktop rendering,
+missing and long values, escaped names, full repository validation and Pages
+build. Existing hover timing, pointer behavior, motion and numeric transitions
+are retained. Rollback: map Production Contract Management to **1.62.42** and
+rebuild Pages.

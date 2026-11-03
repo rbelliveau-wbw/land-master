@@ -969,6 +969,15 @@ tr.drilled .drill-chev{transform:rotate(90deg);background:#eef4ff;color:var(--na
 .lp-hover .hv-code{font-size:12.5px;font-weight:850;color:#fff;letter-spacing:-.01em}
 .lp-hover .hv-chip{margin-left:auto;padding:1px 8px;border-radius:999px;font-size:9.5px;font-weight:850;
   text-transform:uppercase;letter-spacing:.05em}
+.lp-hover.is-claimed .hv-code{min-width:0;overflow-wrap:anywhere}
+.lp-hover.is-claimed .hv-chip{flex:none;text-transform:none;letter-spacing:0}
+.lp-hover .hv-summary{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}
+.lp-hover .hv-size{color:#fff;font-weight:700}
+.lp-hover .hv-buyer{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;color:#8ea6cc;font-size:10.5px;min-width:0}
+.lp-hover .hv-buyer b{color:#fff;font-size:11.5px;font-weight:700;overflow-wrap:anywhere}
+.lp-hover .hv-contract{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.14)}
+.lp-hover .hv-contract>b{display:block;color:#fff;font-weight:850;overflow-wrap:anywhere}
+.lp-hover .hv-contract .hv-fix{margin-top:3px}
 .lp-hover .hv-r{display:flex;gap:10px;padding:1.5px 0}
 .lp-hover .hv-k{color:#8ea6cc;font-weight:700;flex:0 0 74px}
 .lp-hover .hv-v{color:#fff;font-weight:700;min-width:0;overflow-wrap:anywhere}
@@ -1971,16 +1980,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.42"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.42">
-<script src="interaction-motion.js?v=1.62.42"></script>
-<script src="interaction-surfaces.js?v=1.62.42"></script>
-<script src="number-edit-commit.js?v=1.62.42"></script>
-<script src="number-transitions.js?v=1.62.42"></script>
-<script src="number-surfaces.js?v=1.62.42"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.42">
-<link rel="stylesheet" href="report-layout.css?v=1.62.42">
-<link rel="stylesheet" href="construction-board.css?v=1.62.42">
+<script src="success-feedback.js?v=1.62.44"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.44">
+<script src="interaction-motion.js?v=1.62.44"></script>
+<script src="interaction-surfaces.js?v=1.62.44"></script>
+<script src="number-edit-commit.js?v=1.62.44"></script>
+<script src="number-transitions.js?v=1.62.44"></script>
+<script src="number-surfaces.js?v=1.62.44"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.44">
+<link rel="stylesheet" href="report-layout.css?v=1.62.44">
+<link rel="stylesheet" href="construction-board.css?v=1.62.44">
 </head>
 <body>
 
@@ -2029,7 +2038,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.42", pageSize: 200, maxPages: 25,
+  version: "1.62.44", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -5264,7 +5273,7 @@ function lotState(l,claims){
   if(st==="open") return "open";
   return "other";
 }
-var LOT_STATE_LABEL={sel:"Selected",open:"Available",claim:"On another contract",
+var LOT_STATE_LABEL={sel:"Selected",open:"Available",claim:"Contracted",
   contracted:"Contracted",scheduled:"Scheduled",sold:"Sold",hold:"On hold",other:"Other / blank status"};
 var LOT_STATE_CHIP={sel:["#1d4eaa","#fff"],open:["#a7f3d0","#065f46"],claim:["#fed7aa","#9a3412"],
   contracted:["#bcd0f0","#264d8c"],scheduled:["#fcd34d","#92400e"],sold:["#bbc6d4","#37475f"],hold:["#fecaca","#991b1b"],
@@ -5303,22 +5312,24 @@ function lpHoverShow(lotId,x,y){
   var claims=S.lpClaims||{}, st=lotState(l,claims), held=lpClaimedBy(l,claims);
   var chip=LOT_STATE_CHIP[st]||LOT_STATE_CHIP.other;
   function row(k,v){ return v?'<div class="hv-r"><span class="hv-k">'+esc(k)+'</span><span class="hv-v">'+esc(v)+'</span></div>':""; }
-  var body=row("Block",l.Block)+row("Lot",l.Lot_Number)
-    +row("Size",l.Lot_Size?l.Lot_Size+" ft":"")
-    +row("Buyer",displayValue(l.Builder1))
-    +row("Base price",num(l.Base_Price)?money(l.Base_Price):"")
+  var buyer=displayValue(l.Builder1),size=l.Lot_Size?l.Lot_Size+" ft":"";
+  var body=held
+    ? (!l.Lot_Code?row("Block",l.Block):"")
+      +(size||buyer?'<div class="hv-summary">'+(size?'<strong class="hv-size">'+esc(size)+'</strong>':'')
+        +(buyer?'<span class="hv-buyer"><span>Buyer</span><b>'+esc(buyer)+'</b></span>':'')+'</div>':'')
+    : row("Block",l.Block)+row("Lot",l.Lot_Number)+row("Size",size)+row("Buyer",buyer);
+  body+=row("Base price",num(l.Base_Price)?money(l.Base_Price):"")
     +row("Address",l.Address)
     +row("Notes",String(l.Notes||"").slice(0,90));
   var why="";
   if(held){
-    why='<div class="hv-why">Already on a contract<b>'+esc(held.name)+'</b>'
-      +(held.status||held.builder?'<div class="hv-fix">'+esc([held.status,held.builder].filter(Boolean).join(" \u00b7 "))+'</div>':'')
-      +'<div class="hv-fix">Resolve its existing contract association before selecting it.</div></div>';
+    why='<div class="hv-contract"><b>'+esc(held.name)+'</b>'
+      +(held.builder||held.status?'<div class="hv-fix">'+esc([held.builder,held.status].filter(Boolean).join(" \u00b7 "))+'</div>':'')+'</div>';
   }else if(st==="hold"){
     why='<div class="hv-why">Flagged On Hold<b>Still selectable</b><div class="hv-fix">Clear the flag on the lot record if that is wrong.</div></div>';
   }
   var d=document.createElement("div");
-  d.className="lp-hover"; d.id="lp_hover";
+  d.className="lp-hover"+(held?" is-claimed":""); d.id="lp_hover";
   d.innerHTML='<div class="hv-t"><span class="hv-code">'+esc(String(l.Lot_Code||("Lot "+(l.Lot_Number||l.ID))))+'</span>'
     +'<span class="hv-chip" style="background:'+chip[0]+';color:'+chip[1]+'">'+esc(LOT_STATE_LABEL[st])+'</span></div>'
     +body+why;
