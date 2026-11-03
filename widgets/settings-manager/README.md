@@ -130,7 +130,11 @@ submissions; submitted routes retain captured people, order, decisions, notes
 and timestamps. A disabled specific match blocks routing instead of falling
 back to a broader match. Same-precedence ambiguity fails.
 
-VP resolves exactly one unique person from the document's `Territory.VP`.
+VP resolves exactly one unique person from the document's `Territory.VP` for
+Budget, Budget Modification, Pro Forma and Purchase Order. Contract resolves
+every unique selected VP. Its Development-default adapter requires the separate
+[native installation](../../docs/contract-development-vp-routing-2026-11-03.md);
+preview support alone does not update Contract approval rows.
 Dev Mgr expands unique selected `Territory.Dev_Mgr` people, preserving lookup
 order, into individual sequential approvals before the next role. Neither uses
 a fallback Settings assignment. Other roles use scoped approver assignments.

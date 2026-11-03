@@ -14,8 +14,7 @@ const setup=async()=>{const h=await ready({realDOM:true});h.reports[h.c.CFG.repo
  const {c}=await setup();
  for(const type of c.TYPES.filter(t=>!c.isLotType(t))){c.S.nc=draft(type);assert.match(c.ncFields(),/Parent .*Optional.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,type+' persists parent');}
  c.S.projects=[{ID:'p',Territory:'Waco'}];c.S.nc=draft('Lot (Master)');assert.match(c.ncFields(),/Parent .*Optional.*nc_parent_wrap/);assert.equal(c.ncPayload().Parent_Contract,root,'unlinked Lot Master can have a parent');
- assert.match(c.contractMasterBadge(c.findContract(root)),/Master.*<b>1<\/b>/);
- assert.match(c.lotHierarchyLabel(c.findContract(root)),/Master/,'all types display Master role');
+ assert.doesNotMatch(c.lotHierarchyLabel(c.findContract(root)),/contract-master-badge|<b>1<\/b>/,'parent type counts are omitted');
  assert.match(c.drillRow(c.findContract(ID)),/Parent Contract.*Assign parent/);
  assert.doesNotMatch(c.contractParentSummary(c.findContract(root)),/contractParentOpen/,'Master assignment locked');
  assert.match(c.contractParentError({...draft('DA'),parent:other},root),/Master/);

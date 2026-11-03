@@ -36,6 +36,12 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 			return response;
 		}
 		toAddress = ifnull(approvalRow.Approver,"").toString().trim();
+		if(modeText == "Send" && toAddress.toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(approvalRow.Status,"") == "" || approvalRow.Status == "Not Sent") && ifnull(approvalRow.Approval_Action,"") == "" && approvalRow.Approval_Date == null)
+		{
+			response.put("success",false);
+			response.put("message","The Development approval still has its legacy default. Apply the Contract VP rule before sending approvals.");
+			return response;
+		}
 		if(ifnull(contract.Work_Module,"") == "Construction")
 		{
 			response.put("success",false);

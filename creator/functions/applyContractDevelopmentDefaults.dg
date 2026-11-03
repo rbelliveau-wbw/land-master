@@ -1,0 +1,101 @@
+map applyContractDevelopmentDefaults(string contractId)
+{
+	// Private creation hook. The legacy Development template recipient is replaced
+	// by the published Contract VP rule; the rest of the template stays intact.
+	// No email is sent and no parent status or completed decision is changed.
+	result = {"success":false,"contract":"contract-development-defaults-v1","updated":0,"inserted":0};
+	try
+	{
+		idText = ifnull(contractId,"").toString().trim();
+		if(!idText.matches("[0-9]+")) { result.put("message","An exact Contract ID is required."); return result; }
+		parent = Contract[ID == idText.toLong()];
+		if(parent.ID == null) { result.put("message","Contract not found."); return result; }
+		result.put("contractId",idText);
+		if(ifnull(parent.Work_Module,"") == "Construction" || parent.Archive == true || ifnull(parent.Status,"") == "Complete" || ifnull(parent.Status,"") == "Rejected" || ifnull(parent.Status,"") == "Cancelled")
+		{
+			result.put("success",true); result.put("retainedExistingRoute",true); return result;
+		}
+		legacyIds = List();
+		for each candidate in Contract_Approvals[Contract1 == parent.ID] sort by Approval_Sequence
+		{
+			if(candidate.Status == "Awaiting Approval" || candidate.Status == "Approved" || candidate.Status == "Rejected" || ifnull(candidate.Approval_Action,"") != "" || candidate.Approval_Date != null || ifnull(candidate.Reject_Reason,"").trim() != "" || candidate.Last_Reminder_Date != null)
+			{
+				result.put("success",true); result.put("retainedExistingRoute",true); return result;
+			}
+			untouched = (ifnull(candidate.Status,"") == "" || candidate.Status == "Not Sent") && ifnull(candidate.Approval_Action,"") == "" && candidate.Approval_Date == null && ifnull(candidate.Reject_Reason,"").trim() == "" && candidate.Last_Reminder_Date == null;
+			if(untouched && ifnull(candidate.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com") { legacyIds.add(candidate.ID); }
+		}
+		if(legacyIds.size() == 0) { result.put("success",true); result.put("retainedExistingRoute",true); return result; }
+		actor = User_Access[User == zoho.loginuser];
+		if(actor.count() != 1) { result.put("message","The creation actor must identify one User Access record."); return result; }
+		context = {"workflow":"Contract","recordId":idText,"submitterId":actor.ID.toString(),"territory":ifnull(parent.Territory,""),"department":"Development","amount":"0.00"};
+		resolved = thisapp.resolveApprovalRoute(context);
+		if(resolved.get("success") != true) { result.put("message",resolved.get("error")); return result; }
+		route = resolved.get("snapshot").get("route");
+		emails = List();
+		for each recipient in route
+		{
+			if(recipient.get("role") != "VP") { result.put("message","Contract Development defaults require a VP-only Contract rule."); return result; }
+			email = recipient.get("email").toString().trim().toLowerCase();
+			if(emails.contains(email)) { result.put("message","Each selected Contract VP needs a distinct approval email."); return result; }
+			emails.add(email);
+		}
+		if(emails.size() == 0) { result.put("message","No Contract VP recipient was resolved."); return result; }
+		// A pre-existing duplicate first recipient needs an explicit review. Do
+		// not detach the legacy row or modify any source before that is resolved.
+		for each preflightId in legacyIds
+		{
+			preflight = Contract_Approvals[ID == preflightId && Contract1 == parent.ID];
+			duplicateLegacy = Contract_Approvals[Contract1 == parent.ID && ID != preflight.ID && Approver == preflight.Approver && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+			if(duplicateLegacy.count() > 0) { result.put("message","Duplicate Development defaults have the same type and sequence. Review them before applying the Contract VP rule."); return result; }
+			firstEmail = emails.get(0);
+			firstExisting = Contract_Approvals[Contract1 == parent.ID && ID != preflight.ID && Approver == firstEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+			if(firstExisting.count() > 0) { result.put("message","A duplicate Development VP approval already exists. Review the untouched default before applying it."); return result; }
+			for each preflightEmail in emails
+			{
+				existingExtra = Contract_Approvals[Contract1 == parent.ID && Approver == preflightEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+				if(existingExtra.count() > 1) { result.put("message","Duplicate Development VP approvals already exist. Review the untouched defaults before applying the Contract VP rule."); return result; }
+			}
+		}
+		updated = 0; inserted = 0; executionIds = List();
+		for each legacyId in legacyIds
+		{
+			legacy = Contract_Approvals[ID == legacyId && Contract1 == parent.ID];
+			// Keep the legacy marker until all extra recipients exist, so a stopped
+			// native execution can retry without creating the same VP row twice.
+			position = 0;
+			for each recipientEmail in emails
+			{
+				if(position > 0)
+				{
+					existing = Contract_Approvals[Contract1 == parent.ID && Approver == recipientEmail && Type1 == legacy.Type1 && Approval_Sequence == legacy.Approval_Sequence];
+					if(existing.count() == 0)
+					{
+						createdId = insert into Contract_Approvals
+						[
+							Added_User=zoho.loginuser
+							Contract1=parent.ID
+							Approver=recipientEmail
+							Type1=legacy.Type1
+							Approval_Sequence=legacy.Approval_Sequence
+							Reminder_Interval_Days=legacy.Reminder_Interval_Days
+							Approval_Email=legacy.Approval_Email
+							Status="Not Sent"
+						];
+						inserted=inserted+1; result.put("inserted",inserted); executionIds.add(createdId.toString());
+					}
+					else { executionIds.add(existing.ID.toString()); }
+				}
+				position=position+1;
+			}
+			legacy.Approver=emails.get(0); executionIds.add(legacy.ID.toString());
+			updated=updated+1; result.put("updated",updated);
+		}
+		result.put("success",true); result.put("updated",updated); result.put("inserted",inserted); result.put("executionRows",executionIds); result.put("policyId",resolved.get("snapshot").get("policyId"));
+	}
+	catch(defaultError)
+	{
+		result.put("message","Contract Development defaults could not be completed. Recheck the existing approval rows before retrying.");
+	}
+	return result;
+}

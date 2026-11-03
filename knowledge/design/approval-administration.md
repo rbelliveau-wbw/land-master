@@ -178,9 +178,17 @@ at-a-time chain; it does not send concurrent approvals. Resolve every person
 and validate their login, routing flag and approval email before
 creating a route. Never fall back to a global Dev Mgr assignment. The captured
 route retains people after Territory edits. VP resolves exactly one unique
-Territory.VP person in every shared-policy workflow, including Pro Forma and
-Budget. Never fall back to a separate VP assignment.
+Territory.VP person in Pro Forma, Budget, Budget Modification and Purchase Order.
+Contract resolves every unique selected VP; missing or inactive people block
+the entire route. Never fall back to a separate VP assignment.
 Native updates: approvalConfigurationSnapshot and resolveApprovalRoute.
+
+Contract's Development-default adapter replaces only the untouched legacy
+Development template slot. Other recipients and sent/decided history remain.
+Contract dispatch retains its existing parallel behavior; the ordered preview
+does not install an ordered execution adapter. The helper, created-only hooks
+and fresh-send guards require separate Creator installation and owner promotion.
+See the [Contract VP handoff](../../docs/contract-development-vp-routing-2026-11-03.md).
 
 New standalone Budget Modifications use the published Budget Modification
 Settings rule, including its ordered roles and exact threshold conditions.
