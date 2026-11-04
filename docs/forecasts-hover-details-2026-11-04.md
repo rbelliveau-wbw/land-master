@@ -41,10 +41,10 @@ Forecasts permission and unavailable-field errors remain in force. The Creator
 application date identifies the current month; no browser-local date or substitute
 acceptance-date field is introduced.
 
-No Deluge function or Custom API change is included. Production report field
-exposure must be verified in the live application before declaring deployment
-complete. A missing field is a report-configuration issue, not permission to
-silently drop a requested detail or invent data.
+No Deluge function or Custom API change is included. Both new fields are exposed
+by the existing Production reports: complete native dashboard reads succeeded
+with the required-field checks enabled. No Creator deployment or report
+configuration change was required.
 
 ## Changed Files
 
@@ -92,10 +92,33 @@ environment paths). Local validation used the bundled Python runtime and the
 existing runner's child-process access. The new hover behavior test is part of
 the standard prevalidation sequence.
 
-Production evidence: **pending**. Capture actual before/after Production views
-of the annual layout, current-month count card, subdivision acceptance date and
-placeholder notes after deployment. Record the deployed version, successful
-checks and any native report configuration needed here.
+Production verified November 4, 2026, after the user's explicit main/Production
+deployment approval. [PR 134](https://github.com/rbelliveau-wbw/land-master/pull/134)
+merged commit `75c5f6dcd60ec4bdd8fa6638a8b8f5ca5cddca84`.
+[Main CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/41849903418)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/41849903564)
+completed successfully.
+
+- The actual Creator Production Data Insights page loaded versioned 1.6.18
+  model, adapter and app assets and the complete 59-phase/28-project default
+  report without an unavailable-field error.
+- The placeholder card displayed the existing saved native Forecast Manager
+  note. The Subdivision card displayed a populated Final Acceptance Due Date.
+  The current-month comparison displayed separate Forecast, Scheduled and Sold
+  source counts, including the Partial forecast marker and explicit zero Sold.
+- Browser geometry measured all four annual header columns at exactly 70px.
+  Filtered phase and selected-period totals matched the captured 1.6.17 baseline.
+  Live Close returned focus and kept the card dismissed; focused handler tests
+  also cover Escape, unknown/zero data and safe multiline text.
+- Actual before/after Production screenshots were saved outside the public
+  repository as `before-placeholder-prod.jpg`, `after-placeholder-prod.jpg`,
+  `before-bluebonnet-subdivision-prod.jpg`,
+  `after-bluebonnet-subdivision-prod.jpg`, `before-annual-prod.jpg`,
+  `after-annual-prod.jpg`, and `after-current-month-prod.jpg`.
+
+No business records or stored yearly notes were changed during verification.
+All-year chronological concatenation and repeated/internal-newline cases are
+covered by native-shaped fixtures; no fabricated note was inserted into Prod.
 
 ## Rollback
 
@@ -103,3 +126,4 @@ Restore the Production `lot-sales-explorer` mapping to `1.6.17` and rebuild Page
 retaining the permanent `prod/insights/` and `prod/lot-sales-explorer/` URLs.
 No stored forecast values or yearly comments require rollback. Any existing
 report-field exposure can remain in place.
+
