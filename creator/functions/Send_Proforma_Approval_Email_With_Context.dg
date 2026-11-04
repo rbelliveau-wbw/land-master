@@ -101,10 +101,30 @@
 		}
                  		purchaseDateText = "—";
                  		completionDateText = "—";
-                 		if(pf.Estimated_Purchase_Date != null)
-                 		{
-                 			purchaseDateText = pf.Estimated_Purchase_Date.toString("MMM, yyyy");
-                 		}
+		// Match the Pro Forma dashboard's Land Purchase date.
+		purchaseDate = pf.Estimated_Purchase_Date;
+		purchaseRows = Land_Installments[Pro_Forma == proformaIdLong && Type1 == "Purchase"] sort by Installment;
+		if(purchaseRows.count() > 0)
+		{
+			purchaseDate = purchaseRows.Date1;
+			if(purchaseDate == null && pf.Estimated_Purchase_Date != null)
+			{
+				purchaseMonthOffset = ifnull(purchaseRows.Month1,1).toLong() - 1;
+				if(purchaseMonthOffset < 0)
+				{
+					purchaseMonthOffset = 0;
+				}
+				purchaseDate = pf.Estimated_Purchase_Date.addMonth(purchaseMonthOffset);
+			}
+		}
+		if(purchaseDate != null)
+		{
+			purchaseDateText = purchaseDate.toString("MMM, yyyy");
+		}
+		if(purchaseRows.count() > 1)
+		{
+			purchaseDateText = purchaseDateText + " (1 of " + purchaseRows.count().toString() + ")";
+		}
                  		if(pf.Estimated_Completion != null)
                  		{
                  			completionDateText = pf.Estimated_Completion.toString("MMM, yyyy");

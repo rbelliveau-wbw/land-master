@@ -1,3 +1,25 @@
+## Calculated Currency Display — November 4, 2026
+
+Calculated Lot Price and per-unit Additional Cost inputs keep a single visible
+amount when a Pro Forma is locked. Their existing animated presentation layer
+remains readable while both native input text colors stay transparent, including
+the locked editor's important WebKit text-fill rule. Native values, accessibility,
+precision, editing permissions and financial calculations are unchanged. No
+Creator forms, fields, functions, Custom APIs or deployment change. The existing
+number-transition desktop fixture covers both computed inputs unlocked, locked,
+unlocked again and under reduced motion. Rollback: Proforma Manager 1.80.138.
+
+## Approval Email Land Purchase Date — November 4, 2026
+
+The shared approval email helper was saved and reloaded in Creator Development
+with its purchase date sourced from the first Purchase `Land_Installments.Date1`,
+ordered by Installment. Older installment rows without a date derive their month
+from the project start plus `Month1 - 1`; records without purchase installments
+retain the project start fallback. Multiple installments retain the dashboard's
+`(1 of N)` suffix. No approval send or resend was executed. Creator promotion
+remains with the user under PMP; the repository source records the same helper
+change without publishing Creator.
+
 ## Approval Recipient Cards — 1.80.138, November 3, 2026
 
 Unsent Settings-managed approval cards omit the repeated Settings label beneath

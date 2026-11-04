@@ -91,6 +91,9 @@
       shell.style.setProperty('--pf-number-input-color', color);
       const display = document.createElement('span'); display.className = 'pf-number-input-display'; display.setAttribute('aria-hidden', 'true'); shell.appendChild(display);
     }
+    // Locked-editor styles force both text colors; only the animated sibling paints this value.
+    input.style.setProperty('color', 'transparent', 'important');
+    input.style.setProperty('-webkit-text-fill-color', 'transparent', 'important');
     const view = shell.querySelector('.pf-number-input-display'), style = getComputedStyle(input);
     view.style.font = style.font; view.style.textAlign = style.textAlign;
     view.style.padding = style.padding; view.style.color = style.getPropertyValue('--pf-number-input-color') || style.color;

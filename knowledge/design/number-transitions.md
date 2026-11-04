@@ -74,6 +74,12 @@ dollar value leaves as dollars and a count enters as a count. Never count throug
 intermediate values between measures. Editable inputs keep their native value;
 use derived displays or a presentation layer for calculated read-only inputs.
 
+Calculated read-only input overlays must suppress the native input's `color`
+and `-webkit-text-fill-color` even when approval or ownership lock styles force
+their own important text colors. Keep the native value and accessibility intact;
+only the separate, aria-hidden presentation layer paints the formatted amount.
+Ordinary editable and non-overlaid read-only inputs retain their existing text.
+
 This guide is linked from root AGENTS.md so future repository work discovers the
 standing rule. Module documentation records actual coverage and pending adoption.
 

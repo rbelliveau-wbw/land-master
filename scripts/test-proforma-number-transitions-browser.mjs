@@ -52,6 +52,23 @@ const unique=async(selector)=>{
   const duplicates=await page.locator(selector+' [data-pf-number-key]').evaluateAll(nodes=>{const seen=new Set();return nodes.map(n=>n.dataset.pfNumberKey).filter(k=>seen.has(k)||!seen.add(k));});
   assert.deepEqual(duplicates,[],selector+' has stable unique field keys');
 };
+async function computedInputPresentation(label){
+  const samples=await page.locator('input[data-mixprice],input[data-ik="Add_l_Cost"][readonly]').evaluateAll(inputs=>inputs.map(input=>{
+    const view=input.parentElement.querySelector('.pf-number-input-display'),style=getComputedStyle(input);
+    return {value:input.value,readonly:input.readOnly,color:style.color,fill:style.webkitTextFillColor,
+      text:view?.textContent,viewColor:view?getComputedStyle(view).color:null,hidden:view?.getAttribute('aria-hidden')};
+  }));
+  assert.equal(samples.length,2,label+' covers calculated lot price and per-unit additional cost');
+  for(const sample of samples){
+    assert.equal(sample.readonly,true,label+' retains the native readonly input');
+    assert.equal(sample.color,'rgba(0, 0, 0, 0)',label+' hides native text despite locked-editor color rules');
+    assert.equal(sample.fill,'rgba(0, 0, 0, 0)',label+' hides native WebKit text fill');
+    assert.equal(sample.text,sample.value,label+' preserves the exact formatted value in the visual sibling');
+    assert.ok(sample.viewColor&&sample.viewColor!=='rgba(0, 0, 0, 0)',label+' keeps the visual sibling readable');
+    assert.equal(sample.hidden,'true',label+' keeps the duplicate visual out of accessibility text');
+  }
+  assert.notEqual(await page.locator('input[data-ik="Per_Unit"]').evaluate(input=>getComputedStyle(input).color),'rgba(0, 0, 0, 0)',label+' leaves ordinary input text readable');
+}
 async function typeOneKeyAtATime(input,value,label){
   await input.click();await settled();
   let sawUnknown=false;
@@ -94,6 +111,14 @@ async function typeOneKeyAtATime(input,value,label){
 }
 try{
   await setup();await settled();assert.equal(await page.locator('.pf-number-changing').count(),0);
+  await computedInputPresentation('unlocked editor');
+  await page.evaluate(()=>document.getElementById('edPanes').classList.add('input-lock','readonly'));
+  await computedInputPresentation('locked editor');
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await computedInputPresentation('locked reduced-motion editor');
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.evaluate(()=>document.getElementById('edPanes').classList.remove('input-lock','readonly'));
+  await computedInputPresentation('unlocked again');
   await unique('#vEdit');
   assert.equal(await page.locator('.ed-side .sh-label').textContent(),'Net Profit','editor profit label stays unchanged');
   await page.locator('.ed-side').screenshot({path:path.join(output,'summary-sidebar.png')});
