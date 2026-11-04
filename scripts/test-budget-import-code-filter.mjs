@@ -3,133 +3,99 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8').replace(/\r\n/g,'\n');
-const adapter=fs.readFileSync('widgets/budget-manager/src/app/creator-data.js','utf8');
+const ledgerSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-ledger.js','utf8');
+const workspaceSource=fs.readFileSync('widgets/budget-manager/src/app/budget-import-workspace.js','utf8');
 function block(name){
   const start=source.indexOf(`function ${name}(`),line=source.indexOf('\n',start);
   const end=source.slice(start,line).trimEnd().endsWith('}')?line:source.indexOf('\n}',start)+2;
   assert.ok(start>=0&&end>start,name);return source.slice(start,end);
 }
-const plain=value=>JSON.parse(JSON.stringify(value));
-const turn=()=>new Promise(resolve=>setImmediate(resolve));
-function deferred(){let resolve;const promise=new Promise(yes=>{resolve=yes;});return {promise,resolve};}
 const ITEM='4410926000009999991',OTHER='4410926000009999992';
-const names=['cleanVal','isObj','rawPath','firstRaw','lookupId','getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords',
-  'budgetFeature','invalidateBudgetFeature','loadBudgetFeature','budgetFeatureStateHtml','importAssignedItem','importIsMissing',
-  'importNativeBudgetCode','importAssignedBudgetCode','importHasDifferentCode','importCodeFilterUnknown','loadImportAssignmentCodes',
-  'syncImportAssignmentFilters','setImportAssignmentFilter','importFilteredSorted','importDistinct','populateImportFilter','renderImports',
-  'importItemCode','importMajorCode','importMinorCode','importDataSource','importItemDesc','importItemCost','importAssignCellHtml','budgetItemLabel','assignImportItem'];
+const functions=['cleanVal','isObj','rawPath','firstRaw','lookupId','budgetFeature','invalidateBudgetFeature','loadBudgetFeature',
+  'importAssignedItem','importIsMissing','importNativeBudgetCode','importAssignedBudgetCode','importHasDifferentCode','setImportAssignmentFilter',
+  'importSubCode','importItemCode','importMajorCode','importMinorCode','importDataSource','importItemDesc','budgetItemSubCode'];
 function row(id,code='AV-010 - Engineering',extra={}){
-  return {ID:String(id),Code:'EXTERNAL-GP-010',Subdivision_Code:'AV',Minor_Code:'010',Major_Code:'9999',Cost_Code_Description:'Engineering',Data_Source:'Great Plains',Budget_Item:{ID:ITEM,display_value:code},...extra};
+  return {ID:String(id),Code:'AV-GP-010',Subdivision_Code:'AV',Minor_Code:'010',Major_Code:'9999',Cost_Code_Description:'Engineering',Data_Source:'Great Plains',Cost:'20',Labor:'0',Materials:'0',Equipment:'0',Subcontractor:'0',Other:'20',Budget_Item:{ID:ITEM,display_value:code},...extra};
 }
-function harness({edit=false,view=true}={}){
-  const nodes={},calls=[],gate={read:null,denied:false,incomplete:false,omit:false,writeDenied:false};let renders=0;
-  const data={items:[]};
-  const node=id=>nodes[id]||(nodes[id]={innerHTML:'',textContent:'',value:'',style:{},hidden:false,attrs:{},setAttribute(name,value){this.attrs[name]=value;}});
-  const c=vm.createContext({
-    S:{liveSDK:true,useMock:false,startupReady:true,importItems:[],allBudgetItems:[],importUI:{search:'',missingOnly:false,differentOnly:false,major:'',minor:'',source:'',sort:'code'}},
-    CFG:{reports:{items:'All_Budget_Items'},reportCandidates:{},forms:{importItem:'Budget_Import_Item'},importItemConfig:{budgetItemLookupField:'Budget_Item'}},
-    Promise,Error,Date,Number,setTimeout,clearTimeout,
-    LMRuntime:{current:()=>({environment:'PRODUCTION',user:'actual-user',appLinkName:'land-master'})},
-    ZOHO:{CREATOR:{DATA:{
-      async getRecordCount(config){calls.push({kind:'count',config:plain(config)});if(gate.denied)return {code:2898};return {code:3000,result:{records_count:data.items.length+(gate.incomplete?1:0)}};},
-      async getRecords(config){calls.push({kind:'read',config:plain(config)});if(gate.read)await gate.read.promise;return {code:3000,data:data.items.map(item=>Object.fromEntries(config.fields.split(',').filter(field=>!(gate.omit&&field==='Budget_Code')).map(field=>[field,item[field]])))};}
-    }}},document:{querySelector:()=>null,querySelectorAll:()=>[]},$:node,
-    canEditImportItems:()=>edit,canViewImportItems:()=>view,syncBudgetImportBadge(){},importSubCode:rec=>String(rec.Subdivision_Code||''),importSubName:rec=>rec.Subdivision_Code||'',
-    v:value=>Number(value||0),esc:value=>String(value??''),escAttr:value=>String(value??''),shortErr:error=>error?.message||String(error),auditLog(){},toastShow(){},setMsg(){},
-    importAssignSelectHtml:()=>'<span>Assign</span>',
-    async sdkUpdateRecord(form,id,payload){calls.push({kind:'write',form,id,payload:plain(payload)});if(gate.writeDenied)throw new Error('Denied');}
-  });
-  c.window=c;vm.runInContext(adapter,c);for(const name of names)vm.runInContext(block(name),c);
-  c.budgetFeature('imports').status='loaded';c.budgetFeature('import-assignment-items').status='loaded';
-  const render=c.renderImports;c.renderImports=()=>{renders++;return render();};
-  return {c,nodes,node,calls,data,gate,renders:()=>renders};
+function harness(){
+  const calls=[],permissions={view:true,edit:false},data={imports:[],items:[],denyItems:false};
+  const host={innerHTML:'',setAttribute(){},closest:()=>null,querySelectorAll:()=>[]};
+  const c=vm.createContext({S:{view:'vImports',features:{},importItems:[],allBudgetItems:[],budgets:[],importUI:{subdivision:'AV',search:'',missingOnly:false,differentOnly:false,major:'',minor:'',source:'',sort:'code'}},
+    CFG:{reports:{importItems:'All_Budget_Item_Imports',items:'All_Budget_Items'},importItemConfig:{budgetItemLookupField:'Budget_Item',importSubCodeFields:['Subdivision_Code'],itemSubCodeFields:['Subdivision_Code','Budget.Subdivision_Code']}},
+    Promise,Error,Date,Number,document:{activeElement:null}});
+  c.window=c;vm.runInContext(ledgerSource,c);vm.runInContext(workspaceSource,c);for(const name of functions)vm.runInContext(block(name),c);
+  const controller=c.BudgetImportWorkspace.create({state:c.S,config:c.CFG,node:id=>id==='importsTableWrap'?host:null,escape:value=>String(value??''),escapeAttr:value=>String(value??''),clean:c.cleanVal,
+    canView:()=>permissions.view,canEdit:()=>permissions.edit,scope:()=> 'PRODUCTION|actual-user',feature:c.budgetFeature,loadFeature:c.loadBudgetFeature,
+    async read(report,criteria,options){calls.push({report,criteria,options});const sub=criteria.match(/== "([^"]+)"/)[1];if(report===c.CFG.reports.items&&data.denyItems)throw {permissionDenied:true,message:'Scoped Budget Items denied'};return (report===c.CFG.reports.items?data.items:data.imports).filter(record=>record.Subdivision_Code===sub);},
+    assigned:c.importAssignedItem,source:c.importDataSource,major:c.importMajorCode,minor:c.importMinorCode,description:c.importItemDesc,code:c.importItemCode,subCode:c.importSubCode,subName:c.importSubCode,itemSubCode:c.budgetItemSubCode,different:c.importHasDifferentCode,assignHtml:()=>'<span>Assignment</span>',badge(){},onError(){}});
+  c.importWorkspaceController=()=>controller;return {c,controller,host,calls,data,permissions};
 }
+const item=(id,code)=>({ID:id,Budget_Code:code,Item_Name:'Scoped Budget Item',Subdivision_Code:'AV'});
 
-// The native import key ignores source-specific Code and Major_Code; code text is exact.
+// Native comparison uses subdivision/minor, retaining case and zeroes, never the GP/HJ/B marker.
 {
-  const {c}=harness();
-  assert.equal(c.importNativeBudgetCode(row('1')),'AV-010');
-  for(const external of ['EXT-HJ-010','EXT-GP-010','EXT-B-010'])assert.equal(c.importHasDifferentCode(row('1','AV-010 - Engineering',{Code:external,Major_Code:'7777'})),false);
+  const {c}=harness();assert.equal(c.importNativeBudgetCode(row('1')),'AV-010');
+  for(const marker of ['HJ','GP','B'])assert.equal(c.importHasDifferentCode(row('1','AV-010 - Engineering',{Code:'AV-'+marker+'-010',Major_Code:'7777'})),false);
   assert.equal(c.importHasDifferentCode(row('1','AV-011 - Engineering')),true);
-  assert.equal(c.importHasDifferentCode(row('1','av-010 - Engineering')),true,'case remains exact');
-  assert.equal(c.importHasDifferentCode(row('1','AV-10 - Engineering')),true,'leading zeroes remain significant');
-  assert.equal(c.importHasDifferentCode(row('1','AV-010 — Engineering')),false,'acknowledged widget display format');
-  for(const value of [null,'',{},[]])assert.equal(c.importHasDifferentCode(row('1','',{Budget_Item:value})),false,'missing assignments never qualify');
+  assert.equal(c.importHasDifferentCode(row('1','av-010 - Engineering')),true);
+  assert.equal(c.importHasDifferentCode(row('1','AV-10 - Engineering')),true);
+  assert.equal(c.importHasDifferentCode(row('1','AV-010 — Engineering')),false);
+  for(const value of [null,'',{},[],{display_value:'AV-010 - Label Only'},'AV-010 - Label Only'])assert.equal(c.importHasDifferentCode(row('1','',{Budget_Item:value})),false);
   assert.equal(c.importHasDifferentCode(row('1','AV-010 - Engineering',{Minor_Code:''})),null);
 }
 
-// Actual lookup values and exact string-ID matches outrank display labels.
+// Scoped exact IDs outrank stale labels; embedded/flattened native code dereferences retain precedence.
 {
-  const {c}=harness();
-  c.S.allBudgetItems=[{ID:ITEM,Budget_Code:'AV-010'},{ID:OTHER,Budget_Code:'AV-011'}];
-  assert.equal(c.importHasDifferentCode(row('1','WRONG-999 - Stale label')),false);
-  assert.equal(c.importHasDifferentCode(row('1','AV-010 - Stale label',{Budget_Item:{ID:OTHER,display_value:'AV-010 - Stale label'}})),true);
-  assert.equal(c.importHasDifferentCode(row('1','',{Budget_Item:{ID:ITEM,Budget_Code:'AV-012',display_value:'AV-010 - Engineering'}})),true);
-  assert.equal(c.importHasDifferentCode(row('1','AV-010 - Engineering',{'Budget_Item.Budget_Code':'AV-012'})),true,'flattened native code outranks the display label');
-  c.S.allBudgetItems=[];
-  for(const value of [ITEM,{ID:ITEM},{ID:ITEM,display_value:'Unreadable name'}])assert.equal(c.importHasDifferentCode(row('1','',{Budget_Item:value})),null);
+  const h=harness();h.data.items=[item(ITEM,'AV-010'),item(OTHER,'AV-011')];await h.controller.load();
+  assert.equal(h.c.importHasDifferentCode(row('1','WRONG-999 - Stale Label')),false);
+  assert.equal(h.c.importHasDifferentCode(row('1','AV-010 - Stale Label',{Budget_Item:{ID:OTHER,display_value:'AV-010 - Stale Label'}})),true);
+  assert.equal(h.c.importHasDifferentCode(row('1','AV-010 - Engineering',{'Budget_Item.Budget_Code':'AV-012'})),true);
+  assert.equal(h.c.importHasDifferentCode(row('1','',{Budget_Item:{ID:ITEM,Budget_Code:'AV-012',display_value:'AV-010 - Engineering'}})),true);
+  assert.equal(h.calls.length,2);assert.ok(h.calls.every(call=>call.criteria.includes('Subdivision_Code == "AV"')));
+  assert.equal(h.c.S.allBudgetItems.length,0,'Scoped item fields do not populate the global roster');
 }
 
-// Missing native code components remain unknown without downloading unrelated item records.
+// One mismatching import includes its complete mapped line, retaining all three source records.
 {
-  const h=harness();h.c.S.importItems=[row('1','AV-011 - Engineering',{Minor_Code:''})];
-  await h.c.setImportAssignmentFilter('different');
-  assert.equal(h.calls.length,0);assert.equal(h.c.S.importUI.differentOnly,false);assert.ok(h.c.S.importCodeFilterError);
-  assert.match(h.node('importsTableWrap').innerHTML,/data-imp-id='1'/);
-}
-
-// View-only users filter native labels without loading assignment choices or any code roster.
-{
-  const h=harness();h.c.S.importItems=[row('1'),row('2','AV-011 - Engineering'),row('3','',{Budget_Item:null})];
-  await h.c.setImportAssignmentFilter('different');
-  assert.equal(h.c.S.importUI.differentOnly,true);assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['2']);
-  assert.equal(h.calls.length,0);assert.match(h.node('importsTableWrap').innerHTML,/data-imp-id='2'/);assert.doesNotMatch(h.node('importsTableWrap').innerHTML,/data-imp-id='1'/);
-  assert.equal(h.node('importFilterDifferent').attrs['aria-pressed'],'true');
-  await h.c.setImportAssignmentFilter('missing');assert.equal(h.c.S.importUI.differentOnly,false);assert.equal(h.c.S.importUI.missingOnly,true);assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['3']);
+  const h=harness();h.data.items=[item(ITEM,'AV-011'),item(OTHER,'AV-010')];
+  h.data.imports=[row('gp','AV-011 - Engineering',{Minor_Code:'011'}),row('hcss','AV-011 - Engineering',{Data_Source:'HeavyJob',Code:'AV-HJ-010',Cost:'30'}),row('budget','AV-011 - Engineering',{Data_Source:'HeavyJob Budget',Code:'AV-B-011',Minor_Code:'011',Cost:'40'}),row('matched','AV-010 - Matched',{Budget_Item:{ID:OTHER}}),row('missing','',{Budget_Item:null})];
+  await h.controller.load();const reads=h.calls.length;
+  assert.equal(h.c.importHasDifferentCode(h.data.imports[0]),false);assert.equal(h.c.importHasDifferentCode(h.data.imports[1]),true);
+  await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.differentOnly,true);assert.equal(h.c.S.importUI.missingOnly,false);
+  for(const id of ['gp','hcss','budget'])assert.ok(h.host.innerHTML.includes('data-import-record="'+id+'"'),'Keep grouped source '+id);
+  assert.doesNotMatch(h.host.innerHTML,/data-import-record="matched"|data-import-record="missing"/);
+  const group=h.controller.groups().find(g=>g.budgetItemId===ITEM);assert.equal(group.records.length,3);assert.equal(group.sources.gp.total,20);assert.equal(group.sources.hcss.total,30);assert.equal(group.sources.budget.total,40);
+  assert.equal(h.calls.length,reads,'Filtering never downloads a global code projection');
+  await h.c.setImportAssignmentFilter('missing');assert.equal(h.c.S.importUI.differentOnly,false);assert.equal(h.c.S.importUI.missingOnly,true);assert.match(h.host.innerHTML,/data-import-record="missing"/);assert.doesNotMatch(h.host.innerHTML,/data-import-record="hcss"/);
   await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.missingOnly,false);assert.equal(h.c.S.importUI.differentOnly,true);
   await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.differentOnly,false);
 }
 
-// Search and all existing dropdowns intersect the different-code subset; sorting is retained.
+// Search/filters retain a selected group's sibling source records instead of narrowing its totals.
 {
-  const h=harness();h.c.S.importItems=[row('1','AV-011 - Engineering',{Code:'Z',Major_Code:'2000'}),row('2','AV-012 - Survey',{Code:'A',Cost_Code_Description:'Survey',Major_Code:'2000'}),row('3','AV-013 - Engineering',{Code:'B',Data_Source:'HeavyJob'})];
-  await h.c.setImportAssignmentFilter('different');assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['2','3','1']);
-  Object.assign(h.c.S.importUI,{major:'2000',source:'Great Plains',minor:'010',search:'engineering'});
-  assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['1']);
+  const h=harness();h.data.items=[item(ITEM,'AV-011'),item(OTHER,'AV-012')];h.data.imports=[row('engineering-gp','',{Code:'Z-GP',Major_Code:'2000'}),row('engineering-hcss','',{Code:'Z-HJ',Data_Source:'HeavyJob',Major_Code:'2000'}),row('survey','',{Budget_Item:{ID:OTHER},Code:'A-GP',Cost_Code_Description:'Survey',Major_Code:'3000'})];
+  await h.controller.load();await h.c.setImportAssignmentFilter('different');Object.assign(h.c.S.importUI,{major:'2000',source:'Great Plains',minor:'010',search:'engineering'});h.controller.render();
+  assert.match(h.host.innerHTML,/data-import-record="engineering-gp"/);assert.match(h.host.innerHTML,/data-import-record="engineering-hcss"/);assert.doesNotMatch(h.host.innerHTML,/data-import-record="survey"/);
 }
 
-// Only unresolved lookups cause a counted two-field read, shared across repeated activation.
+// Unavailable codes remain unknown, never false differences or a reason to fetch an unrelated roster.
+for(const shape of [ITEM,{ID:ITEM},{ID:ITEM,display_value:'Unreadable Name'}]){
+  const h=harness();h.data.imports=[row('unknown','',{Budget_Item:shape})];await h.controller.load();assert.equal(h.c.importHasDifferentCode(h.controller.rows()[0]),null);assert.equal(h.controller.groups()[0].different,null);
+  const reads=h.calls.length;await h.c.setImportAssignmentFilter('different');assert.doesNotMatch(h.host.innerHTML,/data-import-record="unknown"/);assert.equal(h.calls.length,reads);
+  await h.c.setImportAssignmentFilter('different');assert.match(h.host.innerHTML,/data-import-record="unknown"/);
+}
+
+// Item permission failure remains visible without inventing codes or falling back globally.
 {
-  const h=harness(),wait=deferred();h.gate.read=wait;
-  h.c.S.importItems=[row('1','',{Budget_Item:{ID:ITEM}}),row('2','',{Budget_Item:{ID:OTHER}})];
-  h.data.items=[{ID:ITEM,Budget_Code:'AV-010'},{ID:OTHER,Budget_Code:'AV-011'}];
-  const first=h.c.setImportAssignmentFilter('different');await turn();
-  assert.equal(h.c.S.importCodeFilterPending,true);assert.equal(h.c.S.importUI.differentOnly,false);assert.match(h.node('importsTableWrap').innerHTML,/data-imp-id='1'/,'normal table remains usable during read');
-  await h.c.setImportAssignmentFilter('different');const second=h.c.setImportAssignmentFilter('different');await turn();
-  assert.equal(h.calls.filter(call=>call.kind==='read').length,1);
-  wait.resolve();await Promise.all([first,second]);assert.equal(h.c.S.importUI.differentOnly,true);
-  assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['2']);
-  assert.equal(h.calls[1].config.fields,'ID,Budget_Code');assert.equal(h.calls[1].config.field_config,'custom');
-  assert.equal(h.c.S.allBudgetItems.length,0,'projection never becomes the editable full roster');
+  const h=harness();h.data.imports=[row('unknown','',{Budget_Item:{ID:ITEM}})];h.data.denyItems=true;await h.controller.load();assert.match(h.host.innerHTML,/Budget Item Details Unavailable/);assert.equal(h.controller.items().length,0);
+  await h.c.setImportAssignmentFilter('different');assert.equal(h.c.importHasDifferentCode(h.controller.rows()[0]),null);assert.equal(h.calls.length,2);assert.ok(h.calls.every(call=>call.criteria.includes('Subdivision_Code == "AV"')));
 }
 
-// Failed/incomplete/missing projected codes never publish a false empty subset and can retry.
-for(const failure of ['denied','incomplete','omit','orphan']){
-  const h=harness();h.c.S.importItems=[row('1','',{Budget_Item:{ID:ITEM}})];h.data.items=[{ID:ITEM,Budget_Code:'AV-011'}];
-  if(failure==='orphan')h.data.items[0].ID=OTHER;else h.gate[failure]=true;
-  await h.c.setImportAssignmentFilter('different');
-  assert.equal(h.c.S.importUI.differentOnly,false);assert.ok(h.c.S.importCodeFilterError);assert.equal(h.node('importCodeFilterStatus').hidden,false);assert.match(h.node('importCodeFilterStatus').innerHTML,/Retry/);
-  assert.match(h.node('importsTableWrap').innerHTML,/data-imp-id='1'/);assert.doesNotMatch(h.node('importsTableWrap').innerHTML,/No assigned items/);
-  h.gate[failure]=false;h.data.items=[{ID:ITEM,Budget_Code:'AV-011'}];await h.c.setImportAssignmentFilter('different',true);
-  assert.equal(h.c.S.importUI.differentOnly,true);assert.equal(h.c.S.importCodeFilterError,'');assert.deepEqual(h.c.importFilteredSorted().map(item=>item.ID),['1']);
-}
-
-// A real acknowledged reassignment immediately re-filters; a denied write keeps the row.
+// Inactive, unselected and unauthorized workspaces do not activate filters or query codes.
 {
-  const h=harness({edit:true});h.c.S.importItems=[row('1','AV-011 - Engineering')];h.c.S.allBudgetItems=[{ID:OTHER,Budget_Code:'AV-010',Item_Name:'Engineering'}];
-  await h.c.setImportAssignmentFilter('different');assert.equal(h.c.importFilteredSorted().length,1);
-  h.gate.writeDenied=true;h.c.assignImportItem('1',OTHER);await turn();assert.equal(h.c.importFilteredSorted().length,1);
-  h.gate.writeDenied=false;h.c.assignImportItem('1',OTHER);await turn();assert.equal(h.c.importFilteredSorted().length,0);assert.match(h.node('importsTableWrap').innerHTML,/No assigned items have a different code/);
+  const h=harness();h.c.S.view='vBudgets';await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.differentOnly,false);
+  h.c.S.view='vImports';h.c.S.importUI.subdivision='';await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.differentOnly,false);
+  h.c.S.importUI.subdivision='AV';h.permissions.view=false;await h.c.setImportAssignmentFilter('different');assert.equal(h.c.S.importUI.differentOnly,false);await h.controller.load();assert.equal(h.calls.length,0);
 }
 
-console.log('Budget import different-code filter checks passed.');
+console.log('Budget Import Code Filter: exact native comparison, scoped identities, complete grouped sources, unknown codes, permissions and no global projection reads passed.');

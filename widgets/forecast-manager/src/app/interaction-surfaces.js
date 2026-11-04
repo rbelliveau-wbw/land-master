@@ -37,6 +37,7 @@
       panels.push({selector:'#vBudgets,#vEditor,#vApprovals,#vImports'});
       list('#mx','tr.irow[data-iid],tr.irow[data-budget-item-ids],tr.budget-element-row[data-element-key]',row=>row.dataset.elementKey||row.dataset.iid||row.dataset.budgetItemIds,()=>state().edBudget?.ID||options.project?.()?.key,{visibility:true});
       list('#projList','.proj-card[data-project-key]',row=>row.dataset.projectKey,'projects');
+      list('#importsTableWrap','.il-line[data-import-ledger-key]',row=>row.dataset.importLedgerKey,()=>M.key('import-ledger',state().importUI?.subdivision||''),{visibility:true,resize:true});
       surfaceExtra.push('.pop');
       status('[data-project-proforma-wrap]','.proj-card',node=>node.dataset.projectProformaWrap);
       status('#autosave');

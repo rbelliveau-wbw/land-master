@@ -106,3 +106,17 @@ check. Contract uploads preserve the Email switch without requiring it to be on;
 Budget phase rows omit the direct Approvals shortcut and reserve space for their
 remaining controls. No Creator backend deployment is required. See
 [regression evidence and rollback](../../docs/attachment-upload-reconciliation-2026-10-07.md).
+
+## Grouped Import Ledger — 122.29.95, November 3, 2026
+
+Budget Import Items requires one Subdivision and reads that scope only after the
+tab opens. Exact mapped Budget Item IDs consolidate source records; unmatched
+imports remain separate. Expand a line for all five Imported or stored Budget
+Item elements and nested original source metadata. Construction Budget, HCSS
+Actuals, GP Actuals, and their original totals retain independent meanings;
+unknown values are not zeroes. Single-record assignment reuses the native save
+and permission path. The separate Budget editor element snapshot is preserved.
+Visible headings, labels and actions use Title Case. Keyed ledger motion and
+amounts reuse the shared interaction and number registries. Frontend only; no
+new Creator deployment. See the [Budget module guide](../../knowledge/modules/budget.md)
+for scope, regression and rollback notes.

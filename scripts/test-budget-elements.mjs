@@ -16,13 +16,15 @@ function extract(name) {
 const definitions = source.match(/var BUDGET_ELEMENTS\s*=\s*(\[[\s\S]*?\]);/);
 assert.ok(definitions, 'the native element-to-field map must be explicit');
 const BID = '4410926000005159046', OTHER = '4410926000005159047';
-const state = {modifications: [], tier: 'final'};
+const state = {modifications: [], tier: 'final', view:'vImports', importUI:{subdivision:'AR05'}, features:{}};
 const items = {};
 let importsAllowed = true;
 const assignmentWrites = [];
 const context = vm.createContext({S: state, budgetModsReady: () => true, findItemById: id => items[id] || null,
   canViewImportItems: () => importsAllowed, canEditImportItems: () => true,
-  CFG: {forms: {importItem: 'Budget_Import_Item'}, importItemConfig: {budgetItemLookupField: 'Budget_Item'}},
+  CFG: {forms: {importItem: 'Budget_Import_Item'}, importItemConfig: {budgetItemLookupField: 'Budget_Item', importSubCodeFields:['Subdivision_Code']}},
+  importWorkspaceRows:()=>[],budgetBadgeScope:()=> 'PRODUCTION|native-user',
+  importWorkspaceController:()=>({current:()=>({subdivision:'AR05',items:[{ID:OTHER,Budget_Code:'AR05-3101',Item_Name:'Scoped Item'}]})}),
   sdkUpdateRecord: async (form, id, data) => {assignmentWrites.push({form,id,data});},
   toastShow: () => {}, renderImports: () => {}, setMsg: () => {}, auditLog: () => {}, shortErr: error => String(error)
 });
@@ -31,7 +33,7 @@ vm.runInContext(`var BUDGET_ELEMENTS = ${definitions[1]};\n` + [
   'modStatusOf', 'modSignedAmount', 'modsForItem', 'budgetElementNumber',
   'budgetElementSnapshot', 'budgetImportElementSnapshot', 'budgetActualElementSnapshot', 'budgetElementDepartmentIndex', 'budgetElementValues', 'budgetPrelimElementSnapshot', 'budgetElementImportedSnapshot', 'budgetElementModAmounts', 'budgetElementKey',
   'budgetLineItemIds', 'budgetElementCell', 'budgetElementRowsHtml',
-  'budgetUnitNumber', 'budgetUnitMoney', 'esc', 'escAttr', 'assignImportItem'
+  'budgetUnitNumber', 'budgetUnitMoney', 'esc', 'escAttr', 'normSubCode', 'importSubCode', 'budgetItemLabel', 'budgetItemsForSubCode', 'findImportRecord', 'budgetFeature', 'invalidateBudgetFeature', 'assignImportItem'
 ].map(extract).join('\n'), context);
 const plain = value => JSON.parse(JSON.stringify(value));
 const fields = ['Labor_Budget', 'Materials_Budget', 'Equipment_Budget', 'Subcontractor_Budget', 'Other_Budget'];
@@ -74,7 +76,7 @@ assert.equal(context.budgetElementSnapshot(importParts([1, 2, 3, 4, 5])), null, 
 
 const importTarget = {ID: BID, Unapproved_Final_Budget_Ttl: '25.5000', ...snapshot};
 const imported = (ID, assigned, amount, values, overrides = {}) => ({
-  ID, Budget_Item: assigned, Data_Source: 'HeavyJob Budget', Cost: amount, ...parts(values), ...overrides
+  ID, Subdivision_Code:'AR05', Budget_Item: assigned, Data_Source: 'HeavyJob Budget', Cost: amount, ...parts(values), ...overrides
 });
 state.importItemsLoaded = false;
 state.importItems = [imported('4410926000005159200', {ID: BID, zc_display_value: 'Clearing'}, '15.1250', ['1.1250', 2, 3, 4, 5])];
@@ -109,7 +111,11 @@ await new Promise(resolve => setImmediate(resolve));
 assert.equal(assignmentWrites.length, 1, 'the actual assignment handler receives one native save acknowledgement');
 assert.equal(state.importItems, assignmentSource, 'assignment mutates the existing Imports snapshot in place');
 assert.equal(state.elementImportSource, null, 'successful assignment explicitly invalidates the component lookup cache');
+assert.equal(state.importItemsLoaded,false,'A changed native assignment requires a complete new editor import read');
+assert.equal(context.budgetFeature('imports').status,'idle');
 assert.equal(context.budgetElementImportedSnapshot({...importTarget, Unapproved_Final_Budget_Ttl: '15.125'}), null, 'the old assignment cannot retain the source breakdown');
+assert.equal(context.budgetElementImportedSnapshot({ID:OTHER, Unapproved_Final_Budget_Ttl:'15.125'}),null,'Even the acknowledged target remains unavailable until the complete editor snapshot reloads');
+state.importItemsLoaded=true; // Represents the subsequently completed native full report read.
 assert.deepEqual(plain(context.budgetElementImportedSnapshot({ID: OTHER, Unapproved_Final_Budget_Ttl: '15.125'})), [1.125, 2, 3, 4, 5], 'the new exact assignment receives the component breakdown');
 state.importItems = [];
 
