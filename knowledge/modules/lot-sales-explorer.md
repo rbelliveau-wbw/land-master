@@ -1,3 +1,15 @@
+## Forecasts hover details — 1.6.18, November 4, 2026
+
+Annual columns use a more compact width. The current-month hover card shows
+separate saved Forecast, Scheduled and Sold counts without changing the matrix
+or total calculation. The subdivision card adds Final Acceptance Due Date from
+the Subdivision form. Placeholder builder cards join nonblank Forecast Manager
+notes from all saved years in fiscal-year order with a line break, preserving
+the separate stored comments. Existing report reads supply the additional
+fields; no backend function or Custom API change is expected. Production
+verification is pending.
+[Behavior, checks and rollback](../../docs/forecasts-hover-details-2026-11-04.md).
+
 ## Forecasts default and filter performance — 1.6.16, October 29, 2026
 
 Forecasts opens with Hide Empty on, and Reset restores it. Lot Sales defaults

@@ -285,6 +285,24 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+November 4, Insights 1.6.18: make annual columns more compact while keeping
+their year/total labels readable and their values aligned through builder,
+group and footer rows. The current-month hover card shows **Forecast**,
+**Scheduled** and **Sold** as three separate saved counts for the exact visible
+scope. Keep the existing displayed basis and all matrix/CSV totals unchanged.
+Use the Creator application date to identify the current month and retain
+missing/unknown distinctions.
+
+The subdivision card includes **Final Acceptance Due Date**, sourced directly
+from `Subdivision.Final_Acceptance_Due_Date`. Placeholder builder cards show
+nonblank `Forecast_Year.Builder_Notes` for the exact subdivision/builder across
+all saved years, including years outside the displayed range. Concatenate the
+comments in fiscal-year order with a line break and preserve their internal
+newlines. Keep the yearly stored fields and Forecast Manager editing unchanged.
+Match the native placeholder names Placeholder, Placeholder2, Placeholder3 and
+Placeholder4. Reuse anchored cards, hover/focus/click behavior, keyboard dismissal,
+viewport limits and shared popover motion; render saved text safely as text.
+
 October 29: put a neutral **Total** column immediately after
 Builder, before the fiscal month groups. Sum all months in the selected fiscal
 years using the current displayed basis and filters, including both completed
@@ -310,7 +328,8 @@ Subdivision_Code case-insensitively, and reserves 4px around controls so focus
 outlines cannot clip in the horizontal filter scroller. Use an inset blue search
 focus ring so scrolling the padding out of view cannot clip selection. Monthly columns are
 55.25px (15% narrower than65px), with centered header/body/group/footer and builder
-values. Annual and identity columns retain their widths. Project-view Expand All
+values. Annual columns follow the November 4 compact sizing; identity columns
+retain their widths. Project-view Expand All
 and Collapse All apply to the builder branches as well as project groups, using
 cached mounted rows and preserving Hide Empty. Individual group toggles retain
 their existing remembered builder expansion behavior.

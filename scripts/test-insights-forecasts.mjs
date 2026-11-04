@@ -14,7 +14,7 @@ assert.deepEqual(report.years,[2026,2027]);assert.equal(report.months.length,24)
 const alta=report.rows.find(r=>r.phase.name.startsWith('Alta'));
 assert.equal(alta.cells[0].value,5,'Completed month uses native Actual Lots');assert.equal(alta.cells[8].value,21,'Current month uses saved forecast, without adding actuals');assert.equal(alta.cells[9].value,21);
 assert.equal(M.annual(alta.cells,2026).value,8*5+4*21);assert.equal(M.annual(alta.cells,2027).value,12*21);
-assert.deepEqual(M.total(alta.cells),{value:376,known:48,knownValue:376,missing:0,sold:40,forecast:336},'selected-period total adds past Sold and current/future Forecast once');
+assert.deepEqual(M.total(alta.cells),{value:376,known:48,knownValue:376,missing:0,sold:40,forecast:336,tooltipForecast:504,tooltipScheduled:48,tooltipSold:120,tooltipForecastKnown:48,tooltipForecastMissing:0,tooltipRecords:48},'selected-period total adds past Sold and current/future Forecast once, retaining separate raw comparison counts');
 for(const mode of ['outlook','forecast'])for(const groupBy of ['project','territory','builder'])for(const period of ['current','next','planning','custom']){
   const scoped=M.report(model,{...filters,mode,groupBy,period,years:['2026','2028']},today);
   for(const row of [...scoped.rows,...scoped.rows.flatMap(row=>row.builderRows),{cells:scoped.totals}]){
@@ -31,6 +31,17 @@ assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0
 assert.equal(report.rows.find(r=>r.phase.name.startsWith('Meadow')).phase.soldOut,true);
 const nonempty=M.report(model,{...filters,hideEmpty:true},today);assert.equal(nonempty.rows.length,1,'Hide Empty removes zero, missing-only and mixed blank/zero rows');assert.equal(nonempty.totals[0].value,5,'filtered totals match visible nonempty rows');assert.equal(M.hasValues([{value:null},{value:0}]),false);assert.equal(M.hasValues([{value:null},{value:5}]),true,'a nonzero month keeps a partly missing row');assert.equal(report.rows.find(r=>r.phase.name.startsWith('No Forecast')).cells[0].value,null,'hiding missing-only rows never converts missing data to zero');
 assert.equal(M.report(model,{...filters,mode:'forecast'},today).rows.find(r=>r.phase.id===alta.phase.id).cells[0].value,21,'Forecast-only retains saved past forecasts');
+assert.equal(alta.phase.finalAcceptanceDueDate,'2026-11-04','Final Acceptance Due Date comes from the native Subdivision field');
+assert.equal(report.rows.find(r=>r.phase.name.startsWith('Meadow')).phase.finalAcceptanceDueDate,null,'a blank acceptance date stays unknown');
+assert.ok(A.fields.subdivisions.includes('Final_Acceptance_Due_Date'));assert.ok(A.fields.years.includes('Builder_Notes'));
+const comparison=cell=>({forecast:cell.tooltipForecast,scheduled:cell.tooltipScheduled,sold:cell.tooltipSold,missing:cell.tooltipForecastMissing});
+assert.deepEqual(comparison(alta.cells[8]),{forecast:21,scheduled:2,sold:5,missing:0},'current-month comparisons retain all three raw measures without blending the matrix value');
+assert.deepEqual(comparison(alta.cells[0]),comparison(alta.cells[8]),'completed-month outlook selection does not change the raw comparison measures');
+for(const groupBy of ['project','territory','builder']){
+  const compared=M.report(model,{...filters,groupBy},today),phaseRows=compared.rows.filter(row=>row.phase.id===alta.phase.id);
+  assert.deepEqual(comparison(M.aggregate(phaseRows,compared.months)[8]),comparison(alta.cells[8]),'all grouping modes allocate raw comparison counts once');
+  assert.deepEqual(comparison(compared.totals[8]),{forecast:21,scheduled:3,sold:5,missing:1},'footer comparisons include saved zero rows and preserve missing forecasts');
+}
 assert.equal(M.report(model,{...filters,groupBy:'territory'},today).groups.length,2);
 const builderReport=M.report(model,{...filters,groupBy:'builder'},today);assert.equal(builderReport.rows.filter(r=>r.phase.id===alta.phase.id).length,2,'Builder view allocates each forecast once');
 assert.equal(M.report(model,{...filters,builderIds:[data.builders[1].ID]},today).rows.length,1);assert.equal(M.report(model,{...filters,builderIds:['unavailable']},today).rows.length,0);
@@ -39,6 +50,28 @@ assert.equal(M.report(model,{...filters,search:'D.R. Horton'},today).rows[0].cel
 assert.deepEqual(M.yearsFor('custom',today,[2028,2026,2028]),[2026,2028]);assert.deepEqual(M.yearsFor('current','2027-01-10'),[2026]);assert.throws(()=>M.yearsFor('custom',today,[]));assert.throws(()=>M.report(model,filters,''));
 for(const mutate of [d=>d.years.push({...d.years[0],ID:'duplicate'}),d=>d.months.push({...d.months[0],ID:'duplicate'}),d=>d.months.pop(),d=>d.months[0].Forecast_Start_Date='2026-03-01',d=>d.months[0].Forecasted_Lots='-1',d=>d.months[0].Subdivision1={ID:'wrong'}]){const d=forecastFixture();mutate(d);assert.throws(()=>M.normalize(d),'Incomplete or inconsistent forecast data rejects before rendering');}
 const blank=forecastFixture();blank.months.find(m=>m.Forecast_Month==='October').Forecasted_Lots='';assert.equal(M.report(M.normalize(blank),filters,today).rows.find(r=>r.phase.id===alta.phase.id).cells[8].value,11,'one blank builder never hides another builder saved forecast');
+assert.deepEqual(comparison(M.report(M.normalize(blank),filters,today).rows.find(r=>r.phase.id===alta.phase.id).cells[8]),{forecast:11,scheduled:2,sold:5,missing:1},'blank forecasts preserve known Scheduled and Sold values');
+const unknownComparison=forecastFixture();
+unknownComparison.months.filter(row=>row.Subdivision1.ID===alta.phase.id&&row.Forecast_Month==='October').forEach(row=>row.Forecasted_Lots='');
+assert.deepEqual(comparison(M.report(M.normalize(unknownComparison),filters,today).rows.find(row=>row.phase.id===alta.phase.id).cells[8]),{forecast:null,scheduled:2,sold:5,missing:2},'all-blank forecast comparisons stay unknown while Scheduled and Sold remain available');
+const zeroComparison=forecastFixture();
+zeroComparison.months.filter(row=>row.Subdivision1.ID===alta.phase.id&&row.Forecast_Month==='October').forEach(row=>{row.Forecasted_Lots='0';row.Scheduled_Lots='0';row.Actual_Lots='0';});
+assert.deepEqual(comparison(M.report(M.normalize(zeroComparison),filters,today).rows.find(row=>row.phase.id===alta.phase.id).cells[8]),{forecast:0,scheduled:0,sold:0,missing:0},'saved zero is distinct from unknown in each comparison metric');
+assert.deepEqual(comparison(report.rows.find(row=>row.phase.name.startsWith('No Forecast')).cells[8]),{forecast:null,scheduled:null,sold:null,missing:1},'absent saved months never become invented zero comparisons');
+
+const notesData=forecastFixture(),notesPhase=notesData.subdivisions[0].ID,notesBuilder=notesData.builders[0].ID;
+for(const parent of notesData.years){
+  parent.Builder_Notes=parent.Subdivision1.ID!==notesPhase?'Different subdivision':parent.Builder1.ID!==notesBuilder?'Different builder':({'2026':'First line\nSecond line','2027':'   ','2028':'First line\nSecond line'}[parent.Forecast_Year]);
+}
+notesData.years.reverse();
+const notesOriginal=JSON.stringify(notesData),notesModel=M.normalize(notesData),expectedNote='First line\nSecond line\nFirst line\nSecond line';
+for(const groupBy of ['project','territory','builder']){
+  const notesReport=M.report(notesModel,{...filters,groupBy,period:'current'},today),notesRow=notesReport.rows.find(row=>row.phase.id===notesPhase&&row.builders.some(builder=>builder.id===notesBuilder));
+  assert.equal(notesRow.builders.find(builder=>builder.id===notesBuilder).note,expectedNote,'exact builder/subdivision notes include hidden years in chronological order and retain repeated text');
+  assert.ok(notesRow.builders.filter(builder=>builder.id!==notesBuilder).every(builder=>builder.note==='Different builder\nDifferent builder\nDifferent builder'),'other builders retain only their own notes');
+}
+assert.equal(M.report(notesModel,{...filters,builderIds:[notesBuilder],period:'custom',years:['2028']},today).rows.find(row=>row.phase.id===notesPhase).builders[0].note,expectedNote,'selected fiscal years and builder filters never truncate note history');
+assert.equal(JSON.stringify(notesData),notesOriginal,'concatenation is read-only and never changes stored yearly notes');
 
 // Builder details are cached presentation rows, never additional report contributors.
 const firstPhase=result=>result.rows.find(row=>row.phase.id===data.subdivisions[0].ID);
@@ -84,6 +117,10 @@ assert.deepEqual(await A.load({}, {isCurrent:()=>true}),data);assert.equal(calls
 await assert.rejects(A.load({}, {isCurrent:()=>false}),/session changed/);
 const original=globalThis.LotSalesCreator.readAll;globalThis.LotSalesCreator.readAll=async(...args)=>{if(args[1]==='All_Forecasts')throw Error('Read denied');return original(...args);};await assert.rejects(A.load({}, {isCurrent:()=>true}),/Read denied/);
 globalThis.LotSalesCreator.readAll=async(...args)=>{const rows=await original(...args);if(args[1]!=='All_Forecasts')return rows;return rows.map(({Forecasted_Lots,...rest})=>rest);};await assert.rejects(A.load({}, {isCurrent:()=>true}),/Forecasted_Lots is unavailable/);
+for(const [reportName,field]of [['All_Subdivisions','Final_Acceptance_Due_Date'],['All_Forecast_Years','Builder_Notes']]){
+  globalThis.LotSalesCreator.readAll=async(...args)=>{const rows=await original(...args);return args[1]===reportName?rows.map(row=>{const copy={...row};delete copy[field];return copy;}):rows;};
+  await assert.rejects(A.load({}, {isCurrent:()=>true}),new RegExp(field+' is unavailable'),'missing native fields fail visibly instead of silently substituting blank values');
+}
 const runtime={current:()=>({environment:'PRODUCTION',user:'viewer',appLinkName:'land-master'}),apiName:n=>n};
 const access=async flags=>globalThis.InsightsAccess.load({DATA:{invokeCustomApi:async()=>({code:3000,result:flags})}},runtime);
 assert.equal((await access({hasRow:true,lotSalesDashboard:true})).forecastsDashboard,false,'Lot Sales access never implies Forecasts');

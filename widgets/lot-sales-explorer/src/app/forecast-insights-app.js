@@ -3,11 +3,14 @@
   const M=ForecastInsightsModel,L=LotSalesModel,$=id=>document.getElementById(id),host=$('forecastsDashboard');
   const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],phaseNodes:new Map(),expandedPhases:new Set(),allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  const countFormat=new Intl.NumberFormat('en-US'),fmt=n=>countFormat.format(Number(n));
+  const countFormat=new Intl.NumberFormat('en-US'),fmt=n=>countFormat.format(Number(n)),countLabel=n=>n==null?'—':fmt(n);
   const number=(value,key,context='')=>window.InsightsNumbers?.markup(value,JSON.stringify(['forecast-dashboard',key]),context)??esc(value);
   const chev='<svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
   const pin='<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M16 8c0 4-6 9-6 9S4 12 4 8a6 6 0 1 1 12 0Z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="10" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
   const check='<svg class="fc-sold-out" viewBox="0 0 20 20" role="img" aria-label="Sold Out"><title>Sold Out</title><circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m6.5 10 2.2 2.2 4.8-4.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+  const isPlaceholder=builder=>/^placeholder(?:[234])?$/i.test(String(builder.name||'').trim());
+  const builderLabel=(phase,builder)=>isPlaceholder(builder)?'<button type="button" class="fc-builder-note" data-fc-builder-note="'+esc(builder.id)+'" data-fc-note-phase="'+esc(phase.id)+'" aria-label="Forecast Manager Notes for '+esc(builder.name)+' in '+esc(phase.name)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+esc(builder.name)+'</button>':esc(builder.name);
+  const dateLabel=value=>value?value.slice(5,7)+'/'+value.slice(8,10)+'/'+value.slice(0,4):'—';
   function notice(message,error=false){$('fcNotice').hidden=!message;$('fcNotice').textContent=message;$('fcNotice').classList.toggle('error',error);}
   function loading(active){$('fcLoading').hidden=!active;$('fcMatrix').setAttribute('aria-busy',String(active));if(active)$('fcEmpty').hidden=true;}
   const selections=id=>InsightsControls.values($(id));
@@ -76,10 +79,12 @@
   function cellValue(c,key,extra='',group=false,hide=false){
     const title=cellTitle(c);
     const value=c.value==null?'—':c.value?number(fmt(c.value),key,S.report.mode):'';
-    return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+value+'</span>':value)+'</td>';
+    const current=c.start?.slice(0,7)===S.permissions.today.slice(0,7),info=current?esc(JSON.stringify({month:c.name+' '+c.start.slice(0,4),forecast:c.tooltipForecast,scheduled:c.tooltipScheduled,sold:c.tooltipSold,missing:c.tooltipForecastMissing})):'';
+    const content=current?'<button type="button" class="fc-month-info" data-fc-month-info="'+info+'" aria-label="'+esc(c.name+' '+c.start.slice(0,4)+' Counts: '+title)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+value+'</button>':value;
+    return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+content+'</span>':content)+'</td>';
   }
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(columnValue(cells,c),key+':'+columnKey(c),c.total?'fc-period-total':c.annual?'fc-annual':monthClass(c),group,hide)).join('');
-  const cellTitle=c=>fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast'+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
+  const cellTitle=c=>(c.start?.slice(0,7)===S.permissions.today.slice(0,7)?'# Forecast: '+countLabel(c.tooltipForecast)+(c.tooltipForecastMissing&&c.tooltipForecast!=null?' (Partial)':'')+'\n# Scheduled: '+countLabel(c.tooltipScheduled)+'\n# Sold: '+countLabel(c.tooltipSold):fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast')+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
   const totalsCache=new WeakMap(),groupCache=new WeakMap();
   function totalsMarkup(cells,key,group=false){
     let cached=totalsCache.get(cells);if(!cached){cached=new Map();totalsCache.set(cells,cached);}const identity=JSON.stringify([key,group]);
@@ -94,8 +99,8 @@
     if(cached?.signature===signature)return cached.html;
     const details=row.builderRows,expanded=S.expandedPhases.has(row.key),name='<span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>';
     const heading=details.length?'<button type="button" class="fc-phase-toggle" data-fc-phase="'+esc(row.key)+'" aria-expanded="'+expanded+'" aria-controls="'+details.map(child=>builderRowId(row.phase,child.builder)).join(' ')+'" aria-label="Builders for '+esc(row.phase.name)+'">'+chev+name+'</button>':name;
-    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Territory for '+esc(row.phase.name)+'">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?esc(row.builders[0].name):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
-    const html=parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span title="'+esc(child.builder.name)+'">'+esc(child.builder.name)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
+    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Subdivision Details for '+esc(row.phase.name)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?builderLabel(row.phase,row.builders[0]):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
+    const html=parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span title="'+esc(child.builder.name)+'">'+builderLabel(row.phase,child.builder)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
     phaseMarkup.set(row,{signature,html});return html;
   }
   // Revisit recent filter combinations only within the current authorized snapshot.
@@ -181,18 +186,20 @@
     const quote=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
     const url=URL.createObjectURL(new Blob(['\ufeff'+lines.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Forecasts-'+r.mode+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);
   }
-  let cardTimer,cardTrigger=null,cardPinned=false;
-  function closeCard(restore=false){clearTimeout(cardTimer);$('fcInfoCard').hidden=true;if(cardTrigger)cardTrigger.setAttribute('aria-expanded','false');if(restore)cardTrigger?.focus();cardTrigger=null;cardPinned=false;}
+  let cardTimer,cardTrigger=null,cardPinned=false,restoringCardFocus=false;
+  function closeCard(restore=false){clearTimeout(cardTimer);const trigger=cardTrigger;$('fcInfoCard').hidden=true;trigger?.setAttribute('aria-expanded','false');cardTrigger=null;cardPinned=false;if(restore&&trigger){restoringCardFocus=true;try{trigger.focus();}finally{restoringCardFocus=false;}}}
   function openCard(trigger,pinned=false){
     clearTimeout(cardTimer);if(cardTrigger&&cardTrigger!==trigger)cardTrigger.setAttribute('aria-expanded','false');cardTrigger=trigger;cardPinned=pinned;trigger.setAttribute('aria-expanded','true');
-    let title,details;
-    if(trigger.hasAttribute('data-fc-info')){const p=S.model.phases.find(p=>p.id===trigger.dataset.fcInfo);if(!p)return;title=p.territory;details=[['Project',p.project],['Phase',p.name],['Project Status',p.projectStatus||'—']];}
+    let title,details,note;
+    if(trigger.hasAttribute('data-fc-month-info')){const counts=JSON.parse(trigger.dataset.fcMonthInfo);title=counts.month;details=[['# Forecast',countLabel(counts.forecast)+(counts.forecast!=null&&counts.missing?' (Partial)':'')],['# Scheduled',countLabel(counts.scheduled)],['# Sold',countLabel(counts.sold)]];}
+    else if(trigger.hasAttribute('data-fc-builder-note')){const row=S.report.rows.find(row=>row.phase.id===trigger.dataset.fcNotePhase&&row.builders.some(builder=>builder.id===trigger.dataset.fcBuilderNote)),builder=row?.builders.find(builder=>builder.id===trigger.dataset.fcBuilderNote);if(!builder)return;title=builder.name;details=[['Phase',row.phase.name]];note=builder.note||'No Forecast Manager Notes';}
+    else if(trigger.hasAttribute('data-fc-info')){const p=S.model.phases.find(p=>p.id===trigger.dataset.fcInfo);if(!p)return;title=p.territory;details=[['Project',p.project],['Phase',p.name],['Project Status',p.projectStatus||'—'],['Final Acceptance Due Date',dateLabel(p.finalAcceptanceDueDate)]];}
     else if(trigger.id==='fcWarning'){title='Missing Forecasts';details=[['Phases',S.missingPhases],['Unavailable values','Shown as —']];}
     else{const base=S.baseReport.groups[Number(trigger.dataset.fcTerritory)],g=S.report.groups.find(group=>group.id===base?.id);if(!g)return;title=g.name;details=[['Selected Projects',new Set(g.rows.map(r=>r.phase.projectId)).size],['Selected Phases',new Set(g.rows.map(r=>r.phase.id)).size],['Builders',new Set(g.rows.flatMap(r=>r.builders.map(b=>b.id))).size]];}
-    $('fcInfoTitle').textContent=title;$('fcInfoBody').innerHTML='<dl>'+details.map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>';
+    $('fcInfoTitle').textContent=title;$('fcInfoBody').innerHTML='<dl>'+details.map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>'+(note==null?'':'<section class="fc-notes"><h3>Forecast Manager Notes</h3><p>'+esc(note)+'</p></section>');
     const card=$('fcInfoCard');card.hidden=false;const rect=trigger.getBoundingClientRect(),height=card.offsetHeight,width=card.offsetWidth;card.style.left=Math.max(8,Math.min(rect.left,innerWidth-width-8))+'px';card.style.top=Math.max(8,Math.min(rect.bottom+5,innerHeight-height-8))+'px';
   }
-  const infoSelector='[data-fc-info],[data-fc-territory],#fcWarning';
+  const infoSelector='[data-fc-info],[data-fc-territory],[data-fc-month-info],[data-fc-builder-note],#fcWarning';
   host.addEventListener('click',event=>{
     const phase=event.target.closest('[data-fc-phase]');if(phase){togglePhase(phase.dataset.fcPhase);return;}
     const group=event.target.closest('[data-fc-group]');if(group){const index=Number(group.dataset.fcGroup),id=S.baseReport?.groups[index]?.id;if(id==null)return;closeCard();setCollapsed(index,!S.collapsed.has(id));syncCollapse();return;}
@@ -200,10 +207,10 @@
   });
   host.addEventListener('pointerover',event=>{const t=event.target.closest(infoSelector);if(t&&event.pointerType!=='touch')openCard(t);});
   host.addEventListener('pointerout',event=>{if(event.target.closest(infoSelector)&&!cardPinned)cardTimer=setTimeout(closeCard,180);});
-  host.addEventListener('focusin',event=>{const t=event.target.closest(infoSelector);if(t)openCard(t);});
+  host.addEventListener('focusin',event=>{const t=event.target.closest(infoSelector);if(t&&!restoringCardFocus)openCard(t);});
   host.addEventListener('focusout',event=>{if(event.target.closest(infoSelector)&&!cardPinned)cardTimer=setTimeout(closeCard,180);});
   $('fcInfoCard').addEventListener('pointerenter',()=>clearTimeout(cardTimer));$('fcInfoCard').addEventListener('pointerleave',()=>{if(!cardPinned)cardTimer=setTimeout(closeCard,180);});
-  $('fcInfoClose').addEventListener('click',()=>closeCard(true));document.addEventListener('pointerdown',event=>{if(cardTrigger&&!$('fcInfoCard').contains(event.target)&&!cardTrigger.contains(event.target))closeCard();});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeCard(true);});document.addEventListener('scroll',()=>closeCard(),true);window.addEventListener('resize',()=>closeCard());
+  $('fcInfoClose').addEventListener('click',()=>closeCard(true));document.addEventListener('pointerdown',event=>{if(cardTrigger&&!$('fcInfoCard').contains(event.target)&&!cardTrigger.contains(event.target))closeCard();});document.addEventListener('keydown',event=>{if(event.key==='Escape')closeCard(true);});document.addEventListener('scroll',event=>{if(!$('fcInfoCard').contains(event.target))closeCard();},true);window.addEventListener('resize',()=>closeCard());
   ['fcStatus','fcMode','fcPeriod','fcYears','fcTerritory','fcProject','fcSubdivision','fcBuilder'].forEach(id=>$(id).addEventListener('change',render));
   $('fcHideEmpty').addEventListener('change',()=>{closeCard();syncHideEmpty();});$('fcAnnual').addEventListener('change',syncAnnual);$('fcSubtotals').addEventListener('change',syncSubtotals);
   $('fcViewBy').addEventListener('change',()=>{S.groupBy=$('fcViewBy').value;S.collapsed.clear();render();});

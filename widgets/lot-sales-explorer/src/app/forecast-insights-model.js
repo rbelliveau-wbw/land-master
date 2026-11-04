@@ -11,7 +11,7 @@
     const phases=[...subdivisions].map(([subdivisionId,sub])=>{
       const projectId=id(sub.Project),project=projects.get(projectId);
       const total=number(sub.Total_Lots),sold=number(sub.Lots_Sold);
-      return {id:subdivisionId,name:text(sub.Subdivision_Name)||text(sub.ID),code:text(sub.Subdivision_Code),projectId,project:text(project?.Project_Name)||text(sub.Project)||'Unassigned',territory:text(sub.Territory)||'Unassigned',projectStatus:text(sub.Projects_Status),soldOut:total>0&&sold>=total,totalLots:total,soldLots:sold};
+      return {id:subdivisionId,name:text(sub.Subdivision_Name)||text(sub.ID),code:text(sub.Subdivision_Code),projectId,project:text(project?.Project_Name)||text(sub.Project)||'Unassigned',territory:text(sub.Territory)||'Unassigned',projectStatus:text(sub.Projects_Status),soldOut:total>0&&sold>=total,totalLots:total,soldLots:sold,finalAcceptanceDueDate:L.date(sub.Final_Acceptance_Due_Date)};
     });
     const phaseMap=new Map(phases.map(p=>[p.id,p]));
     for(const [parentId,row]of parentRows){
@@ -19,7 +19,7 @@
       const subdivisionId=id(row.Subdivision1),builderId=id(row.Builder1),year=Number(text(row.Forecast_Year)),phase=phaseMap.get(subdivisionId);
       if(!phase||!builders.has(builderId)||!Number.isInteger(year)||year<2018||year>2046)throw new Error('A forecast has an unavailable subdivision, builder or WFY.');
       const pair=JSON.stringify([subdivisionId,builderId,year]);if(pairs.has(pair))throw new Error('Duplicate forecast WFYs for '+phase.name+'.');pairs.add(pair);
-      parents.set(parentId,{id:parentId,phase,builderId,builder:text(builders.get(builderId).Builder_Name)||'Unassigned',year,months:new Map()});
+      parents.set(parentId,{id:parentId,phase,builderId,builder:text(builders.get(builderId).Builder_Name)||'Unassigned',year,note:text(row.Builder_Notes),months:new Map()});
     }
     for(const [monthId,row]of monthRows){
       if(row.Delete_me===true||/^(true|yes|1)$/i.test(text(row.Delete_me)))continue;
@@ -50,6 +50,7 @@
       const allParents=phaseParents.get(phase.id)||[],builderMap=new Map();
       allParents.forEach(p=>{if(years.includes(p.year)&&chosen('builderIds',p.builderId)){if(!builderMap.has(p.builderId))builderMap.set(p.builderId,{id:p.builderId,name:p.builder,parents:new Map()});builderMap.get(p.builderId).parents.set(p.year,p);}});
       const builderRows=[...builderMap.values()];
+      builderRows.forEach(builder=>{builder.note=allParents.filter(parent=>parent.builderId===builder.id&&parent.note.trim()).sort((a,b)=>a.year-b.year).map(parent=>parent.note).join('\n');});
       if(!builderRows.length&&filters.builderIds?.length)continue;
       const searchPhase=[phase.name,phase.code,phase.project,phase.territory].some(v=>v.toLowerCase().includes(q));
       const visibleBuilders=builderRows.filter(b=>!q||searchPhase||b.name.toLowerCase().includes(q));
@@ -58,10 +59,16 @@
       if(filters.groupBy==='builder'&&!parts.length)parts.push([]);
       for(const part of parts){
         const builderCells=builders=>months.map(month=>{
-          let value=0,known=0,missing=0,sold=0,forecast=0;
-          if(!builders.length)missing++;
-          for(const builder of builders){const record=builder.parents.get(month.year)?.months.get(month.key);if(!record){missing++;continue;}const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}known++;value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;}
-          return {...month,value:known||!missing?value:null,knownValue:value,known,missing,sold,forecast};
+          let value=0,known=0,missing=0,sold=0,forecast=0,tooltipForecast=0,tooltipScheduled=0,tooltipSold=0,tooltipForecastKnown=0,tooltipForecastMissing=0,tooltipRecords=0;
+          if(!builders.length){missing++;tooltipForecastMissing++;}
+          for(const builder of builders){
+            const record=builder.parents.get(month.year)?.months.get(month.key);
+            if(!record){missing++;tooltipForecastMissing++;continue;}
+            tooltipRecords++;tooltipScheduled+=record.scheduled;tooltipSold+=record.actual;
+            if(record.forecast==null)tooltipForecastMissing++;else{tooltipForecastKnown++;tooltipForecast+=record.forecast;}
+            const v=F.displayValue(record,mode,today);if(v==null){missing++;continue;}known++;value+=v;if(mode==='outlook'&&F.isPast(record,today))sold+=v;else forecast+=v;
+          }
+          return {...month,value:known||!missing?value:null,knownValue:value,known,missing,sold,forecast,tooltipForecast:tooltipForecastKnown?tooltipForecast:null,tooltipScheduled:tooltipRecords?tooltipScheduled:null,tooltipSold:tooltipRecords?tooltipSold:null,tooltipForecastKnown,tooltipForecastMissing,tooltipRecords};
         });
         const builderRows=part.length>1?part.map(builder=>({key:JSON.stringify([phase.id,'builder',builder.id]),builder:{id:builder.id,name:builder.name},cells:builderCells([builder])})):[];
         const cells=builderRows.length?aggregate(builderRows,months):builderCells(part);
@@ -75,8 +82,13 @@
     const groups=[];for(const row of rows){let group=groups.find(g=>g.id===row.groupId);if(!group){group={id:row.groupId,name:row.groupName,rows:[]};groups.push(group);}group.rows.push(row);}
     return {years,months,rows,groups,mode,today,totals:aggregate(rows,months)};
   }
-  function aggregate(rows,months){return months.map((month,index)=>{let known=0,missing=0,knownValue=0,sold=0,forecast=0;for(const row of rows){const cell=row.cells[index];known+=cell.known;missing+=cell.missing;knownValue+=cell.knownValue;sold+=cell.sold;forecast+=cell.forecast;}return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold,forecast};});}
-  function total(cells){const known=cells.reduce((s,c)=>s+c.known,0),missing=cells.reduce((s,c)=>s+c.missing,0),knownValue=cells.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:cells.reduce((s,c)=>s+c.sold,0),forecast:cells.reduce((s,c)=>s+c.forecast,0)};}
+  function tooltipTotal(cells){
+    let tooltipForecast=0,tooltipScheduled=0,tooltipSold=0,tooltipForecastKnown=0,tooltipForecastMissing=0,tooltipRecords=0;
+    for(const cell of cells){tooltipForecast+=cell.tooltipForecast||0;tooltipScheduled+=cell.tooltipScheduled||0;tooltipSold+=cell.tooltipSold||0;tooltipForecastKnown+=cell.tooltipForecastKnown;tooltipForecastMissing+=cell.tooltipForecastMissing;tooltipRecords+=cell.tooltipRecords;}
+    return {tooltipForecast:tooltipForecastKnown?tooltipForecast:null,tooltipScheduled:tooltipRecords?tooltipScheduled:null,tooltipSold:tooltipRecords?tooltipSold:null,tooltipForecastKnown,tooltipForecastMissing,tooltipRecords};
+  }
+  function aggregate(rows,months){return months.map((month,index)=>{let known=0,missing=0,knownValue=0,sold=0,forecast=0;const cells=rows.map(row=>row.cells[index]);for(const cell of cells){known+=cell.known;missing+=cell.missing;knownValue+=cell.knownValue;sold+=cell.sold;forecast+=cell.forecast;}return {...month,known,missing,knownValue,value:known||!missing?knownValue:null,sold,forecast,...tooltipTotal(cells)};});}
+  function total(cells){const known=cells.reduce((s,c)=>s+c.known,0),missing=cells.reduce((s,c)=>s+c.missing,0),knownValue=cells.reduce((s,c)=>s+c.knownValue,0);return {value:known||!missing?knownValue:null,known,knownValue,missing,sold:cells.reduce((s,c)=>s+c.sold,0),forecast:cells.reduce((s,c)=>s+c.forecast,0),...tooltipTotal(cells)};}
   function annual(cells,year){return total(cells.filter(c=>c.year===year));}
   const hasValues=cells=>cells.some(cell=>cell.value>0);
   root.ForecastInsightsModel=Object.freeze({normalize,yearsFor,monthsFor,report,aggregate,total,annual,hasValues});
