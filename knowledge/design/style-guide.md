@@ -71,6 +71,10 @@ fields wrap so tabs and the comment button never collide with metadata. Omit the
 routine Construction submit-access explanation from read-only workspaces; retain
 actual denied-action guards and completed-record notices.
 
+The shared Legal/Construction header leaves its module breadcrumb empty until
+Creator page identity resolves, then shows the correct module during data loading
+and in denied-report states. Never briefly show a default module name.
+
 Input-driven numeric displays use the selected [Sliding push transition](number-transitions.md).
 All ten widgets adopt the pattern for applicable displayed quantities. The
 focused guide, inventory and module documentation record coverage and exclusions.

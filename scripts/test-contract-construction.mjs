@@ -1,10 +1,20 @@
 import assert from 'node:assert/strict';
-import {ready,harness,drain,ID,ACTION,SUB,ACCESS,NEW} from './test-contract-sdk-v2-foundation.mjs';
+import {ready,harness,drain,deferred,ID,ACTION,SUB,ACCESS,NEW} from './test-contract-sdk-v2-foundation.mjs';
 
 const PROJECT=(BigInt(NEW)+20n).toString(),LEGAL=(BigInt(NEW)+21n).toString(),TEMPLATE=(BigInt(NEW)+22n).toString(),FILE=(BigInt(NEW)+23n).toString();
 const submit={ctEdit:false,ctPropose:false,ctApprove:false,ctTemplates:false,ctDeleteArchive:false,constructionSubmit:true,constructionEditAll:false};
 const editor={...submit,constructionSubmit:false,constructionEditAll:true};
 const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.method));
+for(const workMode of ['construction','legal']){
+ const handshake=deferred(),loading=deferred();
+ const h=harness({initialize:()=>handshake.promise,pageParams:{workMode},realDOM:true});
+ assert.equal(h.node('crumb').textContent,'','the unresolved page does not show a default module label');
+ h.c.loadData=()=>loading.promise;handshake.resolve({envUrlFragment:'',loginUser:'actual-actor@example.test'});await drain();
+ const label=workMode==='construction'?'Construction':'Contracts';
+ assert.equal(h.node('crumb').textContent,label,'the resolved module appears while the records are still loading');
+ assert.equal(h.c.S.coreReady,false);h.c.renderLocked();assert.equal(h.node('crumb').textContent,label,'a denied report keeps the correct module label');
+ loading.resolve(false);await drain();assert.equal(writes(h).length,0);
+}
 
 // A resolved native create does not require the widget's acknowledgement schema.
 for(const receipt of [{code:3000},{data:{ID:NEW},result:[{data:{ID:NEW}}]},JSON.stringify({code:3000,result:[{code:3000,data:{ID:NEW}}]}),[{code:3000,data:{ID:NEW}}],undefined,null,'Native save completed']){

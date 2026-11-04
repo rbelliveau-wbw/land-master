@@ -3,6 +3,10 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.51` keeps the header breadcrumb empty until native page identity
+resolves, then shows the correct module while records load and if a report is
+denied. Frontend only; no Creator deployment. Rollback: `1.62.50`.
+
 Release `1.62.33` shows Date Needed in Construction request card footers in place
 of the action count. It uses the saved request date and shows an em dash when
 absent. Checklist progress and Legal remain unchanged. Frontend only; rollback

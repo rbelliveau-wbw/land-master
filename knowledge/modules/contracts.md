@@ -1,3 +1,13 @@
+## Correct Module Label During Startup — 1.62.51, November 3, 2026
+
+Release 1.62.51 removes the initial hardcoded Contracts breadcrumb. The shared
+header waits for Creator page identity, then shows Construction or Contracts
+before report reads finish. Denied-report rendering retains the module name.
+No forms, fields, backend functions, Custom APIs or Creator deployment changes.
+Regression covers delayed initialization and record loading for both pages plus
+denied reports. Full validation and Pages build are required. Publication is
+separately approved; rollback is hosted release 1.62.50.
+
 ## Native Error Arrays — 1.62.49, November 3, 2026
 
 The controlled Production retry returned native code 3001 with an error array.
