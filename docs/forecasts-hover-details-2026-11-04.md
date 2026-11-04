@@ -258,8 +258,55 @@ full `npm run validate` (including Forecasts model/parity and design checks), an
 `npm run build:pages` (34 permanent environment paths). Production visual and
 deployment verification follows publication.
 
+Production verified November 4 using the actual Creator dashboard and versioned
+1.6.21 assets. The three count rectangles measured exactly 43×30px, with a 12px
+gap before the label and 38px between row starts. Saved counts remained 16, 12
+and 0 for the same captured scope, and its selected-period total remained 287.
+The green/amber/blue fills and text matched the approved palette, with a single
+vertical count column. [Main CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/41867455629)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/41867455699)
+passed for commit `2c69e41e743640afe91b2cda5480916e01146370`.
+Actual screenshots are saved outside the public repository as
+`before-colored-counts-prod.jpg` and `after-colored-counts-prod.jpg`.
+
 Rollback: restore the Production `lot-sales-explorer` mapping to **1.6.20** and
 rebuild Pages, preserving the permanent Insights URLs. No stored data rollback
 or Creator promotion is needed.
+
+## Top Totals And Action Order — Insights 1.6.22
+
+The user requested moving the bottom overall totals to the top and authorized
+PMP. The annotated screenshot also swaps the legend with Collapse All / Reset.
+The same single totals row appears directly below the two column-heading rows,
+before the first project/territory/builder group. It remains visible below the
+complete header while scrolling vertically; its first four columns retain the
+existing horizontal freeze and opaque totals styling. The totals are moved,
+not duplicated. The actual header height determines the sticky offset.
+
+The display switches remain together. Collapse All / Reset follow those
+switches; the Sold / Forecast legend moves to the far right. Existing actions,
+keyboard order and search/filter semantics remain intact. The earlier request
+for interpretation alone did not authorize a new top scrollbar or row-banding
+change, and neither is included in this release.
+
+Changed files: widget HTML, `forecast-insights-app.js`, `forecast-insights.css`,
+the existing desktop browser regression, widget config/manifests and the
+immutable release, Development/Production mappings, and design/module notes.
+No source count, aggregate, CSV, saved record, form, field, Deluge function or
+Custom API changes. No Creator deployment is required. Stage remains unchanged.
+
+Regression scope: a single totals row before the data, actual sticky header
+offset, horizontal/vertical scroll alignment and stacking, annual visibility,
+Hide Empty/current-month cards, group/builder expansion, displayed actions and
+legend order, and unchanged saved totals. Production verification follows
+publication.
+
+Passed before publication: focused hover/model checks, updated desktop browser
+script syntax, full `npm run validate`, and `npm run build:pages` (34 stable
+environment paths). The full browser regression script was not launched; desktop
+geometry is checked through the agent-owned browser instead.
+
+Rollback: map Production `lot-sales-explorer` to **1.6.21** and rebuild Pages,
+retaining permanent URLs. No data or Creator rollback is required.
 
 

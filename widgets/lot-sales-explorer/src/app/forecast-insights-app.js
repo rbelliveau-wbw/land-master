@@ -2,6 +2,7 @@
   'use strict';
   const M=ForecastInsightsModel,L=LotSalesModel,$=id=>document.getElementById(id),host=$('forecastsDashboard');
   const S={permissions:null,model:null,report:null,baseReport:null,nonemptyReport:null,emptyRows:new Set(),groupNodes:[],phaseNodes:new Map(),expandedPhases:new Set(),allFoot:[],filteredFoot:[],footCells:[],footMarkup:null,missingPhases:0,groupBy:'project',collapsed:new Set(),busy:false,error:false,generation:0,scoped:false};
+  if(window.ResizeObserver){const headerSize=new window.ResizeObserver(entries=>{const height=entries[0]?.contentRect.height;if(height>0){const matrix=$('fcMatrix'),value=height+'px';if(matrix.style.getPropertyValue('--fc-header-height')!==value)matrix.style.setProperty('--fc-header-height',value);}});headerSize.observe($('fcHead'));}
   const esc=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const countFormat=new Intl.NumberFormat('en-US'),fmt=n=>countFormat.format(Number(n)),countLabel=n=>n==null?'—':fmt(n);
   const number=(value,key,context='')=>window.InsightsNumbers?.markup(value,JSON.stringify(['forecast-dashboard',key]),context)??esc(value);

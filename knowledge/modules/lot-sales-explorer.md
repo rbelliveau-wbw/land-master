@@ -1,3 +1,13 @@
+## Forecasts top totals and action order — 1.6.22, November 4, 2026
+
+Move the single overall totals row directly below the column headings, with
+sticky vertical placement and the existing four frozen identity columns.
+Collapse All / Reset follow the display switches and the Sold / Forecast legend
+moves to the far right, matching the user's annotated screenshot. Aggregates,
+filters, annual visibility, mounted display switches and CSV are preserved.
+Frontend only; rollback is 1.6.21 and no Creator promotion is required.
+[Implementation and checks](../../docs/forecasts-hover-details-2026-11-04.md#top-totals-and-action-order--insights-1622).
+
 ## Forecasts colored count card — 1.6.21, November 4, 2026
 
 The approved current-month card places colored count rectangles before Forecast,

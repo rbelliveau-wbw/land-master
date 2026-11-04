@@ -285,6 +285,15 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+November 4, Insights 1.6.22: move the overall totals row from the bottom to
+directly below the two heading rows, before the first group. Show it once and
+keep it sticky below the complete header while scrolling vertically, with the
+same frozen first-four-column boundaries during horizontal scrolling. Preserve
+its mounted identity, active filter scope, Hide Empty updates, numeric transitions,
+unknown/zero semantics and custom current-month card. Use the actual heading
+height so the Current month label cannot cause overlap. Collapse All and Reset
+follow the display switches; the Sold/Forecast legend moves to the far right.
+
 November 4, Insights 1.6.21: current-month cards put each saved count in a
 43×30px outlined rectangle before its label, in Forecast, Scheduled, Sold order.
 Use Forecast green (text #246c4d, fill #dff1e6, border #a7cfb8), Scheduled amber

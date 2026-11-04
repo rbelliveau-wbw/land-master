@@ -7,7 +7,7 @@ const M=globalThis.ForecastInsightsModel;
 // Exercise the production renderer/card handlers without a browser or live data.
 const listeners=new Map(),nodes=new Map();
 function node(id){
-  if(!nodes.has(id))nodes.set(id,{id,hidden:true,innerHTML:'',textContent:'',style:{},offsetWidth:280,offsetHeight:200,attributes:new Map(),firstElementChild:{hidden:false},
+  if(!nodes.has(id))nodes.set(id,{id,hidden:true,innerHTML:'',textContent:'',style:{getPropertyValue(name){return this[name]||'';},setProperty(name,value){this[name]=String(value);}},offsetWidth:280,offsetHeight:200,attributes:new Map(),firstElementChild:{hidden:false},
     classList:{names:new Set(),toggle(name,active){active?this.names.add(name):this.names.delete(name);},contains(name){return this.names.has(name);}},
     addEventListener(type,handler){listeners.set(id+':'+type,handler);},
     setAttribute(name,value){this.attributes.set(name,String(value));},
@@ -16,13 +16,16 @@ function node(id){
     contains(target){return target===this;}});
   return nodes.get(id);
 }
-let UI;
+let UI,headerResize,observedHeader;
 const context=vm.createContext({ForecastInsightsModel:M,LotSalesModel:{},document:{getElementById:node,addEventListener(type,handler){listeners.set('document:'+type,handler);}},
+  ResizeObserver:class{constructor(callback){headerResize=callback;}observe(target){observedHeader=target;}},
   innerWidth:1000,innerHeight:700,setTimeout,clearTimeout,Intl,
   __expose(value){UI=value;}});
 context.window=context;context.addEventListener=()=>{};
 const source=fs.readFileSync('widgets/lot-sales-explorer/src/app/forecast-insights-app.js','utf8');
 vm.runInContext(source.replace('  window.ForecastInsightsApp=Object.freeze','  __expose({S,cellValue,cellTitle,builderLabel,phaseHTML,totalsMarkup,updateCellDetails,syncHideEmpty,openCard,closeCard});\n  window.ForecastInsightsApp=Object.freeze'),context);
+assert.equal(observedHeader,node('fcHead'),'only the actual two-row matrix header is measured for sticky totals');headerResize([{contentRect:{height:80.75}}]);assert.equal(node('fcMatrix').style.getPropertyValue('--fc-header-height'),'80.75px','Current heading height positions the top total row');headerResize([{contentRect:{height:0}}]);assert.equal(node('fcMatrix').style.getPropertyValue('--fc-header-height'),'80.75px','a temporarily empty header does not reset the last valid offset');headerResize([{contentRect:{height:73}}]);assert.equal(node('fcMatrix').style.getPropertyValue('--fc-header-height'),'73px','a selected range without Current can resize the header normally');
+const widget=fs.readFileSync('widgets/lot-sales-explorer/src/app/widget.html','utf8');assert.match(widget,/<thead id="fcHead"><\/thead><tbody id="fcFoot"[^>]*><\/tbody><tbody id="fcBody">/,'one mounted overall-total rowgroup precedes detail groups without joining their reconciler');assert.equal((widget.match(/id="fcFoot"/g)||[]).length,1);assert.doesNotMatch(widget,/<tfoot id="fcFoot"/);
 UI.S.permissions={today:'2026-11-04',forecastsDashboard:true};UI.S.report={mode:'outlook',rows:[]};
 const current={start:'2026-11-01',name:'November',year:2026,index:9,key:'2026-11',value:11,known:1,knownValue:11,sold:0,forecast:11,missing:0,tooltipForecast:11,tooltipScheduled:4,tooltipSold:2,tooltipForecastKnown:1,tooltipRecords:1,tooltipForecastMissing:0};
 const markup=UI.cellValue(current,'phase:month','fc-current-month');
