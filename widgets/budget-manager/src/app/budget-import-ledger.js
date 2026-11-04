@@ -55,7 +55,7 @@
     if (raw == null || raw === "") return null;
     if (typeof raw !== "object") {
       var scalarId = identity(raw);
-      return scalarId ? {id:scalarId, label:scalarId} : null;
+      return scalarId ? {id:/^\d+$/.test(scalarId)?scalarId:"", label:scalarId} : null;
     }
     var id = identity(raw.id != null ? raw.id : raw.ID != null ? raw.ID : raw.value);
     var label = text(raw.label != null ? raw.label : raw.display_value != null ? raw.display_value : raw.zc_display_value != null ? raw.zc_display_value : raw.name);

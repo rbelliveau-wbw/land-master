@@ -1,4 +1,4 @@
-## Grouped Import Ledger — 122.29.93, November 3, 2026
+## Grouped Import Ledger — 122.29.95, November 3, 2026
 
 Budget Import Items uses the approved Grouped Ledger layout. Opening the tab
 does not read its financial records until the user selects one Subdivision.
@@ -55,6 +55,8 @@ passed. Changed sources are po-ui.js,
 test-po-entry.mjs, metadata/release mappings and docs. No native fields, APIs,
 functions, exports, email or approval rules change; no Creator promotion needed.
 Rollback Budget Manager Production to **122.29.90** and rebuild Pages.
+
+Mapping acknowledgements invalidate the separate editor import snapshot and supersede pending full-report reads for the same actor, including after navigation. Newer actors and workspaces retain their own data and UI. Completeness flags also follow the global snapshot request generation, so late superseded replies cannot invalidate a newer complete read.
 
 ## Source Actual Elements — Budget 122.29.91 and Settings 1.6.6
 

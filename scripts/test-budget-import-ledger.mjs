@@ -21,6 +21,11 @@ function modelHarness(){
   return context;
 }
 const c=modelHarness(),ledger=c.BudgetImportLedger;
+{
+  const labelOnly=ledger.createGroups([{ID:'101',Budget_Item:'AR05-3101 - Clearing Brush',Data_Source:'Great Plains',Cost:'1'},{ID:'102',Budget_Item:'AR05-3101 - Clearing Brush',Data_Source:'Great Plains',Cost:'2'}]);
+  assert.equal(labelOnly.length,2,'Scalar display labels cannot establish a shared native identity');
+  assert.ok(labelOnly.every(group=>group.missing),'Display-only scalar mappings remain unresolved');
+}
 const BID='90071992547409931',OTHER='90071992547409932';
 const elementNames=['Labor','Materials','Equipment','Subcontractor','Other'];
 const parts=values=>Object.fromEntries(elementNames.map((key,index)=>[key,values[index]]));
@@ -196,6 +201,8 @@ assert.match(block('loadImportItems'),/S\.importItems=rows/,'Editor completeness
 {
   const h=workspaceHarness(),writes=[],gate=deferred();h.c.S.importUI.subdivision='AR05';await h.controller.load();
   const record=h.controller.rows()[0];record.Budget_Item=null;
+  const globalFeature=h.c.budgetFeature('imports');globalFeature.status='loaded';const generation=globalFeature.generation;
+  h.c.S.elementImportSource={old:true};
   Object.assign(h.c,{findImportRecord:id=>h.controller.rows().find(r=>r.ID===id),canEditImportItems:()=>h.permissions.edit,budgetItemsForSubCode:()=>h.controller.items(),importSubCode:r=>r.Subdivision_Code,budgetItemLabel:item=>item.Budget_Code+' — '+item.Item_Name,
     budgetBadgeScope:()=>h.session.key,setMsg:message=>h.messages.push(message),toastShow(){},renderImports(){},shortErr:error=>error.message||String(error),auditLog(){},sdkUpdateRecord:(form,id,payload)=>{writes.push({form,id,payload:plain(payload)});return gate.promise;}});
   h.c.CFG.forms={importItem:'Budget_Import_Item'};install(h.c,['normSubCode','assignImportItem']);
@@ -204,6 +211,7 @@ assert.match(block('loadImportItems'),/S\.importItems=rows/,'Editor completeness
   h.c.assignImportItem(record.ID,BID,null);assert.deepEqual(writes,[{form:'Budget_Import_Item',id:record.ID,payload:{Budget_Item:BID}}]);
   assert.equal(record.Budget_Item,null,'A pending native write cannot report the assignment as saved');
   gate.resolve({code:3000,data:{ID:record.ID}});await turn();assert.equal(record.Budget_Item.ID,BID);
+  assert.equal(h.c.S.importItemsLoaded,false);assert.equal(h.c.S.elementImportSource,null);assert.equal(globalFeature.status,'idle');assert.equal(globalFeature.generation,generation+1);
 }
 
 // Delayed native acknowledgements finish the captured record without touching a new workspace/actor.
@@ -211,6 +219,8 @@ for(const change of ['subdivision','actor','view']){
   const h=workspaceHarness(),gate=deferred(),toasts=[];let repaints=0;h.c.S.importUI.subdivision='AR05';await h.controller.load();
   const original=h.controller.rows()[0],target=h.controller.items()[0];original.Budget_Item=null;
   const mirror={...original};h.c.S.importItems=[mirror];
+  const globalFeature=h.c.budgetFeature('imports');globalFeature.status='loaded';const generation=globalFeature.generation;
+  const oldElements={old:true};h.c.S.elementImportSource=oldElements;h.c.S.importItemsLoaded=true;
   Object.assign(h.c,{findImportRecord:id=>original.ID===id?original:null,canEditImportItems:()=>h.permissions.edit,budgetItemsForSubCode:()=>[target],importSubCode:r=>r.Subdivision_Code,budgetItemLabel:item=>item.Budget_Code+' — '+item.Item_Name,
     budgetBadgeScope:()=>h.session.key,setMsg:message=>h.messages.push(message),toastShow:message=>toasts.push(message),renderImports:()=>repaints++,shortErr:error=>error.message||String(error),auditLog(){},sdkUpdateRecord:()=>gate.promise});
   h.c.CFG.forms={importItem:'Budget_Import_Item'};install(h.c,['normSubCode','assignImportItem']);
@@ -221,10 +231,55 @@ for(const change of ['subdivision','actor','view']){
   target.Item_Name='Different Roster Label After Navigation';
   gate.resolve({code:3000,data:{ID:original.ID}});await turn();
   assert.equal(original.Budget_Item.ID,BID);assert.equal(original.Budget_Item.display_value,'AR05-3101 — Stored Item','The acknowledgement uses its captured scoped item label');
-  assert.equal(mirror.Budget_Item,null,'The new workspace/session does not receive a late global mirror patch');
+  if(change==='actor'){
+    assert.equal(mirror.Budget_Item,null,'A different actor does not receive a late global mirror patch');
+    assert.equal(h.c.S.elementImportSource,oldElements);assert.equal(h.c.S.importItemsLoaded,true);assert.equal(globalFeature.generation,generation);
+  }else{
+    assert.equal(mirror.Budget_Item.ID,BID,'Same-actor global import identity mirrors the actual acknowledged assignment after navigation');
+    assert.equal(h.c.S.elementImportSource,null);assert.equal(h.c.S.importItemsLoaded,false);assert.equal(globalFeature.status,'idle');assert.equal(globalFeature.generation,generation+1);
+  }
   assert.equal(repaints,0,'A late assignment cannot repaint a different subdivision, actor or view');
   if(change==='subdivision')assert.equal(h.controller.rows()[0].ID,'workspace-AR06');
-  if(change==='actor')assert.equal(toasts.includes('Budget Item Assigned'),false,'A success popup cannot cross native actors');
+  assert.equal(toasts.includes('Budget Item Assigned'),false,'A success popup cannot cross subdivision, view or actor navigation');
+}
+
+// Real wrapper: assignment invalidation + fresh completion must survive an older read's late failure.
+{
+  const h=workspaceHarness(),write=deferred(),oldRead=deferred(),freshRead=deferred(),reads=[];let badgeUpdates=0,editorUpdates=0;
+  h.c.S.importUI.subdivision='AR05';await h.controller.load();
+  const original=h.controller.rows()[0],target=h.controller.items()[0];original.Budget_Item=null;
+  h.c.S.importItems=[{...original}];h.c.S.importItemsLoaded=true;const feature=h.c.budgetFeature('imports'),generation=feature.generation;
+  Object.assign(h.c,{findImportRecord:()=>original,canEditImportItems:()=>true,budgetItemsForSubCode:()=>[target],importSubCode:r=>r.Subdivision_Code,budgetItemLabel:item=>item.Budget_Code+' — '+item.Item_Name,
+    budgetBadgeScope:()=>h.session.key,setMsg(){},toastShow(){},renderImports(){throw new Error('Inactive workspace must not redraw');},shortErr:error=>error.message||String(error),auditLog(){},sdkUpdateRecord:()=>write.promise,
+    sdkGetAllRecords:(report,criteria,options)=>{reads.push({report,criteria,options:plain(options)});return reads.length===1?oldRead.promise:freshRead.promise;},
+    syncBudgetImportBadge:()=>badgeUpdates++,refreshBudgetElementValues:()=>{editorUpdates++;h.c.S.elementImportSource=h.c.S.importItemsLoaded?{record:h.c.S.importItems[0].ID}:null;}});
+  h.c.CFG.forms={importItem:'Budget_Import_Item'};h.c.CFG.reports={importItems:'imports'};
+  install(h.c,['normSubCode','assignImportItem','loadImportItems']);
+  const pending=h.c.loadImportItems(false),rejected=assert.rejects(pending,/superseded/);await turn();
+  h.c.assignImportItem(original.ID,BID,null);h.c.S.view='vEditor';
+  write.resolve();await turn();assert.equal(feature.generation,generation+1);assert.equal(h.c.S.importItemsLoaded,false);
+  const freshRows=[{...original}],fresh=h.c.loadImportItems(false);await turn();freshRead.resolve(freshRows);await fresh;
+  assert.equal(h.c.S.importItemsLoaded,true);assert.equal(h.c.S.importItems,freshRows);assert.equal(feature.status,'loaded');
+  const elementSource=h.c.S.elementImportSource,badges=badgeUpdates,editors=editorUpdates;
+  oldRead.resolve([{ID:'stale-unassigned',Budget_Item:null}]);await rejected;
+  assert.equal(h.c.S.importItems,freshRows);assert.equal(h.c.S.importItems[0].Budget_Item.ID,BID);
+  assert.equal(h.c.S.importItemsLoaded,true,'The older wrapper error cannot clear fresh completeness');
+  assert.equal(h.c.S.elementImportSource,elementSource);assert.equal(badgeUpdates,badges);assert.equal(editorUpdates,editors,'A superseded wrapper cannot refresh the current editor');
+  assert.deepEqual(reads,[{report:'imports',criteria:'',options:{fresh:false}},{report:'imports',criteria:'',options:{fresh:false}}],'The race uses only the existing complete import report read');
+  h.c.S.importItemsLoaded=false;await h.c.loadImportItems(false);assert.equal(reads.length,2);assert.equal(h.c.S.importItemsLoaded,true,'A current loaded-cache result repairs its completeness flag');
+  h.c.sdkGetAllRecords=async()=>{throw {permissionDenied:true,message:'Current imports denied'};};
+  await assert.rejects(h.c.loadImportItems(true),error=>error.permissionDenied===true);
+  assert.equal(feature.generation,generation+2,'Force increments before the wrapper captures its generation');
+  assert.equal(h.c.S.importItemsLoaded,false,'A real current-generation permission failure still removes completeness');assert.equal(feature.status,'error');
+}
+
+// Even a cache-hit microtask may be superseded before its wrapper callback runs.
+{
+  const h=workspaceHarness();let badgeUpdates=0,editorUpdates=0;h.c.S.view='vEditor';
+  const feature=h.c.budgetFeature('imports');feature.status='loaded';feature.value=[{ID:'cached'}];h.c.S.importItems=feature.value;h.c.S.importItemsLoaded=false;
+  Object.assign(h.c,{sdkGetAllRecords(){throw new Error('A valid cache hit performs no native read');},syncBudgetImportBadge:()=>badgeUpdates++,refreshBudgetElementValues:()=>editorUpdates++});
+  install(h.c,['loadImportItems']);const cached=h.c.loadImportItems(false),rejected=assert.rejects(cached,/superseded/);h.c.invalidateBudgetFeature('imports');await rejected;
+  assert.equal(h.c.S.importItemsLoaded,false);assert.equal(badgeUpdates,1,'Only the current request-start badge is allowed');assert.equal(editorUpdates,0);
 }
 
 // All fixed headings, tabs and field labels on the new surface use Title Case.
