@@ -35,6 +35,7 @@ export function createContractTestDOM(source){
    firstChild:{get:()=>el.children[0]||null},checked:{get:()=>checked,set:next=>{checked=!!next;}},options:{get:()=>el.tagName==='SELECT'?select(el,'option'):[]},selectedIndex:{get:()=>el.options.findIndex(option=>option.selected),set:index=>{el.options.forEach((option,i)=>option.selected=i===Number(index));}},
    value:{get:()=>el.tagName==='SELECT'?(el.options.find(option=>option.selected)||el.options[0]||{}).value||'':el.tagName==='OPTION'&&!el.hasAttribute('value')?el.textContent.trim():value,set:next=>{value=String(next);if(el.tagName==='SELECT')el.options.forEach(option=>option.selected=option.value===value);}},
    innerHTML:{get:()=>markup,set:next=>{markup=String(next);el.htmlWrites++;el.children.forEach(disconnect);el.children=[];text='';parse(markup,el);if(el.tagName==='SELECT'&&!el.options.some(option=>option.selected)&&el.options.length)el.options[0].selected=true;}},
+   outerHTML:{set:next=>{const parent=el.parentNode;if(!parent)return;const index=parent.children.indexOf(el),holder=create();disconnect(el);parse(String(next),holder);parent.children.splice(index,1,...holder.children);holder.children.forEach(child=>{child.parentNode=parent;});}},
    textContent:{get:()=>text+el.children.map(child=>child.textContent).join(''),set:next=>{el.children.forEach(disconnect);el.children=[];text=String(next);}},text:{get:()=>el.textContent,set:next=>{el.textContent=next;}}
   });
   el.id=id;el.appendText=next=>{text+=decode(next);};return el;

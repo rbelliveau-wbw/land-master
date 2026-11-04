@@ -9,14 +9,31 @@ therefore resolve to Brian Bekker using his existing `User_Access.Approver_Email
 The Production Settings page has a published Contract rule: all territories,
 all departments, one enabled VP step with condition Always. Saving that rule
 alone does not connect the Contract execution rows. Remote-main source was
-checked at `ae91088b17ca8562ae3225aa8f38ebc2c1def761`: Contract creation still seeds
+checked at `1e696f787aad79f861804b7d9574e3af32f9afd5`: Contract creation still seeds
 the Builder template, and Contract dispatch still uses existing rows in parallel.
 `applySharedApprovalPolicy` does not support Contract.
 
 ## Native Installation
 
 Install and compile these functions in Development, comparing any live changes
-before replacing source. Creator promotion remains with the owner.
+before replacing source. The user explicitly authorized the agent to install,
+test and promote these Creator changes; verify Development before promotion.
+
+For the native Contract form, verify that Settings.Builder_Approval_Template
+selects the intended existing parentless Builder template rows for Travis Parks
+and the reserved Paul Shepherd Development marker. An empty selection produces
+no default rows for the adapter to replace. Keep the marker in the template;
+the saved contract's Territory determines its VP recipients. Do not replace it
+globally with Brian or create additional Builder template rows to repair a
+selection. The widget independently reads all parentless Builder template rows.
+
+The existing Created → On Load workflow Load_Approval_Template_Co clones rows
+into input.Approvals1; it does not attach template record IDs. Its captured body
+copies only Approver and Approval_Sequence. Verify Type1 before native-form
+submission: it is required and has no initial default. If omitted, the minimal
+loader correction is to copy the selected template's Type1. Keep the existing
+Construction exclusion, and do not clear/reseed the subform. Email remains off,
+Status defaults to Not Sent and reminders default to five days.
 
 1. Update `resolveApprovalRoute` from `creator/functions/resolveApprovalRoute.dg`.
    Only Contract expands all unique `Territory.VP` users. Every other workflow
@@ -93,33 +110,36 @@ Local policy checks cover two VPs, duplicate selected IDs, unique keys, inactive
 second VP and missing VP, with unchanged single-VP behavior for other workflows.
 Contract hierarchy checks cover Legal and Construction pill removal while
 preserving child rows, grouping and parent-assignment guards. Full repository
-validation and Pages build remain release gates.
+validation and the Pages build passed for the 1.62.52 candidate.
 
-Native compilation and created-only hook execution must still be verified in
-Development with a representative native-form contract and a widget-created
-contract. Verify North/South Austin, a two-VP territory, missing/invalid VP data,
+The resolver, default adapter, two send functions and both created-only hooks
+have been saved in Development. A native parent-hook test retained Status New,
+Travis Parks and untouched approval history. Development widget creation and
+immediately reopened approval-list verification are still pending. Verify North/South Austin, a two-VP territory, missing/invalid VP data,
 unchanged other recipients, no emails, no changed parent status, retained sent
 history and retry after an interrupted extra-recipient insert. Do not send live
 approval emails just to test installation.
 
 Verify the widget's approval list immediately after creation as well as the
 persisted rows. Creation hooks can add another VP row outside the widget's
-captured seed operations. The immediately reopened modal can retain the legacy
-Paul recipient or omit the extra VP until Refresh. A fresh scoped approval read must expose every
-resolved recipient before the first send; a successful function return alone
-does not establish that the in-widget list is current.
+captured seed operations. Hosted Contract 1.62.52 addresses the cache gap with a fresh exact-parent
+approval read on modal open and before Send confirmation. Failed/pending reads
+keep Send disabled; no writes or emails occur during refresh. Verify the actual
+native hooks and immediately opened widget together before promotion; a
+successful function return alone does not establish that recipients are current.
 
-Native installation, live verification and owner promotion are separate
+Native installation, live verification and Creator promotion are separate
 requirements. The Settings rule is saved, but future-contract routing requires
 the verified helper, resolver, created-only hooks and send guards in Production.
 Existing Production approval reassignment is a separate data migration; the
 hosted/source release does not perform it.
 
 Live migration status on November 3: 20 existing approval recipient rows were
-reassigned. Four additional Bryan/College Station VP rows still require a
-verified import. The future-contract adapter remains subject to the separate
-Creator installation, verification and owner-promotion gates above.
+reassigned. Four additional Bryan/College Station VP rows were created and
+confirmed by a subsequent read-only recovery: all four exact rows were reused,
+with no blocked parents or duplicate POST. The future-contract adapter remains subject to the separate
+Creator installation, verification and promotion gates above.
 
-Hosted Contract Management rollback is `1.62.49`; hosted Settings rollback is
+Hosted Contract Management rollback is `1.62.51`; hosted Settings rollback is
 `1.6.6`. Roll back the matching Creation hooks and native functions together if
 the Creator change is withdrawn. Hosted pill removal is independent of Creator.

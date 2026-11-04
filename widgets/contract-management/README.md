@@ -3,6 +3,13 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.52` refreshes only the opened contract and its approval rows before
+showing recipients, and refreshes again before the existing Send confirmation.
+Native-created extra VP rows appear immediately. Pending or failed reads keep
+Send disabled; stale replies cannot change a closed or replaced modal. Complete
+and read-only approval history remains available. This frontend change does not
+install the native routing hooks. Rollback: `1.62.51`.
+
 Release `1.62.51` keeps the header breadcrumb empty until native page identity
 resolves, then shows the correct module while records load and if a report is
 denied. Frontend only; no Creator deployment. Rollback: `1.62.50`.

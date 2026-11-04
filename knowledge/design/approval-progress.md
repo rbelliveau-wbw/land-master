@@ -153,3 +153,13 @@ selectors for a hidden sidebar. The same compact shell applies to pending,
 finished and recovery states. Wider destination tables may retain their existing
 width when their actual columns require it. Preserve progress, focus and pending
 Close/duplicate-write locks; this is a presentation rule, not a timing change.
+
+## Fresh Contract Recipients — November 3, 2026
+
+Internal Approvals reads the opened parent and its approval rows before showing
+recipients, including extra VPs inserted by native creation hooks. Keep Send
+disabled during failed or pending reads and offer a bounded read-only Retry.
+Refresh the exact parent route again before recipient confirmation; preserve
+completed/read-only history, local inline repaints, actor/modal scope and the
+existing native Send/Check/Repair flow. These business preconditions do not
+change save acknowledgement handling or introduce post-save field comparisons.

@@ -145,14 +145,14 @@ function files(h){const base=h.api.invokeCustomApi;let creates=0,uploads=0;h.api
  function cells(table){return Array.from(table.querySelectorAll('tbody tr'),row=>Array.from(row.querySelectorAll('th,td'),cell=>cell.textContent));}
  function checkHeaders(table){assert.equal(table.getAttribute('aria-label'),'Subdivision dates');assert.deepEqual(Array.from(table.querySelectorAll('thead th'),cell=>cell.textContent),['','Goal','Estimate']);assert.ok(table.querySelectorAll('tbody th').every(cell=>cell.getAttribute('scope')==='row'));}
  h.c.newContract();await drain();const draft=h.c.S.nc,subInput=h.node('construction_sub'),nameInput=h.node('construction_name');
- const context=h.node('nc_form').querySelector('.construction-context');
+ const context=()=>h.node('nc_form').querySelector('.construction-context .construction-dates table');
  assert.deepEqual(cells(matrix(h.c.constructionContextHTML(draft))),[['CP Release','Unavailable','Unavailable'],['Const Start','Unavailable','Unavailable']]);
- h.c.constructionPick('sub',SUB);checkHeaders(matrix(context.outerHTML));
- assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','10/26/2026','10/28/2026'],['Const Start','11/03/2026','11/05/2026']],'Goal/Estimate cells read their selected Subdivision field, never similarly named Contract fields');
+ h.c.constructionPick('sub',SUB);checkHeaders(context());
+ assert.deepEqual(cells(context()),[['CP Release','10/26/2026','10/28/2026'],['Const Start','11/03/2026','11/05/2026']],'Goal/Estimate cells read their selected Subdivision field, never similarly named Contract fields');
  assert.equal(h.node('construction_sub'),subInput);assert.equal(h.node('construction_name'),nameInput);
  h.c.constructionPick('sub',otherSub);
- assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','Unavailable','02/03/2027'],['Const Start','Unavailable','Unavailable']],'selection replacement clears unavailable cells independently and cannot retain another phase\'s dates');
- h.c.constructionPick('sub','');assert.deepEqual(cells(matrix(context.outerHTML)),[['CP Release','Unavailable','Unavailable'],['Const Start','Unavailable','Unavailable']]);
+ assert.deepEqual(cells(context()),[['CP Release','Unavailable','02/03/2027'],['Const Start','Unavailable','Unavailable']],'selection replacement clears unavailable cells independently and cannot retain another phase\'s dates');
+ h.c.constructionPick('sub','');assert.deepEqual(cells(context()),[['CP Release','Unavailable','Unavailable'],['Const Start','Unavailable','Unavailable']]);
  assert.equal(h.c.constructionCancelNew(),true);assert.equal(h.c.constructionEditOpen(ID),true);
  const editMatrix=h.node('construction_edit_form').querySelector('.construction-dates table');checkHeaders(editMatrix);
  assert.deepEqual(cells(editMatrix),[['CP Release','10/26/2026','10/28/2026'],['Const Start','11/03/2026','11/05/2026']],'Edit renders the request\'s current selected Subdivision dates');

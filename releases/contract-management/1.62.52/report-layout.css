@@ -1,0 +1,25 @@
+/* Pro Forma main-report palette; retain Legal/Construction layout and behavior.
+   Reference: proforma-manager/src/app/report-layout.css. */
+#view,.home-actions,.filterrow{background:#e5ecf3}
+.tablecard{border-color:#bdcfe1;background:#f4f7fb;box-shadow:0 2px 6px #203c600a}
+.wtable thead th{background:#d9e5f1;color:#496581;border-bottom-color:#c5d6e6}
+.wtable tbody tr:not(.tgroup):not(.drillrow):nth-child(odd){background:#f4f7fb}
+.wtable tbody tr:not(.tgroup):not(.drillrow):nth-child(even){background:#eaf1f7}
+.wtable tbody tr:not(.tgroup):not(.drillrow):hover{background:#dce9f6}
+.wtable tr.tgroup td,.wtable tr.tgroup:hover td{background:linear-gradient(110deg,#b6cce2,#c8daeb)!important;color:#102f51;border-top:2px solid #8faecc;border-bottom:1px solid #94b2cf;padding:0}
+.wtable tr.tgroup td:first-child{box-shadow:inset 5px 0 0 var(--section-accent,#6d95c0)}
+.ctable.focus tbody tr.tgroup{opacity:1}
+.ctable tbody[hidden]{display:none}
+.tgroup-toggle{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;box-sizing:border-box;padding:8px 15px;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.tgroup-toggle:hover{background:#ffffff26}
+.tgroup-toggle:focus-visible{outline:2px solid #174c88;outline-offset:-4px}
+.tgroup-toggle .tgroup-name{color:inherit}
+.tgroup-toggle .tgroup-n{margin-left:0}
+.tgroup-chevron{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;padding:0;box-sizing:border-box;border:1px solid #8ba8c5;border-radius:6px;background:#ffffff80}
+.tgroup-chevron svg{display:block;width:14px;height:14px;transform:rotate(0deg);transition:transform .2s cubic-bezier(.22,.7,.25,1)}
+.tgroup-toggle[aria-expanded="true"] .tgroup-chevron svg{transform:rotate(90deg)}
+@media(prefers-reduced-motion:reduce){.tgroup-chevron svg{transition:none}}
+.bcol{background:#eaf1f7}
+.bcol-head{color:#496581}
+.bcard{background:#f4f7fb;border-color:#bdcfe1}
+.bcard:hover{background:#dce9f6}

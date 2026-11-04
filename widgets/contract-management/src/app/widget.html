@@ -1978,16 +1978,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.51"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.51">
-<script src="interaction-motion.js?v=1.62.51"></script>
-<script src="interaction-surfaces.js?v=1.62.51"></script>
-<script src="number-edit-commit.js?v=1.62.51"></script>
-<script src="number-transitions.js?v=1.62.51"></script>
-<script src="number-surfaces.js?v=1.62.51"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.51">
-<link rel="stylesheet" href="report-layout.css?v=1.62.51">
-<link rel="stylesheet" href="construction-board.css?v=1.62.51">
+<script src="success-feedback.js?v=1.62.52"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.52">
+<script src="interaction-motion.js?v=1.62.52"></script>
+<script src="interaction-surfaces.js?v=1.62.52"></script>
+<script src="number-edit-commit.js?v=1.62.52"></script>
+<script src="number-transitions.js?v=1.62.52"></script>
+<script src="number-surfaces.js?v=1.62.52"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.52">
+<link rel="stylesheet" href="report-layout.css?v=1.62.52">
+<link rel="stylesheet" href="construction-board.css?v=1.62.52">
 </head>
 <body>
 
@@ -2036,7 +2036,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.51", pageSize: 200, maxPages: 25,
+  version: "1.62.52", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -7571,13 +7571,22 @@ function aprPending(cid){
   return approvalsFor(cid).filter(function(a){ return truthy(a.Approval_Email)&&String(a.Status||"Not Sent")==="Not Sent"; });
 }
 function aprSend(cid){
-  var c=findContract(cid); if(!c||S.busy) return;
+  var c=findContract(cid); if(!c||S.busy||contractWorkflowNativePending()) return Promise.resolve(false);
   if(!needs(mayEdit(cid),"send for approvals")) return;
+  if(!S.demo){
+    var read=contractApprovalRead;
+    if(!read||read.cid!==String(cid)||!contractApprovalReadCurrent(read)||read.status==='loading')return Promise.resolve(false);
+    S.aprSendTrigger=document.activeElement;
+    return contractRefreshApprovalRows(read,true).then(function(ok){if(!ok)return false;return aprSendConfirmation(cid);});
+  }
+  return aprSendConfirmation(cid);
+}
+function aprSendConfirmation(cid){
   var pending=aprPending(cid);
   var attached=versionsFor(cid).filter(function(v){ return truthy(v.Email_Attachment); });
   if(!pending.length){ banner("err","No approver is switched on for the email, or every switched-on approver has already been sent."); return; }
   if(!attached.length){ banner("err","Attach at least one file to the approval email first."); return; }
-  S.aprSendTrigger=document.activeElement;
+  if(S.demo)S.aprSendTrigger=document.activeElement;
   confirmDialog({
     kicker:"Send for Approvals",title:"Send the approval email?",
     lead:"Each approver below receives the approval email with "+attached.length+" attached file"+(attached.length===1?"":"s")+". Their status moves to Awaiting Approval and the contract to Awaiting Approvals.",
@@ -7758,11 +7767,55 @@ document.addEventListener("keydown",function(e){
 },true);
 document.addEventListener("click",function(e){if(contractApprovalProgress&&!e.target.closest("#contractApprovalProgress")){e.preventDefault();e.stopImmediatePropagation();}},true);
 document.addEventListener("focusin",function(e){if(contractApprovalProgress&&!$("contractApprovalProgress").contains(e.target))$("contractApprovalProgress").querySelector(".approval-progress-dialog").focus();},true);
+/* A native create hook can replace a template recipient and add another VP.
+   The saved row's display refresh cannot discover that extra row. Reuse the
+   existing exact-parent report read and target-only cache replacement here. */
+var contractApprovalRead=null;
+function contractApprovalReadCurrent(read){
+  return contractApprovalRead===read&&read.scope===contractMutationScope()&&read.generation===S.contractDataGeneration
+    &&read.navigation===(S.contractNavigationGeneration||0)&&S.aprCid===read.cid&&!!document.getElementById('aprTabs');
+}
+function contractRefreshApprovalRows(read,forSend){
+  if(!contractApprovalReadCurrent(read)||S.busy||contractWorkflowNativePending())return Promise.resolve(false);
+  read.status='loading';read.error='';var request=++read.request;
+  showApprovalsModal(read.cid);
+  var options=contractReadOptions(read.generation,read.scope),cancelled=options.isCancelled,timer;
+  options.isCancelled=function(){return cancelled()||!contractApprovalReadCurrent(read)||request!==read.request;};
+  var parent=forSend?contractParentWritePreflight(read.cid,false,read.scope,read.generation)
+    :sdkGetAll(CFG.reports.contracts,'(ID == '+read.cid+')',options).then(function(rows){
+      if(rows.length!==1||rows[0].ID!==read.cid||!contractOwn(rows[0],'Status')||!workVisible(rows[0]))throw new Error('The current contract is unavailable.');
+      return rows[0];
+    });
+  var pending=Promise.all([parent,sdkGetAll(CFG.reports.approvals,'(Contract1 == '+read.cid+')',options)]);
+  var deadline=new Promise(function(resolve,reject){timer=setTimeout(function(){reject(new Error('Approval refresh timed out. Try again.'));},20000);});
+  return Promise.race([pending,deadline]).then(function(result){
+    if(!contractApprovalReadCurrent(read)||request!==read.request)return false;
+    var current=result[0],rows=result[1],ids=rows.map(function(row){return contractId(row.ID);});
+    if(current.ID!==read.cid||!workVisible(current)||rows.some(function(row){return lookupId(row.Contract1)!==read.cid;})||ids.some(function(id){return !id;})||new Set(ids).size!==ids.length)throw new Error('Creator did not return the current approval rows.');
+    S.contracts=S.contracts.map(function(row){return row.ID===read.cid?current:row;});
+    S.approvals=S.approvals.filter(function(row){return lookupId(row.Contract1)!==read.cid;}).concat(rows);
+    read.status='ready';read.loaded=true;showApprovalsModal(read.cid);return true;
+  }).catch(function(error){
+    if(!contractApprovalReadCurrent(read)||request!==read.request)return false;
+    read.status='error';read.error=contractAuditText(errText(error));showApprovalsModal(read.cid);return false;
+  }).finally(function(){clearTimeout(timer);});
+}
+function aprRefreshApprovals(cid){
+  var read=contractApprovalRead;
+  if(!read||read.cid!==String(cid)||read.status==='loading')return Promise.resolve(false);
+  return contractRefreshApprovalRows(read,false);
+}
 function showApprovalsModal(cid,tab){
   if(workModule(findContract(cid))==='construction'){banner('err','Construction requests use the Review tab.');return false;}
   var km=document.querySelector(".kmenu"); if(km) km.remove();
   var c=findContract(cid); if(!c) return;
-  var existing=document.getElementById("aprTabs");
+  var existing=document.getElementById("aprTabs"),back=document.querySelector("#overlays .modal-back");
+  var same=existing&&back&&S.aprCid===String(cid),read=contractApprovalRead,startRead=false;
+  if(!S.demo&&(!same||!read||read.cid!==String(cid)||!contractApprovalReadCurrent(read))){
+    read={cid:String(cid),scope:contractMutationScope(),generation:S.contractDataGeneration,navigation:S.contractNavigationGeneration||0,status:'loading',request:0};
+    contractApprovalRead=read;startRead=true;
+  }
+  var fresh=S.demo||read&&read.status==='ready';
   /* a re-render after an inline edit keeps the tab; a fresh open starts on approvers */
   if(tab) S.aprTab=tab; else if(!existing) S.aprTab="approvers";
   var onAtt=S.aprTab==="attachments";
@@ -7775,32 +7828,35 @@ function showApprovalsModal(cid,tab){
     +'<button type="button" role="tab" class="'+(onAtt?"active":"")+'" aria-selected="'+(onAtt?"true":"false")+'" onclick="showApprovalsModal(\''+cid+'\',\'attachments\')">Attachments <span class="seg-n">'+attached+'/'+vers.length+'</span></button>'
     +'</div>';
   var kicker="Internal Approvals \u00b7 "+done+" of "+apps.length+" approved";
-  var body=onAtt?aprAttachmentsTab(cid,vers,attached):aprApproversTab(cid,apps,emailed);
+  var body=fresh||read&&read.loaded&&read.status==='loading'?(onAtt?aprAttachmentsTab(cid,vers,attached):aprApproversTab(cid,apps,emailed))
+    :'<div class="empty" role="status" aria-live="polite">'+(read.status==='error'?'Could not refresh approvals. <button type="button" class="btn ghost" onclick="aprRefreshApprovals(\''+cid+'\')" title="'+esc(read.error||'Try again')+'">Try Again</button>':'Refreshing approvals\u2026')+'</div>';
+  if(!fresh&&read.loaded&&read.status==='loading')body='<div inert aria-busy="true">'+body+'</div>';
   var pending=aprPending(cid).length;
   var awaiting=apps.filter(function(a){ return String(a.Status||"")==="Awaiting Approval"; }).length;
-  var ready=pending>0&&attached>0&&mayEdit(cid)&&!S.busy;
-  var readyText=ready
+  var ready=fresh&&pending>0&&attached>0&&mayEdit(cid)&&!S.busy&&!contractWorkflowNativePending();
+  var readyText=!fresh?(read.status==='error'?'Refresh approvals before sending':'Refreshing approvals\u2026'):ready
     ?pending+' approver'+(pending===1?"":"s")+' \u00b7 '+attached+' file'+(attached===1?"":"s")+' ready to send'
     :(awaiting&&!pending
       ?'Sent \u2014 '+awaiting+' awaiting approval \u00b7 reminders go out automatically'
       :(!attached?'To send: attach a file on the Attachments tab':'To send: turn on Email for an approver who has not been sent'));
   var foot='<div class="modal-foot apr-foot">'
-    +'<span class="apr-ready'+(ready?" ok":"")+'">'+readyText+'</span>'
+    +'<span class="apr-ready'+(ready?" ok":"")+'" role="status" aria-live="polite" data-lm-motion="feedback" data-state="'+(!fresh?read.status:ready?'ready':'idle')+'">'+readyText+'</span>'
     +'<div class="spacer" style="flex:1"></div>'
     +'<button type="button" class="btn primary apr-send"'+(ready?"":" disabled")+' onclick="aprSend(\''+cid+'\')" title="'+(ready?"Send the approval email to the switched-on approvers":"Needs an approver with Email on who has not been sent, and an attached file")+'">'+APR_ICON_MAIL+(S.busy?'Sending\u2026':'Send for Approvals')+'</button>'
     +'</div>';
   /* already open for this contract: swap the parts in place - re-opening the modal
      replays its entrance animation, which read as a flash on every toggle */
-  var back=document.querySelector("#overlays .modal-back");
-  if(existing&&back&&S.aprCid===String(cid)){
+  if(same){
     existing.outerHTML=tabs;
     var mk=back.querySelector(".modal-head .mk"); if(mk) mk.textContent=kicker;
     var mb=back.querySelector(".modal-body"); if(mb) mb.innerHTML=body;
     var mf=back.querySelector(".modal-foot"); if(mf) mf.outerHTML=foot;
+    if(startRead){read.navigation=S.contractNavigationGeneration||0;return contractRefreshApprovalRows(read,false);}
     return;
   }
   S.aprCid=String(cid);
-  openModal(modalHead(kicker,c.Contract_Name||"Contract",tabs)+'<div class="modal-body">'+body+'</div>'+foot);
+  if(openModal(modalHead(kicker,c.Contract_Name||"Contract",tabs)+'<div class="modal-body">'+body+'</div>'+foot)===false)return false;
+  if(startRead){read.navigation=S.contractNavigationGeneration||0;return contractRefreshApprovalRows(read,false);}
 }
 /* ---------------- attachment upload + preview (pattern from Budget Manager) ---------------- */
 function runtimeEnv(){

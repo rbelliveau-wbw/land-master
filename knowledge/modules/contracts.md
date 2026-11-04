@@ -1,3 +1,31 @@
+## Fresh Contract Approval Recipients — 1.62.52, November 3, 2026
+
+Opening Internal Approvals reads the exact Contract and its Contract_Approvals
+rows before showing recipients. It uses the existing counted native report
+reader and target-only cache replacement so native routing hooks can add a
+second VP without a whole-app Refresh. The same mounted tab/edit repaint keeps
+its local state. A new open captures the Creator actor, data generation,
+navigation generation and modal instance; closed, replaced and stale replies
+are ignored. The read has a 20-second deadline with a visible Try Again action.
+Send stays disabled until a complete scoped read succeeds.
+
+Send refreshes the same parent route again, using the existing parent write
+preflight, before opening the existing recipient confirmation. Refreshes send
+no emails and make no writes. Complete and read-only history use read access,
+while Send retains edit permission, native progress, targeted reconciliation and
+duplicate-send protection. Creation/save success and optional save refresh
+remain unchanged; no editable-field equality gate is added.
+
+Affected native fields are read-only Contract.ID/Status and Contract_Approvals.ID/
+Contract1 plus the existing approval display fields. No new form, field,
+function or Custom API is needed for this frontend refresh. The separately
+installed Development-VP routing adapter and created-only hooks still require
+native verification and Creator promotion. Focused actual-source tests cover
+extra VP discovery, exact parent isolation, failed/hung reads and Retry, stale
+actor/generation/A→B→A responses, retained toggles and completed/read-only
+history. Existing Send/Check/Repair and creation-speed checks remain intact.
+Hosted rollback: `1.62.51`.
+
 ## Correct Module Label During Startup — 1.62.51, November 3, 2026
 
 Release 1.62.51 removes the initial hardcoded Contracts breadcrumb. The shared

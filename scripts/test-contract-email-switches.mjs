@@ -8,7 +8,7 @@ for(const kind of ['attachment','approver']){
     const row={ID:NEW,Contract1:{ID},[field]:'false',File_Upload:'fixture.pdf',Approver:'fixture@example.test',Status:'Not Sent',Type1:'Contract Approver'};
     h.reports[report].push(row);(kind==='attachment'?h.c.S.versions:h.c.S.approvals).push({...row});
     h.c.S.selId=ID;h.c.S.view='detail';
-    if(kind==='attachment')h.c.showAttachmentsModal(ID);else h.c.showApprovalsModal(ID);
+    if(kind==='attachment')h.c.showAttachmentsModal(ID);else await h.c.showApprovalsModal(ID);
     const gate=deferred(),native=h.api.updateRecordById;let sends=0;
     h.api.updateRecordById=async config=>{sends++;assert.equal(config.payload.data[field],'true','Creator checkbox update uses a string');await gate.promise;if(rejected)return {code:2897,message:'This profile cannot edit the field'};return native(config);};
     const toggle=()=>kind==='attachment'?h.c.toggleEmailAttach(NEW,ID):h.c.aprToggleEmail(NEW);
