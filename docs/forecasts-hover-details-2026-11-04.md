@@ -306,6 +306,29 @@ script syntax, full `npm run validate`, and `npm run build:pages` (34 stable
 environment paths). The full browser regression script was not launched; desktop
 geometry is checked through the agent-owned browser instead.
 
+Production verified November 4 against versioned 1.6.22 assets after commit
+`497a3b2dc68d56af1e09d4c9969c4e70a1fd8098` passed
+[main CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/41870767037)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/41870767083).
+
+- The actual Creator report retained the complete default scope and the captured
+  selected-period total. There is one `fcFoot` rowgroup between `fcHead` and
+  `fcBody`, with no bottom totals duplicate.
+- At the desktop verification size, the complete header measured 89.6875px and
+  the top totals began exactly at its bottom. After horizontal and vertical
+  scrolling together, all four frozen total cells and the visible monthly total
+  remained exposed at that same boundary. Widths stayed 230/125/125/100px.
+- Annual Totals and Hide Empty toggles retained the total, one mounted totals
+  row, top alignment and native-title suppression. The top current-month card
+  opened with the approved count rectangles and no inherited native tooltip.
+- Collapse All / Reset followed the three switches; the legend aligned to the
+  far right of the filter row. Local native-shaped desktop testing also passed
+  with 346 phases and simultaneous scrolling before publication.
+
+Actual Production screenshots remain outside the public repository:
+`before-top-totals-prod.jpg`, `after-top-totals-prod.jpg`,
+`after-top-totals-scroll-prod.jpg` and `after-top-totals-card-prod.jpg`.
+
 Rollback: map Production `lot-sales-explorer` to **1.6.21** and rebuild Pages,
 retaining permanent URLs. No data or Creator rollback is required.
 
