@@ -285,6 +285,13 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+November 4 correction, Insights 1.6.20: frozen first-row name, status, builder
+and Total headers must outrank scrolling fiscal-year headings. Use selectors
+that outrank the generic first-row header rule; computed layers are at least
+7 for the frozen block and 8 for its name header. Confirm actual hit testing
+at the top of each frozen header after scrolling, in addition to aligned
+boundaries through group and expanded-builder rows.
+
 November 4 follow-up, Insights 1.6.19: keep the first four columns frozen when
 the month matrix scrolls horizontally: phase/View By, Zoho Project Status,
 Builder and Total. Their fixed widths are 230px, 125px, 125px and 100px, with

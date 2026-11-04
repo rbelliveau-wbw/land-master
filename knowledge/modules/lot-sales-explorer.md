@@ -1,3 +1,13 @@
+## Forecasts frozen-header layering — 1.6.20, November 4, 2026
+
+Give the frozen first-row headers explicit stacking priority over scrolling
+fiscal-year headings. Geometry alone does not establish visibility: the desktop
+regression checks computed layers and hit testing near each frozen header's top
+edge after horizontal scrolling, plus group and expanded-builder boundaries.
+This corrects the interim 1.6.19 presentation without changing counts or data.
+Final Production verification is pending. Roll back to 1.6.18 if needed.
+[Layering correction and checks](../../docs/forecasts-hover-details-2026-11-04.md#frozen-header-layering--insights-1620).
+
 ## Forecasts frozen columns and hover cleanup — 1.6.19, November 4, 2026
 
 Freeze phase/View By, Zoho Project Status, Builder and Total together while

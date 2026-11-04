@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.6.19",
+  "version": "1.6.20",
   "description": "Forecasts dashboard with a frozen identity block through Total and custom hover cards without duplicate native tooltips.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "ee5583b0a44af3d8444b04e7df5acc3eeff417df92cc98da9cf70fc1693ad459",
+  "source_sha256": "70e40a7fe62068702f4ce5e0f32d3108a6cd529aec25a71ddfb99c570484819a",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

@@ -185,3 +185,24 @@ Pages, keeping permanent widget URLs unchanged. This restores the preceding
 column/hover presentation. No stored forecast values, completeness counters or
 yearly comments require a data rollback.
 
+## Frozen-Header Layering — Insights 1.6.20
+
+Production inspection of interim 1.6.19 found that the generic first-row
+header selector overrode the intended stacking levels. The frozen headers
+retained correct positions, but scrolling fiscal-year headings could cover
+their top area. The 1.6.20 correction gives the frozen header selectors enough
+specificity to preserve their intended layers: name at 8, status, Builder and
+Total at 7, above fiscal-year headings at 6.
+
+The desktop regression now checks computed frozen-header levels and actual
+hit testing 10px below each header's top edge after horizontal scrolling.
+It also checks all four frozen boundaries on group and expanded-builder rows.
+Browser syntax and focused documentation checks pass; final 1.6.20 Production
+visual/deployment verification is pending. No calculation or data contract
+changes accompany this correction.
+
+The final rollback target is **1.6.18**, the preceding accepted release.
+Version 1.6.19 is an interim release rather than a recommended rollback target.
+Restore the Production `lot-sales-explorer` mapping to `1.6.18` and rebuild
+Pages while preserving permanent widget URLs. No business data requires rollback.
+

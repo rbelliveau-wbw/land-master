@@ -26,9 +26,9 @@
 #fcMatrix .fc-name{position:sticky;left:0;z-index:3;box-sizing:border-box;min-width:var(--fc-name-width);max-width:var(--fc-name-width);width:var(--fc-name-width);text-align:left;border-right:1px solid #b8cce2;box-shadow:2px 0 4px #173b6410;overflow:hidden;text-overflow:ellipsis}
 #fcMatrix .fc-meta{position:sticky;z-index:3;box-sizing:border-box;width:var(--fc-meta-width);min-width:var(--fc-meta-width);max-width:var(--fc-meta-width);text-align:left;overflow:hidden;text-overflow:ellipsis}
 #fcMatrix tr>.fc-meta:nth-child(2){left:var(--fc-name-width)}#fcMatrix tr>.fc-meta:nth-child(3){left:calc(var(--fc-name-width) + var(--fc-meta-width))}
-#fcMatrix thead .fc-meta,#fcMatrix tfoot .fc-meta{z-index:7}
+#fcMatrix thead tr:first-child>.fc-meta,#fcMatrix tfoot .fc-meta{z-index:7}
 #fcMatrix thead th{position:sticky;z-index:5;top:29px;background:#cbddef;border-bottom:1px solid #9db6d3;font-weight:650;height:44px;text-align:center;font-size:10px}
-#fcMatrix thead tr:first-child th{top:0;z-index:6}#fcMatrix thead th[rowspan]{top:0;height:73px;text-align:left}#fcMatrix thead .fc-name{z-index:8;background:#bed4e9}
+#fcMatrix thead tr:first-child th{top:0;z-index:6}#fcMatrix thead th[rowspan]{top:0;height:73px;text-align:left}#fcMatrix thead tr:first-child>.fc-name{z-index:8;background:#bed4e9}
 #fcMatrix thead .fc-year{height:29px;background:#e4edf7;text-align:left;font-size:11px;padding:6px 10px}#fcMatrix .fc-year span{font-weight:400;font-size:10px;color:#58718c;margin-left:10px}#fcMatrix thead small{display:block;color:#58718c;font-weight:400;font-size:9px;margin-top:2px}
 #fcMatrix .fc-year-start{border-left:2px solid #a9bfd9}#fcMatrix .fc-annual{background:#eaf2fc;border-left:1px solid #a9bfd9;box-sizing:border-box;width:70px;min-width:70px;max-width:70px;padding-left:7px;padding-right:7px;font-weight:700}#fcMatrix thead .fc-annual{background:#173b64;color:#fff}#fcMatrix thead .fc-annual small{color:#d3e5fa}
 #fcMatrix .fc-group>*{background:#e4edf7;border-top:1px solid #bdcfe1;border-bottom:1px solid #bdcfe1;font-weight:650;padding-top:7px;padding-bottom:7px}#fcMatrix .fc-group>.fc-name{box-shadow:inset 3px 0 0 #6a93bb,2px 0 4px #173b6410}
@@ -76,7 +76,7 @@
 
 /* Freeze the full identity block through Total while fiscal columns scroll. */
 #fcMatrix .fc-period-total{position:sticky;left:calc(var(--fc-name-width) + 2 * var(--fc-meta-width));z-index:3;box-sizing:border-box;width:var(--fc-total-width);min-width:var(--fc-total-width);max-width:var(--fc-total-width);text-align:right;font-weight:700;background:#eaf2fc;border-left:1px solid #a9bfd9;border-right:2px solid #a9bfd9;box-shadow:2px 0 4px #173b6410}
-#fcMatrix thead .fc-period-total{z-index:7;background:#173b64;color:#fff;text-align:center}
+#fcMatrix thead tr:first-child>.fc-period-total{z-index:7;background:#173b64;color:#fff;text-align:center}
 #fcMatrix thead .fc-period-total small{color:#d3e5fa}
 #fcMatrix .fc-group>.fc-period-total{background:#dce8f5}
 #fcMatrix .fc-builder-leaf>.fc-period-total{background:#eaf2fc}
