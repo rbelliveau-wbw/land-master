@@ -285,6 +285,22 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+November 4 follow-up, Insights 1.6.19: keep the first four columns frozen when
+the month matrix scrolls horizontally: phase/View By, Zoho Project Status,
+Builder and Total. Their fixed widths are 230px, 125px, 125px and 100px, with
+left offsets 0px, 230px, 355px and 480px. Align the same boundaries in the
+header, phase/group/builder rows and footer, retaining opaque row backgrounds
+and the required stacking order. Monthly and compact annual columns scroll
+after Total; preserve the mounted scroller and all display/filter/CSV semantics.
+
+Current-month cards show the saved Forecast, Scheduled and Sold values without
+the former **(Partial)** suffix. Preserve completeness counters internally,
+the existing Missing Forecasts warning, unknown counts and explicit zeroes.
+Where a custom card is available, omit its duplicate native browser title:
+current-month cells (including cached group/footer updates), placeholder name
+wrappers and the Missing Forecasts control. Retain accessible names and native
+titles on other months, month headings and ordinary truncated builder names.
+
 November 4, Insights 1.6.18: make annual columns more compact while keeping
 their year/total labels readable and their values aligned through builder,
 group and footer rows. The current-month hover card shows **Forecast**,

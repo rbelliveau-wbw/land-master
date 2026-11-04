@@ -247,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.6.18",
-      "description": "Read-only Forecasts dashboard with compact annual columns, current-month comparison counts, acceptance dates and placeholder notes.",
+      "version": "1.6.19",
+      "description": "Forecasts dashboard with a frozen identity block through Total and custom hover cards without duplicate native tooltips.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "6850e0613d7caf651cafb252c3b6e0f540453b47d0fd28879126784fa3034534",
+      "source_sha256": "ee5583b0a44af3d8444b04e7df5acc3eeff417df92cc98da9cf70fc1693ad459",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

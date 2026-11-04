@@ -1,3 +1,15 @@
+## Forecasts frozen columns and hover cleanup — 1.6.19, November 4, 2026
+
+Freeze phase/View By, Zoho Project Status, Builder and Total together while
+months scroll, using the same boundaries across headers, phase/group/builder
+rows and footer. Current-month cards omit the former (Partial) suffix and
+duplicate native browser tooltips. Placeholder note cards and Missing Forecasts
+also use their custom cards without inherited native titles. Cached Hide Empty
+updates retain that suppression. Saved counts, completeness counters, missing
+warnings, unknown/zero semantics, note scope and CSV calculations are unchanged.
+No backend change is included. Production verification is pending for 1.6.19.
+[Follow-up behavior, checks and rollback to 1.6.18](../../docs/forecasts-hover-details-2026-11-04.md#follow-up--insights-1619).
+
 ## Forecasts hover details — 1.6.18, November 4, 2026
 
 Annual columns use a more compact width. The current-month hover card shows

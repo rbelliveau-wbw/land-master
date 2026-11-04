@@ -127,3 +127,61 @@ retaining the permanent `prod/insights/` and `prod/lot-sales-explorer/` URLs.
 No stored forecast values or yearly comments require rollback. Any existing
 report-field exposure can remain in place.
 
+## Follow-up — Insights 1.6.19
+
+The November 4 user follow-up removes the visible **(Partial)** suffix from
+current-month Forecast counts and removes duplicate native browser tooltips
+where a custom Forecasts card is available. The custom card keeps its three
+saved counts. Missing-contributor counters and the existing Missing Forecasts
+warning remain active; absent counts remain unknown and saved zeroes stay zero.
+Placeholder note and subdivision-date behavior from 1.6.18 is preserved.
+
+The current-month cell omits its native title in phase, builder, group and
+footer rows. Cached total updates explicitly remove that attribute during Hide
+Empty changes. Single-placeholder metadata cells and expanded placeholder name
+wrappers omit inherited titles, and the Missing Forecasts button has no native
+title. Native-only comparisons on other months and titles on month headings
+and ordinary truncated builder names remain available. Accessible card names,
+focus, keyboard dismissal and existing popover motion are retained.
+
+The same follow-up freezes the first four columns through **Total** when the
+matrix scrolls horizontally:
+
+| Column | Width | Sticky Left Offset |
+| --- | --- | --- |
+| Phase / View By | 230px | 0px |
+| Zoho Project Status | 125px | 230px |
+| Builder | 125px | 355px |
+| Total | 100px | 480px |
+
+Apply these boundaries to the header, phase rows, group rows, expanded builder
+rows and footer, retaining appropriate opaque backgrounds and stacking order.
+Months and annual totals continue scrolling after the frozen Total column.
+There is no report-model, formula, CSV, business-record, Deluge or Custom API
+change in this follow-up.
+
+### Follow-up Verification
+
+The focused nonbrowser hover test runs the production renderers and card
+handlers. It verifies removal of the suffix from card and accessible text,
+unchanged known/unknown/zero source counts, exact placeholder title conditions,
+safe multiline notes and Close/Escape focus restoration. A native-shaped
+aggregate fixture exercises the real Hide Empty/cache updater repeatedly: a
+hidden zero-forecast row changes the saved Scheduled comparison while the
+displayed matrix total stays equal, and current-month group/footer titles stay
+removed. Missing styling remains independent of native-title suppression.
+
+The desktop browser regression script now checks all four frozen-column widths,
+adjacent boundaries and header/body/footer alignment during horizontal scroll.
+It also checks current-month title suppression before and after Hide Empty,
+the retained accessible missing warning and absence of the removed suffix.
+This script was syntax checked; it has not been run for 1.6.19 in this pass.
+Production visual and deployment verification for 1.6.19 is pending.
+
+### Follow-up Rollback
+
+Restore the Production `lot-sales-explorer` mapping to `1.6.18` and rebuild
+Pages, keeping permanent widget URLs unchanged. This restores the preceding
+column/hover presentation. No stored forecast values, completeness counters or
+yearly comments require a data rollback.
+

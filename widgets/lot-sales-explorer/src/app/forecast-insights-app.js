@@ -57,6 +57,7 @@
   function syncSubtotals(){S.groupNodes.forEach(nodes=>{const hide=!S.collapsed.has(nodes.group.id)&&!$('fcSubtotals').checked;nodes.totals.forEach(value=>show(value,hide));});}
   function queueNumber(jobs,node,html){if(node._fcNumberMarkup===html)return;node._fcNumberMarkup=html;if(node.innerHTML!==html)jobs.push({cell:node,value:{html}});}
   function queueTotals(jobs,cells,before,after){cells.forEach((cell,index)=>{const value=after[index],old=before?.[index];if(old?.html!==value.html||old?.title!==value.title)jobs.push({cell,value});});}
+  function updateCellDetails(cell,value){if(value.title==null)cell.removeAttribute('title');else cell.title=value.title;cell.classList.toggle('fc-missing',value.missing);}
   function syncHideEmpty(animate=true){
     if(!S.baseReport||!S.permissions?.forecastsDashboard)return;
     const hide=$('fcHideEmpty').checked,jobs=[],visibility=[];S.report=hide?S.nonemptyReport:S.baseReport;
@@ -71,7 +72,7 @@
     // Capture every old number before changing visibility or markup: one layout phase.
     if(animate)jobs.forEach(job=>{job.prior=window.InsightsNumbers?.capture(job.cell);});
     visibility.forEach(([node,hidden])=>show(node,hidden));
-    jobs.forEach(({cell,value})=>{cell.innerHTML=value.html;if(value.title!=null){cell.title=value.title;cell.classList.toggle('fc-missing',value.missing);}});
+    jobs.forEach(({cell,value})=>{cell.innerHTML=value.html;if('title'in value)updateCellDetails(cell,value);});
     S.groupNodes.forEach(nodes=>{nodes.totals=nodes.totalCells.map(cell=>cell.firstElementChild);});syncSubtotals();
     if(animate)jobs.forEach(({cell,prior})=>window.InsightsNumbers?.apply(cell,prior));
     show($('fcFoot'),!S.report.rows.length);show($('fcEmpty'),S.report.rows.length>0||S.busy);$('fcExport').disabled=S.busy||S.error||!S.report.rows.length;syncCollapse();
@@ -81,14 +82,14 @@
     const value=c.value==null?'—':c.value?number(fmt(c.value),key,S.report.mode):'';
     const current=c.start?.slice(0,7)===S.permissions.today.slice(0,7),info=current?esc(JSON.stringify({month:c.name+' '+c.start.slice(0,4),forecast:c.tooltipForecast,scheduled:c.tooltipScheduled,sold:c.tooltipSold,missing:c.tooltipForecastMissing})):'';
     const content=current?'<button type="button" class="fc-month-info" data-fc-month-info="'+info+'" aria-label="'+esc(c.name+' '+c.start.slice(0,4)+' Counts: '+title)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+value+'</button>':value;
-    return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+' title="'+esc(title)+'">'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+content+'</span>':content)+'</td>';
+    return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+(current?'':' title="'+esc(title)+'"')+'>'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+content+'</span>':content)+'</td>';
   }
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(columnValue(cells,c),key+':'+columnKey(c),c.total?'fc-period-total':c.annual?'fc-annual':monthClass(c),group,hide)).join('');
-  const cellTitle=c=>(c.start?.slice(0,7)===S.permissions.today.slice(0,7)?'# Forecast: '+countLabel(c.tooltipForecast)+(c.tooltipForecastMissing&&c.tooltipForecast!=null?' (Partial)':'')+'\n# Scheduled: '+countLabel(c.tooltipScheduled)+'\n# Sold: '+countLabel(c.tooltipSold):fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast')+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
+  const cellTitle=c=>(c.start?.slice(0,7)===S.permissions.today.slice(0,7)?'# Forecast: '+countLabel(c.tooltipForecast)+'\n# Scheduled: '+countLabel(c.tooltipScheduled)+'\n# Sold: '+countLabel(c.tooltipSold):fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast')+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
   const totalsCache=new WeakMap(),groupCache=new WeakMap();
   function totalsMarkup(cells,key,group=false){
     let cached=totalsCache.get(cells);if(!cached){cached=new Map();totalsCache.set(cells,cached);}const identity=JSON.stringify([key,group]);
-    if(!cached.has(identity))cached.set(identity,columns(S.baseReport,true).map(c=>{const value=columnValue(cells,c),html=cellValue(value,key+':'+columnKey(c),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:cellTitle(value),missing:!!value.missing};}));return cached.get(identity);
+    if(!cached.has(identity))cached.set(identity,columns(S.baseReport,true).map(c=>{const value=columnValue(cells,c),html=cellValue(value,key+':'+columnKey(c),'',group);return {html:html.slice(html.indexOf('>')+1,html.lastIndexOf('</td>')),title:value.start?.slice(0,7)===S.permissions.today.slice(0,7)?null:cellTitle(value),missing:!!value.missing};}));return cached.get(identity);
   }
   function groupValues(group){
     let cached=groupCache.get(group);if(!cached){cached={all:M.aggregate(group.rows,S.baseReport.months),filtered:M.aggregate(group.rows.filter(row=>!S.emptyRows.has(row.key)),S.baseReport.months),headers:new Map()};groupCache.set(group,cached);}return cached;
@@ -97,10 +98,10 @@
   function phaseHTML(row,groupClosed){
     const signature=JSON.stringify([groupClosed,S.expandedPhases.has(row.key)]),cached=phaseMarkup.get(row);
     if(cached?.signature===signature)return cached.html;
-    const details=row.builderRows,expanded=S.expandedPhases.has(row.key),name='<span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>';
+    const details=row.builderRows,expanded=S.expandedPhases.has(row.key),name='<span title="'+esc(row.phase.name)+'">'+esc(row.phase.name)+'</span>',builderTitle=row.builders.length===1&&isPlaceholder(row.builders[0])?'':' title="'+esc(row.builders.map(b=>b.name).join(', '))+'"';
     const heading=details.length?'<button type="button" class="fc-phase-toggle" data-fc-phase="'+esc(row.key)+'" aria-expanded="'+expanded+'" aria-controls="'+details.map(child=>builderRowId(row.phase,child.builder)).join(' ')+'" aria-label="Builders for '+esc(row.phase.name)+'">'+chev+name+'</button>':name;
-    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Subdivision Details for '+esc(row.phase.name)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta" title="'+esc(row.builders.map(b=>b.name).join(', '))+'">'+(row.builders.length===1?builderLabel(row.phase,row.builders[0]):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
-    const html=parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span title="'+esc(child.builder.name)+'">'+builderLabel(row.phase,child.builder)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
+    const parent='<tr class="fc-leaf" '+(groupClosed?'hidden ':'')+'data-motion-row="'+esc('phase:'+row.key)+'"><th class="fc-name" scope="row"><div class="fc-phase-name">'+heading+(row.phase.soldOut?check:'')+'<button type="button" class="fc-info-trigger" data-fc-info="'+esc(row.phase.id)+'" aria-label="Subdivision Details for '+esc(row.phase.name)+'" aria-haspopup="dialog" aria-expanded="false" aria-controls="fcInfoCard">'+pin+'</button></div></th><td class="fc-meta">'+(row.phase.projectStatus?'<span class="fc-badge">'+esc(row.phase.projectStatus)+'</span>':'—')+'</td><td class="fc-meta"'+builderTitle+'>'+(row.builders.length===1?builderLabel(row.phase,row.builders[0]):row.builders.length?number(fmt(row.builders.length),'builders:'+row.key)+' Builders':'—')+'</td>'+rowCells(row.cells,row.key)+'</tr>';
+    const html=parent+details.map(child=>'<tr class="fc-builder-leaf" id="'+builderRowId(row.phase,child.builder)+'" data-fc-parent="'+esc(row.key)+'" data-motion-row="'+esc('builder:'+child.key)+'" '+(groupClosed||!expanded?'hidden':'')+'><th class="fc-name" scope="row"><div class="fc-builder-name"><span class="sr-only">Builder </span><span'+(isPlaceholder(child.builder)?'':' title="'+esc(child.builder.name)+'"')+'>'+builderLabel(row.phase,child.builder)+'</span></div></th><td class="fc-meta"></td><td class="fc-meta"></td>'+rowCells(child.cells,'builder:'+child.key)+'</tr>').join('');
     phaseMarkup.set(row,{signature,html});return html;
   }
   // Revisit recent filter combinations only within the current authorized snapshot.
@@ -131,7 +132,7 @@
     }catch(error){S.error=true;notice(error.message,true);$('fcExport').disabled=true;return;}
     const r=S.baseReport,cols=columns(r,true),prior=window.InsightsNumbers?.capture(host);
     const missingPhases=new Set(r.rows.filter(row=>row.cells.some(c=>c.missing)).map(row=>row.phase.id)).size;
-    S.missingPhases=missingPhases;$('fcWarning').hidden=!missingPhases;const warning='Missing Forecasts: '+fmt(missingPhases)+' '+(missingPhases===1?'Phase':'Phases');$('fcWarning').title=warning;$('fcWarning').setAttribute('aria-label',warning);
+    S.missingPhases=missingPhases;$('fcWarning').hidden=!missingPhases;const warning='Missing Forecasts: '+fmt(missingPhases)+' '+(missingPhases===1?'Phase':'Phases');$('fcWarning').removeAttribute('title');$('fcWarning').setAttribute('aria-label',warning);
     $('fcYearsLabel').hidden=$('fcPeriod').value!=='custom';
     const contiguous=r.years.every((y,i)=>i===0||y===r.years[i-1]+1);
     $('fcRange').textContent=contiguous?'Feb '+r.years[0]+' – Jan '+(r.years.at(-1)+1):r.years.map(y=>'WFY '+y).join(' · ');
@@ -191,7 +192,7 @@
   function openCard(trigger,pinned=false){
     clearTimeout(cardTimer);if(cardTrigger&&cardTrigger!==trigger)cardTrigger.setAttribute('aria-expanded','false');cardTrigger=trigger;cardPinned=pinned;trigger.setAttribute('aria-expanded','true');
     let title,details,note;
-    if(trigger.hasAttribute('data-fc-month-info')){const counts=JSON.parse(trigger.dataset.fcMonthInfo);title=counts.month;details=[['# Forecast',countLabel(counts.forecast)+(counts.forecast!=null&&counts.missing?' (Partial)':'')],['# Scheduled',countLabel(counts.scheduled)],['# Sold',countLabel(counts.sold)]];}
+    if(trigger.hasAttribute('data-fc-month-info')){const counts=JSON.parse(trigger.dataset.fcMonthInfo);title=counts.month;details=[['# Forecast',countLabel(counts.forecast)],['# Scheduled',countLabel(counts.scheduled)],['# Sold',countLabel(counts.sold)]];}
     else if(trigger.hasAttribute('data-fc-builder-note')){const row=S.report.rows.find(row=>row.phase.id===trigger.dataset.fcNotePhase&&row.builders.some(builder=>builder.id===trigger.dataset.fcBuilderNote)),builder=row?.builders.find(builder=>builder.id===trigger.dataset.fcBuilderNote);if(!builder)return;title=builder.name;details=[['Phase',row.phase.name]];note=builder.note||'No Forecast Manager Notes';}
     else if(trigger.hasAttribute('data-fc-info')){const p=S.model.phases.find(p=>p.id===trigger.dataset.fcInfo);if(!p)return;title=p.territory;details=[['Project',p.project],['Phase',p.name],['Project Status',p.projectStatus||'—'],['Final Acceptance Due Date',dateLabel(p.finalAcceptanceDueDate)]];}
     else if(trigger.id==='fcWarning'){title='Missing Forecasts';details=[['Phases',S.missingPhases],['Unavailable values','Shown as —']];}
