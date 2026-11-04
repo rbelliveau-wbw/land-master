@@ -113,32 +113,60 @@ preserving child rows, grouping and parent-assignment guards. Full repository
 validation and the Pages build passed for the 1.62.52 candidate.
 
 The resolver, default adapter, two send functions and both created-only hooks
-have been saved in Development. A native parent-hook test retained Status New,
-Travis Parks and untouched approval history. Development widget creation and
-immediately reopened approval-list verification are still pending. Verify North/South Austin, a two-VP territory, missing/invalid VP data,
-unchanged other recipients, no emails, no changed parent status, retained sent
-history and retry after an interrupted extra-recipient insert. Do not send live
-approval emails just to test installation.
+have been saved in Development. The Contract workflow is
+`Apply_Contract_Developmen`; the Contract_Approvals workflow is
+`Apply_Development_Default`. Both are successful-submission actions for created
+records only. The existing template loader and decision-edit workflows remain
+unchanged.
+
+Actual Development tests on November 4 covered native parent creation in Fort
+Hood with one VP and Bryan/College Station with two VPs. Both initial parents
+retained Status New and Travis Parks. The Development recipient retained its
+selected Type1 and sequence; the extra Bryan VP used that same sequence. Email
+was off and decision/reminder history was blank. Test form entries explicitly
+selected Type1, preserving the existing required-field behavior. Bryan's
+original Development VP membership was restored and verified after the test.
+
+An actual SDK Add of a Paul marker at Final Approval/sequence 3 exercised the
+child-created hook and saved the corresponding VP. The form's existing Email
+default was immediately switched off without Send; no decision/reminder stamps
+were present. The existing `Set_Contract_Approved_Con` workflow changed that
+fixture parent to Approved when all children remained Not Sent, as before; the
+new helper does not write parent status. No test approval emails were sent.
+Temporary private probes and test data are not promotion components.
+
+Creator promotion completed on November 4 through Stage 9.144 and Production
+9.144. The package contained only the four routing/default/send functions and
+two created-only hooks; unrelated components and three temporary private test
+functions were excluded. Both environment versions were verified in Creator.
+
+The immediately reopened hosted approval-list test and Production route checks
+for North Austin, Bryan/College Station and San Antonio remain pending. Missing/
+invalid VP data, retained sent history and recovery after an interrupted extra-
+recipient insert must not be reported as live-verified without their own evidence.
 
 Verify the widget's approval list immediately after creation as well as the
 persisted rows. Creation hooks can add another VP row outside the widget's
 captured seed operations. Hosted Contract 1.62.52 addresses the cache gap with a fresh exact-parent
 approval read on modal open and before Send confirmation. Failed/pending reads
 keep Send disabled; no writes or emails occur during refresh. Verify the actual
-native hooks and immediately opened widget together before promotion; a
+native hooks and immediately opened widget together after deployment; a
 successful function return alone does not establish that recipients are current.
 
-Native installation, live verification and Creator promotion are separate
-requirements. The Settings rule is saved, but future-contract routing requires
-the verified helper, resolver, created-only hooks and send guards in Production.
+The Settings rule and native routing components are now in Production. The
+previously empty Production Settings.Builder_Approval_Template selection was
+set to the two intended existing template rows: Travis Parks at sequence 1 and
+the reserved Paul marker at sequence 2. Native save acknowledgement and the
+connected Settings display confirmed the selection; no template record was
+altered. The new contract's Territory determines the marker's VP recipients.
 Existing Production approval reassignment is a separate data migration; the
 hosted/source release does not perform it.
 
 Live migration status on November 3: 20 existing approval recipient rows were
 reassigned. Four additional Bryan/College Station VP rows were created and
 confirmed by a subsequent read-only recovery: all four exact rows were reused,
-with no blocked parents or duplicate POST. The future-contract adapter remains subject to the separate
-Creator installation, verification and promotion gates above.
+with no blocked parents or duplicate POST. These data updates are separate from
+the future-contract adapter and its verification evidence above.
 
 Hosted Contract Management rollback is `1.62.51`; hosted Settings rollback is
 `1.6.6`. Roll back the matching Creation hooks and native functions together if
