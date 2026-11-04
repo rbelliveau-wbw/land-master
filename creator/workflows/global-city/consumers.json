@@ -1,5 +1,5 @@
 {
-  "status": "development-installed-compiled-production-pending",
+  "status": "production-9.143-published-controlled-contract-save-verified",
   "authority": "thisapp.variables.City",
   "policy_function": "globalCityPolicy",
   "canonical_variable_unchanged": true,
@@ -233,5 +233,6 @@
     "publish only reviewed components and verify Production"
   ],
   "multi_select_api_limit": "Native On Load dynamic choices address known native form flows. No Allow Other Choices property or future SDK/API support is asserted for the three multi-select fields.",
-  "development_evidence": "installation-progress.json"
+  "development_evidence": "installation-progress.json",
+  "production_evidence": "installation-progress.json"
 }

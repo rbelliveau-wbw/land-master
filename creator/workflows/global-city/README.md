@@ -1,11 +1,11 @@
 # Shared City Runtime Bindings
 
-Installed and compiled in Creator **Development** for all ten fixed-choice City
-consumers: all 20 native bindings were saved, and the seven scalar field settings
-were enabled after their guards. Mandatory settings stayed unchanged. Definition
-readback is being completed by the parent agent; Production promotion and live
-verification remain pending. See [installation status](installation-progress.json)
-and [Development evidence](evidence/development/installed-workflows.json).
+Published to Creator **Production 9.143** after Development compilation and Stage
+promotion. All 20 native bindings and seven scalar field settings were included;
+mandatory settings stayed unchanged. The reviewed 28 City components also brought
+an automatic, unchanged Contract Type dependency; unrelated components stayed
+unselected. See [installation status](installation-progress.json) and
+[Development evidence](evidence/development/installed-workflows.json).
 The single authority is
 `thisapp.variables.City`, read on every call by
 [`globalCityPolicy`](../../functions/globalCityPolicy.dg). No copied City list is
@@ -54,6 +54,8 @@ Mass creation still executes only through its existing successful-submit flow.
 Vendors.City is free-text postal/address data and is intentionally unchanged.
 
 ## Native Installation Order
+
+These steps document the installed setup; do not add duplicate workflow actions.
 
 Creator's documented creation controls are **Workflow → Form workflows → New
 Workflow** (or **Create Workflow** when none exist), then **Choose form**, record
@@ -146,13 +148,36 @@ choices, stale/nonexistent IDs, changed City/source scopes, unordered sets,
 required/optional metadata and existing native Contract validation boundaries.
 These tests are not a Creator compiler or proof of native field configuration.
 
-Development save/compile and scalar configuration are recorded above. Remaining
-live gates: finish native definition readback; promote and reopen Production
-components; save/read a controlled record using Pflugerville; reject an invalid
-City through native validation; preserve an unchanged saved legacy record; test
-global add/remove in Development without editing Production choices solely for
-a fixture; verify multi-select native form/filter behavior. Check all preexisting
-form workflow, search, date and Cancel interactions remain mounted and working.
+Production verification reproduced the original Cameron Ranch case successfully:
+Offsite, First Round, MUD No, High, December 3, 2026, description `asdf`. The saved
+request and native `All_Contracts1` detail showed City **Pflugerville** and MUD
+`false`. Editing that same disposable record to MUD Bid, Final, MUD Yes and ASAP
+saved successfully; native detail retained Pflugerville and showed MUD `true`.
+
+Only disposable record `4410926000005728166` was then deleted through native
+**More → Delete → Yes**, within the user's test/cleanup authorization. The native
+report count returned from 108 to 107, the test name was absent, and a fresh
+Construction reload retained all six original request names with Review count 0.
+
+Native helper execution rejected `CODEX_INVALID_CITY` with no saved values and
+returned `ok: false`; Pflugerville returned `ok: true` and 76 choices. Development
+Project's native dropdown showed the 76 globals plus Creator's Other option and
+no new N choice. Tax Rate Template's native multi-select showed the same 76
+choices instead of its old 58 static choices. Its existing field label was left
+unchanged. Local screenshots remain under `tmp/global-city/`; none are committed.
+
+Contract's guard/load actions were reopened with their persisted additions.
+Project's load action matched after Creator's `input.City:ui.add` formatting
+normalization. Other workflow save actions compiled and showed the helper in the
+backing preview before Save/Done, and all 20 appeared in the reviewed native
+changeset. Full individual source comparison of every workflow is not claimed.
+The prior implementation CI passed full validation and the Pages artifact build.
+
+Global addition/removal, unchanged saved legacy selection and source-scope
+fixtures remain covered by the offline tests; no Production global mutation or
+backfill was performed for those cases. A new multi-select City has not been
+saved through a widget/SDK/API writer. The verified multi-select behavior is the
+known native form choice flow; its API limitation above still applies.
 
 ## Data Impact and Rollback
 
