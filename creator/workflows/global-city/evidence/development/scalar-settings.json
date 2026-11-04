@@ -1,0 +1,37 @@
+[
+  {
+    "form": "Contract",
+    "allowOther": true,
+    "mandatory": false
+  },
+  {
+    "form": "Project",
+    "allowOther": true,
+    "mandatory": true
+  },
+  {
+    "form": "Property",
+    "allowOther": true,
+    "mandatory": false
+  },
+  {
+    "form": "Subdivision",
+    "allowOther": true,
+    "mandatory": true
+  },
+  {
+    "form": "Lots",
+    "allowOther": true,
+    "mandatory": true
+  },
+  {
+    "form": "Mass_Create_Lots",
+    "allowOther": true,
+    "mandatory": true
+  },
+  {
+    "form": "Forecast_Search",
+    "allowOther": true,
+    "mandatory": false
+  }
+]

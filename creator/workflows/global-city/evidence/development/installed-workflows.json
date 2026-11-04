@@ -1,0 +1,102 @@
+[
+  {
+    "form": "Contract",
+    "event": "validate",
+    "native": "Field_Validations_Contrac"
+  },
+  {
+    "form": "Contract",
+    "event": "load",
+    "native": "Hide_Lockdown_Fields_Cont"
+  },
+  {
+    "form": "Project",
+    "event": "validate",
+    "native": "Shared City Validation - Project"
+  },
+  {
+    "form": "Project",
+    "event": "load",
+    "native": "Shared City Choices - Project"
+  },
+  {
+    "form": "Property",
+    "event": "validate",
+    "native": "Shared City Validation - Property"
+  },
+  {
+    "form": "Property",
+    "event": "load",
+    "native": "Shared City Choices - Property"
+  },
+  {
+    "form": "Subdivision",
+    "event": "validate",
+    "native": "Shared City Validation - Subdivision"
+  },
+  {
+    "form": "Subdivision",
+    "event": "load",
+    "native": "Shared City Choices - Subdivision"
+  },
+  {
+    "form": "Lots",
+    "event": "validate",
+    "native": "Shared City Validation - Lots"
+  },
+  {
+    "form": "Lots",
+    "event": "load",
+    "native": "Shared City Choices - Lots"
+  },
+  {
+    "form": "Mass_Create_Lots",
+    "event": "validate",
+    "native": "Shared City Validation - Mass Create Lots"
+  },
+  {
+    "form": "Mass_Create_Lots",
+    "event": "load",
+    "native": "Shared City Choices - Mass Create Lots"
+  },
+  {
+    "form": "Forecast_Search",
+    "event": "validate",
+    "native": "Shared City Validation - Forecast Search"
+  },
+  {
+    "form": "Forecast_Search",
+    "event": "load",
+    "native": "Shared City Choices - Forecast Search"
+  },
+  {
+    "form": "Lot_Search",
+    "event": "validate",
+    "native": "Shared City Validation - Lot Search"
+  },
+  {
+    "form": "Lot_Search",
+    "event": "load",
+    "native": "Shared City Choices - Lot Search"
+  },
+  {
+    "form": "System_Search",
+    "event": "validate",
+    "native": "Shared City Validation - System Search"
+  },
+  {
+    "form": "System_Search",
+    "event": "load",
+    "native": "Shared City Choices - System Search"
+  },
+  {
+    "form": "Tax_Rate_Template",
+    "event": "validate",
+    "native": "Shared City Validation - Tax Rate Template"
+  },
+  {
+    "form": "Tax_Rate_Template",
+    "event": "load",
+    "native": "Shared City Choices - Tax Rate Template"
+  }
+]

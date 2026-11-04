@@ -1,0 +1,490 @@
+{
+  "status": "development-installed-compiled-production-pending",
+  "components": [
+    {
+      "kind": "function",
+      "name": "globalCityPolicy",
+      "source": "../../functions/globalCityPolicy.dg",
+      "status": "development-saved-compiled-executed",
+      "development_verification": {
+        "reported_by": "parent agent using native Creator function editor",
+        "saved_and_compiled": true,
+        "execution": {
+          "requestedCities": [
+            "Pflugerville"
+          ],
+          "savedCities": [],
+          "allowRetained": true
+        },
+        "result": {
+          "ok": true,
+          "retained": false,
+          "choices_count": 76
+        },
+        "production_promotion": "pending",
+        "argument_entry_note": "Native list fields take plain list entries; JSON-looking text is a literal list member."
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Contract",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Contract.on-validate.dg",
+      "existing_action_integration": "Field_Validations_Contrac: append last",
+      "native_component_name": "Field_Validations_Contrac",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Contract",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Contract.on-load.dg",
+      "existing_action_integration": "Hide_Lockdown_Fields_Cont: append after current load actions",
+      "native_component_name": "Hide_Lockdown_Fields_Cont",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Lots",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Lots.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Lots",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Lots",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Lots.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Lots",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Project",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Project.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Project",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Project",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Project.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Project",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Property",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Property.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Property",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Property",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Property.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Property",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Subdivision",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Subdivision.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Subdivision",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Subdivision",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Subdivision.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Subdivision",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Forecast_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Forecast_Search.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Forecast Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Forecast_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Forecast_Search.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Forecast Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Lot_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Lot_Search.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Lot Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Lot_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Lot_Search.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Lot Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Mass_Create_Lots",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Mass_Create_Lots.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Mass Create Lots",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Mass_Create_Lots",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Mass_Create_Lots.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Mass Create Lots",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "System_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/System_Search.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - System Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "System_Search",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/System_Search.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - System Search",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Tax_Rate_Template",
+      "record_event": "Created or Edited",
+      "form_event": "On Validate",
+      "source": "bindings/Tax_Rate_Template.on-validate.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Validation - Tax Rate Template",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "workflow-action",
+      "form": "Tax_Rate_Template",
+      "record_event": "Created or Edited",
+      "form_event": "On Load",
+      "source": "bindings/Tax_Rate_Template.on-load.dg",
+      "existing_action_integration": "append narrowly scoped action or create scoped workflow; preserve current actions",
+      "native_component_name": "Shared City Choices - Tax Rate Template",
+      "status": "development-saved-compiled-production-pending",
+      "development_verification": {
+        "saved_and_compiled": true,
+        "reported_by": "parent agent using native Creator workflow editor",
+        "definition_readback": "pending parent completion",
+        "evidence": "evidence/development/installed-workflows.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Contract",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": false,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": false,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Lots",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": true,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": true,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Project",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": true,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": true,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Property",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": false,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": false,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Subdivision",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": true,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": true,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Forecast_Search",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": false,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": false,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    },
+    {
+      "kind": "field-property",
+      "form": "Mass_Create_Lots",
+      "field": "City",
+      "property": "Allow Other Choices",
+      "target": true,
+      "native_mandatory_to_preserve": true,
+      "prerequisite": "server guard and load binding saved, compiled, reopened and verified",
+      "status": "development-enabled-after-guards-production-pending",
+      "development_verification": {
+        "allow_other_choices": true,
+        "mandatory_unchanged": true,
+        "native_mandatory": true,
+        "enabled_after_server_and_load_bindings": true,
+        "reported_by": "parent agent using native Creator field editor",
+        "evidence": "evidence/development/scalar-settings.json"
+      }
+    }
+  ],
+  "native_verification_evidence": [
+    {
+      "environment": "DEVELOPMENT",
+      "workflows_saved_compiled": 20,
+      "scalar_properties_enabled_after_guards": 7,
+      "files": [
+        "evidence/development/installed-workflows.json",
+        "evidence/development/scalar-settings.json"
+      ],
+      "production_promotion": "pending"
+    }
+  ],
+  "development_installation_reported_by": "parent agent through native Creator Development UI, November 3, 2026",
+  "production_status": "pending parent promotion and live verification",
+  "development_definition_readback": "in progress by parent; not claimed complete by source agent"
+}

@@ -1,0 +1,109 @@
+map globalCityPolicy(list requestedCities, list savedCities, bool allowRetained)
+{
+	// Read-only policy shared by native City workflows and other writers.
+	// Callers establish the saved record/source identity before allowing retention.
+	// An empty requested list represents an optional blank City.
+	response = Map();
+	choices = List();
+	savedValues = List();
+	response.put("choices",choices);
+	response.put("ok",false);
+	response.put("retained",false);
+	response.put("message","The shared City list is unavailable. Refresh and try again.");
+	try
+	{
+		globalChoices = thisapp.variables.City;
+		globalValid = globalChoices != null;
+		if(globalValid)
+		{
+			for each globalCity in globalChoices
+			{
+				if(globalCity == null || ifnull(isText(globalCity),false) != true || globalCity == "")
+				{
+					globalValid = false;
+				}
+				else if(choices.contains(globalCity) == false)
+				{
+					choices.add(globalCity);
+				}
+			}
+		}
+		if(choices.size() == 0)
+		{
+			globalValid = false;
+		}
+		if(globalValid)
+		{
+			valuesValid = requestedCities != null && savedCities != null;
+			if(savedCities != null)
+			{
+				for each savedCity in savedCities
+				{
+					if(savedCity == null || ifnull(isText(savedCity),false) != true || savedCity == "")
+					{
+						valuesValid = false;
+					}
+					else if(savedValues.contains(savedCity) == false)
+					{
+						savedValues.add(savedCity);
+					}
+				}
+			}
+			retained = false;
+			if(requestedCities != null)
+			{
+				for each requestedCity in requestedCities
+				{
+					if(requestedCity == null || ifnull(isText(requestedCity),false) != true || requestedCity == "")
+					{
+						valuesValid = false;
+					}
+					else if(choices.contains(requestedCity) == false)
+					{
+						if(allowRetained == true && savedValues.contains(requestedCity))
+						{
+							retained = true;
+						}
+						else
+						{
+							valuesValid = false;
+						}
+					}
+				}
+			}
+			if(valuesValid)
+			{
+				if(allowRetained == true)
+				{
+					for each retainedCity in savedValues
+					{
+						if(choices.contains(retainedCity) == false)
+						{
+							choices.add(retainedCity);
+						}
+					}
+				}
+				response.put("ok",true);
+				response.put("retained",retained);
+				response.put("message","");
+			}
+			else
+			{
+				response.put("message","Choose a City from the shared City list.");
+			}
+		}
+		else
+		{
+			choices = List();
+		}
+		response.put("choices",choices);
+	}
+	catch(policyError)
+	{
+		response.put("choices",List());
+		response.put("ok",false);
+		response.put("retained",false);
+		response.put("message","The shared City list is unavailable. Refresh and try again.");
+	}
+	return response;
+}

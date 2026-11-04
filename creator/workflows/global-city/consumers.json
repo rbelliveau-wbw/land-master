@@ -1,0 +1,237 @@
+{
+  "status": "development-installed-compiled-production-pending",
+  "authority": "thisapp.variables.City",
+  "policy_function": "globalCityPolicy",
+  "canonical_variable_unchanged": true,
+  "source_catalog": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+  "source_sha256": "8aaa5901a8bb7195bed8a70e1adf1629ccdd4ae212b09f93fb9d09d298e66524",
+  "consumers": [
+    {
+      "form": "Contract",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": false,
+      "mode": "persisted",
+      "retention_scope": [
+        "Project",
+        "Subdivision1:set",
+        "Contract_Type",
+        "Work_Module:legal-default"
+      ],
+      "allow_other_choices_target": true,
+      "catalog_line": 1861,
+      "initial_static_choice_count": 74,
+      "initial_global_choices_missing": [
+        "Lorena",
+        "Pflugerville"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Contract.on-load.dg",
+      "on_validate": "bindings/Contract.on-validate.dg"
+    },
+    {
+      "form": "Lots",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": true,
+      "mode": "persisted",
+      "retention_scope": [
+        "Subdivision"
+      ],
+      "allow_other_choices_target": true,
+      "catalog_line": 2922,
+      "initial_static_choice_count": 75,
+      "initial_global_choices_missing": [
+        "Austin"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Lots.on-load.dg",
+      "on_validate": "bindings/Lots.on-validate.dg"
+    },
+    {
+      "form": "Project",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": true,
+      "mode": "persisted",
+      "retention_scope": [],
+      "allow_other_choices_target": true,
+      "catalog_line": 4378,
+      "initial_static_choice_count": 77,
+      "initial_global_choices_missing": [],
+      "existing_native_choices_to_preserve": [
+        "N"
+      ],
+      "on_load": "bindings/Project.on-load.dg",
+      "on_validate": "bindings/Project.on-validate.dg"
+    },
+    {
+      "form": "Property",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": false,
+      "mode": "persisted",
+      "retention_scope": [],
+      "allow_other_choices_target": true,
+      "catalog_line": 4570,
+      "initial_static_choice_count": 75,
+      "initial_global_choices_missing": [
+        "Bartlett"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Property.on-load.dg",
+      "on_validate": "bindings/Property.on-validate.dg"
+    },
+    {
+      "form": "Subdivision",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": true,
+      "mode": "persisted",
+      "retention_scope": [
+        "Project"
+      ],
+      "allow_other_choices_target": true,
+      "catalog_line": 4959,
+      "initial_static_choice_count": 76,
+      "initial_global_choices_missing": [],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Subdivision.on-load.dg",
+      "on_validate": "bindings/Subdivision.on-validate.dg"
+    },
+    {
+      "form": "Forecast_Search",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": false,
+      "mode": "filter",
+      "retention_scope": [],
+      "allow_other_choices_target": true,
+      "catalog_line": 10922,
+      "initial_static_choice_count": 75,
+      "initial_global_choices_missing": [
+        "Austin"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Forecast_Search.on-load.dg",
+      "on_validate": "bindings/Forecast_Search.on-validate.dg"
+    },
+    {
+      "form": "Lot_Search",
+      "field": "City",
+      "selection": "multi",
+      "native_type": "list",
+      "mandatory": false,
+      "mode": "filter",
+      "retention_scope": [],
+      "allow_other_choices_target": null,
+      "catalog_line": 11564,
+      "initial_static_choice_count": 74,
+      "initial_global_choices_missing": [
+        "Austin",
+        "Robinson"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Lot_Search.on-load.dg",
+      "on_validate": "bindings/Lot_Search.on-validate.dg"
+    },
+    {
+      "form": "Mass_Create_Lots",
+      "field": "City",
+      "selection": "single",
+      "native_type": "picklist",
+      "mandatory": true,
+      "mode": "transient",
+      "retention_scope": [],
+      "allow_other_choices_target": true,
+      "catalog_line": 11862,
+      "initial_static_choice_count": 74,
+      "initial_global_choices_missing": [
+        "Austin",
+        "Robinson"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Mass_Create_Lots.on-load.dg",
+      "on_validate": "bindings/Mass_Create_Lots.on-validate.dg"
+    },
+    {
+      "form": "System_Search",
+      "field": "City",
+      "selection": "multi",
+      "native_type": "list",
+      "mandatory": false,
+      "mode": "filter",
+      "retention_scope": [],
+      "allow_other_choices_target": null,
+      "catalog_line": 15304,
+      "initial_static_choice_count": 72,
+      "initial_global_choices_missing": [
+        "Austin",
+        "Georgetown",
+        "Lorena",
+        "Robinson"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/System_Search.on-load.dg",
+      "on_validate": "bindings/System_Search.on-validate.dg"
+    },
+    {
+      "form": "Tax_Rate_Template",
+      "field": "City",
+      "selection": "multi",
+      "native_type": "list",
+      "mandatory": true,
+      "mode": "persisted",
+      "retention_scope": [],
+      "allow_other_choices_target": null,
+      "catalog_line": 15712,
+      "initial_static_choice_count": 58,
+      "initial_global_choices_missing": [
+        "Anna",
+        "Austin",
+        "Caldwell",
+        "Celina",
+        "Corsicana",
+        "Crandall",
+        "Cresson",
+        "Denton",
+        "Georgetown",
+        "Greenville",
+        "Lorena",
+        "Midlothian",
+        "Princeton",
+        "Prosper",
+        "Robinson",
+        "Van Alstyne",
+        "Waxahachie",
+        "Westminster"
+      ],
+      "existing_native_choices_to_preserve": [],
+      "on_load": "bindings/Tax_Rate_Template.on-load.dg",
+      "on_validate": "bindings/Tax_Rate_Template.on-validate.dg"
+    }
+  ],
+  "excluded_city_fields": [
+    {
+      "form": "Vendors",
+      "field": "City",
+      "native_type": "text",
+      "reason": "Free-text vendor postal/address City; preserve meaning and storage."
+    }
+  ],
+  "installation_order": [
+    "compile and reopen globalCityPolicy",
+    "install/reopen all native server validation hooks after inheritance and existing business checks",
+    "install/reopen native On Load hooks preserving current actions",
+    "only then enable Allow Other Choices on the seven existing scalar Drop Down fields",
+    "publish only reviewed components and verify Production"
+  ],
+  "multi_select_api_limit": "Native On Load dynamic choices address known native form flows. No Allow Other Choices property or future SDK/API support is asserted for the three multi-select fields.",
+  "development_evidence": "installation-progress.json"
+}
