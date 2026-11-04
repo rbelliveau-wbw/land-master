@@ -197,12 +197,38 @@ Total at 7, above fiscal-year headings at 6.
 The desktop regression now checks computed frozen-header levels and actual
 hit testing 10px below each header's top edge after horizontal scrolling.
 It also checks all four frozen boundaries on group and expanded-builder rows.
-Browser syntax and focused documentation checks pass; final 1.6.20 Production
-visual/deployment verification is pending. No calculation or data contract
-changes accompany this correction.
+Browser syntax, focused hover/model/parity/documentation checks, full repository
+validation and the Pages build pass. No calculation or data contract changes
+accompany this correction.
+
+Final Production verification completed November 4, 2026, using the actual
+Creator Data Insights page and versioned 1.6.20 assets. Commit
+`f8e502a94a22d0b98aed0eb0277502fdfccf2b28` passed
+[main CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/41854940313)
+and [Production deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/41854940127).
+
+- All four columns retained identical left positions before and after horizontal
+  scrolling. The 230/125/125/100px widths and adjacent boundaries matched in
+  Builder and Project views, including header, phase, group, expanded-builder
+  and footer rows. Header hit testing confirmed the frozen headers stay visible
+  above scrolling fiscal-year headings, with computed layers 8/7/7/7.
+- The current-month card displayed the same saved Forecast, Scheduled and Sold
+  counts without the removed suffix. The complete default report loaded all
+  59 phases across 28 projects; the previously captured filtered totals matched.
+- All 31 scoped custom-card targets had no inherited native title. Repeated
+  Hide Empty toggles retained zero native-title ancestors and zero removed-label
+  occurrences on current-month controls. Saved placeholder notes remained
+  available in Builder view and expanded Project rows.
+- Actual Production screenshots were saved outside the public repository as
+  `before-frozen-columns-prod.jpg`, `after-frozen-columns-prod.jpg` and
+  `after-current-month-clean-prod.jpg`. No synthetic data was used for them.
+
+No Creator deployment or business-record update was required. The permanent
+widget URLs and backend completeness/permission/data contracts remain intact.
 
 The final rollback target is **1.6.18**, the preceding accepted release.
 Version 1.6.19 is an interim release rather than a recommended rollback target.
 Restore the Production `lot-sales-explorer` mapping to `1.6.18` and rebuild
 Pages while preserving permanent widget URLs. No business data requires rollback.
+
 
