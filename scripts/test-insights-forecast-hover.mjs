@@ -27,14 +27,14 @@ UI.S.permissions={today:'2026-11-04',forecastsDashboard:true};UI.S.report={mode:
 const current={start:'2026-11-01',name:'November',year:2026,index:9,key:'2026-11',value:11,known:1,knownValue:11,sold:0,forecast:11,missing:0,tooltipForecast:11,tooltipScheduled:4,tooltipSold:2,tooltipForecastKnown:1,tooltipRecords:1,tooltipForecastMissing:0};
 const markup=UI.cellValue(current,'phase:month','fc-current-month');
 assert.match(markup,/data-fc-month-info=/);assert.match(markup,/aria-haspopup="dialog"/);
-assert.match(markup,/# Forecast: 11[\s\S]*# Scheduled: 4[\s\S]*# Sold: 2/,'current-month accessible comparison uses saved counts without changing its displayed outlook value');
+assert.match(markup,/11 Forecast[\s\S]*4 Scheduled[\s\S]*2 Sold/,'current-month accessible comparison puts saved counts before their labels without changing the displayed outlook value');
 assert.doesNotMatch(markup,/\stitle=/,'current-month card has no duplicate native browser tooltip');
 assert.doesNotMatch(UI.cellValue({...current,start:'2026-10-01'},'phase:past'),/data-fc-month-info=/,'only the exact current calendar month gets the comparison card');
 assert.match(UI.cellValue({...current,start:'2026-10-01'},'phase:past'),/\stitle=/,'other months retain their native-only comparisons');
-assert.match(UI.cellTitle({...current,tooltipForecast:null,tooltipScheduled:null,tooltipSold:null}),/# Forecast: —\n# Scheduled: —\n# Sold: —/,'missing records never become zero counts');
-assert.match(UI.cellTitle({...current,tooltipForecast:0,tooltipScheduled:0,tooltipSold:0}),/# Forecast: 0\n# Scheduled: 0\n# Sold: 0/,'saved zeroes remain explicit inside the card');
+assert.match(UI.cellTitle({...current,tooltipForecast:null,tooltipScheduled:null,tooltipSold:null}),/— Forecast\n— Scheduled\n— Sold/,'missing records never become zero counts');
+assert.match(UI.cellTitle({...current,tooltipForecast:0,tooltipScheduled:0,tooltipSold:0}),/0 Forecast\n0 Scheduled\n0 Sold/,'saved zeroes remain explicit inside the card');
 const partial={...current,missing:1,tooltipForecastMissing:1};
-assert.match(UI.cellTitle(partial),/# Forecast: 11\n# Scheduled: 4\n# Sold: 2/,'partial-known counts keep their saved values');
+assert.match(UI.cellTitle(partial),/11 Forecast\n4 Scheduled\n2 Sold/,'partial-known counts keep their saved values');
 assert.doesNotMatch(UI.cellValue(partial,'phase:partial'),/\(Partial\)/,'partial-known current-month accessible names omit the removed marker');
 assert.equal(partial.tooltipForecastMissing,1,'display wording never changes source completeness');
 
@@ -44,9 +44,12 @@ function trigger(dataset){return {dataset,attributes:new Map(),hasAttribute(name
 const month=trigger({fcMonthInfo:JSON.stringify({month:'November 2026',forecast:11,scheduled:4,sold:2,missing:0})});
 UI.openCard(month,true);
 assert.equal(node('fcInfoTitle').textContent,'November 2026');
-assert.match(node('fcInfoBody').innerHTML,/<dt># Forecast<\/dt><dd>11<\/dd><dt># Scheduled<\/dt><dd>4<\/dd><dt># Sold<\/dt><dd>2<\/dd>/);
+assert.match(node('fcInfoBody').innerHTML,/<dl class="fc-month-counts"/);
+assert.match(node('fcInfoBody').innerHTML,/<div class="fc-count-row fc-count-forecast"><dt>Forecast<\/dt><dd class="fc-count-value">11<\/dd><\/div><div class="fc-count-row fc-count-scheduled"><dt>Scheduled<\/dt><dd class="fc-count-value">4<\/dd><\/div><div class="fc-count-row fc-count-sold"><dt>Sold<\/dt><dd class="fc-count-value">2<\/dd>/);
+assert.doesNotMatch(node('fcInfoBody').innerHTML,/# (?:Forecast|Scheduled|Sold)/,'approved badge rows omit leading hash signs');
 const partialMonth=trigger({fcMonthInfo:JSON.stringify({month:'November 2026',forecast:11,scheduled:4,sold:2,missing:1})});UI.openCard(partialMonth,true);
-assert.match(node('fcInfoBody').innerHTML,/<dt># Forecast<\/dt><dd>11<\/dd>/);assert.doesNotMatch(node('fcInfoBody').innerHTML,/\(Partial\)/,'the card removes the marker for incomplete contributors');
+assert.match(node('fcInfoBody').innerHTML,/<dt>Forecast<\/dt><dd class="fc-count-value">11<\/dd>/);assert.doesNotMatch(node('fcInfoBody').innerHTML,/\(Partial\)/,'the card removes the marker for incomplete contributors');
+UI.openCard(trigger({fcMonthInfo:JSON.stringify({month:'November 2026',forecast:null,scheduled:0,sold:0,missing:1})}),true);assert.match(node('fcInfoBody').innerHTML,/<dt>Forecast<\/dt><dd class="fc-count-value">—<\/dd>/);assert.equal((node('fcInfoBody').innerHTML.match(/class="fc-count-value">0<\/dd>/g)||[]).length,2,'count badges preserve unknown Forecast and explicit Scheduled/Sold zeroes');
 UI.openCard(month,true);
 listeners.get('fcInfoClose:click')();assert.equal(node('fcInfoCard').hidden,true,'Close stays closed after restoring focus to its opener');assert.equal(month.attributes.get('aria-expanded'),'false');
 UI.openCard(month,true);listeners.get('document:keydown')({key:'Escape'});assert.equal(node('fcInfoCard').hidden,true,'Escape stays closed after restoring focus');

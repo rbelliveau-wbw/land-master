@@ -231,4 +231,35 @@ Version 1.6.19 is an interim release rather than a recommended rollback target.
 Restore the Production `lot-sales-explorer` mapping to `1.6.18` and rebuild
 Pages while preserving permanent widget URLs. No business data requires rollback.
 
+## Colored Count Card — Insights 1.6.21
+
+The user approved the compact card mockup and requested main and Production
+publication. The current-month card displays a colored count rectangle before
+each label, in Forecast, Scheduled and Sold order. It reuses the Forecast Manager
+status colors: green Forecast, amber Scheduled and blue Sold. Scheduled text is
+slightly darker (#925f08) for small-text contrast. Count rectangles are 43×30px
+with 5px corners, tabular digits, a 12px label gap and 8px row spacing. Labels
+omit the leading #. The existing month heading and centered close action remain.
+
+Only the current-month renderer and its scoped styling change; the same saved
+counts, unknown dash, explicit zero and scope are retained. Existing native-title
+suppression, missing warnings, hover/focus/click pinning, dismissal, motion,
+frozen columns, subdivision date and placeholder notes remain in place. No data
+model, form, field, Deluge function, Custom API or Creator promotion is changed.
+
+Changed files: `forecast-insights-app.js`, `forecast-insights.css`, the existing
+focused hover regression, widget HTML/version/config and widget manifests,
+immutable 1.6.21 release, Development/Production mappings and these design/module
+notes. Stage is unchanged. Regression covers displayed count order, status
+classes, saved/unknown/zero counts, accessible copy and the retained card handlers.
+
+Passed before publication: the focused hover regression and app syntax checks,
+full `npm run validate` (including Forecasts model/parity and design checks), and
+`npm run build:pages` (34 permanent environment paths). Production visual and
+deployment verification follows publication.
+
+Rollback: restore the Production `lot-sales-explorer` mapping to **1.6.20** and
+rebuild Pages, preserving the permanent Insights URLs. No stored data rollback
+or Creator promotion is needed.
+
 

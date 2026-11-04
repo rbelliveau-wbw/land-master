@@ -1,3 +1,13 @@
+## Forecasts colored count card — 1.6.21, November 4, 2026
+
+The approved current-month card places colored count rectangles before Forecast,
+Scheduled and Sold labels. Forecast uses green, Scheduled amber and Sold blue,
+matching Forecast Manager's status palette. Equal-width count rectangles retain
+explicit zeroes and unknown dashes. The native-tooltip suppression, frozen columns,
+saved source counts, matrix/CSV calculations, hover/pinning/keyboard behavior and
+Subdivision/placeholder cards are preserved. No Creator deployment is required.
+[Verification and rollback to 1.6.20](../../docs/forecasts-hover-details-2026-11-04.md#colored-count-card--insights-1621).
+
 ## Forecasts frozen-header layering — 1.6.20, November 4, 2026
 
 Give the frozen first-row headers explicit stacking priority over scrolling

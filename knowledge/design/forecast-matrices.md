@@ -285,6 +285,16 @@ neutral body cells, colored plain footer values and existing save/recovery/motio
 
 ## Data Insights Forecasts dashboard — October 27, 2026
 
+November 4, Insights 1.6.21: current-month cards put each saved count in a
+43×30px outlined rectangle before its label, in Forecast, Scheduled, Sold order.
+Use Forecast green (text #246c4d, fill #dff1e6, border #a7cfb8), Scheduled amber
+(text #925f08, fill #ffedc4, border #dfbf75), and Sold blue (text #155b9e,
+fill #dcecff, border #a8c9ec). Keep equal rectangle widths, tabular digits,
+5px corners, 12px between count and label, and 8px between rows. Labels omit
+the leading #; saved zeroes remain explicit and unknown counts remain dashes.
+Retain the navy month header, centered close action and existing card behavior.
+This approved count-card presentation does not change the matrix cell styling.
+
 November 4 correction, Insights 1.6.20: frozen first-row name, status, builder
 and Total headers must outrank scrolling fiscal-year headings. Use selectors
 that outrank the generic first-row header rule; computed layers are at least

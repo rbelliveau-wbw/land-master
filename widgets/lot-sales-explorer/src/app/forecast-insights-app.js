@@ -85,7 +85,7 @@
     return '<td class="'+extra+(c.missing?' fc-missing':'')+'"'+(c.start?' data-month-start="'+c.start+'"':'')+(current?'':' title="'+esc(title)+'"')+'>'+(group?'<span data-fc-total'+(hide?' hidden':'')+'>'+content+'</span>':content)+'</td>';
   }
   const rowCells=(cells,key,group=false,hide=false)=>columns(S.report,true).map(c=>cellValue(columnValue(cells,c),key+':'+columnKey(c),c.total?'fc-period-total':c.annual?'fc-annual':monthClass(c),group,hide)).join('');
-  const cellTitle=c=>(c.start?.slice(0,7)===S.permissions.today.slice(0,7)?'# Forecast: '+countLabel(c.tooltipForecast)+'\n# Scheduled: '+countLabel(c.tooltipScheduled)+'\n# Sold: '+countLabel(c.tooltipSold):fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast')+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
+  const cellTitle=c=>(c.start?.slice(0,7)===S.permissions.today.slice(0,7)?countLabel(c.tooltipForecast)+' Forecast\n'+countLabel(c.tooltipScheduled)+' Scheduled\n'+countLabel(c.tooltipSold)+' Sold':fmt(c.sold)+' Sold · '+fmt(c.forecast)+' Forecast')+(c.missing?' · '+fmt(c.missing)+' missing builder-month'+(c.missing===1?'':'s'):'');
   const totalsCache=new WeakMap(),groupCache=new WeakMap();
   function totalsMarkup(cells,key,group=false){
     let cached=totalsCache.get(cells);if(!cached){cached=new Map();totalsCache.set(cells,cached);}const identity=JSON.stringify([key,group]);
@@ -191,13 +191,13 @@
   function closeCard(restore=false){clearTimeout(cardTimer);const trigger=cardTrigger;$('fcInfoCard').hidden=true;trigger?.setAttribute('aria-expanded','false');cardTrigger=null;cardPinned=false;if(restore&&trigger){restoringCardFocus=true;try{trigger.focus();}finally{restoringCardFocus=false;}}}
   function openCard(trigger,pinned=false){
     clearTimeout(cardTimer);if(cardTrigger&&cardTrigger!==trigger)cardTrigger.setAttribute('aria-expanded','false');cardTrigger=trigger;cardPinned=pinned;trigger.setAttribute('aria-expanded','true');
-    let title,details,note;
-    if(trigger.hasAttribute('data-fc-month-info')){const counts=JSON.parse(trigger.dataset.fcMonthInfo);title=counts.month;details=[['# Forecast',countLabel(counts.forecast)],['# Scheduled',countLabel(counts.scheduled)],['# Sold',countLabel(counts.sold)]];}
+    let title,details,note,monthCounts;
+    if(trigger.hasAttribute('data-fc-month-info')){monthCounts=JSON.parse(trigger.dataset.fcMonthInfo);title=monthCounts.month;}
     else if(trigger.hasAttribute('data-fc-builder-note')){const row=S.report.rows.find(row=>row.phase.id===trigger.dataset.fcNotePhase&&row.builders.some(builder=>builder.id===trigger.dataset.fcBuilderNote)),builder=row?.builders.find(builder=>builder.id===trigger.dataset.fcBuilderNote);if(!builder)return;title=builder.name;details=[['Phase',row.phase.name]];note=builder.note||'No Forecast Manager Notes';}
     else if(trigger.hasAttribute('data-fc-info')){const p=S.model.phases.find(p=>p.id===trigger.dataset.fcInfo);if(!p)return;title=p.territory;details=[['Project',p.project],['Phase',p.name],['Project Status',p.projectStatus||'—'],['Final Acceptance Due Date',dateLabel(p.finalAcceptanceDueDate)]];}
     else if(trigger.id==='fcWarning'){title='Missing Forecasts';details=[['Phases',S.missingPhases],['Unavailable values','Shown as —']];}
     else{const base=S.baseReport.groups[Number(trigger.dataset.fcTerritory)],g=S.report.groups.find(group=>group.id===base?.id);if(!g)return;title=g.name;details=[['Selected Projects',new Set(g.rows.map(r=>r.phase.projectId)).size],['Selected Phases',new Set(g.rows.map(r=>r.phase.id)).size],['Builders',new Set(g.rows.flatMap(r=>r.builders.map(b=>b.id))).size]];}
-    $('fcInfoTitle').textContent=title;$('fcInfoBody').innerHTML='<dl>'+details.map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>'+(note==null?'':'<section class="fc-notes"><h3>Forecast Manager Notes</h3><p>'+esc(note)+'</p></section>');
+    $('fcInfoTitle').textContent=title;$('fcInfoBody').innerHTML=monthCounts?'<dl class="fc-month-counts" aria-label="'+esc(title+' Lot Counts')+'">'+[['Forecast','forecast'],['Scheduled','scheduled'],['Sold','sold']].map(([label,key])=>'<div class="fc-count-row fc-count-'+key+'"><dt>'+label+'</dt><dd class="fc-count-value">'+esc(countLabel(monthCounts[key]))+'</dd></div>').join('')+'</dl>':'<dl>'+details.map(([label,value])=>'<dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>'+(note==null?'':'<section class="fc-notes"><h3>Forecast Manager Notes</h3><p>'+esc(note)+'</p></section>');
     const card=$('fcInfoCard');card.hidden=false;const rect=trigger.getBoundingClientRect(),height=card.offsetHeight,width=card.offsetWidth;card.style.left=Math.max(8,Math.min(rect.left,innerWidth-width-8))+'px';card.style.top=Math.max(8,Math.min(rect.bottom+5,innerHeight-height-8))+'px';
   }
   const infoSelector='[data-fc-info],[data-fc-territory],[data-fc-month-info],[data-fc-builder-note],#fcWarning';
