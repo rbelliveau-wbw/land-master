@@ -140,18 +140,33 @@ Creator promotion completed on November 4 through Stage 9.144 and Production
 two created-only hooks; unrelated components and three temporary private test
 functions were excluded. Both environment versions were verified in Creator.
 
-The immediately reopened hosted approval-list test and Production route checks
-for North Austin, Bryan/College Station and San Antonio remain pending. Missing/
-invalid VP data, retained sent history and recovery after an interrupted extra-
-recipient insert must not be reported as live-verified without their own evidence.
+Post-deployment Production route checks passed on November 4. North and South
+Austin resolved to Brian Bekker. Bryan/College Station and San Antonio each
+resolved to both Adrienne Donatucci and Travis Moltz. Fort Hood and Temple/Belton
+resolved to Travis Whitis at the corrected `twhitis@wbdevelopment.com` address.
+All six territory checks used the reloaded hosted Settings 1.6.7 against
+Production native configuration 9.144.
 
-Verify the widget's approval list immediately after creation as well as the
-persisted rows. Creation hooks can add another VP row outside the widget's
-captured seed operations. Hosted Contract 1.62.52 addresses the cache gap with a fresh exact-parent
-approval read on modal open and before Send confirmation. Failed/pending reads
-keep Send disabled; no writes or emails occur during refresh. Verify the actual
-native hooks and immediately opened widget together after deployment; a
-successful function return alone does not establish that recipients are current.
+After reloading hosted Contract 1.62.52, a fresh open of the migrated WT01 Lennar
+contract's Internal Approvals displayed Refreshing approvals, then the three
+actual recipients: Travis Moltz, Adrienne Donatucci and Travis Parks. Every row
+remained Not Sent with Email off, and the parent's Awaiting WBW status was
+preserved. The refreshed list matched the native rows; no Send was performed.
+Hosted Contract 1.62.52 uses the exact-parent approval read on modal open and
+before Send confirmation. Failed/pending reads keep Send disabled; refreshes
+make no writes and send no emails.
+
+Session evidence is retained under `outputs/contract-vp-routing-20261103/`:
+the six `production-route-*-settings167.txt` receipts,
+`production-vp-approval-modal.jpg` and `production-bryan-both-vps.jpg`. Missing/
+invalid VP data, retained sent history and interrupted-insert recovery were not
+exercised as additional live Production tests.
+
+The two Development test fixtures were recoverably archived, and an active
+CODEX search returned zero records. The temporary private probe was restored
+to read-only source and compiled; the original Development VP membership was
+retained. Cleanup evidence is `dev-test-fixtures-archived.txt` and its matching
+screenshot. No temporary test function was promoted to Production.
 
 The Settings rule and native routing components are now in Production. The
 previously empty Production Settings.Builder_Approval_Template selection was
