@@ -2,6 +2,27 @@
   'use strict';
   let dashboard=null,connected=false,access=null,route={dashboard:new URLSearchParams(location.search).get('dashboard')||'',projectId:new URLSearchParams(location.search).get('projectId')||''};
   const names={sales:'Lot Sales',forecasts:'Forecasts'};
+  const workspace=document.querySelector('.workspace'),navigation=document.getElementById('insightsNavigation'),navigationToggle=document.getElementById('navigationToggle');
+  function setNavigationExpanded(expanded,animate=false){
+    if(!workspace||!navigationToggle)return;
+    const before=animate?window.getComputedStyle?.(workspace).gridTemplateColumns:null;
+    workspace.classList.toggle('navigation-collapsed',!expanded);
+    navigationToggle.setAttribute('aria-expanded',String(expanded));
+    navigationToggle.setAttribute('aria-label',expanded?'Collapse Menu':'Expand Menu');
+    navigationToggle.title=expanded?'Collapse Menu':'Expand Menu';
+    // Resize the real grid through the shared engine; keep both reports mounted.
+    if(before)window.LMMotion?.animate(workspace,[{gridTemplateColumns:before},{gridTemplateColumns:window.getComputedStyle(workspace).gridTemplateColumns}],230);
+  }
+  setNavigationExpanded(true);
+  navigationToggle?.addEventListener('click',()=>setNavigationExpanded(navigationToggle.getAttribute('aria-expanded')!=='true',true));
+  navigation?.addEventListener('keydown',event=>{
+    if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    const items=[...navigation.querySelectorAll('[data-dashboard]')].filter(button=>!button.hidden),index=items.indexOf(event.target);
+    if(index<0||!items.length)return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)+items.length)%items.length;
+    items[next].focus();show(items[next].dataset.dashboard);
+  });
   const allowed=name=>name==='sales'?!!access?.lotSalesDashboard:name==='forecasts'?!!access?.forecastsDashboard:false;
   function normalize(value){const key=String(value||'').trim().toLowerCase();return ['sales','lotsales','lot-sales'].includes(key)?'sales':['forecast','forecasts'].includes(key)?'forecasts':'';}
   async function readRoute(){
@@ -15,7 +36,7 @@
   }
   function paint(name,error=''){
     dashboard=name;
-    document.querySelectorAll('[data-dashboard]').forEach(button=>{const key=button.dataset.dashboard,active=key===name;button.hidden=!allowed(key);button.classList.toggle('active',active);if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
+    document.querySelectorAll('[data-dashboard]').forEach(button=>{const key=button.dataset.dashboard,active=key===name;button.hidden=!allowed(key);button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     document.getElementById('salesDashboard').hidden=name!=='sales';
     document.getElementById('forecastsDashboard').hidden=name!=='forecasts';
     document.getElementById('budgetsDashboard').hidden=true;
