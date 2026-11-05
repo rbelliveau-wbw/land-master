@@ -2,11 +2,14 @@ string exportBudgetSnapshot(string budgetId, string exportType)
 {
 	// Read-only, application-wide export. The existing OAuth2 API authenticates callers.
 	// No owner, User_Access, lifecycle or screen-filter restriction is applied here.
-	if(ifnull(exportType,"").trim().toUpperCase() == "ALL_DETAIL")
+	// SNAPSHOT_DETAIL uses the same row contract scoped to one existing Budget.
+	readExportType = ifnull(exportType,"").trim().toUpperCase();
+	if(readExportType == "ALL_DETAIL" || readExportType == "SNAPSHOT_DETAIL")
 	{
 		fullResult = Map();
 		fullResult.put("contract","budget-full-detail-v1");
 		fullResult.put("ok",false);
+		fullResult.put("pageSize",20);
 		try
 		{
 			if(zoho.loginuser == null || zoho.loginuser == "")
@@ -15,6 +18,25 @@ string exportBudgetSnapshot(string budgetId, string exportType)
 				return fullResult.toString();
 			}
 			fullRequest = budgetId.toMap();
+			snapshotRead = readExportType == "SNAPSHOT_DETAIL";
+			snapshotBudgetId = 0;
+			if(snapshotRead)
+			{
+				snapshotBudgetIdText = ifnull(fullRequest.get("budgetId"),"").toString().trim();
+				if(snapshotBudgetIdText.matches("[1-9][0-9]*") == false)
+				{
+					fullResult.put("error","A valid Budget ID is required for the snapshot export.");
+					return fullResult.toString();
+				}
+				snapshotBudgetId = snapshotBudgetIdText.toLong();
+				snapshotBudget = Add_Budget[ID == snapshotBudgetId];
+				if(snapshotBudget.count() != 1)
+				{
+					fullResult.put("error","The snapshot Budget was not found.");
+					return fullResult.toString();
+				}
+				fullResult.put("budgetId",snapshotBudget.ID.toString());
+			}
 			afterId = ifnull(fullRequest.get("after"),"0").toString().toLong();
 			throughId = ifnull(fullRequest.get("through"),"0").toString().toLong();
 			if(afterId < 0 || throughId < 0 || (throughId > 0 && afterId > throughId))
@@ -24,17 +46,37 @@ string exportBudgetSnapshot(string budgetId, string exportType)
 			}
 			if(throughId == 0)
 			{
-				for each latestItem in Budget_Item[ID > 0] sort by ID desc range from 0 to 0
+				if(snapshotRead)
 				{
-					throughId = latestItem.ID;
+					for each latestItem in Budget_Item[Budget_Category.Budget == snapshotBudgetId] sort by ID desc range from 0 to 0
+					{
+						throughId = latestItem.ID;
+					}
+				}
+				else
+				{
+					for each latestItem in Budget_Item[ID > 0] sort by ID desc range from 0 to 0
+					{
+						throughId = latestItem.ID;
+					}
 				}
 			}
-			// Null amounts count as zero. Retain credits, actual-only lines and
-			// nonzero element fields even when signed components net to a zero parent.
-			fullTotal = Budget_Item[(ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)].count();
+			if(snapshotRead)
+			{
+				// The per-budget snapshot retains every saved item, including zero rows.
+				fullTotal = Budget_Item[ID <= throughId && Budget_Category.Budget == snapshotBudgetId].count();
+				fullItems = Budget_Item[ID > afterId && ID <= throughId && Budget_Category.Budget == snapshotBudgetId] sort by ID range from 0 to 19;
+			}
+			else
+			{
+				// Null amounts count as zero. Retain credits, actual-only lines and
+				// nonzero element fields even when signed components net to a zero parent.
+				fullTotal = Budget_Item[(ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)].count();
+				fullItems = Budget_Item[(ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)] sort by ID range from 0 to 19;
+			}
 			fullRows = List();
 			nextId = afterId;
-			for each fullItem in Budget_Item[(ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Budget_Ttl != null && Prelim_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Unapproved_Final_Budget_Ttl != null && Unapproved_Final_Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Budget_Ttl != null && Budget_Ttl != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && HCSS_Actuals != null && HCSS_Actuals != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && PROJ_Actual != null && PROJ_Actual != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Labor_Budget != null && Prelim_Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Materials_Budget != null && Prelim_Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Equipment_Budget != null && Prelim_Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Subcontractor_Budget != null && Prelim_Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Prelim_Other_Budget != null && Prelim_Other_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Labor_Budget != null && Labor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Materials_Budget != null && Materials_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Equipment_Budget != null && Equipment_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Subcontractor_Budget != null && Subcontractor_Budget != 0) || (ID > afterId && ID <= throughId && Budget_Category.Budget != null && Other_Budget != null && Other_Budget != 0)] sort by ID range from 0 to 199
+			for each fullItem in fullItems
 			{
 				fullCategory = Budget_Category[ID == fullItem.Budget_Category];
 				fullBudget = Add_Budget[ID == fullCategory.Budget];
@@ -97,13 +139,106 @@ string exportBudgetSnapshot(string budgetId, string exportType)
 			fullResult.put("after",afterId.toString());
 			fullResult.put("next",nextId.toString());
 			fullResult.put("through",throughId.toString());
-			fullResult.put("hasMore",fullRows.size() == 200);
+			fullResult.put("hasMore",fullRows.size() == 20);
 			return fullResult.toString();
 		}		catch (fullExportError)
 		{
 			fullResult.put("ok",false);
 			fullResult.put("error","Full budget export failed: " + fullExportError.toString());
 			return fullResult.toString();
+		}
+	}
+	if(readExportType == "SNAPSHOT_META")
+	{
+		metaResult = Map();
+		metaResult.put("contract","budget-snapshot-meta-v1");
+		metaResult.put("ok",false);
+		try
+		{
+			if(zoho.loginuser == null || zoho.loginuser == "")
+			{
+				metaResult.put("error","Sign in before exporting budgets.");
+				return metaResult.toString();
+			}
+			metaBudgetIdText = ifnull(budgetId,"").trim();
+			if(metaBudgetIdText.matches("[1-9][0-9]*") == false)
+			{
+				metaResult.put("error","A valid Budget ID is required for the snapshot export.");
+				return metaResult.toString();
+			}
+			metaBudgetId = metaBudgetIdText.toLong();
+			metaBudget = Add_Budget[ID == metaBudgetId];
+			if(metaBudget.count() != 1)
+			{
+				metaResult.put("error","The snapshot Budget was not found.");
+				return metaResult.toString();
+			}
+			// Match the legacy snapshot's saved label, amounts and date formats.
+			metaBudgetName = ifnull(metaBudget.Budget_Name,"Budget");
+			metaProjectName = ifnull(metaBudget.Project,"");
+			metaPhaseName = ifnull(metaBudget.Phase,"");
+			metaSubdivisionCode = ifnull(metaBudget.Subdivision_Code,"");
+			metaSubdivisionName = "";
+			metaTerritory = "";
+			if(metaBudget.Subdivision1 != null)
+			{
+				metaSubdivisionName = ifnull(metaBudget.Subdivision1.Subdivision_Name,"");
+				metaTerritory = ifnull(metaBudget.Subdivision1.Territory,"");
+			}
+			metaBudgetLabel = metaBudgetName;
+			if(metaProjectName != "" && metaPhaseName != "")
+			{
+				metaBudgetLabel = metaProjectName + " - " + metaPhaseName;
+			}
+			else if(metaSubdivisionName != "")
+			{
+				metaBudgetLabel = metaSubdivisionName;
+			}
+			else if(metaProjectName != "")
+			{
+				metaBudgetLabel = metaProjectName;
+			}
+			if(metaBudgetName != "" && metaBudgetName != metaBudgetLabel)
+			{
+				metaBudgetLabel = metaBudgetLabel + " - " + metaBudgetName;
+			}
+			metaGrandFinal = 0.00;
+			if(metaBudget.Budget_Grand_Total != null)
+			{
+				metaGrandFinal = metaBudget.Budget_Grand_Total.toDecimal();
+			}
+			metaSummary = Map();
+			metaSummary.put("budgetLabel",metaBudgetLabel);
+			metaSummary.put("subdivisionCode",metaSubdivisionCode);
+			metaSummary.put("territory",metaTerritory);
+			metaSummary.put("exportedDate",zoho.currenttime.toString("MM/dd/yyyy hh:mm a"));
+			metaSummary.put("grandFinal",metaGrandFinal);
+			metaApprovals = List();
+			for each metaApproval in Budget_Approvals[Budget == metaBudgetId] sort by Sort_Order
+			{
+				metaRespondedDate = "";
+				if(metaApproval.Responded_Date != null)
+				{
+					metaRespondedDate = metaApproval.Responded_Date.toString("MM/dd/yyyy");
+				}
+				metaApprovalRow = Map();
+				metaApprovalRow.put("track",ifnull(metaApproval.Type1,""));
+				metaApprovalRow.put("role",ifnull(metaApproval.Title,""));
+				metaApprovalRow.put("approver",ifnull(metaApproval.Approver,""));
+				metaApprovalRow.put("status",ifnull(metaApproval.Status,""));
+				metaApprovalRow.put("respondedDate",metaRespondedDate);
+				metaApprovalRow.put("notes",ifnull(metaApproval.Approval_Notes,""));
+				metaApprovals.add(metaApprovalRow);
+			}
+			metaResult.put("ok",true);
+			metaResult.put("budgetId",metaBudget.ID.toString());
+			metaResult.put("summary",metaSummary);
+			metaResult.put("approvals",metaApprovals);
+			return metaResult.toString();
+		}		catch (snapshotMetaError)
+		{
+			metaResult.put("error","Budget snapshot metadata failed: " + snapshotMetaError.toString());
+			return metaResult.toString();
 		}
 	}
 	// An export persists a new Budget Attachment; it is not a read-only download.

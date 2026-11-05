@@ -1,5 +1,10 @@
 # All budgets detail export
 
+November 5 update: current requests use 20-item batches with an advertised
+page size. Individual Excel also uses the shared read/builder path. See the
+[statement-limit repair](budget-export-statement-limit-2026-11-05.md). The
+verification below records the original October release.
+
 The Budget Manager landing header adds **Export All Budgets** beside Audit Log.
 It downloads one `.xlsx` workbook with one filterable **Budget Detail** worksheet.
 The report stays mounted, preserving search, filters and scroll during loading,

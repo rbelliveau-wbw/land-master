@@ -1,3 +1,15 @@
+## Bounded Excel Exports — 122.29.101, November 5, 2026
+
+Single-budget Excel builds its four-sheet workbook in the browser from saved
+metadata and 20-item detail batches, then uses the existing attachment uploader
+once. Export All Budgets also uses 20-item requests. Both reuse the existing
+authenticated `Export_Budget_Snapshot` API and financial element helper; no
+budget or approval data is rewritten. The new read-only `SNAPSHOT_META` and
+`SNAPSHOT_DETAIL` modes require publication of `exportBudgetSnapshot` before
+widget promotion. Regression and rollout details, including the unbenchmarked
+timing estimate, are in the [statement-limit repair](../../docs/budget-export-statement-limit-2026-11-05.md).
+Rollback widget: `122.29.100`.
+
 ## Approval Submission Timing — 122.29.100, November 5, 2026
 
 Approval progress gives the targeted checks their full 20-second reconciliation

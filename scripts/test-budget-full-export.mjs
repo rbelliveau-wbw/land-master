@@ -54,7 +54,7 @@ const native=fs.readFileSync('creator/functions/exportBudgetSnapshot.dg','utf8')
 const branch=native.slice(native.indexOf('// Read-only, application-wide export.'),native.indexOf('// An export persists'));
 assert.match(branch,/Budget_Category\.Budget != null/);
 for(const field of ['Prelim_Budget_Ttl','Unapproved_Final_Budget_Ttl','Budget_Ttl','HCSS_Actuals','PROJ_Actual'])assert.ok(branch.includes(`${field} != null && ${field} != 0`));
-const itemQuery=branch.match(/for each fullItem in Budget_Item\[([^\n]+)\] sort by ID/)[1];
+const itemQuery=branch.match(/fullItems = Budget_Item\[([^\n]+Prelim_Budget_Ttl[^\n]+)\] sort by ID/)[1];
 for(const alternative of itemQuery.split(' || ')){
   assert.ok(alternative.includes('ID > afterId && ID <= throughId && Budget_Category.Budget != null'), 'each OR alternative repeats all scope bounds, including after Creator removes grouping');
 }
@@ -65,7 +65,7 @@ assert.doesNotMatch(branch,/insert into|sendmail|delete from|Edit_All|Budget_Own
 // syntax and record wrappers to the repository's existing offline test runtime.
 let nativeJs=translate('string fullExport(string budgetId, string exportType)\n{\n'+branch+'\nreturn "LEGACY";\n}').js;
 nativeJs=nativeJs.replace(/\) desc range from 0 to 0/g,').reverse().slice(0,1)')
-  .replace(/\) range from 0 to 199/g,').slice(0,200)')
+  .replace(/\) range from 0 to 19/g,').slice(0,20)')
   .replaceAll('Budget_Category.row.Budget','row.Budget_Category.Budget');
 const nativeContext=vm.createContext({});
 vm.runInContext(`
@@ -98,7 +98,7 @@ nativeContext.tables={
 };
 const nativeRead=cursor=>JSON.parse(vm.runInContext(`fullExport(${JSON.stringify(JSON.stringify(cursor))},"ALL_DETAIL")`,nativeContext));
 const first=nativeRead({after:'0',through:'0'});
-assert.equal(first.ok,true,first.error);assert.equal(first.total,201);assert.equal(first.rows.length,200);
+assert.equal(first.ok,true,first.error);assert.equal(first.total,201);assert.equal(first.rows.length,20);assert.equal(first.pageSize,20);
 assert.equal(first.rows[0].values[0],'Linked project');assert.equal(first.rows[0].values[1],'First phase - 001');
 assert.equal(first.rows[0].values[12],70,'only approved signed amounts contribute');assert.equal(first.rows[0].values[8],null);
 assert.equal(first.rows[1].values[0],'Second project','all budgets include another project and archived/unowned budgets');
@@ -106,7 +106,7 @@ const nativeRows=await E.collect(async cursor=>nativeRead(cursor));assert.equal(
 assert.equal(nativeContext.writes,0);
 nativeContext.tables.Budget_Item.push({ID:'4410926000000009999',Budget_Category:'21',Item_Name:'Offsetting elements',Cost_Code:'02102',Budget_Ttl:0,Prelim_Budget_Ttl:0,Unapproved_Final_Budget_Ttl:0,HCSS_Actuals:0,PROJ_Actual:0,Labor_Budget:100,Other_Budget:-100,Description:'element-only detail'});
 const withOffsets=nativeRead({after:'0',through:'0'});assert.equal(withOffsets.total,202,'offsetting element fields retain a zero-parent row in native export totals');
-const offsetPage=nativeRead({after:first.rows.at(-1).id,through:withOffsets.through});assert.ok(offsetPage.rows.some(row=>row.id==='4410926000000009999'),'native cursor pages include element-only rows with full bounds');
+const offsetPage=nativeRead({after:records.at(-1).id,through:withOffsets.through});assert.ok(offsetPage.rows.some(row=>row.id==='4410926000000009999'),'native cursor pages include element-only rows with full bounds');
 assert.equal(nativeRead({after:'bad',through:'0'}).ok,false);
 nativeContext.zoho.loginuser='';assert.equal(nativeRead({after:'0',through:'0'}).ok,false);
 const html=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');
