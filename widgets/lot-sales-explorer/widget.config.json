@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.6.22",
-  "description": "Forecasts dashboard with overall totals pinned below the headings and Collapse All / Reset before the status legend.",
+  "version": "1.6.23",
+  "description": "Lot Sales subdivision details open only on click or keyboard activation.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "e5ba56e5f68ddd2dcc84b4d8f7e313f907bf90dd23c3db45fa6fdd6c0752c805",
+  "source_sha256": "e051a6909eac4ddd62fbb15e45809f32c2dca96a9247c70d757320992e8ad21e",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

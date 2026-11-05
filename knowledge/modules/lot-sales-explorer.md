@@ -1,3 +1,22 @@
+## Lot Sales click-only subdivision cards — 1.6.23, November 5, 2026
+
+Subdivision names open their anchored details only on click or native Enter/Space
+activation. Hover and focus alone leave the card closed; pointer movement no
+longer dismisses it. A second click on the same name, outside click, Escape,
+Close, scrolling, resizing or report changes dismisses it. Escape/Close restore
+the opener focus; keyboard activation focuses the enabled Close button.
+Existing View Lots, permissions, history readiness, card content, calculations
+and Forecasts card interactions are preserved. The trigger identifies its
+dialog through aria-controls and maintains aria-expanded.
+
+Changed files: sales-app.js, versioned widget HTML/config and widget manifest,
+existing desktop regression, this module and shared style guide, immutable
+1.6.23 and Development/Production mappings. No Creator forms/fields, functions
+or Custom APIs change; no Creator promotion is required. Regression: hover,
+focus, click/toggle, another subdivision, pointer exit, Enter/Space, Escape,
+Close, outside dismissal and existing View Lots/number transitions. Rollback:
+restore the production lot-sales-explorer mapping to 1.6.22 and rebuild Pages.
+
 ## Forecasts top totals and action order — 1.6.22, November 4, 2026
 
 Move the single overall totals row directly below the column headings, with

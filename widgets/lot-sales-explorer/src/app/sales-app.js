@@ -206,7 +206,7 @@
         const counts = allCounts?.get(row.id);
         const soldOut = counts && counts.total > 0 && counts.sold === counts.total;
         const badge = soldOut ? '<span class="sold-out-badge" title="Sold Out" aria-label="Sold Out"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5 8 14l8-8"/></svg></span>' : '';
-        html += '<tr data-motion-row="' + esc('row:'+row.key) + '"' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(row.stats, ...period('row', row.key)) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
+        html += '<tr data-motion-row="' + esc('row:'+row.key) + '"' + (row.stats.count ? '' : ' class="is-empty"') + '><td class="sticky"><button class="subdivision-counts" data-card="' + esc(row.key) + '" aria-label="Subdivision details for ' + esc(row.name) + '" aria-haspopup="dialog" aria-controls="subdivisionCard" aria-expanded="false">' + esc(row.name) + '</button>' + badge + (row.stats.count ? '' : '<small class="empty-status-note">No selected lots</small>') + '</td><td class="identity">' + (state.historyReady ? dateLabel(row.firstSale) : state.historyError ? 'Unavailable' : 'Loading…') + '</td><td class="identity">' + width(row.stats, ...period('row', row.key)) + '</td>' + cell(row.stats, row, '', true) + months.map(month => cell(row.cells.get(month), row, month, false)).join('') + '</tr>';
       });
     });
     $('matrixBody').innerHTML = html;
@@ -310,22 +310,12 @@
     const part = state.report?.reports.find(report => report.status === status);
     if (part) showDetail(part.lots, month, status + ' lots', (month ? 'MONTH' : 'PERIOD') + ' TOTAL / LOT DETAIL', 'All subdivisions', false, null, 'report-total');
   }
-  let cardTrigger = null, cardHideTimer = null, triggerHovered = false, cardHovered = false, cardKeyboardFocus = false, lastPointerDown = 0;
-  function cancelCardHide() { clearTimeout(cardHideTimer); cardHideTimer = null; }
+  let cardTrigger = null;
   function hideSubdivisionCard() {
-    cancelCardHide();
     $('subdivisionCard').hidden = true;
     if (cardTrigger) cardTrigger.setAttribute('aria-expanded', 'false');
     cardTrigger = null;
-    triggerHovered = false; cardHovered = false; cardKeyboardFocus = false;
     state.cardRowKey = '';
-  }
-  function scheduleCardHide() {
-    cancelCardHide();
-    cardHideTimer = setTimeout(() => {
-      if (triggerHovered || cardHovered || (cardKeyboardFocus && (document.activeElement === cardTrigger || $('subdivisionCard').contains(document.activeElement)))) return;
-      hideSubdivisionCard();
-    }, 220);
   }
   function positionSubdivisionCard() {
     if (!cardTrigger || $('subdivisionCard').hidden) return;
@@ -347,7 +337,6 @@
     if (!state.permissions?.lotSalesDashboard) return;
     const row = state.report?.rows.find(item => item.key === key);
     if (!row || !trigger) { hideSubdivisionCard(); return; }
-    cancelCardHide();
     if (cardTrigger && cardTrigger !== trigger) cardTrigger.setAttribute('aria-expanded', 'false');
     cardTrigger = trigger; cardTrigger.setAttribute('aria-expanded', 'true');
     state.cardRowKey = key;
@@ -459,24 +448,18 @@
   $('matrixBody').addEventListener('click', e => { const group = e.target.closest('[data-group]'), cell = e.target.closest('[data-subdivision]'), card = e.target.closest('[data-card]');
     if (group) { const name = group.dataset.group; if (state.collapsed.has(name)) state.collapsed.delete(name); else state.collapsed.add(name); render(); }
     if (cell) openDetail(cell.dataset.subdivision, cell.dataset.month);
-    if (card && (e.detail === 0 || matchMedia('(hover: none)').matches)) { openSubdivisionCard(card.dataset.card, card); if (e.detail === 0) { cardKeyboardFocus = true; $('viewSubdivisionLots').focus(); } }
+    if (card) {
+      if (cardTrigger === card && !$('subdivisionCard').hidden) hideSubdivisionCard();
+      else { openSubdivisionCard(card.dataset.card, card); if (e.detail === 0 && !$('subdivisionCard').hidden) $('closeSubdivisionCard').focus(); }
+    }
   });
   $('matrixFoot').addEventListener('click', e => { const cell = e.target.closest('[data-total-status]'); if (cell) openTotalDetail(cell.dataset.totalStatus, cell.dataset.month); });
-  $('matrixBody').addEventListener('pointerover', e => { const trigger = e.target.closest('[data-card]'); if (trigger && e.pointerType !== 'touch' && !trigger.contains(e.relatedTarget)) { triggerHovered = true; cardKeyboardFocus = false; openSubdivisionCard(trigger.dataset.card, trigger); } });
-  $('matrixBody').addEventListener('pointerout', e => { const trigger = e.target.closest('[data-card]'); if (trigger && !trigger.contains(e.relatedTarget)) { triggerHovered = false; scheduleCardHide(); } });
-  let suppressCardFocus = false;
-  $('matrixBody').addEventListener('focusin', e => { const trigger = e.target.closest('[data-card]'); if (trigger && !suppressCardFocus && Date.now() - lastPointerDown > 500) { cardKeyboardFocus = true; openSubdivisionCard(trigger.dataset.card, trigger); } });
-  $('matrixBody').addEventListener('focusout', e => { if (e.target.closest('[data-card]')) scheduleCardHide(); });
-  $('subdivisionCard').addEventListener('pointerenter', () => { cardHovered = true; cancelCardHide(); });
-  $('subdivisionCard').addEventListener('pointerleave', () => { cardHovered = false; scheduleCardHide(); });
-  $('subdivisionCard').addEventListener('focusin', cancelCardHide);
-  $('subdivisionCard').addEventListener('focusout', scheduleCardHide);
-  document.addEventListener('pointerdown', e => { lastPointerDown = Date.now(); cardKeyboardFocus = false; if (!$('subdivisionCard').hidden && !cardTrigger?.contains(e.target) && !$('subdivisionCard').contains(e.target)) hideSubdivisionCard(); });
+  document.addEventListener('pointerdown', e => { if (!$('subdivisionCard').hidden && !cardTrigger?.contains(e.target) && !$('subdivisionCard').contains(e.target)) hideSubdivisionCard(); });
   document.querySelector('.matrix-scroll').addEventListener('scroll', hideSubdivisionCard, { passive: true });
   window.addEventListener('resize', hideSubdivisionCard);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('subdivisionCard').hidden) { hideSubdivisionCard(); e.stopPropagation(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('subdivisionCard').hidden) { const trigger = cardTrigger; hideSubdivisionCard(); trigger?.focus(); e.stopPropagation(); } });
   $('closeDetail').addEventListener('click', () => $('detail').close());
-  $('closeSubdivisionCard').addEventListener('click', () => { const trigger = cardTrigger; hideSubdivisionCard(); suppressCardFocus = true; trigger?.focus(); queueMicrotask(() => { suppressCardFocus = false; }); });
+  $('closeSubdivisionCard').addEventListener('click', () => { const trigger = cardTrigger; hideSubdivisionCard(); trigger?.focus(); });
   $('viewSubdivisionLots').addEventListener('click', () => { const row = state.report?.rows.find(item => item.key === state.cardRowKey); hideSubdivisionCard(); if (!row || !state.historyReady) return; const status = row.lots.length && ['Sold','Scheduled'].includes(row.status) ? row.status : 'All'; showDetail(state.lots.filter(lot => lot.subdivisionId === row.id), '', row.name, row.territory.toUpperCase() + ' / LOT DETAIL', 'All lots', true, status, row.id); });
   $('detailStatuses').addEventListener('click', e => { const button = e.target.closest('[data-detail-status]'); if (button) selectDetailStatus(button.dataset.detailStatus); });
   $('detailStatuses').addEventListener('keydown', e => {
