@@ -1,3 +1,9 @@
+## Import Detail Wording — 122.29.98, November 5, 2026
+
+Removed the explanatory source-total sentence from expanded import details.
+No financial values, mapping logic or Creator contracts change. No Creator
+promotion is required. Rollback is Budget Manager 122.29.97.
+
 ## Clean Import Table — 122.29.97, November 5, 2026
 
 Budget Import Items opens in **All Subdivisions** with the approved Clean Table
