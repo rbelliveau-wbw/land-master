@@ -170,3 +170,14 @@ Pending Pro Forma cards place **Resend** before **Save Note** in the approval
 action row. Users with scoped send access but no approval-edit permission see
 Resend alone. Both reuse the existing resend handler; this presentation change
 does not change resend progress, delivery verification or Settings routing.
+
+## Pro Forma Completion Email Owners — November 5, 2026
+
+The approved **Owners at top** layout adds a pale blue **Pro Forma Owners**
+section first in the fully approved / Ready for Legal Module email body,
+directly below the mail client's attachment area. Reuse the existing saved-owner
+lookup, display-name fallbacks, deduplication and HTML escaping. This section is
+limited to completion mail and changes no approval routing, recipient list,
+PDF packet, progress phase, reconciliation or retry behavior. The source change
+requires user publication of `Send_Proforma_Approval_Email_With_Context` in
+Creator; Pages promotion does not publish it.

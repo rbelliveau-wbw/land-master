@@ -1,3 +1,31 @@
+## Completion Email Owners At Top — November 5, 2026
+
+The fully approved / Ready for Legal Module email starts with a highlighted
+**Pro Forma Owners** section, matching the approved “Owners at top” design.
+It appears at the beginning of the message body, below the email client's
+attachment area and before the existing approval content. Names reuse the
+saved `Add_Pro_Forma.Owner` → `User_Access` lookup and the shared escaped,
+deduplicated display-name resolver; unassigned owners display **Not assigned**.
+This is a presentation change in the `Completed` branch only. Pending,
+rejected and resent approval emails, recipients, PDF packets, approval state,
+LOI behavior and progress/recovery behavior retain their existing contracts.
+
+Changed files: `creator/functions/Send_Proforma_Approval_Email_With_Context.dg`,
+`scripts/test-proforma-completion-email.mjs`, this module guide and the approval
+progress guide. No form, field or Custom API contract changes; no widget source,
+version, immutable release or environment mapping changes are needed.
+The updated Creator function must be saved/compiled in Development and published
+by the user under PMP; a main/Pages push alone does not change live email output.
+Offline regression executes the actual function with multiple/duplicate/missing
+owners, login/email name fallbacks, escaped names, unassigned owners, unchanged
+recipients, non-final routing, replay guards and notification failures. No live
+email is sent as a test. Creator compilation and native Outlook rendering remain
+to be checked during the user's publication.
+Verification passed: `npm run validate`, `npm run build:pages` and the focused
+completion-email and design-document checks.
+Rollback: restore this function from the parent commit and republish Creator;
+there is no widget release or data rollback.
+
 ## Offer Estimated Price Display — 1.80.141, November 5, 2026
 
 The Offer tab's read-only Estimated Price rounds to the nearest dollar using

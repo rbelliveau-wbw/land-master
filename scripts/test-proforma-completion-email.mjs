@@ -6,8 +6,8 @@ import vm from 'node:vm';
 // This verifies behavior but is not a substitute for Creator compilation.
 const adapter = fs.readFileSync('scripts/lib/deluge-pdf-test-runtime.mjs', 'utf8');
 const translate = vm.runInNewContext(adapter.slice(adapter.indexOf('function translate('), adapter.indexOf('export function packetRuntime')) + ';translate');
-function runtime(rows, status = 'Pending Approval', failMail = false) {
-  const context = vm.createContext({ rows: structuredClone(rows), parent: { ID: 1, Name: 'Test <Pro Forma>', Status: status }, failMail });
+function runtime(rows, status = 'Pending Approval', failMail = false, { owners = null, users = [] } = {}) {
+  const context = vm.createContext({ rows: structuredClone(rows), parent: { ID: 1, Name: 'Test <Pro Forma>', Status: status, Owner: structuredClone(owners) }, users: structuredClone(users), failMail });
   vm.runInContext(`
     var mails=[], thisapp={};
     function ifnull(v,f){return v==null?f:v;}
@@ -19,10 +19,11 @@ function runtime(rows, status = 'Pending Approval', failMail = false) {
     Array.prototype.toString=function(sep){return this.join(sep??',');};
     String.prototype.toLong=function(){return Number(this);};
     String.prototype.contains=function(v){return this.includes(v);};
+    String.prototype.getPrefix=function(v){return this.split(v)[0];};
     String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};
     String.prototype.toFile=function(name){return {name,content:this.toString()};};
     function query(form,predicate,sort){
-      let records=Array.from(form==='Add_Pro_Forma'?[parent]:form==='Budget_Approvals'?rows:[]).filter(predicate);
+      let records=Array.from(form==='Add_Pro_Forma'?[parent]:form==='Budget_Approvals'?rows:form==='User_Access'?users:[]).filter(predicate);
       if(sort)records.sort((a,b)=>a[sort]-b[sort]);
       return new Proxy(records,{
         get(a,k){return k in a || typeof k==='symbol'?a[k]:a[0]?.[k]??null;},
@@ -62,6 +63,8 @@ const mail = rt.context.mails[0];
 assert.match(mail.subject, /fully approved.*Ready for Legal Module/);
 assert.match(mail.message, /ready to be submitted to the <b>Legal Module/);
 assert.match(mail.message, /Test &lt;Pro Forma&gt;/);
+assert.match(mail.message, /Pro Forma Owners<\/div><div[^>]*>Not assigned<\/div>/);
+assert.ok(mail.message.indexOf('Pro Forma Owners') < mail.message.indexOf('Pro Forma Approval'), 'Owners must be first, above the existing approval content');
 for (const id of [1,2,3]) assert.ok(mail.message.includes(`Role &lt;${id}&gt;`));
 assert.match(mail.message, /Sep 30, 2026 12:00/);
 assert.match(mail.message, /Open Pro Forma/);
@@ -79,6 +82,31 @@ assert.equal(rt.context.mails.length, 1);
 assert.equal(rt.context.mails[0].to, 'person4@example.com');
 assert.match(rt.context.mails[0].message, /action1=Approve/);
 assert.doesNotMatch(rt.context.mails[0].subject, /fully approved/);
+assert.doesNotMatch(rt.context.mails[0].message, /Pro Forma Owners/);
+
+// Creator Owner is a multi-select lookup: each entry carries a User_Access record ID.
+// Reuse the existing name resolver, including duplicate, missing-row and login fallbacks.
+rt = runtime([row(1,1,'Approved'),row(3,2,'Pending')], 'Pending Approval', false, {
+  owners: [{ID:'101'}, {ID:'102'}, {ID:'103'}, {ID:'104'}, {ID:'105'}, {ID:'999'}],
+  users: [
+    {ID:'101', Full_Name:'  Avery <Owner> & Co  ', User:'avery@example.com'},
+    {ID:'102', Full_Name:'Avery <Owner> & Co', User:'duplicate@example.com'},
+    {ID:'103', Full_Name:'', User:'morgan_team@example.com'},
+    {ID:'104', Full_Name:null, User:'', Approver_Email:'jordan_ops@example.com'},
+    {ID:'105', Full_Name:'', User:'', Approver_Email:''}
+  ]
+});
+result = invoke(rt);
+assert.equal(result.completionEmailSent, true, JSON.stringify(result));
+const ownerBanner = rt.context.mails[0].message.split('</table></td></tr></table>')[0];
+assert.match(ownerBanner, /Pro Forma Owners<\/div><div[^>]*>Avery &lt;Owner&gt; &amp; Co, morgan, jordan<\/div>/);
+assert.equal(ownerBanner.split('Avery &lt;Owner&gt; &amp; Co').length, 2, 'Duplicate display names appear once');
+assert.doesNotMatch(ownerBanner, /<Owner>|person\d@example.com|duplicate@example.com/);
+assert.deepEqual(Array.from(rt.context.mails[0].to), ['person1@example.com','person3@example.com'], 'Displaying owners must not change completion recipients');
+
+rt = runtime([row(1,1,'Approved'),row(3,2,'Pending')], 'Pending Approval', false, { owners: [] });
+assert.equal(invoke(rt).completionEmailSent, true);
+assert.match(rt.context.mails[0].message, /Pro Forma Owners<\/div><div[^>]*>Not assigned<\/div>/);
 
 rt = runtime([row(1,1,'Not Sent'),row(3,3,'Pending')]);
 assert.equal(invoke(rt).success, false);
