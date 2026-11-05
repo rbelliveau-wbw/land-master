@@ -85,24 +85,7 @@ assert.equal(JSON.stringify(perf.snapshot()).includes('4410926000009999901'), fa
   await assert.rejects(adapter.readAll(api, 'Missing_Reader', null, ['ID']), /shared Creator data adapter is unavailable/);
 }
 {
-  const source = fs.readFileSync(app + 'sales-app.js', 'utf8');
-  const registration = source.split('\n').find(line => line.trim().startsWith("$('audit').addEventListener('click'"));
-  assert.ok(registration, 'Execute the actual diagnostic action rather than reproducing its version logic.');
-  const diagnosticVersion = html.match(/class="version">([^<]+)<\/span>/)?.[1];
-  assert.ok(diagnosticVersion, 'Current widget must expose its release version in Diagnostics.');
-  for (const version of [diagnosticVersion, '  v99.88.77  ', '', null]) {
-    const elements = {auditText: {}, diagnostics: {showModal() { this.shown = true; }}, audit: {addEventListener(event, handler) { assert.equal(event, 'click'); this.handler = handler; }}};
-    const runtimeContext = {environment: 'DEVELOPMENT', appLinkName: 'fixture-app'};
-    vm.runInNewContext(registration, {
-      document: {querySelector(selector) { assert.equal(selector, '#diagnostics .version'); return version === null ? null : {textContent: version}; }},
-      $: id => elements[id], LMRuntime: {current: () => runtimeContext}, state: {log: ['fixture diagnostic']}
-    });
-    elements.audit.handler();
-    assert.equal(elements.auditText.textContent.split('\n')[0], 'Land Master Insights ' + (version?.trim() || 'version unavailable'));
-    assert.ok(elements.auditText.textContent.includes('fixture-app'));
-    assert.ok(elements.auditText.textContent.endsWith('fixture diagnostic'));
-    assert.equal(elements.diagnostics.shown, true);
-  }
+  await import('./test-insights-diagnostics.mjs');
 }
 {
   const source = fs.readFileSync(app + 'sales-app.js', 'utf8');

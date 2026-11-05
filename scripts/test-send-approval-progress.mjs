@@ -159,3 +159,99 @@ assert.match(budget,/if \(p\.reconciliationUnavailable\) \{\s*finishApprovalProg
 assert.match(proforma,/if\(p\.reconciliationUnavailable\)\{pfApprovalFinish\(p,"error"/);
 assert.match(contract,/if\(p\.reconciliationUnavailable\)\{contractProgressFinish\(p,"error"/);
 console.log('Approval send and rejection progress verification passed.');
+
+// Execute the actual Budget progress lifecycle with delayed native replies and
+// a deterministic clock. Slow mail generation must not look like a failed write.
+function progressFunction(name) {
+  const start=budget.indexOf('function '+name+'('),next=budget.indexOf(name==='openModificationProgress'?'\n$("approvalProgressClose")':'\nfunction ',start+1);
+  assert.ok(start>=0,name);
+  return budget.slice(start,next<0?budget.length:next);
+}
+function pendingReply(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
+async function progressTurn(){for(let i=0;i<12;i++)await Promise.resolve();}
+function progressHarness(reply=()=>Promise.resolve(goodBudgetStart)) {
+  let now=0,serial=0;
+  const timers=new Map(),calls=[],nodes=new Map(),listeners={};
+  function element(){
+    const parts=new Map(),el={children:[],style:{},hidden:false,disabled:false,focus(){},appendChild(child){this.children.push(child);},querySelector(selector){if(!parts.has(selector))parts.set(selector,element());return parts.get(selector);},addEventListener(name,handler){this[name]=handler;},classList:{contains(){return false;},add(){}}};
+    let value='';Object.defineProperty(el,'textContent',{get(){return value;},set(v){value=v;el.children=[];}});return el;
+  }
+  function $(id){if(!nodes.has(id))nodes.set(id,element());return nodes.get(id);}
+  const c={Promise,Error,Number,String,Math,Date:{now:()=>now},APPROVAL_PROGRESS_TICK:0,S:{modifications:[],edBudget:null},approvalProgress:null,$,
+    document:{createElement:element,querySelectorAll:()=>[],activeElement:null,addEventListener(name,handler){listeners[name]=handler;}},
+    setTimeout(fn,ms){const id=++serial;timers.set(id,{at:now+ms,fn});return id;},clearTimeout(id){timers.delete(id);},
+    auditLog(){},setEdAutosave(){},refreshBudgetWorkflowState:()=>Promise.resolve(),refreshModSurfaces(){},
+    requireBudgetModsReady:()=>true,budgetFunctionResultText:r=>typeof r==='string'?r:r.result,
+    approvalProgressApi(p,action){calls.push(action);return reply(p,action);},sdkRunBudgetFunction(name,args){calls.push(name);return reply(args,name);}
+  };
+  vm.createContext(c);
+  for(const name of ['approvalProgressButtons','approvalProgressLabels','paceApprovalProgress','queueVerifiedApprovalProgress','renderApprovalProgress','closeApprovalProgress','finishApprovalProgress','approvalProgressDeadline','scheduleApprovalProgressCheck','inspectApprovalProgress','checkApprovalProgress','approvalProgressAttemptCurrent','beginApprovalProgressReconciliation','approvalProgressMutation','startApprovalProgressAttempt','openModificationProgress'])vm.runInContext(progressFunction(name),c);
+  c.APPROVAL_PROGRESS_TICK=0;
+  const retryStart=budget.indexOf('$("approvalProgressRetry").addEventListener(');
+  vm.runInContext(budget.slice(retryStart,budget.indexOf('\ndocument.addEventListener("keydown"',retryStart)),c);
+  function progress(kind='start'){
+    const p={kind,budgetId:'100',approvalId:'100',track:'Construction',role:'VP',displayStep:0,targetStep:0,terminal:'',timer:null,deadlineTimer:null,visualTimer:null,last:null,repairUsed:false,pendingFinish:null};
+    c.approvalProgress=p;return p;
+  }
+  async function advance(ms){
+    const target=now+ms;
+    for(;;){const next=[...timers].filter(([,v])=>v.at<=target).sort((a,b)=>a[1].at-b[1].at||a[0]-b[0])[0];if(!next)break;now=next[1].at;timers.delete(next[0]);next[1].fn();await progressTurn();}
+    now=target;await progressTurn();
+  }
+  return {c,calls,nodes,$,progress,advance,timers};
+}
+{
+  const write=pendingReply(),h=progressHarness((_p,action)=>action==='Start'?write.promise:Promise.resolve(goodBudgetStart)),p=h.progress();
+  h.c.startApprovalProgressAttempt(p,true);await h.advance(30000);
+  assert.equal(p.terminal,'','a 30s native Start has not failed before its reply');assert.equal(p.writePending,true);assert.equal(h.$('approvalProgressClose').disabled,true);assert.equal(h.$('approvalProgressRetry').hidden,true);assert.deepEqual(h.calls,['Start']);
+  assert.equal(h.c.startApprovalProgressAttempt(p,true),false,'a pending write cannot start another attempt');h.c.closeApprovalProgress();assert.equal(h.c.approvalProgress,p);
+  write.resolve({code:3000,result:'Approval chain started.'});await progressTurn();await h.advance(1000);
+  assert.equal(p.terminal,'success');assert.match(p.message,/routed to VP/);assert.deepEqual(h.calls,['Start','Check'],'slow success is reconciled without resending');
+}
+{
+  const write=pendingReply(),h=progressHarness((_p,action)=>action==='Start'?write.promise:Promise.resolve(goodBudgetStart)),p=h.progress();
+  h.c.startApprovalProgressAttempt(p,true);await h.advance(30000);write.reject(new Error('Lost workflow reply'));await progressTurn();await h.advance(1000);
+  assert.equal(p.terminal,'success','a lost reply is reconciled from persisted state');assert.deepEqual(h.calls,['Start','Check']);
+}
+{
+  const write=pendingReply(),h=progressHarness((_p,action)=>action==='Start'?write.promise:Promise.resolve({...goodBudgetStart,parentStatus:'Not Sent',firstStatus:'Not Sent',pendingCount:0,emailSent:false,sentDate:''})),p=h.progress();
+  h.c.startApprovalProgressAttempt(p,true);await h.advance(30000);write.resolve({code:3000});await progressTurn();await h.advance(19999);
+  assert.equal(p.terminal,'','settled write receives its own full reconciliation window');await h.advance(1);assert.equal(p.terminal,'error');assert.equal(h.$('approvalProgressClose').disabled,false);assert.equal(h.calls.filter(x=>x==='Start').length,1);
+}
+{
+  const repair=pendingReply(),h=progressHarness((_p,action)=>action==='Repair'?repair.promise:Promise.resolve({...goodBudgetStart,emailSent:false,sentDate:''})),p=h.progress();
+  h.c.startApprovalProgressAttempt(p,false);h.c.scheduleApprovalProgressCheck(p);await h.advance(5000);
+  assert.equal(p.writePending,true);assert.equal(h.calls.filter(x=>x==='Repair').length,1);await h.advance(30000);assert.equal(p.terminal,'','a slow guarded repair cannot expose Retry while it is sending');assert.equal(h.$('approvalProgressClose').disabled,true);
+  repair.resolve(goodBudgetStart);await progressTurn();await h.advance(0);assert.equal(p.terminal,'success');assert.equal(h.calls.filter(x=>x==='Repair').length,1);
+}
+{
+  const write=pendingReply();let checks=0;
+  const empty={...goodBudgetStart,parentStatus:'Not Sent',firstStatus:'Not Sent',pendingCount:0,emailSent:false,sentDate:''};
+  const h=progressHarness((_p,action)=>action==='Start'?write.promise:Promise.resolve(++checks===1?empty:goodBudgetStart)),p=h.progress();p.terminal='error';
+  h.$('approvalProgressRetry').click();await progressTurn();assert.deepEqual(h.calls,['Check','Start'],'retry checks saved state before starting');await h.advance(30000);assert.equal(p.terminal,'');assert.equal(p.writePending,true);
+  write.resolve({code:3000});await progressTurn();await h.advance(1000);assert.equal(p.terminal,'success');assert.equal(h.calls.filter(x=>x==='Start').length,1);
+}
+{
+  const old=pendingReply();let count=0;
+  const h=progressHarness(()=>++count===1?old.promise:Promise.resolve(goodBudgetStart)),p=h.progress();
+  h.c.startApprovalProgressAttempt(p,false);h.c.checkApprovalProgress(p);await h.advance(20000);assert.equal(p.terminal,'error');
+  h.c.startApprovalProgressAttempt(p,false);old.resolve(goodBudgetStart);await progressTurn();assert.equal(p.last,null,'late success from an expired attempt cannot finish the retry');assert.equal(p.terminal,'');
+  h.c.checkApprovalProgress(p);await progressTurn();await h.advance(0);assert.equal(p.terminal,'success');
+}
+{
+  const create=pendingReply(),h=progressHarness(()=>Promise.resolve({...goodMod,modificationId:'300'}));
+  h.c.openModificationProgress('','100',null,()=>create.promise);const p=h.c.approvalProgress;await h.advance(30000);
+  assert.equal(p.terminal,'');assert.equal(p.writePending,true);assert.equal(h.$('approvalProgressClose').disabled,true);assert.deepEqual(h.calls,[],'external modification create does not poll before it returns an ID');
+  create.resolve({result:'Modification 300 submitted.'});await progressTurn();await h.advance(1000);assert.equal(p.modificationId,'300');assert.equal(p.terminal,'success');assert.deepEqual(h.calls,['Check']);
+}
+{
+  const oldRead=pendingReply(),newRead=pendingReply(),h=progressHarness(()=>Promise.resolve(goodMod)),p=h.progress('modification');
+  let reads=0;p.modificationId='';p.knownIds=[];p.terminal='error';
+  h.c.refreshBudgetWorkflowState=()=>++reads===1?oldRead.promise:newRead.promise;
+  h.c.lookupMatchesId=(value,id)=>String(value&&value.ID||value)===id;
+  h.$('approvalProgressRetry').click();await h.advance(20000);assert.equal(p.terminal,'error');
+  h.$('approvalProgressRetry').click();oldRead.reject(new Error('Old list read failed'));await progressTurn();
+  assert.equal(p.terminal,'','late identification failure cannot terminate the next retry');
+  h.c.S.modifications=[{ID:'300',Budget:'100'}];newRead.resolve();await progressTurn();await h.advance(1000);assert.equal(p.terminal,'success');assert.equal(p.modificationId,'300');
+}
+console.log('Budget pending native writes, post-settlement deadlines, one-shot repair, read-first retries, stale checks and delayed modification creation passed.');

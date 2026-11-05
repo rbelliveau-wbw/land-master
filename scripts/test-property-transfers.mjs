@@ -57,12 +57,15 @@ held=null;await h.ensurePropertyTransferBackend(generation);const capabilityRead
 
 // Execute the actual native add path, including exact IDs and ambiguous-reply quarantine.
 const create=vm.createContext({S:{demo:false,liveSDK:true,propertyTransfers:[]},landCreateScope:()=>scope,LMData:{request:async(task,fn)=>fn(),responseFailed:()=>false},ZOHO:{CREATOR:{DATA:{addRecords:async config=>{writes.push(config);return{code:3000,data:{ID:T}};}}}},listForType:()=>[],errMeta:()=>'',});create.window=create;
+for(const name of ['landCreateResponseFailure','requireCreateSuccess'])vm.runInContext(actual(name),create);
 for(const name of ['responseBad','isSuccess','requireMutationSuccess','formForType','extractRecordId','landCreateFreeze','landCreateKey','landCreateStore','landCreateCandidateId','landCreateFailure','createRecord','landCreateFieldType','landCreateDecimal','landCreateDate','landCreateLookup','landCreateComparable','landCreatePayloadMatches'])vm.runInContext(actual(name),create);
 const payload={...valid,Transfer_Date:'14-Oct-2026',Transfer_Scope:'Partial',Amount_Unit:'Percentage',Amount_Transferred:'25.1250'};
 await create.createRecord('propertyTransfer',payload);assert.equal(writes.length,1);assert.equal(writes[0].form_name,'Property_Transfer');assert.equal(writes[0].payload.data.Property,P);assert.equal(writes[0].payload.data.Amount_Transferred,'25.1250');assert.equal(writes[0].skip_workflow,undefined);
 assert.equal(JSON.stringify(properties),JSON.stringify([{ID:P,Company1:{ID:C1},Acres:'241.5000'}]),'No property or Company mutation occurs');
 assert.ok(create.landCreatePayloadMatches({...payload,Property:{ID:P},From_Company:{ID:C1},To_Company:{ID:C2},Amount_Transferred:'25.125',Transfer_Date:'10/14/2026'},payload,'propertyTransfer'),'Read-only ambiguous recovery uses native lookup, decimal and date types');
 create.ZOHO.CREATOR.DATA.addRecords=async config=>{writes.push(config);return{code:3000}};
+await create.createRecord('propertyTransfer',payload);assert.equal(create.S.createReviews.propertyTransfer,undefined,'A resolved native transfer create does not require an ID');
+create.ZOHO.CREATOR.DATA.addRecords=async config=>{writes.push(config);throw new Error('Native transfer reply lost');};
 await assert.rejects(create.createRecord('propertyTransfer',payload));assert.ok(create.S.createReviews.propertyTransfer);const before=writes.length;await assert.rejects(create.createRecord('propertyTransfer',payload));assert.equal(writes.length,before,'Unknown transfer inserts cannot be replayed');
 console.log('PASS: Property transfer validation, scoped lazy history, stale guards, exact native create IDs/decimals, no ownership writes, unknown-create quarantine, and complete grouped property fields.');
 

@@ -30,7 +30,24 @@ requireText('errorApi: "Report_Proforma_Widget_Error"', 'Audit delivery must use
 requireText('function invokeErrorApi(config)', 'Audit delivery must support the available Creator Custom API SDK surface.');
 requireText('code==="9350"||code==="9360"', 'Missing or unpublished Custom APIs must not retry forever.');
 requireText('S.tableRefreshPending=true;', 'Record saves must defer the expensive background-table refresh.');
-requireText('function finishExternalMappingSave(message,isError){if(!isError)S.mappingDraft=null;S.panelSaving=false;renderPanel();', 'Mapping saves must reconcile local state without reloading all Creator reports and must preserve failed drafts.');
+function actual(name){const start=source.indexOf('function '+name+'('),end=source.indexOf('\nfunction ',start+1);assert.ok(start>=0&&end>start,name);return source.slice(start,end);}
+for(const name of ['performExternalMappingOperation','saveExternalMappings','finishExternalMappingSave','refreshLandCreatedCollection'])assert.doesNotMatch(actual(name),/\bloadData\s*\(/,'Mapping reconciliation must not reload the complete Land Master dataset');
+for(const isError of [false,true])for(const refreshCreated of [false,true]){
+  const rows=[{key:'retained',system:'GP',code:'000073',isNew:true}],draft={subdivisionId:'90071992547409931',rows,refreshCreated},refreshes=[],statuses=[],message={textContent:'old'};let renders=0,actions=0;
+  const c=vm.createContext({S:{mappingDraft:draft,panelSaving:true,demo:false},renderPanel(){renders++;},setStatus:(...args)=>statuses.push(args),$:()=>message,updatePanelActionState(){actions++;},refreshLandCreatedCollection:type=>{refreshes.push(type);return Promise.resolve();},loadData(){assert.fail('A mapping save cannot reload all reports');}});
+  vm.runInContext(actual('finishExternalMappingSave'),c);await c.finishExternalMappingSave('',isError);
+  assert.equal(c.S.mappingDraft,isError?draft:null,'Only a successful batch clears its staged draft');
+  if(isError){assert.equal(c.S.mappingDraft.rows,rows);assert.equal(c.S.mappingDraft.rows[0].code,'000073','A failed batch retains unsent values exactly');}
+  assert.equal(c.S.panelSaving,false);assert.equal(renders,1);assert.equal(actions,1);assert.equal(message.textContent,'');assert.equal(statuses[0][0],isError?'err':'ok');
+  assert.deepEqual(refreshes,refreshCreated?['externalMapping']:[],'Only accepted creates missing IDs request an optional mapping display refresh');
+}
+{
+  const list=[{ID:'90071992547409931',External_Code:'existing local value'}],reads=[],statuses=[],audits=[];
+  const c=vm.createContext({S:{modalOpen:false},listForType:type=>{assert.equal(type,'externalMapping');return list;},landCreateGeneration:()=>1,landCreateScope:()=> 'production:actor',reportForType:type=>{assert.equal(type,'externalMapping');return 'All_External_System_Mappings';},sdkGetAll:async(...args)=>{reads.push(args);return[{ID:'90071992547409931',External_Code:'stale read value'},{ID:'90071992547409932',External_Code:'new mapping'}];},renderCounts(){},setStatus:(...args)=>statuses.push(args),diag:(...args)=>audits.push(args),loadData(){assert.fail('An optional mapping refresh cannot reload all reports');}});
+  vm.runInContext(actual('refreshLandCreatedCollection'),c);await c.refreshLandCreatedCollection('externalMapping');
+  assert.equal(reads.length,1);assert.equal(reads[0][0],'All_External_System_Mappings');assert.equal(reads[0][3].fresh,true);assert.deepEqual(list.map(row=>row.ID),['90071992547409931','90071992547409932']);assert.equal(list[0].External_Code,'existing local value','Optional refresh must preserve newer local edits');
+  c.sdkGetAll=async()=>{throw new Error('Optional mapping read unavailable');};await c.refreshLandCreatedCollection('externalMapping');assert.equal(statuses.length,0,'Display read failures cannot invalidate an accepted mapping create');assert.equal(audits[0][0],'Created record display refresh unavailable');
+}
 requireText("permissionDenied=!!(failed&&failed.kind==='create'&&errorResponseCode(err)==='2899')", 'Only mapping-create code 2899 failures should use permission handling.');
 requireText("diag(permissionDenied?'External mapping create permission denied':'External mapping batch save failed'", 'Permission failures must have a distinct audit label.');
 requireText("operation:failed&&failed.kind,error:err});finishExternalMappingSave('',true)", 'Every mapping failure must be emailed while the visible panel message stays empty.');

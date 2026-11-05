@@ -25,6 +25,7 @@ function harness(record=legacy,isNew=false){
     OPTS:{scheduleStatus:['Active','Behind','Completed']},esc:value=>String(value??'').replace(/[<>&"]/g,'')});
   async function nativeWrite(kind,config){writes.push(kind==='update'?{kind,id:config.id,data:clone(config.payload.data),report:config.report_name}:{kind,type:'takedown',data:clone(config.payload.data)});if(!c.dontPersist)Object.assign(server,clone(config.payload.data),c.derived||{});if(c.heldWrite)await c.heldWrite.promise;if(c.writeError)throw c.writeError;return c.writeResponse??{code:3000,data:{ID:config.id||ID}};}
   for(const name of ['toDateInput','toZohoDate','responseBad','candidates','sdkGetAll','isSuccess','requireMutationSuccess','extractRecordId','landCreateFreeze','landCreateCandidateId','landCreatedRow','F','descriptor','fieldHTML','inputRaw','normalizedRaw','takedownWholeValue','secondClosingFieldError','showTakedownCadenceError','validateTakedownCadenceFields','copySecondClosingToSubsequent','panelHasChanges','updatePanelActionState','payloadValue','takedownSaveStore','takedownSaveReviewForEditor','takedownSaveContextCurrent','takedownSavedNumber','takedownMutationItem','takedownMutationEvidenceSafe','takedownMutationCanonicalId','takedownSaveRowMatches','readTakedownSave','takedownSaveDefiniteRejection','saveTakedownRecord','showTakedownSaveReview','recheckTakedownSave','applyLocalField','landSuccessLabel','savePanel'])vm.runInContext(actual(name),c);
+  vm.runInContext(actual('createdProjectNeedsId'),c);
   return{c,rec,server,inputs,writes,reads,statuses,toasts,node,copy};
 }
 

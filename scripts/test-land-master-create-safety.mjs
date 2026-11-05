@@ -9,13 +9,13 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 async function settle(){for(let i=0;i<90;i++)await Promise.resolve();}
 function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return{promise,resolve,reject};}
 const ID='90071992547409931', ID2='90071992547409932', PARENT='90071992547409933';
-function harness({create,read}={}){
-  const nodes=new Map(),writes=[],reads=[],statuses=[],toasts=[],server={},inputs=[];let generation=0,renders=0;
+function harness({create,read,reload}={}){
+  const nodes=new Map(),writes=[],reads=[],statuses=[],toasts=[],audits=[],server={},inputs=[];let generation=0,renders=0,reloads=0;
   function node(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,value:'',style:{},classList:{add(){},remove(){},toggle(){}},setAttribute(){},insertAdjacentText(where,text){this.textContent+=text;}});return nodes.get(id);}
   function input(field,value,original=''){const el={value,disabled:false,getAttribute:key=>({'data-field':field,'data-ftype':'text','data-original':original}[key]||'')};inputs.push(el);return el;}
   const c=vm.createContext({document:{querySelectorAll:selector=>selector.includes('data-req')?[]:inputs,getElementById:node},CFG:{reportCandidates:{}},
     S:{demo:false,liveSDK:true,coreRefreshing:false,panelLoading:false,panelSaving:false,editorNew:true,editorType:'property',editorId:null,editorDraft:{},panelDirty:true,modalOpen:true,modalTab:'details',navigationToken:0,properties:[],projects:[],subdivisions:[],companies:[],externalMappings:[],lots:[]},
-    LandData:{coreReady:()=>true,generation:()=>generation},$ :node,diag(){},setStatus:(kind,message)=>statuses.push(message),renderCounts(){},renderPanel(){renders++;c.updatePanelActionState();},closeRecordModal(){c.S.modalOpen=false;},showToast:message=>toasts.push(message),lookupLabel:()=>'',defaultSubName:seq=>'Fixture phase '+seq,
+    LandData:{coreReady:()=>true,generation:()=>generation},$ :node,diag:(...args)=>audits.push(args),setStatus:(kind,message)=>statuses.push(message),renderCounts(){},renderPanel(){renders++;c.updatePanelActionState();},closeRecordModal(){c.S.modalOpen=false;},loadData(){reloads++;return reload?reload():Promise.resolve();},showToast:message=>toasts.push(message),lookupLabel:()=>'',defaultSubName:seq=>'Fixture phase '+seq,
     currentEditor(){return c.S.editorNew?c.S.editorDraft:c.listForType(c.S.editorType).find(row=>row.ID===c.S.editorId);},
     ZOHO:{CREATOR:{DATA:{
       addRecords:async config=>{writes.push(clone(config));return create?create(config,writes.length,server):{code:3000,data:{ID}};},
@@ -27,9 +27,9 @@ function harness({create,read}={}){
   vm.runInContext(fs.readFileSync(app+'creator-data.js','utf8'),c);
   vm.runInContext(fs.readFileSync(app+'land-data.js','utf8'),c);
   vm.runInContext(fs.readFileSync(app+'property-subtypes.js','utf8'),c);
-  for(const name of ['errMeta','errorResponseCode','responseBad','isEmptyCode','candidates','sdkGetAll','isSuccess','requireMutationSuccess','updateRecord','formForType','extractRecordId','landCreateFreeze','landCreateScope','landCreateGeneration','landCreateKey','landCreateStore','landCreateReviewForEditor','landCreateCandidateId','landCreateFailure','landCreatedRow','landCreateFieldType','landCreateDecimal','landCreateDate','landCreateLookup','landCreateComparable','landCreatePayloadMatches','showLandCreateReview','recheckLandCreate','createRecord','reportForType','listForType','inputRaw','normalizedRaw','panelHasChanges','updatePanelActionState','payloadValue','applyLocalField','externalMappingDraftHasChanges','performExternalMappingOperation','finishExternalMappingSave','saveExternalMappings','projectFieldValue','subdivisionDraftHasRows','subdivisionPayloadFromRow','createStagedSubdivisions','allowTableEdit','landSuccessLabel','validatePropertySubtypePanel','savePanel','addExternalMappingRow','syncExternalMappingInput','addSubdivisionRow','syncSubdivisionInput'])vm.runInContext(actual(name),c);
+  for(const name of ['errMeta','errorResponseCode','responseBad','isEmptyCode','candidates','sdkGetAll','isSuccess','requireMutationSuccess','updateRecord','formForType','extractRecordId','landCreateFreeze','landCreateScope','landCreateGeneration','landCreateKey','landCreateStore','landCreateReviewForEditor','landCreateCandidateId','landCreateFailure','landCreatedRow','landCreateFieldType','landCreateDecimal','landCreateDate','landCreateLookup','landCreateComparable','landCreatePayloadMatches','showLandCreateReview','recheckLandCreate','landCreateResponseFailure','requireCreateSuccess','landCreatedRecordId','refreshLandCreatedCollection','createdProjectNeedsId','createRecord','reportForType','listForType','inputRaw','normalizedRaw','panelHasChanges','updatePanelActionState','payloadValue','applyLocalField','externalMappingDraftHasChanges','performExternalMappingOperation','finishExternalMappingSave','saveExternalMappings','projectFieldValue','subdivisionDraftHasRows','subdivisionPayloadFromRow','createStagedSubdivisions','allowTableEdit','landSuccessLabel','validatePropertySubtypePanel','savePanel','addExternalMappingRow','syncExternalMappingInput','addSubdivisionRow','syncSubdivisionInput'])vm.runInContext(actual(name),c);
   c.esc=value=>String(value).replace(/[<>&"]/g,'');
-  return{c,nodes,node,input,inputs,writes,reads,statuses,toasts,server,advance:()=>generation++,renders:()=>renders};
+  return{c,nodes,node,input,inputs,writes,reads,statuses,toasts,audits,server,advance:()=>generation++,renders:()=>renders,reloads:()=>reloads};
 }
 
 // Actual generic editor/native add path: immutable payload, input locks, no unknown retry.
@@ -37,10 +37,33 @@ function harness({create,read}={}){
   const held=deferred(),h=harness({create:()=>held.promise}),c=h.c,field=h.input('Common_Name','Fixture property');
   c.savePanel();await settle();assert.equal(h.writes.length,1);assert.equal(field.disabled,true);assert.equal(c.S.panelSaving,true);
   assert.equal(c.addExternalMappingRow(),false);assert.equal(c.addSubdivisionRow(),false);assert.equal(c.syncExternalMappingInput({}),false);assert.equal(c.syncSubdivisionInput({}),false,'Public draft mutation callbacks cannot change captured work during the native create');
-  assert.equal(c.savePanel(),undefined);assert.equal(h.writes.length,1);held.resolve({code:3000});await settle();
+  assert.equal(c.savePanel(),undefined);assert.equal(h.writes.length,1);held.reject(new Error('Native reply lost after dispatch'));await settle();
   assert.equal(c.S.editorNew,true);assert.equal(field.value,'Fixture property');assert.equal(field.disabled,true);assert.equal(h.node('btnPanelSave').disabled,true);assert.equal(c.savePanel(),false);assert.equal(h.writes.length,1);assert.equal(h.toasts.length,0);
   h.server.All_Property=[{ID,Common_Name:'Fixture property'}];assert.equal(await c.recheckLandCreate('property'),false,'A matching name cannot identify an unknown created record ID');
   assert.equal(h.writes.length,1);assert.ok(c.S.createReviews.property);assert.ok(h.reads.every(call=>!call.criteria&&(!call.field_config||call.field_config==='all')));assert.equal(field.value,'Fixture property');
+}
+// An accepted native add may omit its body/ID. Closing and display reload do not
+// quarantine the draft or turn an unrelated read failure into a create failure.
+for(const response of [undefined,null,{code:3000},{code:3000,result:[]},{code:3000,data:{ID:123}}])for(const reloadFails of [false,true]){
+  const h=harness({create:()=>response,reload:()=>reloadFails?Promise.reject(new Error('Display read failed')):Promise.resolve()}),c=h.c;h.input('Property_ID','Created without response ID');
+  c.savePanel();await settle();assert.equal(h.writes.length,1);assert.equal(c.S.modalOpen,false);assert.equal(c.S.editorNew,false);assert.equal(c.S.createReviews.property,undefined);assert.equal(c.S.panelSaving,false);assert.equal(h.reloads(),1);assert.equal(h.toasts.length,1);assert.ok(h.statuses.includes('Created'));assert.ok(!h.audits.some(event=>event[0]==='Record create failed'));assert.equal(h.reads.length,0,'An ordinary accepted create does not require a verification read');
+  if(reloadFails)assert.ok(h.audits.some(event=>event[0]==='Created record display refresh unavailable'));
+}
+// A project parent is accepted without an ID, but no child can target an
+// absent, numeric, or competing ID. Keep its unsent phase draft accessible.
+for(const response of [{code:3000},{code:3000,data:{ID:123}},{result:[{data:{ID}},{data:{ID:ID2}}]}]){
+  const h=harness({create:()=>response}),c=h.c;c.S.editorType='project';h.input('Project_Name','Created parent');const phases=[{key:'a',name:'Retained phase',code:'a',phase:'1',status:'Active',seq:1}];c.S.subdivisionDraft={key:'new',rows:phases};
+  c.savePanel();await settle();assert.equal(h.writes.length,1);assert.equal(h.writes[0].form_name,'Project');assert.equal(c.S.modalOpen,true);assert.equal(c.S.editorDraft._landCreatedWithoutId,true);assert.equal(c.S.subdivisionDraft.rows,phases);assert.equal(c.S.subdivisionDraft.rows.length,1);assert.equal(c.S.createReviews.project,undefined);assert.equal(h.toasts[0],'Project created.');assert.match(h.node('panelMsg').textContent,/Project created.*Phases are retained/);assert.equal(h.node('btnPanelSave').disabled,true);
+  c.updatePanelActionState();h.inputs[0].value='Changed after native success';c.updatePanelActionState();assert.equal(h.node('btnPanelSave').disabled,true);assert.equal(c.savePanel(),false);assert.equal(h.writes.length,1);assert.equal(c.S.subdivisions.length,0);
+}
+{
+  const h=harness(),c=h.c;c.S.editorType='project';c.S.subdivisionDraft={key:'new',rows:[{key:'a'}]};
+  for(const parent of ['',null,undefined,123,'not-an-id']){const outcome=await c.createStagedSubdivisions(parent);assert.equal(outcome.parentIdMissing,true);}
+  assert.equal(h.writes.length,0);assert.equal(c.S.subdivisionDraft.rows.length,1);
+}
+// Session drift before dispatch does not claim that an unsent insert is unknown.
+{
+  const h=harness(),c=h.c,held=deferred();c.LMData={...c.LMData,request:(_name,run)=>held.promise.then(run)};const saving=c.createRecord('property',{Property_ID:'Unsent'});c.LMRuntime.apply({envUrlFragment:'',loginUser:'changed actor'});held.resolve();await assert.rejects(saving,/session changed/);assert.equal(h.writes.length,0);assert.equal(c.S.createReviews.property,undefined);assert.equal(c.S.createPending.property,undefined);
 }
 // Late verification cannot repaint a newer panel, and a core generation/session change cannot clear a quarantine.
 for(const change of ['navigation','generation','actor']){
@@ -52,9 +75,9 @@ for(const change of ['navigation','generation','actor']){
   if(change==='navigation'){assert.equal(result,true);assert.equal(c.S.editorType,'company');assert.equal(h.inputs[0].value,'Later company draft');assert.equal(h.renders(),renders,'An old verification must not rerender the new editor');}
   else{assert.equal(result,false);assert.ok(c.S.createReviews.property);assert.equal(c.S.properties.length,0);assert.equal(c.S.editorNew,true);}
 }
-// Known acknowledged ID requires exact fresh fields. Read-only recovery converts this same draft into the saved record.
+// Response layout does not turn a resolved native create into a failed save.
 for(const response of [{code:3000,data:{ID},result:[{code:3000,data:{ID}}]},{code:3000,result:[{code:3000,data:{ID}},{code:3000,data:{ID}}]},{code:3000,result:[{code:3000,data:{ID},result:[{code:3000,data:{ID:ID2}}]}]}]){
-  const h=harness({create:()=>response}),c=h.c;h.input('Common_Name','Ambiguous property');c.savePanel();await settle();assert.equal(c.S.createReviews.property.id,'','Competing/duplicate/nested envelopes cannot select a candidate record ID');assert.equal(c.savePanel(),false);assert.equal(h.writes.length,1);assert.equal(h.toasts.length,0);
+  const h=harness({create:()=>response}),c=h.c;h.input('Common_Name','Native property');c.savePanel();await settle();assert.equal(c.S.createReviews.property,undefined);assert.equal(c.S.modalOpen,false);assert.equal(h.writes.length,1);assert.equal(h.toasts.length,1);
 }
 {
   const h=harness({create:(config,n,server)=>{server.All_Property=[{ID,...clone(config.payload.data)}];return{code:3000,data:{ID,status:'failure'}};}}),c=h.c;h.input('Common_Name','Fixture property');
@@ -111,6 +134,18 @@ for(const code of [2899,2945])for(const response of [
   c.saveExternalMappings();await settle();assert.equal(h.writes.length,2);assert.equal(rows[0].id,ID);assert.equal(rows[0].isNew,false);assert.equal(rows[1].isNew,true);assert.equal(c.S.externalMappings.length,1);assert.equal(c.saveExternalMappings(),false);assert.equal(h.writes.length,2);
   assert.equal(await c.recheckLandCreate('externalMapping'),true);assert.equal(rows[1].id,ID2);assert.equal(rows[1].isNew,false);assert.equal(c.S.externalMappings.length,2);c.saveExternalMappings();await settle();assert.equal(h.writes.length,2,'Recovered and confirmed mapping creates are never resent');
 }
+// Accepted mapping rows without returned IDs are not retained as unsent inserts
+// if a later row fails. Optional display reads cannot reverse the accepted add.
+{
+  const h=harness({create:(config,n,server)=>{if(n===1){server.All_External_System_Mappings=[{ID,...clone(config.payload.data)}];return{code:3000};}return{code:2899,message:'Second row denied'};}}),c=h.c;c.S.editorNew=false;c.S.editorType='subdivision';c.S.editorId=PARENT;c.S.modalTab='externalMappings';const rows=[{key:'a',id:'',system:'GP',code:'one',isNew:true},{key:'b',id:'',system:'HCSS',code:'two',isNew:true}];c.S.mappingDraft={subdivisionId:PARENT,rows};
+  c.saveExternalMappings();await settle();assert.equal(h.writes.length,2);assert.deepEqual(Array.from(c.S.mappingDraft.rows,row=>row.code),['two']);assert.equal(c.S.externalMappings[0].ID,ID);assert.equal(c.S.createReviews.externalMapping,undefined);c.saveExternalMappings();await settle();assert.equal(h.writes.length,3);assert.equal(h.writes[2].payload.data.External_Code,'two','The accepted IDless first row is never resent');
+}
+// Accepted phase children count as created and leave the staged queue, without
+// fabricated row IDs. A display read may later append real Creator IDs.
+{
+  const h=harness({create:(config,n,server)=>{(server.All_Subdivisions||(server.All_Subdivisions=[])).push({ID:n===1?ID:ID2,...clone(config.payload.data)});return{code:3000};}}),c=h.c;c.S.editorNew=false;c.S.editorType='project';c.S.editorId=PARENT;c.S.subdivisionDraft={key:PARENT,rows:['a','b'].map((key,index)=>({key,name:'Phase '+key,code:key,phase:String(index+1),status:'Active',generateForecasts:false,seq:index+1}))};
+  const outcome=await c.createStagedSubdivisions(PARENT);await settle();assert.equal(outcome.created,2);assert.equal(outcome.failed,0);assert.equal(h.writes.length,2);assert.equal(c.S.subdivisionDraft.rows.length,0);assert.deepEqual(Array.from(c.S.subdivisions,row=>row.ID),[ID,ID2]);assert.ok(c.S.subdivisions.every(row=>/^\d+$/.test(row.ID)));await c.createStagedSubdivisions(PARENT);assert.equal(h.writes.length,2);
+}
 // Actual staged phases retain unsent drafts and stop at an unknown child; recovering the exact child leaves only unsent work.
 {
   const h=harness({create:(config,n,server)=>{if(n===1)return{code:3000,data:{ID}};if(n===2){server.All_Subdivisions=[{ID:ID2,...clone(config.payload.data),Project:{ID:PARENT}}];return{code:3000,data:{ID:ID2,error:'Unconfirmed'}};}return{code:3000,data:{ID:'90071992547409934'}};}}),c=h.c;
@@ -120,7 +155,7 @@ for(const code of [2899,2945])for(const response of [
 }
 // Import's uniqueness scope remains per Lot_Code: another code is distinct work, the unknown code is never replayed.
 {
-  const h=harness({create:()=>({code:3000})}),c=h.c;await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));assert.equal(h.writes.length,1);await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L002'}));assert.equal(h.writes.length,2);assert.equal(h.writes[0].payload.data.Lot_Code,'AA-B01-L001');
+  const h=harness({create:()=>{throw new Error('Native transport reply lost');}}),c=h.c;await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L001'}));assert.equal(h.writes.length,1);await assert.rejects(c.createRecord('lot',{Lot_Code:'AA-B01-L002'}));assert.equal(h.writes.length,2);assert.equal(h.writes[0].payload.data.Lot_Code,'AA-B01-L001');
 }
 // A committed ambiguous insert can be recovered from equivalent native formatting.
 // The same captured record stays quarantined for an actual lost cent, malformed date,
@@ -184,5 +219,5 @@ for(const credit of ['-$12,500,109.90','$12,500,109.92','-$-12,500,109.92','(-$1
   }
 }
 assert.ok(source.includes("createCheck.getAttribute('data-recheck-land-create')"),'Mounted panel action invokes the same read-only controller');
-console.log('PASS: Land actual panel/mapping/staged native create flows retain unknown drafts, block replay, recover exact typed native formatting, preserve identifier zeroes/lookup IDs, and reject real currency/date/value differences.');
+console.log('PASS: Land native creates accept resolved replies without shape/ID gates, retain native errors and lost-reply guards, preserve dependent drafts, avoid replay/synthetic IDs, and keep typed manual recovery.');
 

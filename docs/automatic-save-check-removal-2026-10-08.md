@@ -19,6 +19,15 @@ special case for notes.
 
 ## Save policy
 
+November 5 exception for Land Master's general native create wrapper: a
+resolved reply without an explicit Creator failure is accepted even if its
+envelope differs or it omits an optional returned ID. Do not classify that reply
+as a lost response or require read-only field recovery before another create.
+Follow-on writes still require real destination IDs. Pending and genuinely
+lost native replies retain duplicate prevention. The dedicated Takedown
+workflow, update/delete handling and approval routing/delivery checks are
+unchanged. See [the focused change](land-create-and-budget-approval-checks-2026-11-05.md).
+
 An acknowledged successful save is no longer downgraded because refreshed
 editable or calculated field values differ, are formatted differently or are
 omitted from the report. Controllers still validate native response failures,

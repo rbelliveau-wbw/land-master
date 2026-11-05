@@ -68,7 +68,56 @@
     });
     return buckets;
   }
-  function log(message) { state.log.push(new Date().toISOString() + ' ' + message); if (state.log.length > 60) state.log.shift(); }
+  function log(message) { state.log.push(new Date().toISOString() + ' ' + message); if (state.log.length > 60) state.log.shift(); if ($('diagnostics').open) renderDiagnostics(); }
+  let diagnosticsCopyGeneration = 0;
+  function diagnosticText() {
+    const version = document.querySelector('#diagnostics .version')?.textContent.trim() || 'version unavailable';
+    return 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n');
+  }
+  function renderDiagnostics() {
+    const text = $('auditText'), atEnd = text.scrollTop + text.clientHeight >= text.scrollHeight - 4;
+    text.textContent = diagnosticText();
+    if (atEnd) text.scrollTop = text.scrollHeight;
+  }
+  function openDiagnostics() {
+    diagnosticsCopyGeneration++;
+    $('copyAudit').disabled = false; $('copyAudit').removeAttribute('aria-busy');
+    $('auditCopyStatus').textContent = ''; $('auditCopyStatus').removeAttribute('data-state');
+    renderDiagnostics(); $('auditText').scrollTop = 0;
+    if (!$('diagnostics').open) $('diagnostics').showModal();
+  }
+  function fallbackDiagnosticCopy(text) {
+    const input = document.createElement('textarea');
+    input.value = text; input.readOnly = true; input.setAttribute('aria-label', 'Copy Diagnostic Log');
+    Object.assign(input.style, {position: 'fixed', width: '1px', height: '1px', opacity: '0', pointerEvents: 'none'});
+    // A native modal makes the rest of the document inert. Keep the fallback
+    // inside this dialog so selection/copy remains available in Creator frames.
+    try { $('diagnostics').appendChild(input); input.focus(); input.select(); return typeof document.execCommand === 'function' && document.execCommand('copy') === true; }
+    catch { return false; }
+    finally { input.remove(); }
+  }
+  function selectDiagnosticLog() {
+    try {
+      $('auditText').focus({preventScroll: true});
+      const selection = window.getSelection(), range = document.createRange();
+      if (!selection) return false;
+      range.selectNodeContents($('auditText')); selection.removeAllRanges(); selection.addRange(range); return true;
+    } catch { return false; }
+  }
+  async function copyDiagnostics() {
+    const button = $('copyAudit'), dialog = $('diagnostics'), status = $('auditCopyStatus');
+    if (button.disabled || !dialog.open) return;
+    const token = ++diagnosticsCopyGeneration;
+    renderDiagnostics(); const text = $('auditText').textContent;
+    button.disabled = true; button.setAttribute('aria-busy', 'true'); status.textContent = 'Copying log…'; status.removeAttribute('data-state');
+    let copied = false;
+    try { if (typeof navigator !== 'undefined' && typeof navigator.clipboard?.writeText === 'function') { await navigator.clipboard.writeText(text); copied = true; } } catch {}
+    if (token !== diagnosticsCopyGeneration || !dialog.open) return;
+    if (!copied) copied = fallbackDiagnosticCopy(text);
+    button.disabled = false; button.removeAttribute('aria-busy');
+    if (copied) { status.textContent = 'Log copied.'; status.dataset.state = 'ok'; button.focus({preventScroll: true}); }
+    else { status.textContent = selectDiagnosticLog() ? 'Log selected. Press Ctrl+C to copy.' : 'Clipboard unavailable. Select the log and copy it.'; status.dataset.state = 'error'; }
+  }
   function notice(message, error) { $('notice').hidden = !message; $('notice').textContent = message; $('notice').classList.toggle('error', !!error); }
   function selectedFilters() { return { projectIds: InsightsControls.values($('project')), projectStatuses: InsightsControls.values($('projectStatus')), territories: InsightsControls.values($('territory')), builderIds: InsightsControls.values($('builder')),
     search: $('search').value.trim(), statuses: InsightsControls.values($('status')), dateField: InsightsControls.values($('status')).includes('Scheduled') ? 'purchaseDate' : $('dateField').value, groupBy: $('groupBy').value, excludeBuilders: $('excludeBuilders').checked, hideEmpty: $('hideEmpty').checked,
@@ -486,8 +535,10 @@
   }
   $('allFilters').addEventListener('click', () => setPanel('allFilters', 'moreFilters', $('moreFilters').hidden));
   $('reset').addEventListener('click', () => { ['projectStatus','territory','project','builder'].forEach(id => InsightsControls.setValues($(id),[])); $('search').value = ''; InsightsControls.setValues($('status'),['Sold']); $('dateField').value = 'closeDate'; syncDateBasis(); $('groupBy').value = 'project'; $('period').value = 'twoWFYs'; $('hideEmpty').checked = false; $('excludeBuilders').checked = false; $('metric').value = 'count'; state.collapsed.clear(); applyPeriod(); update(); });
-  $('audit').addEventListener('click', () => { const version = document.querySelector('#diagnostics .version')?.textContent.trim() || 'version unavailable'; $('auditText').textContent = 'Land Master Insights ' + version + '\n' + JSON.stringify(LMRuntime.current(), null, 2) + '\n\n' + state.log.join('\n'); $('diagnostics').showModal(); });
+  $('audit').addEventListener('click', openDiagnostics);
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
+  $('copyAudit').addEventListener('click', copyDiagnostics);
+  $('diagnostics').addEventListener('close', () => { diagnosticsCopyGeneration++; $('copyAudit').disabled = false; $('copyAudit').removeAttribute('aria-busy'); });
   $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()!=='budgets'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
   applyPeriod();

@@ -99,6 +99,16 @@ Creator connection, and unrelated permission/profile or repository changes.
 
 ## Automatic save comparisons — user direction October 8, 2026
 
+November 5 override for Land Master general native creates: the user removed
+the response-shape/mandatory-returned-ID success gate after accepted Property
+creates were reported as failures. Trust resolved general create replies unless
+Creator reports an actual error. A missing optional ID must not create an
+unknown-outcome review lock; a real ID is still required for subsequent child
+writes. Preserve input/permission/session checks, pending duplicate prevention
+and read-only recovery of genuinely lost replies. This does not remove the
+dedicated Takedown workflow, update/delete guards or Budget approval routing and
+delivery predicates. See docs/land-create-and-budget-approval-checks-2026-11-05.md.
+
 October 26 override for Legal/Construction (Contract Management): the user
 removed widget acknowledgement-shape and automatic post-save validation gates.
 Trust resolved native writes unless Creator reports an actual error. Display

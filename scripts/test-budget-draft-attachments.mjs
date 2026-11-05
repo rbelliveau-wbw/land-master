@@ -39,7 +39,7 @@ const adapter={current:()=>current,allowed:()=>allowed,upload:async(f,t)=>{write
 }
 {
  const model={attachmentDraft:{entries:[{file:file('estimate.pdf'),status:'queued'}]}};let parentCreates=0,flushes=[],checks=0;
- const pctx=vm.createContext({S:{edBudget:{ID:'1001'},modifications:[]},approvalProgress:null,requireBudgetModsReady:()=>true,$:()=>({hidden:true}),approvalProgressButtons(){},startApprovalProgressAttempt(){},budgetFunctionResultText:r=>r.result,flushRequestAttachmentDraft:async(m,b,t)=>{assert.equal(m,model);flushes.push(t);return {complete:true,total:1,saved:1};},scheduleApprovalProgressCheck:()=>checks++,finishApprovalProgress(){},auditLog(){}});
+ const pctx=vm.createContext({S:{edBudget:{ID:'1001'},modifications:[]},approvalProgress:null,requireBudgetModsReady:()=>true,$:()=>({hidden:true}),approvalProgressButtons(){},startApprovalProgressAttempt(){},approvalProgressMutation:(_p,request)=>request(),approvalProgressAttemptCurrent:(p,attempt)=>p.attemptToken===attempt&&!p.terminal,budgetFunctionResultText:r=>r.result,flushRequestAttachmentDraft:async(m,b,t)=>{assert.equal(m,model);flushes.push(t);return {complete:true,total:1,saved:1};},scheduleApprovalProgressCheck:()=>checks++,finishApprovalProgress(){},auditLog(){}});
  vm.runInContext(sourceOf('openModificationProgress'),pctx);
  pctx.openModificationProgress('','1001',null,async()=>{parentCreates++;return {result:'OK: Modification 90071992547409931 submitted.'};},model);
  await new Promise(r=>setTimeout(r,0));assert.equal(parentCreates,1);assert.equal(flushes.length,1);assert.equal(flushes[0].id,target.id);assert.equal(checks,1);

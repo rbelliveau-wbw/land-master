@@ -4,19 +4,19 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.99"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.100"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.99"></script>
-<script src="po-grid.js?v=122.29.99"></script>
-<script src="po-controller.js?v=122.29.99"></script>
-<script src="po-progress.js?v=122.29.99"></script>
-<script src="po-ui.js?v=122.29.99"></script>
-<script src="request-attachments.js?v=122.29.99"></script>
-<script src="full-budget-export.js?v=122.29.99"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.99">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.99">
+<script src="po-domain.js?v=122.29.100"></script>
+<script src="po-grid.js?v=122.29.100"></script>
+<script src="po-controller.js?v=122.29.100"></script>
+<script src="po-progress.js?v=122.29.100"></script>
+<script src="po-ui.js?v=122.29.100"></script>
+<script src="request-attachments.js?v=122.29.100"></script>
+<script src="full-budget-export.js?v=122.29.100"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.100">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.100">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1842,18 +1842,18 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.99">
-<script src="success-feedback.js?v=122.29.99"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.99">
-<script src="interaction-motion.js?v=122.29.99"></script>
-<script src="interaction-surfaces.js?v=122.29.99"></script>
-<script src="number-edit-commit.js?v=122.29.99"></script>
-<script src="number-transitions.js?v=122.29.99"></script>
-<script src="number-surfaces.js?v=122.29.99"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.99">
-<script src="budget-import-ledger.js?v=122.29.99"></script>
-<script src="budget-import-workspace.js?v=122.29.99"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.99">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.100">
+<script src="success-feedback.js?v=122.29.100"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.100">
+<script src="interaction-motion.js?v=122.29.100"></script>
+<script src="interaction-surfaces.js?v=122.29.100"></script>
+<script src="number-edit-commit.js?v=122.29.100"></script>
+<script src="number-transitions.js?v=122.29.100"></script>
+<script src="number-surfaces.js?v=122.29.100"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.100">
+<script src="budget-import-ledger.js?v=122.29.100"></script>
+<script src="budget-import-workspace.js?v=122.29.100"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.100">
 
 </head>
 <body>
@@ -2733,7 +2733,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.99", code:"BMW",
+  widget:"Budget Manager", version:"122.29.100", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -3280,13 +3280,16 @@ function approvalProgressMissingCheck(p) {
   return new Error("Creator did not return a targeted approval status. The deployed function may be out of date.");
 }
 function approvalProgressApi(p, action) {
-  var isCheck = action === "Check", capturedProgress = typeof approvalProgress !== "undefined" && approvalProgress === p;
+  var isCheck = action === "Check", capturedProgress = typeof approvalProgress !== "undefined" && approvalProgress === p, capturedAttempt = p.attemptToken;
   var capturedTarget = JSON.stringify([p.kind,p.budgetId,p.approvalId,p.modificationId,p.track]);
   function scope() { var runtime = typeof LMRuntime !== "undefined" && typeof LMRuntime.current === "function" ? LMRuntime.current() : {}; return JSON.stringify([runtime.environment || "",runtime.user || "",runtime.appLinkName || ""]); }
   var capturedScope = scope();
   function checkRequest(request) {
-    return request.catch(function(error) {
-      if (!isCheck || !capturedProgress || approvalProgress !== p || p.terminal || capturedScope !== scope() || capturedTarget !== JSON.stringify([p.kind,p.budgetId,p.approvalId,p.modificationId,p.track])) throw error;
+    return request.then(function(response) {
+      if (capturedProgress && (approvalProgress !== p || p.attemptToken !== capturedAttempt)) throw new Error("Approval check attempt was superseded.");
+      return response;
+    }).catch(function(error) {
+      if (!isCheck || !capturedProgress || approvalProgress !== p || p.attemptToken !== capturedAttempt || p.terminal || capturedScope !== scope() || capturedTarget !== JSON.stringify([p.kind,p.budgetId,p.approvalId,p.modificationId,p.track])) throw error;
       var response = error && (error.raw || error.response) || error;
       if (!response || typeof response !== "object" || Array.isArray(response) || String(response.code) !== "3000") throw error;
       var raw = response.result != null ? response.result : response.data;
@@ -3377,7 +3380,7 @@ function paceApprovalProgress(p) {
   }
 }
 function queueVerifiedApprovalProgress(p, kind, message) {
-  if (approvalProgress !== p || p.terminal || p.pendingFinish) return;
+  if (approvalProgress !== p || p.terminal || p.pendingFinish || p.writePending) return;
   p.pendingFinish = {kind:kind, message:message};
   p.targetStep = 3;
   clearTimeout(p.timer); clearTimeout(p.deadlineTimer);
@@ -3424,17 +3427,17 @@ function renderApprovalProgress() {
   status.className = "approval-progress-status" + (p.terminal ? " " + p.terminal : "");
   status.textContent = p.terminal ? p.message : p.fileModel && p.fileModel.attachmentDraft && p.fileModel.attachmentDraft.busy ? "Request saved · uploading selected attachments…" : labels[Math.min(p.displayStep, 2)] + " — leave this open until it finishes.";
   var retry = $("approvalProgressRetry");
-  retry.hidden = !p.terminal || p.terminal === "success" || !!p.fileWarningOnly;
+  retry.hidden = !p.terminal || p.terminal === "success" || !!p.fileWarningOnly || !!p.writePending;
   retry.textContent = p.terminal === "warning" && p.kind !== "modreject" ? "Retry email" : "Try again";
   var close = $("approvalProgressClose");
-  close.disabled = !p.terminal;
+  close.disabled = !p.terminal || !!p.writePending;
   close.className = p.terminal === "success" ? "btn primary sm" : "btn sm";
   close.textContent = p.terminal === "success" ? "Done" : "Close";
   if (p.terminal) (retry.hidden ? $("approvalProgressClose") : retry).focus();
 }
 function closeApprovalProgress() {
   var p = approvalProgress;
-  if (!p || !p.terminal) return;
+  if (!p || !p.terminal || p.writePending) return;
   clearTimeout(p.timer); clearTimeout(p.deadlineTimer); clearTimeout(p.visualTimer);
   approvalProgress = null;
   $("approvalProgressOverlay").hidden = true;
@@ -3447,7 +3450,7 @@ function closeApprovalProgress() {
   else if (p.kind === "modreject" && $("modOverlay").classList.contains("show")) $("modModalClose").focus();
 }
 function finishApprovalProgress(p, kind, message) {
-  if (approvalProgress !== p || p.terminal) return;
+  if (approvalProgress !== p || p.terminal || p.writePending) return;
   if(p.filesPromise&&!p.filesSettled){
     if(!p.fileFinish){p.fileFinish={kind:kind,message:message};clearTimeout(p.timer);clearTimeout(p.deadlineTimer);p.filesPromise.finally(function(){if(approvalProgress===p&&!p.terminal){p.filesSettled=true;finishApprovalProgress(p,p.fileFinish.kind,p.fileFinish.message);}});}
     return;
@@ -3463,7 +3466,7 @@ function finishApprovalProgress(p, kind, message) {
   if (p.budgetId) refreshBudgetWorkflowState(p.budgetId,{requireModifications:p.kind==="modification"||p.kind==="modreject"}).then(function(){ refreshModSurfaces(); }).catch(function(err) { auditLog("error", "Approval display refresh failed", err); });
 }
 function approvalProgressDeadline(p) {
-  if (approvalProgress !== p || p.terminal || p.pendingFinish) return;
+  if (approvalProgress !== p || p.terminal || p.pendingFinish || p.writePending) return;
   var s = p.last;
   if (p.kind === "modreject") {
     if (s && s.status === "Rejected" && s.currentStatus === "Rejected" && s.noteMatches === true && Number(s.pendingCount) === 0)
@@ -3495,7 +3498,7 @@ function approvalProgressDeadline(p) {
   }
 }
 function scheduleApprovalProgressCheck(p) {
-  if (approvalProgress !== p || p.terminal || p.pendingFinish) return;
+  if (approvalProgress !== p || p.terminal || p.pendingFinish || p.writePending) return;
   if (p.reconciliationUnavailable) {
     finishApprovalProgress(p, "error", "Creator approval verification is unavailable. The action may have been saved; check this record before trying again.");
     return;
@@ -3564,37 +3567,70 @@ function inspectApprovalProgress(p, s) {
   return false;
 }
 function checkApprovalProgress(p) {
-  if (approvalProgress !== p || p.terminal || p.pendingFinish || (p.kind === "modification" && !p.modificationId)) return;
+  if (approvalProgress !== p || p.terminal || p.pendingFinish || p.writePending || (p.kind === "modification" && !p.modificationId)) return;
+  var attempt = p.attemptToken;
   approvalProgressApi(p, "Check").then(function(s) {
-    if (approvalProgress !== p || p.terminal || p.pendingFinish) return;
+    if (!approvalProgressAttemptCurrent(p, attempt) || p.pendingFinish || p.writePending) return;
     if (inspectApprovalProgress(p, s)) return;
     if (!p.repairUsed && (p.kind === "modreject" ? s.currentStatus === "Rejected" && s.status === "Submitted" : p.kind === "modification" ? s.status === "Submitted" : p.kind === "start" ? s.firstStatus === "Pending" && Number(s.pendingCount) === 1 && Number(s.approvedCount) === 0 : p.kind === "reject" ? s.currentStatus === "Rejected" : s.currentStatus === "Approved") && Date.now() - p.startedAt >= 5000) {
       p.repairUsed = true;
-      approvalProgressApi(p, "Repair").then(function(repaired) {
-        if (approvalProgress !== p || p.terminal) return;
+      approvalProgressMutation(p, function() { return approvalProgressApi(p, "Repair"); }).then(function(repaired) {
+        if (!approvalProgressAttemptCurrent(p, attempt)) return;
         if (!inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p);
       }).catch(function(err) {
+        if (!approvalProgressAttemptCurrent(p, attempt)) return;
         auditLog("error", "Approval repair failed", err);
         scheduleApprovalProgressCheck(p);
       });
     } else scheduleApprovalProgressCheck(p);
   }).catch(function(err) {
+    if (!approvalProgressAttemptCurrent(p, attempt)) return;
     auditLog("error", "Targeted approval check failed", err);
     scheduleApprovalProgressCheck(p);
   });
 }
+function approvalProgressAttemptCurrent(p, attempt) {
+  return approvalProgress === p && !p.terminal && p.attemptToken === attempt;
+}
+function beginApprovalProgressReconciliation(p, attempt) {
+  if (!approvalProgressAttemptCurrent(p, attempt) || p.writePending || p.pendingFinish) return;
+  p.startedAt = Date.now();
+  clearTimeout(p.deadlineTimer);
+  p.deadlineTimer = setTimeout(function() { if (approvalProgressAttemptCurrent(p, attempt)) approvalProgressDeadline(p); }, 20000);
+}
+/* A native workflow may still be composing and sending mail after 20 seconds.
+   Reconciliation gets its own bounded window after that write has settled. */
+function approvalProgressMutation(p, request) {
+  if (approvalProgress !== p || p.terminal || p.writePending) return Promise.reject(new Error("An approval request is already pending or no longer active."));
+  var attempt = p.attemptToken;
+  p.writePending = true;
+  clearTimeout(p.timer); clearTimeout(p.deadlineTimer);
+  function settled() {
+    if (!approvalProgressAttemptCurrent(p, attempt)) return;
+    p.writePending = false;
+    beginApprovalProgressReconciliation(p, attempt);
+    renderApprovalProgress();
+  }
+  var pending;
+  try { pending = request(); } catch (error) { pending = Promise.reject(error); }
+  return Promise.resolve(pending).then(function(response) { settled(); return response; }, function(error) { settled(); throw error; });
+}
 function startApprovalProgressAttempt(p, write) {
+  if (approvalProgress !== p || p.writePending) return false;
+  p.attemptToken = (p.attemptToken || 0) + 1;
+  var attempt = p.attemptToken;
   p.terminal = ""; p.message = ""; p.displayStep = 0; p.targetStep = 0; p.last = null; p.pendingFinish = null;
   p.repairUsed = false; p.reconciliationUnavailable = false; p.startedAt = Date.now();
   clearTimeout(p.timer); clearTimeout(p.deadlineTimer); clearTimeout(p.visualTimer); p.visualTimer = null;
-  p.deadlineTimer = setTimeout(function() { approvalProgressDeadline(p); }, 20000);
   renderApprovalProgress();
   $("approvalProgressOverlay").querySelector(".approval-progress-dialog").focus();
   if (write) {
-    (p.kind === "modreject" ? p.writeRequest() : approvalProgressApi(p, p.kind === "start" ? "Start" : p.kind === "reject" ? "Rejected" : "Approved")).catch(function(err) {
+    approvalProgressMutation(p, function() { return p.kind === "modreject" ? p.writeRequest() : approvalProgressApi(p, p.kind === "start" ? "Start" : p.kind === "reject" ? "Rejected" : "Approved"); }).catch(function(err) {
+      if (!approvalProgressAttemptCurrent(p, attempt)) return;
       auditLog("error", "Approval write returned an error; checking persisted state", err);
-    }).then(function() { scheduleApprovalProgressCheck(p); });
-  }
+    }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
+  } else beginApprovalProgressReconciliation(p, attempt);
+  return true;
 }
 function openApprovalProgress(budgetId, approvalId, note, trigger, action) {
   if (approvalProgress) return Promise.resolve();
@@ -3659,8 +3695,9 @@ function openModificationProgress(modificationId, budgetId, trigger, createReque
   $("approvalProgressOverlay").hidden = false;
   approvalProgressButtons(true);
   startApprovalProgressAttempt(p, false);
-  if (createRequest) createRequest().then(function(resp) {
-    if (approvalProgress !== p || p.terminal) return;
+  var attempt = p.attemptToken;
+  if (createRequest) approvalProgressMutation(p, createRequest).then(function(resp) {
+    if (!approvalProgressAttemptCurrent(p, attempt)) return;
     var result = budgetFunctionResultText(resp);
     var match = result.match(/Modification\s+(\d+)\s+(?:submitted|recorded)/i);
     if (match) p.modificationId = match[1];
@@ -3671,7 +3708,7 @@ function openModificationProgress(modificationId, budgetId, trigger, createReque
     scheduleApprovalProgressCheck(p);
   }).catch(function(err) {
     auditLog("error", "Modification submission returned an error; checking persisted state", err);
-    if (approvalProgress !== p || p.terminal) return;
+    if (!approvalProgressAttemptCurrent(p, attempt)) return;
     if (p.modificationId) scheduleApprovalProgressCheck(p);
     else finishApprovalProgress(p, "error", "The submission result could not be identified. Check the modification list before trying again.");
   });
@@ -3680,95 +3717,101 @@ function openModificationProgress(modificationId, budgetId, trigger, createReque
 $("approvalProgressClose").addEventListener("click", closeApprovalProgress);
 $("approvalProgressRetry").addEventListener("click", function() {
   var p = approvalProgress;
-  if (!p || !p.terminal) return;
+  if (!p || !p.terminal || p.writePending) return;
   var wasWarning = p.terminal === "warning";
   var warnedNextId = p.last && p.last.nextId;
   if (p.kind === "modification") {
     if (!p.modificationId) {
       if (!p.budgetId) { finishApprovalProgress(p, "error", "The modification could not be identified. Check the modification list before submitting again."); return; }
-      p.terminal = ""; p.message = ""; renderApprovalProgress();
+      startApprovalProgressAttempt(p, false);
+      var attempt = p.attemptToken;
       refreshBudgetWorkflowState(p.budgetId,{requireModifications:true}).then(function() {
-        if (approvalProgress !== p) return;
+        if (!approvalProgressAttemptCurrent(p, attempt)) return;
         var created = (S.modifications||[]).filter(function(m){return p.knownIds.indexOf(String(m.ID)) < 0 && lookupMatchesId(m.Budget, p.budgetId);});
-        if (created.length === 1) { p.modificationId = String(created[0].ID); startApprovalProgressAttempt(p, false); scheduleApprovalProgressCheck(p); }
+        if (created.length === 1) { p.modificationId = String(created[0].ID); scheduleApprovalProgressCheck(p); }
         else finishApprovalProgress(p, "error", "The modification could not be identified safely. Check the modification list before submitting again.");
-      }).catch(function(err){auditLog("error","Modification identification failed",err);finishApprovalProgress(p,"error","The modification list could not be checked. Try again or review the list before submitting again.");});
+      }).catch(function(err){if(!approvalProgressAttemptCurrent(p,attempt))return;auditLog("error","Modification identification failed",err);finishApprovalProgress(p,"error","The modification list could not be checked. Try again or review the list before submitting again.");});
       return;
     }
     startApprovalProgressAttempt(p, false);
+    var attempt = p.attemptToken;
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal || inspectApprovalProgress(p, s)) return;
+      if (!approvalProgressAttemptCurrent(p, attempt) || inspectApprovalProgress(p, s)) return;
       if (s.status === "Submitted" && Number(s.approvedCount) === 0 && !s.sentDate) {
         p.repairUsed = true;
-        return approvalProgressApi(p, "Repair").then(function(repaired) { if (approvalProgress === p && !p.terminal && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p); });
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Repair"); }).then(function(repaired) { if (approvalProgressAttemptCurrent(p, attempt) && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p); });
       }
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Modification retry check failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Modification retry check failed", err); scheduleApprovalProgressCheck(p); });
     return;
   }
   if (p.kind === "modreject") {
     startApprovalProgressAttempt(p, false);
+    var attempt = p.attemptToken;
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal || inspectApprovalProgress(p, s)) return;
+      if (!approvalProgressAttemptCurrent(p, attempt) || inspectApprovalProgress(p, s)) return;
       if (s.currentStatus === "Rejected" && s.status === "Submitted") {
         p.repairUsed = true;
-        return approvalProgressApi(p, "Repair").then(function(r) { if (approvalProgress === p && !p.terminal && !inspectApprovalProgress(p, r)) scheduleApprovalProgressCheck(p); });
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Repair"); }).then(function(r) { if (approvalProgressAttemptCurrent(p, attempt) && !inspectApprovalProgress(p, r)) scheduleApprovalProgressCheck(p); });
       }
-      if (s.currentStatus === "Pending" && s.status === "Submitted") return p.writeRequest().catch(function(err) { auditLog("error", "Modification rejection retry failed", err); }).then(function() { scheduleApprovalProgressCheck(p); });
+      if (s.currentStatus === "Pending" && s.status === "Submitted") return approvalProgressMutation(p, function() { return p.writeRequest(); }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Modification rejection retry failed", err); }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Modification rejection retry check failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Modification rejection retry check failed", err); scheduleApprovalProgressCheck(p); });
     return;
   }
   if (p.kind === "start") {
     startApprovalProgressAttempt(p, false);
+    var attempt = p.attemptToken;
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal || inspectApprovalProgress(p, s)) return;
+      if (!approvalProgressAttemptCurrent(p, attempt) || inspectApprovalProgress(p, s)) return;
       if (s.firstStatus === "Pending" && Number(s.pendingCount) === 1 && Number(s.approvedCount) === 0 && (s.parentStatus !== "Pending" || !s.sentDate)) {
         p.repairUsed = true;
-        return approvalProgressApi(p, "Repair").then(function(repaired) {
-          if (approvalProgress === p && !p.terminal && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p);
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Repair"); }).then(function(repaired) {
+          if (approvalProgressAttemptCurrent(p, attempt) && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p);
         });
       }
       if (Number(s.pendingCount) === 0 && Number(s.approvedCount) === 0 && s.parentStatus !== "Approved") {
-        return approvalProgressApi(p, "Start").catch(function(err) {
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Start"); }).catch(function(err) {
           auditLog("error", "Approval start retry returned an error", err);
-        }).then(function() { scheduleApprovalProgressCheck(p); });
+        }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
       }
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Approval start retry check failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Approval start retry check failed", err); scheduleApprovalProgressCheck(p); });
     return;
   }
   if (p.kind === "reject") {
     startApprovalProgressAttempt(p, false);
+    var attempt = p.attemptToken;
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal || inspectApprovalProgress(p, s)) return;
+      if (!approvalProgressAttemptCurrent(p, attempt) || inspectApprovalProgress(p, s)) return;
       if (s.currentStatus === "Rejected") {
         p.repairUsed = true;
-        return approvalProgressApi(p, "Repair").then(function(repaired) { if (approvalProgress === p && !p.terminal && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p); });
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Repair"); }).then(function(repaired) { if (approvalProgressAttemptCurrent(p, attempt) && !inspectApprovalProgress(p, repaired)) scheduleApprovalProgressCheck(p); });
       }
-      if (s.currentStatus === "Pending") return approvalProgressApi(p, "Rejected").catch(function(err) { auditLog("error", "Rejection retry returned an error", err); }).then(function() { scheduleApprovalProgressCheck(p); });
+      if (s.currentStatus === "Pending") return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Rejected"); }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Rejection retry returned an error", err); }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Rejection retry check failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Rejection retry check failed", err); scheduleApprovalProgressCheck(p); });
     return;
   }
   startApprovalProgressAttempt(p, false);
+  var attempt = p.attemptToken;
   if (wasWarning && warnedNextId) {
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal) return;
+      if (!approvalProgressAttemptCurrent(p, attempt)) return;
       if (inspectApprovalProgress(p, s)) return;
       if (s.currentStatus === "Approved" && s.nextId && s.nextStatus === "Pending" && Number(s.pendingCount) === 1 && !s.emailSent) {
-        return sdkRunBudgetFunction("sendApprovalEmail", {budgetId:p.budgetId, approvalId:String(s.nextId)}).then(function() { scheduleApprovalProgressCheck(p); });
+        return approvalProgressMutation(p, function() { return sdkRunBudgetFunction("sendApprovalEmail", {budgetId:p.budgetId, approvalId:String(s.nextId)}); }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
       }
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Approval email retry failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Approval email retry failed", err); scheduleApprovalProgressCheck(p); });
   } else {
     approvalProgressApi(p, "Check").then(function(s) {
-      if (approvalProgress !== p || p.terminal || inspectApprovalProgress(p, s)) return;
+      if (!approvalProgressAttemptCurrent(p, attempt) || inspectApprovalProgress(p, s)) return;
       if (s.currentStatus === "Pending") {
-        return approvalProgressApi(p, "Approved").catch(function(err) { auditLog("error", "Approval retry returned an error", err); }).then(function() { scheduleApprovalProgressCheck(p); });
+        return approvalProgressMutation(p, function() { return approvalProgressApi(p, "Approved"); }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Approval retry returned an error", err); }).then(function() { if (approvalProgressAttemptCurrent(p, attempt)) scheduleApprovalProgressCheck(p); });
       }
       scheduleApprovalProgressCheck(p);
-    }).catch(function(err) { auditLog("error", "Approval retry check failed", err); scheduleApprovalProgressCheck(p); });
+    }).catch(function(err) { if (!approvalProgressAttemptCurrent(p, attempt)) return; auditLog("error", "Approval retry check failed", err); scheduleApprovalProgressCheck(p); });
   }
 });
 document.addEventListener("keydown", function(e) {
@@ -14510,7 +14553,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.99",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.100",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

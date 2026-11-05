@@ -1,7 +1,40 @@
+## Sidebar Tools And Audit Log — 1.6.25, November 5, 2026
+
+The Insights / Dashboards breadcrumb strip is deleted entirely so reports gain
+its vertical space. Refresh and Diagnostics are square icon-only actions at
+the bottom of the left navigation, accessible in both expanded and collapsed
+states. The existing refresh, dashboard permissions, mounted reports, filter
+scope and read behavior are retained.
+
+Diagnostics uses a bounded Audit Log dialog with a centered SVG close button,
+scrollable complete log and a pinned Copy Log footer. Copy preserves the full
+existing version/runtime/log text, reports genuine success or failure, and
+supports a dialog-local fallback when the clipboard API is unavailable.
+Reopening refreshes the displayed entries. See [Audit logs](../design/audit-logs.md).
+
+Changed sources: widget.html, insights-navigation.css and sales-app.js, focused
+diagnostic/routing and existing desktop geometry checks, version metadata,
+immutable release, this module and shared design guides. No forms, fields,
+functions, Custom APIs or financial/report semantics change. No Creator
+publication is required. PMP authorizes main and Production promotion.
+Regression: reclaimed header space, bottom-left square tools in both menu
+states, bounded long-log scrolling, raw text copy success/failure/fallback,
+repeated open/close and preserved dashboard state. Rollback: restore
+lot-sales-explorer to 1.6.24 and rebuild Pages.
+
+Desktop verification in the agent-owned in-app browser confirmed 32px square
+footer buttons in both navigation states, report content starting at the
+existing 16px inset with no toolbar, and a centered close SVG. A long fixture
+log scrolled to its final entry while header/footer stayed visible; the native
+clipboard contained the complete displayed log after normalizing Windows line
+endings. Focus returned to Diagnostics after closing. Full `npm run validate`
+and `npm run build:pages` passed. No live records or approval emails were changed.
+
 ## Quiet Workspace Navigation — 1.6.24, November 5, 2026
 
 The approved Quiet Workspace shell uses compact branding, restrained navigation
-rows, SVG chart icons, and Refresh / Diagnostics in the report breadcrumb toolbar.
+rows and SVG chart icons. Release 1.6.25 supersedes its original report-toolbar
+placement of Refresh / Diagnostics with the sidebar footer above.
 The menu opens by default on every fresh load. Its 34px toggle straddles the
 sidebar border at mid-height, remains reachable in both states, and collapses
 the sidebar to a named icon rail. Collapse keeps the real reports, filters,

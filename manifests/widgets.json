@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-05T16:50:18.055Z",
+  "generated_at": "2026-11-05T18:38:23.793Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.99",
+      "version": "122.29.100",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "580c726a364b4795bb864a7eca4eb04aed65cb8c5570ed9248be64cd044100b1",
+      "source_sha256": "75f89021d6dc93cefb7bcfa72d45d504351c0ac7b9e9da936bc79d8accf387a6",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",
@@ -72,13 +72,13 @@
       "slug": "land-master",
       "name": "Land Master",
       "module": "land-master",
-      "version": "8.17.9",
+      "version": "8.17.11",
       "description": "Projects, subdivisions, companies, properties, related records, filters, and editing.",
       "source_entry": "widgets/land-master/src/app/widget.html",
       "creator_package_manifest": "widgets/land-master/src/plugin-manifest.json",
       "baseline_zip": "widgets/land-master/baseline/land_master_widget_v8_9_1_no_subdivision_company_pagination (1).zip",
       "html_title": "Land Master",
-      "source_sha256": "8963fca230b44f9dfd9a291b1a611b9efe490eb04e0184572e07570c44cd6a5f",
+      "source_sha256": "77823b8811a485c5cc9bfc5b799b1f2cd62865a7f775afb090811e405207e37b",
       "baseline_zip_sha256": "c32ede76fad6050e56abb307ec487fe78772dea335374ee5e413b74e26a6d1e0",
       "plugin_manifest": {
         "locale": [
@@ -247,13 +247,13 @@
       "slug": "lot-sales-explorer",
       "name": "Land Master Insights",
       "module": "insights",
-      "version": "1.6.24",
+      "version": "1.6.25",
       "description": "Quiet Workspace navigation, open by default, with a centered border-mounted collapse control and persistent mounted reports.",
       "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
       "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Land Master Insights",
-      "source_sha256": "a7aa3f51134d160b1778fcdb01e4ca06e5bf273159a7f4b0ab8b26d273e52d26",
+      "source_sha256": "b12995056f73e1418e77c2d1abdcd754010984c5275b304efe6654a80556456f",
       "plugin_manifest": {
         "service": "CREATOR",
         "locale": [

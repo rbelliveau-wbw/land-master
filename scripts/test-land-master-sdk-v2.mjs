@@ -47,8 +47,24 @@ for(const anomaly of [{status:' ERROR '},{status:'failed'},{status:'failure'},{s
 }
 for(const malformed of [{code:3000},{code:3000,result:[]},{code:3000,data:{}},{code:3000,data:{ID:123}},{data:{ID:id}},{code:3000,result:[{code:3000}]}]){
   context.S.createReviews={};response=malformed;assert.equal(context.isSuccess(response),false);const requestCount=calls.length;
-  for(const action of [()=>context.createRecord('lot',data),()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>e.message==='Creator did not confirm the record change.'&&e.response===malformed);
-  assert.equal(calls.length,requestCount+3,'unconfirmed record changes must fail without automatic replay');
+  assert.equal(await context.createRecord('lot',data),malformed,'Resolved native creates do not require an acknowledgement shape or returned ID');
+  assert.equal(context.S.createReviews.lot,undefined,'Accepted creates must not enter recovery');
+  for(const action of [()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),e=>e.message==='Creator did not confirm the record change.'&&e.response===malformed);
+  assert.equal(calls.length,requestCount+3,'Create acceptance and unrelated update/delete guards never replay writes');
+}
+for(const accepted of [undefined,null,'',{code:3000,result:{data:{ID:id}}},[{code:3000,data:{ID:id}}],JSON.stringify({code:3000,result:[{code:3000,data:{ID:id}}]}),{code:3000,data:{ID:id},result:[{code:3000,data:{ID:id}}]},{status:'success',output:{ID:id}}]){
+  context.S.createReviews={};response=accepted;const requestCount=calls.length;
+  assert.equal(await context.createRecord('lot',data),accepted,'Resolved native creates accept missing bodies, JSON text, arrays, and irregular successful wrappers');
+  assert.equal(calls.length,requestCount+1);assert.equal(context.S.createReviews.lot,undefined);
+}
+for(const rejected of [
+  {code:3000,details:{responseText:JSON.stringify({code:2945,message:'Invalid native field'})}},
+  [{code:3000},{code:2899,message:'Native permission denied'}],
+  JSON.stringify({code:3000,result:[{code:3000,data:{error:'Workflow rejected'}}]}),
+  {code:3000,output:{response:{success:false,message:'Native failure'}}}
+]){
+  context.S.createReviews={};response=rejected;const requestCount=calls.length;
+  await assert.rejects(context.createRecord('lot',data));assert.equal(calls.length,requestCount+1,'Nested native failures are preserved without replay');
 }
 context.S.liveSDK=false;await assert.rejects(context.createRecord('lot',data),e=>e.message==='Creator connection required.');context.S.liveSDK=true;
 for(const malformed of [{code:3000,data:{ID:'90071992547409932'}},{code:3000,result:[{code:3000,data:{ID:id}},{code:3000,data:{ID:id}}]},{code:3000,data:{ID:id},result:{code:3000,data:{ID:id}}}]){
@@ -119,6 +135,7 @@ await import('./test-land-master-lookup-labels.mjs');
   vm.runInContext(fs.readFileSync('widgets/land-master/src/app/land-data.js','utf8'),c);
   vm.runInContext(section('var S =','function $(id)'),c);
   function actual(name){return section('function '+name+'(','\nfunction ');}
+  vm.runInContext(actual('createdProjectNeedsId'),c);
   for(const name of ['$', 'esc','num','asList','lookupId','relHasId','findIn','toDateInput','toZohoDate','dateText','valText','truthy','brToNl','nlToBr',
     'typeLabel','F','listForType','recordFor','reportForType','descriptor','lookupOptions','lookupLabel','optionsHTML','fieldHTML','currentEditor','recordTitle',
     'milestonesForSub','relatedTable','subdivisionMilestonesTasksHTML','tabHTML','panelActionsHTML','renderPanel','panelHasChanges','updatePanelActionState','withDiscardConfirm',

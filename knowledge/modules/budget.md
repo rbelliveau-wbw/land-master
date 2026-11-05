@@ -1,3 +1,21 @@
+## Approval Submission Timing — 122.29.100, November 5, 2026
+
+Approval progress gives the targeted checks their full 20-second reconciliation
+window after the native mutation settles. A slow submission or repair keeps
+Close, Retry and duplicate writes locked instead of showing a failure before
+verification begins. Attempt-scoped callbacks cannot update a newer attempt.
+Routing, delivery stamps, recipient selection, approval decisions and financial
+finalization predicates are unchanged.
+
+Read-only Production inspection found Turnbo Ranch - Phase 08 Construction
+Pending with VP twhitis active and CFO/COO Not Sent, consistent with the user's
+report that the email was sent despite the error modal. The original request
+timing was unavailable; the premature deadline is a confirmed source defect.
+No approval action or email was repeated during inspection.
+
+No Creator publication is required. November 5 PMP promotes this release in
+Development and Production; rollback is 122.29.99. See [failure analysis, regression scope and rollback](../../docs/land-create-and-budget-approval-checks-2026-11-05.md).
+
 ## Adaptive Inline Import Details — 122.29.99, November 5, 2026
 
 The approved Adaptive Inline layout uses four columns: Imported Line, Source,

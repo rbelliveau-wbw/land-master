@@ -76,7 +76,7 @@ console.log('PASS: actual modification create/submit/repair and native policy/sn
 // a success poll or inviting a duplicate create after a routing failure.
 const widget=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');
 const progressSource=widget.slice(widget.indexOf('function openModificationProgress('),widget.indexOf('\n$("approvalProgressClose")'));
-const progress=vm.createContext({Promise,requireBudgetModsReady:()=>true,S:{modifications:[]},$:()=>({}),approvalProgress:null,approvalProgressButtons(){},startApprovalProgressAttempt(){},budgetFunctionResultText:value=>value,auditLog(){},finishApprovalProgress(p,kind,message){p.terminal=kind;p.message=message;},scheduleApprovalProgressCheck(){progress.checks++;},checks:0});
+const progress=vm.createContext({Promise,requireBudgetModsReady:()=>true,S:{modifications:[]},$:()=>({}),approvalProgress:null,approvalProgressButtons(){},startApprovalProgressAttempt(){},approvalProgressMutation:(_p,request)=>request(),approvalProgressAttemptCurrent:(p,attempt)=>p.attemptToken===attempt&&!p.terminal,budgetFunctionResultText:value=>value,auditLog(){},finishApprovalProgress(p,kind,message){p.terminal=kind;p.message=message;},scheduleApprovalProgressCheck(){progress.checks++;},checks:0});
 vm.runInContext(progressSource,progress);
 progress.openModificationProgress('','71',null,()=>Promise.resolve('OK: Modification 9007199254740993 recorded as Draft. Approval template failed: Snapshot failed'));
 await Promise.resolve();await Promise.resolve();

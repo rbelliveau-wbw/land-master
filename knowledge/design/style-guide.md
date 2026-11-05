@@ -87,9 +87,12 @@ meter transitions. Reuse the shared implementation across every module.
 
 November 5 user direction: Data Insights uses the approved **Quiet Workspace**
 navigation. Keep compact Land Master / Insights branding and two calm navigation
-rows in a light sidebar, with a subtle active fill and left indicator. Put
-Refresh and Diagnostics together at the right of the compact report breadcrumb
-toolbar; retain their existing native actions and accessible connection status.
+rows in a light sidebar, with a subtle active fill and left indicator. The later
+November 5 direction removes the Insights / Dashboards breadcrumb toolbar
+entirely and puts Refresh and Diagnostics at the bottom of the sidebar as
+square icon-only buttons. Keep them reachable in the collapsed icon rail,
+retain their native actions and accessible connection status, and use the
+scrollable dialog and Copy Log rules in [Audit logs](audit-logs.md).
 The menu starts open on each fresh load. Its centered SVG collapse button
 straddles the sidebar's right border halfway down, remains visible when collapsed,
 and opens the resulting icon rail. Icons retain accessible names and full-name

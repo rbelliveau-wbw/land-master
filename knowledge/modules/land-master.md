@@ -1,3 +1,18 @@
+## Native Create Replies — 8.17.11, November 5, 2026
+
+General record creation accepts a resolved native reply unless Creator reports
+an actual failure. Optional response structure and missing returned IDs no
+longer turn an accepted create into a failed verification or block later
+creates. Record editors, staged phases, mappings and spreadsheet Lots share
+this path. Follow-on writes still require a real destination ID; pending and
+genuinely lost replies retain duplicate prevention and read-only recovery.
+Updates, deletes and the dedicated Takedown workflow keep their existing rules.
+
+No native payload fields, forms, functions or Custom APIs change, and no Creator
+publication is needed. November 5 PMP promotes this release in Development and
+Production; rollback is 8.17.9.
+See [failure analysis, regression scope and rollback](../../docs/land-create-and-budget-approval-checks-2026-11-05.md).
+
 ## Modal footer actions — 8.17.5, October 23, 2026
 
 Land & Projects uses the shared record footer for Property, Project, Subdivision,
