@@ -1,0 +1,40 @@
+/* Quiet Workspace navigation. Reports, native permissions and data remain mounted. */
+.workspace{--navigation-width:218px;grid-template-columns:var(--navigation-width) minmax(0,1fr);background:#f4f6f9}
+.workspace.navigation-collapsed{grid-template-columns:72px minmax(0,1fr)}
+.workspace>.sidebar{position:relative;inset:auto;z-index:25;overflow:visible;background:#f8fafc;border-right:1px solid #dbe3ed;padding:24px 14px 16px;gap:0;isolation:isolate}
+.workspace>.sidebar>.brand{min-height:36px;align-items:center;gap:10px;padding:0;white-space:nowrap}
+.workspace .brand-icon{width:35px;height:35px;flex:none;border-radius:10px;background:#163f70;box-shadow:none}
+.workspace .brand-icon svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.workspace .brand-copy{font-size:9px;letter-spacing:1.5px;color:#74859b}
+.workspace .brand-copy b{margin-top:3px;font-size:17px;font-weight:700;letter-spacing:-.4px;color:#142f50}
+.workspace .nav-label{margin-top:32px;padding:0 12px 13px;font-size:10px;letter-spacing:1.5px;font-weight:650;color:#7789a0;white-space:nowrap}
+.workspace .sidebar nav{display:grid;gap:6px;min-width:0}
+.workspace .dashboard-nav{position:relative;gap:11px;min-height:44px;padding:12px 13px;border:0;border-radius:9px;background:transparent;color:#64768e;font-size:13px;font-weight:500;white-space:nowrap;box-shadow:none}
+.workspace .dashboard-nav>svg{display:block;width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.workspace .dashboard-nav>.nav-text{font-size:13px}
+.workspace .dashboard-nav.active{border:0;background:#e7eef7;color:#173f70;font-weight:650;box-shadow:none}
+.workspace .dashboard-nav.active:before{content:"";position:absolute;left:0;top:50%;width:3px;height:18px;border-radius:0 3px 3px 0;background:#285b8d;transform:translateY(-50%)}
+.workspace .dashboard-nav:not(.active):hover{border:0;background:#edf2f8;color:#1c426b}
+.workspace .navigation-foot{margin-top:auto;padding:13px 12px 0;border-top:1px solid #dbe3ed;color:#7789a0;font-size:11px;white-space:nowrap}
+.workspace .navigation-toggle{position:absolute;top:50%;right:0;transform:translate(50%,-50%);z-index:30;display:grid;place-items:center;box-sizing:border-box;width:34px;height:34px;min-width:34px;padding:0;border:1px solid #94abc5;border-radius:10px;background:#fff;color:#244f7d;box-shadow:0 2px 9px #153b6326}
+.workspace .navigation-toggle:hover{background:#edf4fc;border-color:#5680ac;box-shadow:0 3px 12px #153b6330;filter:none}
+.workspace .navigation-toggle:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+.workspace .navigation-toggle svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.workspace .navigation-toggle .navigation-chevron{transform-origin:center;transition:transform 190ms cubic-bezier(.22,.7,.25,1)}
+.workspace.navigation-collapsed .navigation-chevron{transform:rotate(180deg)}
+.workspace.navigation-collapsed>.sidebar{padding:24px 12px 16px}
+.workspace.navigation-collapsed .brand-copy,.workspace.navigation-collapsed .nav-label,.workspace.navigation-collapsed .nav-text,.workspace.navigation-collapsed .navigation-foot{display:none}
+.workspace.navigation-collapsed .brand{justify-content:center}
+.workspace.navigation-collapsed .sidebar nav{margin-top:32px}
+.workspace.navigation-collapsed .dashboard-nav{justify-content:center;padding:12px 0}
+.workspace>main{padding:16px 25px 8px;gap:0}
+.workspace-toolbar{display:flex;align-items:center;justify-content:space-between;flex:none;gap:14px;min-height:34px;margin-bottom:15px}
+.workspace-breadcrumb{display:flex;align-items:center;gap:9px;min-width:0;color:#6c7f97;font-size:11px}
+.workspace-breadcrumb svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.workspace-tools{display:flex;align-items:center;gap:7px;flex:none}
+.workspace-tools .icon-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;height:30px;padding:0 9px;border:1px solid #d3deea;border-radius:8px;background:#fff;color:#405e7f;font-size:11px;box-shadow:none}
+.workspace-tools .icon-button svg{display:block;width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.workspace-tools .icon-button:hover{background:#edf3f9;border-color:#a6bbd3;box-shadow:none}
+@media(max-width:1150px) and (min-width:701px){.workspace{--navigation-width:194px}.workspace>.sidebar{padding-left:12px;padding-right:12px}.workspace>main{padding-left:23px;padding-right:15px}}
+@media(max-width:700px){.workspace,.workspace.navigation-collapsed{display:grid;grid-template-columns:72px minmax(0,1fr)}.workspace>.sidebar,.workspace.navigation-collapsed>.sidebar{position:relative;padding:18px 12px;border-right:1px solid #dbe3ed;border-bottom:0}.workspace .brand-copy,.workspace .nav-label,.workspace .nav-text,.workspace .navigation-foot{display:none}.workspace .brand{justify-content:center}.workspace .sidebar nav{display:grid;margin-top:28px}.workspace .dashboard-nav{width:100%;justify-content:center;padding:12px 0}.workspace>main{padding:12px 23px}.workspace-toolbar{gap:6px}.workspace-breadcrumb{font-size:10px;gap:5px}.workspace-tools .icon-button{width:29px;padding:0}.workspace-tools .tool-label{display:none}}
+@media(prefers-reduced-motion:reduce){.workspace .navigation-chevron{transition:none}}

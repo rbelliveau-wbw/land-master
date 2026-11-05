@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 
 const {chromium}=createRequire(import.meta.url)('playwright');
 const root=path.resolve('widgets/lot-sales-explorer/src/app');
-const styles=['sales','insights','insights-controls','insights-theme','insights-redesign','number-transitions']
+const styles=['sales','insights','insights-controls','insights-theme','insights-redesign','number-transitions','insights-navigation']
   .map(name=>fs.readFileSync(path.join(root,name+'.css'),'utf8')).join('\n');
 const engine=fs.readFileSync(path.join(root,'number-transitions.js'),'utf8');
 const browser=await chromium.launch({headless:true,channel:'chrome',ignoreDefaultArgs:['--hide-scrollbars']});

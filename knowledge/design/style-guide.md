@@ -85,12 +85,18 @@ disclosures and keyed rows, authorized refresh continuity, truthful inline
 save feedback, consistent overlays, changed-row highlights and actual progress
 meter transitions. Reuse the shared implementation across every module.
 
-Data Insights keeps branding, Refresh and Diagnostics in the sidebar, reclaiming
-the full-width shell header for report height. Use centered SVG action buttons
-stacked vertically at the top-right beside branding and above navigation,
-matching Forecast Manager's refresh icon. Refresh sits above Diagnostics; reserve
-branding height and horizontal clearance so neither label nor navigation overlaps.
-Keep connection status accessible without visible Connected text. Keep the
+November 5 user direction: Data Insights uses the approved **Quiet Workspace**
+navigation. Keep compact Land Master / Insights branding and two calm navigation
+rows in a light sidebar, with a subtle active fill and left indicator. Put
+Refresh and Diagnostics together at the right of the compact report breadcrumb
+toolbar; retain their existing native actions and accessible connection status.
+The menu starts open on each fresh load. Its centered SVG collapse button
+straddles the sidebar's right border halfway down, remains visible when collapsed,
+and opens the resulting icon rail. Icons retain accessible names and full-name
+tooltips. Use the shared motion engine for actual grid resizing and active-tab
+selection, honor reduced motion, and keep authorized reports, filters, scroll
+and focus mounted. This supersedes the earlier tools-beside-brand arrangement.
+Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All
 immediately after Hide Empty, before the space leading to Reset; its label describes the next action for visible

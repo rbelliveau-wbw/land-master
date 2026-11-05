@@ -1,3 +1,24 @@
+## Quiet Workspace Navigation — 1.6.24, November 5, 2026
+
+The approved Quiet Workspace shell uses compact branding, restrained navigation
+rows, SVG chart icons, and Refresh / Diagnostics in the report breadcrumb toolbar.
+The menu opens by default on every fresh load. Its 34px toggle straddles the
+sidebar border at mid-height, remains reachable in both states, and collapses
+the sidebar to a named icon rail. Collapse keeps the real reports, filters,
+scroll and focus mounted; it neither refreshes data nor changes dashboard scope.
+The shared motion engine resizes the real grid and moves the navigation
+selection, with immediate state under reduced motion. Keyboard arrows and
+Home/End move only among the actor's permitted dashboards.
+
+Changed sources: widget.html, insights-shell.js, new insights-navigation.css,
+the routing regression, desktop geometry/Forecasts regression and style guide;
+version metadata, immutable 1.6.24 and Development/Production mappings.
+Forms/fields, functions and Custom APIs: unchanged. Creator promotion: not
+required. Regression coverage includes default-open state, repeated collapse,
+border alignment and hit testing, mounted report/filter/scroll/focus retention,
+permitted tab navigation, reduced motion and existing desktop report geometry.
+Rollback: set Production lot-sales-explorer to 1.6.23 and rebuild Pages.
+
 ## Lot Sales click-only subdivision cards — 1.6.23, November 5, 2026
 
 Subdivision names open their anchored details only on click or native Enter/Space
