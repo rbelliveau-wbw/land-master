@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import vm from "node:vm";
 
 const widget = fs.readFileSync("widgets/proforma-manager/src/app/widget.html", "utf8");
 const termsStart = widget.indexOf("var terms='<div class=\"fgrid\">'");
@@ -40,3 +41,36 @@ assert.ok(terms.includes('Enter \\u201CNone\\u201D if there is no seller-side br
 assert.ok(terms.includes("Optional — leave blank if not known"), "optional Offer inputs must explain that blank is valid");
 
 console.log("Offer custom dates, calendar initialization, broker layout, optional guidance, and clean-load behavior passed.");
+
+// Execute the actual Offer display expressions, calculation and save builder.
+function offerFunction(name) {
+  const start=widget.indexOf('function '+name+'('),end=widget.indexOf('\nfunction ',start+1);
+  assert.ok(start>=0&&end>start,`${name} must be available`);
+  return widget.slice(start,end).split('\n/*')[0];
+}
+const propertyId='4410926000004947003';
+const offer={propertyIds:[propertyId],newProperties:[{Acres:'49.999998'}],Amount_Per_Acre:'15000.00',Assumed_Effective_Date:'2026-11-05'};
+const offerContext=vm.createContext({S:{ed:{id:'4410926000004947002',loi:offer},properties:[{ID:propertyId,Acres:'50'}]},l:offer});
+vm.runInContext(['num','round2','fmt$','fmtWhole$','stripMoney','byId','pendingPropertyRows','loiRecalcSummary','loiAgreementType','loiToday','dateToInputValue','dateToCreatorValue','buildLOIWorksheetPayload'].map(offerFunction).join('\n'),offerContext);
+offerContext.loiRecalcSummary();
+assert.equal(offer.Estimated_Price,'1499999.97','calculation retains the actual cent amount');
+assert.equal(offer.Total_Acres,'99.999998','property acreage retains its precision');
+const initialPrice=terms.match(/id="loiEstimatedPrice">'\+(.+?)\+'<\/div>'/);
+assert.ok(initialPrice,'initial Estimated Price display must be available');
+const livePrices=[...widget.matchAll(/\b(?:ep|nep|eep|cEp)\.textContent=([^;]+);/g)].map(match=>match[1]);
+assert.equal(livePrices.length,4,'cover field input, new/existing property and company-picker display updates');
+const displayExpressions=[initialPrice[1],...livePrices];
+for(const [raw,display] of [['1499999.97','$1,500,000'],['1499999.49','$1,499,999']]){
+  offer.Estimated_Price=raw;
+  for(const expression of displayExpressions){
+    assert.equal(vm.runInContext(expression,offerContext),display,'initial and refreshed Estimated Price displays round to the nearest dollar');
+    assert.equal(offer.Estimated_Price,raw,'formatting must leave the raw amount unchanged');
+  }
+}
+const offerPayload=offerContext.buildLOIWorksheetPayload(offer);
+assert.equal(offer.Estimated_Price,'1499999.97','save calculation retains cents after display rounding');
+assert.equal(offerPayload.Estimated_Price,'1499999.97','worksheet payload saves the actual cent amount');
+assert.equal(offerPayload.Amount_Per_Acre,'15000.00','unit-price input precision is preserved');
+assert.equal(offerPayload.Total_Acres,'99.999998','saved acreage precision is preserved');
+assert.equal(offer.Amount_Per_Acre,'15000.00','display formatting does not rewrite the editable unit price');
+console.log('Offer Estimated Price rounds only its initial/live displays; calculation and save payload preserve cents.');

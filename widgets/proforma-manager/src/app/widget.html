@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.140"></script>
-<script src="pf-save-audit.js?v=1.80.140"></script>
-<script src="pf-input-rules.js?v=1.80.140"></script>
-<script src="pf-input-validation.js?v=1.80.140"></script>
-<script src="pf-progress.js?v=1.80.140"></script>
+<script src="pf-save-verification.js?v=1.80.141"></script>
+<script src="pf-save-audit.js?v=1.80.141"></script>
+<script src="pf-input-rules.js?v=1.80.141"></script>
+<script src="pf-input-validation.js?v=1.80.141"></script>
+<script src="pf-progress.js?v=1.80.141"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.140">
-<script src="interaction-motion.js?v=1.80.140"></script>
-<script src="interaction-surfaces.js?v=1.80.140"></script>
-<script src="number-edit-commit.js?v=1.80.140"></script>
-<script src="number-transitions.js?v=1.80.140"></script>
-<script src="number-views.js?v=1.80.140"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.140">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.141">
+<script src="interaction-motion.js?v=1.80.141"></script>
+<script src="interaction-surfaces.js?v=1.80.141"></script>
+<script src="number-edit-commit.js?v=1.80.141"></script>
+<script src="number-transitions.js?v=1.80.141"></script>
+<script src="number-views.js?v=1.80.141"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.141">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.140"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.140">
-<script src="comments.js?v=1.80.140"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.140">
+<script src="budget-transfer-ui.js?v=1.80.141"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.141">
+<script src="comments.js?v=1.80.141"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.141">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1840,7 +1840,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.140"></script>
+<script src="success-feedback.js?v=1.80.141"></script>
 </head>
 <body>
 
@@ -2255,7 +2255,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.140";
+var PFW_VERSION="1.80.141";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -9595,7 +9595,7 @@ function paneLOI(){
     +fld("Earnest Money",loiMoney("Earnest_Money"))
     +fld("EM Due Days",loiInput("Earnest_Money_Due_Days","number"))
     +'<div class="fld"><label>Total Acres</label>'+loiAcreFieldHtml()+'<div class="hint" id="loiAcreHint">'+esc(loiAcreHintText())+'</div></div>'
-    +fld("Estimated Price",'<div class="ro-field" id="loiEstimatedPrice">'+fmt$(num(l.Estimated_Price))+'</div>')
+    +fld("Estimated Price",'<div class="ro-field" id="loiEstimatedPrice">'+fmtWhole$(num(l.Estimated_Price))+'</div>')
     +grp('Feasibility &amp; Extensions')
     +fld("Initial Feasibility Days",loiInput("Initial_Feasibility_Days","number"))
     +fld("Closing Days After Feasibility",loiInput("Closing_Days_After_Feasibility","number"))
@@ -10775,7 +10775,7 @@ function wireEditInputs(){
       }
       loiRecalcSummary();loiMarkDirty();
       var ta=document.getElementById("loiTotalAcres"),ep=document.getElementById("loiEstimatedPrice");
-      if(ta)refreshLoiAcreField();refreshLoiPriceField();if(ep)ep.textContent=fmt$(num(S.ed.loi.Estimated_Price));
+      if(ta)refreshLoiAcreField();refreshLoiPriceField();if(ep)ep.textContent=fmtWhole$(num(S.ed.loi.Estimated_Price));
       return;
     }
     var nsid=t.getAttribute&&t.getAttribute("data-loi-new-seller"),npid=t.getAttribute&&t.getAttribute("data-loi-new-property"),nfield=t.getAttribute&&t.getAttribute("data-loi-field");
@@ -10803,7 +10803,7 @@ function wireEditInputs(){
         loiRecalcSummary();loiMarkDirty();
         var nta=document.getElementById("loiTotalAcres"),nep=document.getElementById("loiEstimatedPrice");
         if(nta)refreshLoiAcreField();
-        if(nep)nep.textContent=fmt$(num(S.ed.loi.Estimated_Price));
+        if(nep)nep.textContent=fmtWhole$(num(S.ed.loi.Estimated_Price));
       }
       return;
     }
@@ -10835,7 +10835,7 @@ function wireEditInputs(){
           loiRecalcSummary();
           var eta=document.getElementById("loiTotalAcres"),eep=document.getElementById("loiEstimatedPrice");
           if(eta)refreshLoiAcreField();
-          if(eep)eep.textContent=fmt$(num(S.ed.loi.Estimated_Price));
+          if(eep)eep.textContent=fmtWhole$(num(S.ed.loi.Estimated_Price));
         }
         loiMarkDirty();
       }
@@ -10987,7 +10987,7 @@ function wireEditInputs(){
       loiRecalcSummary();loiMarkDirty();
       refreshLoiAcreField();
       var cEp=document.getElementById("loiEstimatedPrice");
-      if(cEp)cEp.textContent=fmt$(num(S.ed.loi.Estimated_Price));
+      if(cEp)cEp.textContent=fmtWhole$(num(S.ed.loi.Estimated_Price));
       return;
     }
     var pickField=t&&t.classList&&t.classList.contains("loi-pick")?t.getAttribute("data-loi-field"):null;

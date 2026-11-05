@@ -232,7 +232,9 @@ per-unit prices, modifications and transfer previews. The Pro Forma dashboard
 (cards, assumptions, scenarios, monthly tables and timeline details) and all Data
 Insights monetary values display the nearest whole dollar. Budget's main project
 list also rounds project/phase totals, preliminary/final summaries and per-lot
-amounts; Pro Forma's main list rounds Land Cost and Net Profit. Keep decimal precision
+amounts; Pro Forma's main list rounds Land Cost and Net Profit. Its Offer tab's
+read-only Estimated Price also shows the nearest dollar on initial render and
+live refreshes, preserving the exact calculated and saved amount. Keep decimal precision
 in editable controls and round only the final displayed aggregate; never change
 stored values, calculations or numeric exports to match the display.
 

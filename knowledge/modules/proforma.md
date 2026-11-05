@@ -1,3 +1,21 @@
+## Offer Estimated Price Display — 1.80.141, November 5, 2026
+
+The Offer tab's read-only Estimated Price rounds to the nearest dollar using
+the existing `fmtWhole$` formatter on initial render and all four live refresh
+paths. For example, 1499999.97 displays as **$1,500,000**. The worksheet model,
+acreage/rate calculations, editable inputs, native `LOI_Worksheet.Estimated_Price`
+payload and exports retain their existing precision and values. Existing number
+transitions and field-exit timing remain in place.
+
+Changed files: Proforma widget HTML/config, widget manifest, Offer controls
+regression, this module guide, currency style guidance, environment mapping and
+immutable 1.80.141 release. No forms, fields, functions or Custom API contracts
+change; no Creator publication is required. Regression checks exercise initial
+and live display rounding while calculation and save-payload cents remain exact.
+Required checks: `npm run validate` and `npm run build:pages`.
+PMP promotes Development and Production to 1.80.141. Rollback: map Production
+to 1.80.140 and redeploy Pages; no data rollback is needed.
+
 ## Pending Approval Resend — 1.80.140, November 5, 2026
 
 Pending approval cards show **Resend** immediately before **Save Note** for
