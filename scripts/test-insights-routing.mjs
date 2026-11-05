@@ -28,14 +28,33 @@ for(const key of ['budgets','__proto__','invalid']){const h=harness('?dashboard=
  h.c.InsightsShell.setAccess(both);h.node('search').value='Arroyo';h.node('matrixBody').innerHTML='<tr id="retainedSalesRow"><td>Current report</td></tr>';
  const row=h.node('retainedSalesRow'),events=h.events.length;h.node('matrixBody').scrollLeft=240;toggle.focus();
  assert.equal(toggle.getAttribute('aria-expanded'),'true','Each fresh shell starts expanded');
- h.c.getComputedStyle=()=>({gridTemplateColumns:workspace.classList.contains('navigation-collapsed')?'72px 928px':'218px 782px'});
- const motion=[];h.c.LMMotion={animate:(...args)=>motion.push(args)};
+ const motion=[],timeline=[];let activeAnimation=null;
+ h.c.getComputedStyle=node=>{
+  if(node!==workspace)return {opacity:workspace.classList.contains('navigation-collapsed')?'0':'1',transform:'none'};
+  const gridTemplateColumns=activeAnimation?.rendered||(workspace.classList.contains('navigation-collapsed')?'72px 928px':'218px 782px');
+  timeline.push({type:'read',value:gridTemplateColumns,animating:!!activeAnimation});return {gridTemplateColumns};
+ };
+ h.c.LMMotion={animate:(node,frames,duration)=>{
+  const animation={rendered:frames[0].gridTemplateColumns,cancel(){if(node===workspace)timeline.push({type:'cancel'});if(activeAnimation===animation)activeAnimation=null;}};
+  motion.push({node,frames,duration,animation});if(node===workspace)activeAnimation=animation;return animation;
+ }};
  await toggle.fire('click');
  assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(toggle.getAttribute('aria-label'),'Expand Menu');
  assert.equal(h.node('search').value,'Arroyo');assert.equal(h.node('matrixBody').scrollLeft,240);assert.equal(h.node('retainedSalesRow'),row);
  assert.equal(h.events.length,events,'Collapse never reloads or navigates a dashboard');assert.equal(h.document.activeElement,toggle);
- assert.equal(motion.length,1,'Grid resizing reuses the shared motion engine');
- await toggle.fire('click');assert.equal(toggle.getAttribute('aria-expanded'),'true');assert.equal(h.node('retainedSalesRow'),row);
+ const gridMotions=()=>motion.filter(entry=>entry.node===workspace);
+ assert.equal(gridMotions().length,1,'Grid resizing reuses the shared motion engine alongside child transitions');
+ assert.equal(gridMotions()[0].frames[0].gridTemplateColumns,'218px 782px');assert.equal(gridMotions()[0].frames[1].gridTemplateColumns,'72px 928px');assert.equal(gridMotions()[0].duration,230);
+ for(const [rendered,expanded,target]of [['151px 849px',true,'218px 782px'],['186px 814px',false,'72px 928px']]){
+  activeAnimation.rendered=rendered;timeline.length=0;
+  await toggle.fire('click');const latest=gridMotions().at(-1);
+  assert.equal(toggle.getAttribute('aria-expanded'),String(expanded));
+  assert.equal(latest.frames[0].gridTemplateColumns,rendered,'Rapid reversal starts at the visible intermediate grid');
+  assert.equal(latest.frames[1].gridTemplateColumns,target,'Rapid reversal reaches the real new endpoint, not the old animated value');
+  assert.deepEqual(timeline.map(entry=>entry.type),['read','cancel','read'],'Capture the visible grid before cancelling; measure the target after cancellation');
+  assert.equal(timeline[0].animating,true);assert.equal(timeline[2].animating,false);
+  assert.equal(h.node('retainedSalesRow'),row);assert.equal(h.node('search').value,'Arroyo');assert.equal(h.node('matrixBody').scrollLeft,240);assert.equal(h.document.activeElement,toggle);assert.equal(h.events.length,events);
+ }
  const navigation=h.node('insightsNavigation');let prevented=false;
  await navigation.fire('keydown',{key:'ArrowDown',target:h.node('salesTab'),preventDefault(){prevented=true;}});
  assert.equal(prevented,true);assert.equal(h.c.InsightsShell.current(),'forecasts');assert.equal(h.document.activeElement,h.node('forecastsTab'));

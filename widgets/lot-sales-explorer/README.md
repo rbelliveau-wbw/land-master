@@ -235,3 +235,26 @@ Changed files: `src/app/sales-app.js`, `sales-model.js`, `creator-adapter.js`, `
 Regression: January 31/February 1 rollover, leap February, fiscal initial/reset/to-date ranges, calendar and rolling alternatives, exact custom months, WFY month selection and navigation, complete-history gating, forecast totals and permissions, CSV, full repository validation and Pages build. Numeric/interaction transitions retain the existing shared adoption. Rollback: map production lot-sales-explorer to 1.6.16 and rebuild Pages.
 
 Focused desktop WFY browser verification passed with no page errors. The broader Forecasts browser run reached its existing 346-phase performance assertion and measured a 61.1 ms synchronous switch against a 60 ms limit on this host; it was not a complete pass. The focused WFY browser check has no performance-threshold exception.
+
+## 1.6.27 Smooth sidebar motion
+
+Collapse and expand coordinate the real grid, clipped label fades and bottom
+tool movement through the shared 230ms motion engine. Branding and navigation
+icons keep their positions and the label rows keep their heights. Rapid opposite
+toggles begin at the current rendered position, cancel old effects before
+measuring the real new endpoint, and settle without snapping. ARIA labels and
+expanded state update immediately; reduced motion applies the final layout.
+Report scrollers contain their layout and paint to bound work on large matrices.
+
+Changed files: `src/app/insights-shell.js`, `insights-navigation.css`, versioned
+`widget.html`, widget config, widget/deployment manifests, the routing regression,
+the general style guide, this README, and immutable release `1.6.27`. Creator
+forms, fields, functions and Custom APIs are unchanged; no Creator deployment
+is required. Both dashboards, filters, row identity, scroll and focus remain
+mounted, with no reads, calculations or report builds triggered by a toggle.
+
+Regression: expand/collapse in both directions, interrupted reversal endpoints,
+intermediate grid and label geometry, stationary navigation rows, centered border
+control, retained report/filter/scroll/focus, reduced motion, repository validation
+and Pages build. Rollback: map production `lot-sales-explorer` to `1.6.25` and
+rebuild Pages; the permanent Insights URL stays unchanged.

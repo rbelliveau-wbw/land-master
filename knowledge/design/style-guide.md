@@ -99,6 +99,13 @@ and opens the resulting icon rail. Icons retain accessible names and full-name
 tooltips. Use the shared motion engine for actual grid resizing and active-tab
 selection, honor reduced motion, and keep authorized reports, filters, scroll
 and focus mounted. This supersedes the earlier tools-beside-brand arrangement.
+November 5 motion refinement: keep sidebar icon positions and label-row heights
+stable while the grid resizes. Clip and fade labels rather than removing them
+from layout. Reserve the bottom tools' full height and move their icons with the
+same shared 230ms easing. On reversal, capture the visible animation first,
+cancel its effects, then measure the new CSS endpoint. Never measure the new
+target through an old animation or rebuild a report to resize navigation.
+Keep layout and paint contained within the report scrollers during resizing.
 Keep the
 timeframe and active filter pills together on a compact navy report bar. Avoid
 repeating the selected date range in another pill. Put Expand All / Collapse All

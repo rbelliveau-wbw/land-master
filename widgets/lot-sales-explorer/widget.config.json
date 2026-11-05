@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.6.25",
-  "description": "Quiet Workspace navigation, open by default, with a centered border-mounted collapse control and persistent mounted reports.",
+  "version": "1.6.27",
+  "description": "Smooth, reversible Quiet Workspace sidebar motion with stable icons, clipped label fades and retained mounted reports.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "b12995056f73e1418e77c2d1abdcd754010984c5275b304efe6654a80556456f",
+  "source_sha256": "3c615f7514f52412457006090d883a8c59222ba651b17ce74446435425e29ca5",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

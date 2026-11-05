@@ -3,15 +3,23 @@
   let dashboard=null,connected=false,access=null,route={dashboard:new URLSearchParams(location.search).get('dashboard')||'',projectId:new URLSearchParams(location.search).get('projectId')||''};
   const names={sales:'Lot Sales',forecasts:'Forecasts'};
   const workspace=document.querySelector('.workspace'),navigation=document.getElementById('insightsNavigation'),navigationToggle=document.getElementById('navigationToggle');
+  let navigationMotions=[];
   function setNavigationExpanded(expanded,animate=false){
     if(!workspace||!navigationToggle)return;
-    const before=animate?window.getComputedStyle?.(workspace).gridTemplateColumns:null;
+    const parts=animate&&window.getComputedStyle?[workspace,...workspace.querySelectorAll('.brand-copy,.nav-label,.nav-text,.sidebar-tools .icon-button')]:[];
+    const frame=node=>{const style=window.getComputedStyle(node);return node===workspace?{gridTemplateColumns:style.gridTemplateColumns}:{opacity:style.opacity,transform:style.transform};};
+    const before=parts.map(frame);
+    // Read the visible position first, then release old effects before measuring
+    // the new CSS endpoint. Reversing mid-flight must never target an old effect.
+    navigationMotions.forEach(motion=>motion?.cancel());navigationMotions=[];
     workspace.classList.toggle('navigation-collapsed',!expanded);
     navigationToggle.setAttribute('aria-expanded',String(expanded));
     navigationToggle.setAttribute('aria-label',expanded?'Collapse Menu':'Expand Menu');
     navigationToggle.title=expanded?'Collapse Menu':'Expand Menu';
-    // Resize the real grid through the shared engine; keep both reports mounted.
-    if(before)window.LMMotion?.animate(workspace,[{gridTemplateColumns:before},{gridTemplateColumns:window.getComputedStyle(workspace).gridTemplateColumns}],230);
+    // One shared easing for the real grid, clipped labels and bottom tools.
+    // Neither report is rebuilt or moved out of its existing scroller.
+    const after=parts.map(frame);
+    navigationMotions=parts.map((node,index)=>window.LMMotion?.animate(node,[before[index],after[index]],230)).filter(Boolean);
   }
   setNavigationExpanded(true);
   navigationToggle?.addEventListener('click',()=>setNavigationExpanded(navigationToggle.getAttribute('aria-expanded')!=='true',true));
