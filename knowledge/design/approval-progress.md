@@ -163,3 +163,10 @@ Refresh the exact parent route again before recipient confirmation; preserve
 completed/read-only history, local inline repaints, actor/modal scope and the
 existing native Send/Check/Repair flow. These business preconditions do not
 change save acknowledgement handling or introduce post-save field comparisons.
+
+## Pro Forma Resend Placement — November 5, 2026
+
+Pending Pro Forma cards place **Resend** before **Save Note** in the approval
+action row. Users with scoped send access but no approval-edit permission see
+Resend alone. Both reuse the existing resend handler; this presentation change
+does not change resend progress, delivery verification or Settings routing.

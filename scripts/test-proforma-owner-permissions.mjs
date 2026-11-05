@@ -39,3 +39,56 @@ assert.equal(retiredResult.success,false);
 assert.match(retiredResult.message,/Settings/);
 assert.doesNotMatch(widget,/function canConfigureProformaApprovalsFor|data-pf-appr-recipient=/);
 console.log('Legacy recipient editing is retired; Settings owns new routes.');
+
+// Exercise the actual approval-card renderer: approvers must see Resend beside
+// Save Note, while the existing sender-only card keeps the same action.
+const approvalHost={innerHTML:''};
+const approvalContext={
+ S:{proformas:[],approvals:[],currentUser:'ceo@example.com',approvalBusy:false},
+ permissions:{},
+ perms(){return approvalContext.permissions;},
+ userOwnsPf:r=>!!r?.mine,
+ document:{querySelector(){return approvalHost;}},
+ lookupId:v=>typeof v==='object'?v?.ID:v,
+ intN:v=>Number(v)||0,
+ esc:v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'),
+ proformaSendApprovalsGate(){return {can:false};},
+ sendApprovalsWhyIcon(){return '';},
+};
+vm.createContext(approvalContext);
+for(const name of ['approvalText','approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','approvalUserPart','userOwnsProformaApproval','canEditProformaApprovalRow','canViewProformaApprovals','canSendProformaApprovalsFor','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','renderApprovalPane']){
+ const start=widget.indexOf('function '+name+'('),end=widget.indexOf('\nfunction ',start+1);
+ assert.ok(start>=0&&end>start,`${name} must be available for approval rendering`);
+ vm.runInContext(widget.slice(start,end).split('\n/*')[0],approvalContext);
+}
+const pfId='9007199254740993123',approvalId='9007199254740993456';
+function approvalCard({permissions={apprAll:true},status='Pending',mine=true,email='ceo@example.com',busy=false}={}){
+ approvalContext.permissions=permissions;
+ const pf={ID:pfId,mine,Status:'Pending Approval'};
+ approvalContext.S.proformas=[pf];approvalContext.S.ed={model:pf};approvalContext.S.approvalBusy=busy;
+ approvalContext.S.approvals=[{ID:approvalId,Proforma:{ID:pfId,display_value:'Saved Pro Forma'},Title:'CEO',Approver:email,Sort_Order:4,Status:status,Approval_Notes:'Existing note',Sent_Date:'11/04/2026'}];
+ approvalContext.renderApprovalPane();return approvalHost.innerHTML;
+}
+for(const permissions of [{apprAll:true},{apprOwned:true}]){
+ const card=approvalCard({permissions});
+ assert.equal((card.match(/data-pf-appr-resend=/g)||[]).length,1,'editable Pending approval shows one resend action');
+ assert.ok(card.indexOf('data-pf-appr-resend=')<card.indexOf('>Save Note</button>'),'Resend is before Save Note');
+ assert.match(card,new RegExp('data-pf-appr-resend="'+approvalId+'" data-pf-id="'+pfId+'"'),'resend retains exact string identities');
+ assert.match(card,/>Resend</,'action uses the requested concise label');
+ for(const action of ['Save Note','Approve','Reject'])assert.ok(card.includes('>'+action+'</button>'),`${action} remains available`);
+ assert.match(card,/>Existing note<\/textarea>/,'the saved note remains visible');
+}
+const senderCard=approvalCard({permissions:{sendApprovals:true}});
+assert.match(senderCard,/data-pf-appr-resend=/,'authorized owner/sender retains resend without approval editing');
+assert.doesNotMatch(senderCard,/data-pf-appr-action=/,'sender permission does not grant approval actions');
+for(const input of [
+ {permissions:{editOwned:true}},
+ {permissions:{apprOwned:true},email:'someoneelse@example.com'},
+ {permissions:{sendApprovals:true},mine:false},
+ {status:'Approved'},
+ {status:'Not Sent'},
+ {status:'Rejected'},
+])assert.doesNotMatch(approvalCard(input),/data-pf-appr-resend=/,`resend is unavailable for ${JSON.stringify(input)}`);
+assert.match(approvalCard({busy:true}),/class="pf-appr-panel pf-appr-busy"/,'the action remains under the existing approval busy interaction guard');
+assert.match(widget,/var resend=e\.target\.closest&&e\.target\.closest\("\[data-pf-appr-resend\]"\);if\(resend\)\{runResendProformaApproval\(resend\.getAttribute\("data-pf-id"\),resend\.getAttribute\("data-pf-appr-resend"\)\);return;\}/,'the rendered button uses the existing resend handler');
+console.log('Pro Forma Resend renders beside approval actions and retains pending-row permissions.');

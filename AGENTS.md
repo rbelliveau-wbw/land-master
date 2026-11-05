@@ -32,7 +32,9 @@ Chat history and model memory are not authoritative.
 
 ## Release shorthand
 
-- User direction October 14, 2026: a message containing only `PMP`, in all caps,
+- User direction November 5, 2026: `PMP` in a request means push to main and
+  prod, including when appended to another instruction (for example,
+  `add a Resend button -- PMP`). A standalone `PMP` has the same meaning. This
   means **push to main and prod in the repository, and leave Creator changes for
   the user to promote**. Apply the repository commit, immutable release,
   environment mapping, validation and deployment monitoring steps below. Do not

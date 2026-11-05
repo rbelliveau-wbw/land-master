@@ -1,3 +1,23 @@
+## Pending Approval Resend — 1.80.140, November 5, 2026
+
+Pending approval cards show **Resend** immediately before **Save Note** for
+authorized approvers. Users with scoped send access retain the standalone
+Resend action. Both appearances reuse the existing pending-row permission gate,
+delegated click handler and `Send_Proforma_Approval_Email` Custom API. Notes,
+approval status, Settings routing, email/PDF content and LOI behavior are retained.
+
+This frontend release changes no Creator forms, fields, functions or API
+contracts, and requires no Creator publication. Regression coverage exercises
+editable and sender-only pending cards, denied/non-pending rows, exact string
+IDs and placement before Save Note. No live approval email is sent for testing.
+Required validation: `npm run validate` and `npm run build:pages`.
+Development and Production are promoted to 1.80.140 under PMP. Rollback: map
+Production back to 1.80.139 and redeploy Pages.
+
+Changed files: the Proforma widget HTML/config, widget manifest, approval
+renderer regression, this module guide, approval-progress guide, release
+shorthand in AGENTS.md, environment mapping and immutable 1.80.140 package.
+
 ## Calculated Currency Display — November 4, 2026
 
 Calculated Lot Price and per-unit Additional Cost inputs keep a single visible
