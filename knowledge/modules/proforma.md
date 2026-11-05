@@ -920,7 +920,50 @@ Current known LOI Writer merge template ID:
 6kuqna9b27e6fe95b4f75a3920de1ff048543
 ```
 
-Connection name: `zoho_writer`.
+Connection name: `zoho_writer_admin` (shared administrator authorization).
+
+### Writer Connection Failure — November 5, 2026
+
+Production Submit to Legal failed for a different signed-in user with
+`LOI generation failed during writer_merge: Invalid Connection`. The fields GET
+also failed at line 545. Live Creator references confirmed that
+`PF_Build_LOI_Document` in Development, Stage and Production used `zoho_writer`.
+That connection has **Logged-in users** as Authorization Owner and separate
+authorization per environment. Its Production authorization list contained only
+Robby Belliveau; it did not supply personal Writer authorization for the other
+submitting user. A connected administrator's personal connection is not a shared
+authorization for every signed-in user.
+
+Live Creator also confirmed the existing `zoho_writer_admin` connection:
+Administrator authorization owner, same authorization for all environments,
+authorized account **Zoho Writer Account**, and Land Master Connection Access
+already On. The helper's fields GET and merge POST now both use that existing
+shared connection, and its audit entry records the same link name. No connection
+was created, reauthorized or given additional scopes, and Submit to Legal's
+permission, approval and locking checks remain in place.
+
+Changed files: the Writer helper, its existing document-export regression, and
+this guide. No form, field, Custom API interface or widget release changes are
+required. Save/compile `PF_Build_LOI_Document` in Development and publish it to
+Production before retesting as the affected user. A repository push alone does
+not fix the Production connection reference. Offline checks verify both calls
+use the shared authorization and preserve document/export boundaries; they do
+not establish a successful live Writer request for another user. Do not run a
+real merge or Submit to Legal solely as a connectivity probe.
+
+The Development function was saved/compiled, reloaded, and compared with this
+source on November 5. Its normalized source matched exactly, with three shared
+connection references and no personal connection reference. Isolated Stage
+version **9.147 — Use shared Writer authorization** contains only this function.
+Production publication and deletion of the old connection require completion
+and verification separately; Development/Stage changes do not remove Production
+references.
+
+Rollback before deleting the old connection: restore the helper's preceding
+source and republish Creator. After deletion, reverting to that source would
+also require recreating and authorizing the old per-user connection. The
+approved PSA-without-document change is a separate, paused draft; this repair
+does not change agreement or template behavior.
 
 ## Primary action
 

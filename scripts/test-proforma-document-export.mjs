@@ -31,6 +31,13 @@ assert.ok(helper.includes('rPropCity = propertyCities.toString(", ")'),'duplicat
 assert.ok(endpoint.indexOf('"format"')<endpoint.indexOf('if(approvalId == "")'),'Word export does not require approvals');
 assert.ok(!/insert into|sendmail|\.Status\s*=/.test(helper+endpoint),'download never creates contracts or sends messages');
 assert.ok(submit.includes('thisapp.PF_Build_LOI_Document(proformaId)'),'submission shares template merge implementation');
+// Writer is an app integration: another authorized submitter must not need a personal Writer login.
+// Assert both external requests use the existing shared admin authorization; no user fallback.
+const writerRequests=[...helper.matchAll(/invokeurl\s*\[([^\]]+)\]/g)].map(match=>match[1]).filter(body=>body.includes('zohoapis.com/writer/'));
+assert.equal(writerRequests.length,2,'Template fields and DOCX merge must use the same shared Writer connection');
+for(const request of writerRequests)assert.match(request,/connection\s*:\s*"zoho_writer_admin"/);
+assert.doesNotMatch(helper,/connection\s*:\s*"zoho_writer"/,'Personal Writer authorization cannot be the shared submission path');
+assert.match(submit,/legalAccess\.Submit_to_Legal_Module != true/,'Shared Writer authorization retains the Submit to Legal permission gate');
 assert.ok(helper.includes('pf.Authorized_Signer_for_Seller'));
 assert.ok(widget.includes('data-export="docx"'));
 assert.ok(widget.includes('PRESERVE_EMPTY_HEADER_FIELDS={Authorized_Signer_for_Seller:1}'),'clearing signer stays in save payload');

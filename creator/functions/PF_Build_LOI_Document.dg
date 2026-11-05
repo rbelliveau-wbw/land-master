@@ -544,7 +544,7 @@
             [
                 url :"https://www.zohoapis.com/writer/api/v1/documents/" + writerDocumentId + "/fields"
                 type :GET
-                connection:"zoho_writer"
+                connection:"zoho_writer_admin"
             ];
             writerMergeFields = writerFieldsResponse.get("merge");
             if(writerMergeFields == null)
@@ -690,7 +690,7 @@
         writerEntry.put("level","info");
         writerEntry.put("stage",stage);
         writerEntry.put("message","Calling Zoho Writer merge API");
-        writerEntry.put("meta",{"writerDocumentId":writerDocumentId,"connection":"zoho_writer","fileBaseName":fileBaseName,"testMode":false});
+        writerEntry.put("meta",{"writerDocumentId":writerDocumentId,"connection":"zoho_writer_admin","fileBaseName":fileBaseName,"testMode":false});
         trace.add(writerEntry);
         if(auditId == "")
         {
@@ -704,7 +704,7 @@
             url :"https://www.zohoapis.com/writer/api/v1/documents/" + writerDocumentId + "/merge"
             type :POST
             parameters:params
-            connection:"zoho_writer"
+            connection:"zoho_writer_admin"
         ];
         if(isFile(mergedFile) == false)
         {
