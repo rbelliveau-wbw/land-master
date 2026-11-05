@@ -22,9 +22,9 @@ const names=['cleanVal','isObj','rawPath','firstRaw','lookupId','lookupName','v'
   'budgetRequest','responseLooksBad','isUpdateSuccess','budgetMutationError','getUpdateReportCandidates','sdkUpdateRecord','invalidateBudgetTransport','invalidateBudgetReports',
   'budgetFeature','invalidateBudgetFeature','loadBudgetFeature','budgetFeatureStateHtml','budgetMeasured','budgetBadgeScope','resetBudgetBadgeSummaries','scheduleBudgetBadgeSummaries',
   'groupLandingCategories','validateLandingCategoryRows','loadAll','boot','perms','canViewImportItems','canEditImportItems','budgetNavigationToken','budgetNavigationCurrent',
-  'importSubCode','importSubName','subdivisionNameForCode','normSubCode','importItemCode','importMajorCode','importMinorCode','importDataSource','importItemDesc','importItemCost',
+  'importSubCode','importSubName','subdivisionNameForCode','normSubCode','cssEsc','importItemCode','importMajorCode','importMinorCode','importDataSource','importItemDesc','importItemCost',
   'importAssignedItem','importIsMissing','importNativeBudgetCode','importAssignedBudgetCode','importHasDifferentCode','budgetItemLabel','loadImportItems','loadAllBudgetItemsForAssign','openImportsTab','importFilteredSorted','importDistinct','populateImportFilter',
-  'syncImportAssignmentFilters','renderImports','importAssignCellHtml','importAssignSelectHtml','budgetItemsForSubCode','budgetItemSubCode','assignImportItem','budgetBadgeCount','syncBudgetImportBadge','updateImportsTabVisibility'];
+  'syncImportAssignmentFilters','renderImports','importAssignCellHtml','importAssignSelectHtml','budgetItemsForSubCode','budgetItemSubCode','loadItemsForSubCode','assignImportItem','budgetBadgeCount','syncBudgetImportBadge','updateImportsTabVisibility'];
 function fixture(id,budgetItem=null,extra={}){return {ID:id,Code:'1000',Cost_Code_Description:'Native fixture',Subdivision_Code:'AV',Major_Code:'1000',Minor_Code:'010',Data_Source:'Great Plains',Budget_Item:budgetItem,...extra};}
 function harness({view=true,edit=false}={}){
   const calls=[],events=[],timers=new Map(),nodes={},messages=[],prefetches=[];
@@ -75,7 +75,7 @@ function harness({view=true,edit=false}={}){
   c.renderImports=()=>{c.syncBudgetImportBadge();node('importMissingCt').textContent=workspace.rows().filter(c.importIsMissing).length;};
   function runTimers(){for(const [id,t]of [...timers])if(t.delay===0){timers.delete(id);t.callback();}}
   function imports(){return calls.filter(call=>call.config.report_name===reports.importItems&&call.kind!=='write');}
-  return {c,workspace,calls,data,gate,nodes,node,events,messages,prefetches,runTimers,imports,renderCount:()=>renders};
+  return {c,workspace,calls,data,gate,nodes,node,events,messages,prefetches,runtime,runTimers,imports,renderCount:()=>renders};
 }
 
 // Native lookup forms and record IDs keep the existing assignment contract.
@@ -89,7 +89,7 @@ function harness({view=true,edit=false}={}){
   assert.notEqual(c.importAssignedItem(fixture(IID,{ID:ITEM})).id,c.importAssignedItem(fixture(IID,{ID:OTHER})).id);
 }
 
-// The actual boot never reads imports. Opening the tab still waits for explicit subdivision selection.
+// Startup stays lean; opening the tab reads every authorized subdivision and every native page.
 {
   const h=harness({edit:true}),g=deferred();h.gate.records=g;h.gate.pageSize=80;
   h.data[reports.importItems]=Array.from({length:127},(_,index)=>fixture(String(BigInt(IID)+BigInt(index))));
@@ -98,64 +98,65 @@ function harness({view=true,edit=false}={}){
   assert.ok(h.c.LMPerf.snapshot().events.some(event=>event.name==='budget:first-usable'));
   assert.equal(h.node('importCt').textContent,'—');h.runTimers();await settle();
   assert.equal(h.c.budgetFeature('imports').status,'idle');assert.equal(h.imports().length,0,'Background badge work cannot fetch imports');
-  await h.c.openImportsTab();assert.equal(h.imports().length,0,'The tab requires a selected subdivision');
   assert.equal(h.calls.filter(call=>call.config.report_name===reports.items).length,0,'background badge does not fetch the assignment roster');
   assert.deepEqual(h.prefetches,[],'background badge does not prefetch subdivision item choices');
-  h.c.S.importUI.subdivision='AV';const open=h.c.openImportsTab();await settle();assert.equal(h.node('importCt').textContent,'—');
+  const open=h.c.openImportsTab();await settle();assert.equal(h.node('importCt').textContent,'—');
   g.resolve();await open;await settle();
-  assert.equal(h.node('importCt').textContent,'127','Subdivision missing counts above 99 remain exact');assert.equal(h.node('importCt').title,'AV · Missing Items');
-  assert.equal(h.workspace.rows().length,129);assert.equal(h.c.S.importItems.length,0,'Editor imports are not replaced with a partial subdivision snapshot');
+  assert.equal(h.node('importCt').textContent,'128','Database-wide missing counts above 99 include the second subdivision');assert.equal(h.node('importCt').title,'All Subdivisions · Missing Items');
+  assert.equal(h.workspace.rows().length,130);assert.equal(h.c.S.importItems.length,0,'Workspace imports never replace the separately loaded editor snapshot');
   assert.deepEqual(h.imports().map(call=>call.kind),['count','read','read']);
-  for(const call of h.imports()){assert.equal(call.config.criteria,'(Subdivision_Code == "AV")','Every native count and page uses the required subdivision');if(call.kind==='read')assert.equal(call.config.field_config,'all');}
+  for(const call of h.imports()){assert.equal(call.config.criteria,undefined,'Every global count and page omits subdivision criteria');if(call.kind==='read')assert.equal(call.config.field_config,'all');}
   assert.equal(h.imports()[2].config.record_cursor,'80');assert.equal(h.renderCount(),1,'background completion patches the tab badge without rebuilding the landing');
-  const before=h.imports().length;await h.c.openImportsTab();assert.equal(h.imports().length,before,'Reopening reuses the complete subdivision snapshot');
-  const itemReads=h.calls.filter(call=>call.config.report_name===reports.items);assert.ok(itemReads.length>0);assert.ok(itemReads.every(call=>call.config.criteria==='(Budget.Subdivision_Code == "AV")'),'Budget Item choices and fields never use a global roster');
+  assert.equal(h.workspace.rows().at(-1).Subdivision_Code,'OTHER','The last page contributes another subdivision');
+  const before=h.imports().length;await h.c.openImportsTab();assert.equal(h.imports().length,before,'Reopening reuses the complete database snapshot');
+  const itemReads=h.calls.filter(call=>call.config.report_name===reports.items);assert.ok(itemReads.length>0);assert.ok(itemReads.every(call=>call.config.criteria===undefined),'Global code review reads the complete authorized item roster');
 }
 
-// View-only/edit-only access remains supported, while denied and unselected users perform no reads.
+// View-only/edit-only access supports the global tab; denied users perform no financial reads.
 for(const permission of [{view:true,edit:false},{view:false,edit:true},{view:false,edit:false}]){
   const h=harness(permission);await h.c.boot();h.runTimers();await settle();
   const allowed=permission.view||permission.edit;
   assert.equal(h.node('importsTabLink').style.display,allowed?'':'none');assert.equal(h.imports().length,0);
   assert.equal(h.calls.filter(call=>call.config.report_name===reports.items).length,0);
-  assert.equal(h.node('importCt').textContent,'—');h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  assert.equal(h.node('importCt').textContent,'—');await h.c.openImportsTab();
   if(allowed){assert.equal(h.node('importCt').textContent,'1');assert.equal(h.imports().length,2);}
   else {assert.equal(h.imports().length,0);assert.equal(h.c.S.view,'vBudgets');}
 }
 
 // Empty native reports and reports containing only assigned rows publish an explicit zero.
 for(const rows of [[],[fixture(IID,{ID:ITEM})]]){
-  const h=harness();h.data[reports.importItems]=rows;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
-  assert.equal(h.node('importCt').textContent,'0');assert.equal(h.node('importCt').title,'AV · Missing Items');
+  const h=harness();h.data[reports.importItems]=rows;await h.c.boot();h.runTimers();await settle();await h.c.openImportsTab();
+  assert.equal(h.node('importCt').textContent,'0');assert.equal(h.node('importCt').title,'All Subdivisions · Missing Items');
   assert.equal(h.imports().filter(call=>call.kind==='read').length,rows.length?1:0,'a confirmed empty native report requires no pages');
 }
 
-// Concurrent selected-tab opens deduplicate the complete native counted request.
+// Concurrent global-tab opens deduplicate the complete native counted request.
 {
-  const h=harness(),g=deferred();h.gate.count=g;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';
+  const h=harness(),g=deferred();h.gate.count=g;await h.c.boot();h.runTimers();await settle();
   const open=h.c.openImportsTab(),duplicate=h.c.openImportsTab();await settle();assert.equal(h.imports().length,1);assert.equal(h.node('importCt').textContent,'—');
   g.resolve();await Promise.all([open,duplicate]);await settle();
   assert.deepEqual(h.imports().map(call=>call.kind),['count','read']);assert.equal(h.node('importCt').textContent,'1');
-  assert.ok(h.calls.filter(call=>call.config.report_name===reports.items).every(call=>call.config.criteria==='(Budget.Subdivision_Code == "AV")'));
+  assert.ok(h.calls.filter(call=>call.config.report_name===reports.items).every(call=>call.config.criteria===undefined));
 }
 
 // Permission and incomplete-page failures remain visibly unavailable and can retry through the actual tab.
 for(const failure of ['denied','incomplete']){
-  const h=harness();h.gate[failure]=true;await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  const h=harness();h.gate[failure]=true;await h.c.boot();h.runTimers();await settle();await h.c.openImportsTab();
   assert.equal(h.c.S.startupReady,true);assert.equal(h.node('importCt').textContent,'—');assert.equal(h.workspace.rows().length,0);assert.equal(h.renderCount(),1);
   h.gate[failure]=false;await h.c.openImportsTab();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.workspace.rows().length,1);
 }
 
 // Native assignment acknowledgement updates the full missing count even with every view filter active.
 {
-  const h=harness({edit:true});h.data[reports.importItems]=[fixture(IID),fixture('4410926000009999902'),fixture('4410926000009999903',{ID:OTHER})];
-  await h.c.boot();h.runTimers();await settle();h.c.S.importUI.subdivision='AV';await h.c.openImportsTab();
+  const h=harness({edit:true});h.data[reports.importItems]=[fixture(IID),fixture('4410926000009999902'),fixture('4410926000009999903',{ID:OTHER},{Subdivision_Code:'OTHER'})];
+  await h.c.boot();h.runTimers();await settle();await h.c.openImportsTab();
   Object.assign(h.c.S.importUI,{search:'no matching description',major:'9999',minor:'999',source:'HeavyJob',missingOnly:true});h.c.renderImports();
   assert.equal(h.c.importFilteredSorted().length,0);assert.equal(h.node('importCt').textContent,'2','filters never reduce the tab count');
   const g=deferred();h.gate.write=g;const classes=new Set(),select={classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)}};
   h.c.assignImportItem(IID,ITEM,select);await settle();assert.equal(h.node('importCt').textContent,'2','pending assignment does not decrement the count');assert.ok(classes.has('saving'));
-  g.resolve();await settle();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.node('importCt').title,'AV · Missing Items');
+  g.resolve();await settle();assert.equal(h.node('importCt').textContent,'1');assert.equal(h.node('importCt').title,'All Subdivisions · Missing Items');
   assert.equal(h.c.importAssignedItem(h.workspace.rows()[0]).id,ITEM);assert.equal(h.node('importMissingCt').textContent,1);
+  assert.deepEqual(h.messages.filter(Boolean),[],'A successful native assignment, rerender and focus restoration never report an error');
   const write=h.calls.find(call=>call.kind==='write');assert.equal(write.config.report_name,reports.importItems);assert.equal(write.config.id,IID);
   assert.deepEqual(write.config.payload,{data:{Budget_Item:ITEM}},'native assignment preserves exact string identity');
   h.gate.write=null;h.gate.writeDenied=true;h.c.assignImportItem('4410926000009999902',ITEM,select);await settle();
@@ -163,4 +164,41 @@ for(const failure of ['denied','incomplete']){
   assert.ok(h.messages.some(message=>/Could not assign Budget Item/.test(message)));
 }
 
-console.log('Budget Import counts: no startup reads, subdivision-scoped native pagination, exact zero/large counts, permissions, retries/dedup and confirmed assignment updates passed.');
+// Global visibility never relaxes the native per-row subdivision assignment restriction.
+{
+  const h=harness({edit:true});
+  h.data[reports.importItems]=[fixture(IID),fixture('4410926000009999902',null,{Subdivision_Code:'OTHER'})];
+  h.data[reports.items].push({ID:OTHER,Budget_Code:'OTHER-010',Item_Name:'Other subdivision item',Subdivision_Code:'OTHER'});
+  await h.c.openImportsTab();
+  assert.deepEqual(plain(h.c.budgetItemsForSubCode('AV')).map(item=>item.ID),[ITEM]);
+  assert.deepEqual(plain(h.c.budgetItemsForSubCode('OTHER')).map(item=>item.ID),[OTHER]);
+  assert.deepEqual(plain(h.c.budgetItemsForSubCode('UNKNOWN')),[],'Unknown subdivisions cannot fall back to the global item roster');
+  h.c.assignImportItem(IID,OTHER,null);await settle();
+  assert.equal(h.calls.filter(call=>call.kind==='write').length,0,'A global list cannot map an import to another subdivision');
+  h.c.assignImportItem('4410926000009999902',OTHER,null);await settle();
+  assert.equal(h.c.importAssignedItem(h.workspace.rows()[1]).id,OTHER);
+  assert.equal(h.node('importCt').textContent,'1','Assigning the second subdivision updates the global missing count');
+}
+
+// Lazy native candidates retain exact subdivision criteria and never leak across actor changes.
+{
+  const h=harness({edit:true}),old=deferred(),fresh=deferred(),reads=[];
+  h.c.sdkGetAllRecords=(report,criteria,options)=>{reads.push({report,criteria,options});return reads.length===1?old.promise:fresh.promise;};
+  const pending=h.c.loadItemsForSubCode('AV'),rejected=assert.rejects(pending,/superseded/);
+  assert.equal(reads[0].criteria,'(Budget.Subdivision_Code == "AV")');
+  h.runtime.user='new-native-session';assert.equal(reads[0].options.isCancelled(),true);
+  const next=h.c.loadItemsForSubCode('AV');assert.equal(reads.length,2,'A new actor cannot reuse the previous candidate request');
+  const current=[{ID:OTHER,Subdivision_Code:'AV',Budget_Code:'AV-010'}];fresh.resolve(current);await next;
+  old.resolve([{ID:ITEM,Subdivision_Code:'AV'}]);await rejected;
+  assert.equal(h.c.S.itemsBySubCode.av,current,'An older actor cannot overwrite the current candidate cache');
+  assert.equal(reads[1].options.isCancelled(),false);h.c.S.perms.editImports=false;assert.equal(reads[1].options.isCancelled(),true,'Lost edit permission cancels candidate reads');
+}
+for(const failure of ['denied','wrong-subdivision']){
+  const h=harness({edit:true});
+  h.c.S.allBudgetItems=[{ID:OTHER,Subdivision_Code:'OTHER'}];
+  h.c.sdkGetAllRecords=async()=>{if(failure==='denied')throw {permissionDenied:true,message:'Native item access denied'};return [{ID:OTHER,Subdivision_Code:'OTHER'}];};
+  await assert.rejects(h.c.loadItemsForSubCode('AV'),error=>failure==='denied'?error.permissionDenied===true:/selected subdivision/.test(error.message));
+  assert.equal(h.c.S.itemsBySubCode.av,undefined,'Denied or wrong-scope results cannot seed assignment choices');
+}
+
+console.log('Budget Import counts: on-demand database-wide native pagination, exact zero/large counts, permissions, retries/dedup, scoped choices and confirmed global assignment updates passed.');

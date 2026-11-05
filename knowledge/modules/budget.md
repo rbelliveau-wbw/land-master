@@ -1,42 +1,75 @@
-## Grouped Import Ledger — 122.29.95, November 3, 2026
+## Clean Import Table — 122.29.97, November 5, 2026
 
-Budget Import Items uses the approved Grouped Ledger layout. Opening the tab
-does not read its financial records until the user selects one Subdivision.
-Workspace imports and mapped Budget Item candidates are fetched for that
-Subdivision only; startup badge loading does not fetch imports. Cached scopes
-and request generations prevent an older selection from replacing the current
-view. The Budget editor retains its separate, explicit element-expansion import
-snapshot for Construction Unapproved detail; a scoped workspace read must never
-claim that complete editor snapshot has loaded.
+Budget Import Items opens in **All Subdivisions** with the approved Clean Table
+layout. Financial reads start only when the Imports tab opens; startup and
+background badges do not fetch imports. The shared native report adapter reads
+every authorized page before publishing the workspace. Selecting a Subdivision
+narrows both import and Budget Item reads; clearing it returns to the complete
+All Subdivisions scope. Actor/environment cache keys and request generations
+prevent older replies from replacing the selected workspace.
 
-Assigned import records consolidate only by exact native Budget Item lookup
-ID. Unassigned and unresolved display-only lookups stay as individual records,
-even when descriptions or cost codes match. Major Code groups contain compact
-line summaries with separate Construction Budget, HCSS Actuals and GP Actuals
-columns. A line expands into five element rows; Imported and Budget Item views
-keep current source amounts separate from stored Final Budget and actual fields.
-Source totals remain independent of element sums. Explicit zeroes and credits
+Alternating muted blue-gray rows and a slate-blue column header reduce large
+white surfaces. Mapping fields use a softer blue fill; missing rows and their
+pickers use a warm amber wash. Source badges identify Construction Budget in
+lavender, HCSS in blue and GP in teal, retaining their visible source labels.
+Expanded details keep the same muted surface rather than flashing white.
+
+Every native import record has its own flat row, including records mapped to
+the same Budget Item. There are no Major Code sections or consolidated source
+rows. Each row retains its original description, code, source and subdivision
+context, with aligned Construction Budget, HCSS Actuals and GP Actuals columns
+and an immediately available mapping control. **All Items**, **Missing Item**
+and **Different Code** apply to individual records; their counts use the full
+selected scope before search and local filters. Missing and different records
+remain reviewable across the entire database without choosing a Subdivision.
+
+Missing Item requires an exact native Budget Item lookup ID. Different Code
+compares the native `Subdivision_Code + "-" + Minor_Code` with the assigned
+`Budget_Item.Budget_Code`, preserving case and leading zeroes; the import
+`Code` source marker is not the native Budget Item code. Unknown assignment
+codes remain unknown and produce a visible notice rather than a false match
+or difference. The code index is reused while its authoritative source arrays
+remain unchanged.
+
+Choose and change actions reuse the searchable picker and existing single-record
+native `Budget_Import_Item.Budget_Item` write. Choices remain scoped to the
+imported row's own subdivision in All Subdivisions; unavailable or wrong-scope
+candidates do not fall back to another subdivision's roster. Pending reads and
+write feedback retain actor, environment and selected-scope guards. Existing
+View/Edit Budget Import Items permissions remain authoritative. Opening or
+expanding a row never writes financial data.
+
+Imported and mapped Budget Item details mount lazily when a row expands. They
+retain the five element amounts, source-owned totals and original record fields;
+Import Status remains separate from mapping review. Explicit zeroes and credits
 remain numeric, while absent, blank or invalid amounts display as unavailable.
-A present renamed Import element key supersedes its legacy `*_Budget` alias,
-including when the renamed value is blank.
+Source totals remain independent of element sums, and a present renamed element
+key supersedes its legacy `*_Budget` alias even when blank. The Budget editor's
+separate full import snapshot and completeness flag remain independent of both
+global and subdivision workspace reads.
 
-Original Import Records nest each source's code, description, source identity,
-subdivision, major/minor codes, Cost, five elements, Percent Complete, Cost To
-Complete, external cost-code ID, Updated Date, Import Status and Error Response.
-Import Status remains separate from assignment/code-review status. Existing
-native single-record assignment and permission checks are reused; opening or
-expanding a ledger line never writes financial data. Headings, tabs, column
-labels, field labels and actions use Title Case; source-owned record values and
-identifiers retain their original spelling.
+Row motion and numeric display slots use stable native import IDs plus the
+selected workspace scope. Disclosures, tabs and pickers reuse the shared motion
+engine; Imported, Stored and summary values keep distinct numeric identities.
+Unknown, first and unrelated-scope values stay static, with immediate values
+retained under reduced motion. The import count, code-filter, ledger and deferred
+feature regression suites pass, including multi-page global reads, independent
+rows, clear-scope handling, native assignment and stale actor/scope protection.
+Desktop verification in the agent-owned in-app browser used local native-shaped
+fixtures spanning two subdivisions and two report pages. It confirmed both global
+review filters, same-subdivision choices, missing-item assignment, correcting an
+existing mapping, scope selection/clear, lazy element details and no horizontal
+overflow. These were sample records; live Creator records were not changed or
+verified. Full `npm run validate` and `npm run build:pages` passed for 122.29.97.
+This frontend change adds no Creator fields, functions, workflows or Custom API
+contracts and needs no Creator promotion. Rollback Budget Manager to
+**122.29.95** and rebuild Pages; no Creator data rollback is required.
 
-The shared motion registry keys ledger lines by native group/record identity
-and selected Subdivision. Native disclosures, annotated tabs and popovers reuse
-the shared interaction engine. Numeric amounts use explicit display-slot keys
-scoped by Subdivision, with Imported, Stored, summary and record values kept
-distinct. Unknown, first and unrelated-scope values remain static; reduced
-motion retains immediate values. This is a frontend change with no new Creator
-fields, workflows or API contracts. Rollback uses the preceding Budget Manager
-Production release; no Creator data rollback is needed.
+Changed sources are `budget-import-workspace.js`, `budget-import-workspace.css`
+and the existing import adapter/markup in `widget.html`. Four focused import and
+deferred-read regression files, this module guide, the style guide, widget config,
+widget manifest and Development release mapping accompany the immutable candidate
+release. Development and Production use 122.29.97; Stage retains its existing version.
 
 ## PO Pricing Input Recovery — 122.29.92, November 3, 2026
 
