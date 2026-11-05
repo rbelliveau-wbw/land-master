@@ -399,8 +399,48 @@ for(const change of ['subdivision','actor','view']){
   assert.equal(h.c.S.importItemsLoaded,false);assert.equal(badgeUpdates,1,'Only the current request-start badge is allowed');assert.equal(editorUpdates,0);
 }
 
+// Adaptive Inline uses the real source and finite values, including zero and credits.
+async function renderedImport(record,item,stored=false){
+  const h=workspaceHarness();
+  const host={innerHTML:'',setAttribute(){},closest:()=>null,querySelectorAll:()=>[]};
+  h.domNodes.importsTableWrap=host;h.c.S.importUI.expanded={['import:'+record.ID]:true};h.c.S.importUI.stored={['import:'+record.ID]:stored};
+  h.setRead(async report=>report==='imports'?[record]:item?[item]:[]);
+  await h.controller.open();return host.innerHTML;
+}
+{
+  const sparse=row('sparse','HeavyJob Budget','32775',null,[null,'',undefined,'invalid',null]);
+  const html=await renderedImport(sparse,null);
+  assert.match(html,/<span>Imported Line<\/span><span>Source<\/span><span>Amount<\/span><span>Map To Budget Item<\/span>/);
+  assert.match(html,/\$32,775\.00/);assert.doesNotMatch(html,/class="il-elements"|role="tab"|Percent Complete|Cost To Complete|<dd>—<\/dd>/,'An empty breakdown, unmapped target tab and missing facts are omitted');
+  assert.match(html,/Construction Budget/);assert.doesNotMatch(html,/HCSS Actuals|GP Actuals|HCSS: Misc 1/);
+  const zero=await renderedImport({...sparse,ID:'zero',Cost:'0',Percent_Complete:'0',Cost_to_Complete:'0'},null);
+  assert.match(zero,/\$0\.00/);assert.match(zero,/>0%<\/dd>/,'Actual zero progress is populated');assert.match(zero,/Cost To Complete/);
+}
+for(const [source,label]of [['HeavyJob Budget','Construction Budget'],['HeavyJob','HCSS Actuals'],['Great Plains','GP Actuals']]){
+  const record=row('partial-'+source,source,'-12.3401',null,[0,'',null,undefined,'11.0001'],{Materials_Budget:'99999',Percent_Complete:'',Cost_to_Complete:'invalid'});
+  const html=await renderedImport(record,null);
+  assert.match(html,new RegExp('<th scope="col" class="r">'+label+'</th>'));
+  assert.match(html,/\$0\.00/);assert.match(html,/11\.0001/);assert.match(html,/-\$12\.3401/);
+  assert.doesNotMatch(html,/<th scope="row">Materials|<th scope="row">Equipment|<th scope="row">Subcontractor|99999|Percent Complete|Cost To Complete/,'Blank promoted values do not revive legacy amounts or show missing facts');
+  assert.equal(html.includes('HCSS: Misc 1'),source==='HeavyJob','Misc 1 applies only to HCSS actuals');
+}
+{
+  const imported=row('stored-gp','Great Plains','12',{ID:BID},[1,null,null,null,null]);
+  const item={ID:BID,Item_Name:'Native Mapped Item',Budget_Code:'AR05-3101',PROJ_Actual:'42.0001',GP_Labor_Actuals:'0',GP_Materials_Actuals:'9',HCSS_Actuals:'999999',Budget_Ttl:'888888',Labor_Budget:'777777'};
+  const html=await renderedImport(imported,item,true);
+  assert.match(html,/Native Mapped Item/);assert.match(html,/42\.0001/);assert.match(html,/\$0\.00/);assert.match(html,/\$9\.00/);
+  assert.doesNotMatch(html,/999,999|888,888|777,777|HCSS Actuals|Final Budget|Percent Complete|Cost To Complete/,'Stored GP details do not borrow unrelated source/budget fields');
+  assert.match(html,/import:stored-gp\|stored\|gp\|total/);assert.match(html,/record\|stored-gp\|Cost/,'Original source records retain separate numeric keys');
+  const sourceHtml=await renderedImport(imported,item,false);assert.match(sourceHtml,/import:stored-gp\|imported\|gp\|total/);assert.doesNotMatch(sourceHtml,/import:stored-gp\|stored\|gp\|total/,'Switching record view keeps imported and stored quantity identities distinct');
+}
+{
+  const record=row('other-source','Another System','5',null,[null,null,null,null,null]);
+  const html=await renderedImport(record,null);
+  assert.match(html,/Another System/);assert.match(html,/\$5\.00/);assert.doesNotMatch(html,/class="il-elements"|HCSS Actuals|GP Actuals|Construction Budget/,'An unknown source keeps its own amount/label without being misclassified');
+}
+
 // All fixed headings, tabs and field labels on the new surface use Title Case.
-for(const title of ['Construction Budget','HCSS Actuals','GP Actuals','Cost Element','Source Total','Stored Total','Element Breakdown','Original Import Record','Cost To Complete','External Cost Code ID','Updated Date','Import Status','Error Response'])assert.ok(workspaceSource.includes(title),title);
+for(const title of ['Construction Budget','HCSS Actuals','GP Actuals','Cost Element','Source Total','Stored Total','Import Details','Original Import Record','Cost To Complete','External Cost Code ID','Updated Date','Import Status','Error Response'])assert.ok(workspaceSource.includes(title),title);
 assert.doesNotMatch(workspaceSource,/Construction budget|HCSS actuals|GP actuals|Element breakdown|Original import records|Cost to complete|Import status|Error response/);
 assert.ok(/<script[^>]+src=["'][^"']*budget-import-ledger\.js(?:\?[^"']*)?["']/.test(source),'Widget loads the ledger model');
 assert.ok(/<script[^>]+src=["'][^"']*budget-import-workspace\.js(?:\?[^"']*)?["']/.test(source),'Widget loads the global/scoped flat workspace');

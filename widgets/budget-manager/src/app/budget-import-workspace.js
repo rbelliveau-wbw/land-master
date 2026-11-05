@@ -98,13 +98,23 @@
     }
     function count(value,keyName){return '<span data-import-number="'+attr(keyName)+'">'+value+'</span>';}
     function number(value,keyName){return '<span class="il-number" data-import-number="'+attr(keyName)+'">'+money(value)+'</span>';}
-    function matrix(group,stored){
-      const item=group.item,columns=SOURCE_KEYS.map(k=>({key:k,label:stored&&k==='budget'?'Final Budget':SOURCE_LABELS[k],source:group.sources[k]}));
-      if(!stored)(group.otherSources||[]).forEach((s,i)=>columns.push({key:'extra'+i,label:s.label||s.source,source:s}));
-      const value=(column,element)=>stored?numeric(item&&item[column.key==='budget'?element+'_Budget':(column.key==='hcss'?'HCSS':'GP')+'_'+element+'_Actuals']):column.source?column.source.elements[element]:null;
-      return '<div class="il-table-wrap"><table class="il-elements"><thead><tr><th>Cost Element</th>'+columns.map(c=>'<th class="r">'+esc(c.label)+'</th>').join('')+'</tr></thead><tbody>'+ELEMENTS.map(e=>'<tr><th scope="row">'+e+(e==='Other'?'<small>HCSS: Misc 1</small>':'')+'</th>'+columns.map(c=>'<td class="r">'+number(value(c,e),group.key+'|matrix|'+c.key+'|'+e)+'</td>').join('')+'</tr>').join('')+'<tr class="il-total"><th scope="row">'+(stored?'Stored Total':'Source Total')+'</th>'+columns.map(c=>'<td class="r">'+number(stored?numeric(item&&item[c.key==='budget'?'Budget_Ttl':c.key==='hcss'?'HCSS_Actuals':'PROJ_Actual']):c.source?c.source.total:null,group.key+'|matrix|'+c.key+'|total')+'</td>').join('')+'</tr></tbody></table></div>';
+    function sourceInfo(group){
+      const key=SOURCE_KEYS.find(k=>group.sources[k]);
+      return key?{key,label:SOURCE_LABELS[key],source:group.sources[key]}:{key:'other',label:text(d.source(group.records[0]))||'Unspecified Source',source:(group.otherSources||[])[0]||null};
     }
-    function field(label,value,keyName){return '<div><dt>'+label+'</dt><dd'+(keyName?' data-import-number="'+attr(keyName)+'"':'')+'>'+esc(value==null||value===""?'—':value)+'</dd></div>';}
+    function detailValues(group,stored){
+      const info=sourceInfo(group),item=group.item,imported=group.records[0];
+      const label=stored&&info.key==='budget'?'Final Budget':info.label;
+      const elements=ELEMENTS.map(name=>({name,value:stored?numeric(item&&item[info.key==='budget'?name+'_Budget':(info.key==='hcss'?'HCSS':'GP')+'_'+name+'_Actuals']):info.source?info.source.elements[name]:null})).filter(e=>e.value!==null);
+      const total=stored?numeric(item&&item[info.key==='budget'?'Budget_Ttl':info.key==='hcss'?'HCSS_Actuals':'PROJ_Actual']):info.source?info.source.total:null;
+      return {info,label,elements,total,record:stored?item:imported,slot:group.key+'|'+(stored?'stored':'imported')+'|'+info.key};
+    }
+    function matrix(group,stored){
+      const values=detailValues(group,stored);
+      if(!values.elements.length)return '';
+      return '<div class="il-table-wrap"><table class="il-elements"><thead><tr><th scope="col">Cost Element</th><th scope="col" class="r">'+esc(values.label)+'</th></tr></thead><tbody>'+values.elements.map(e=>'<tr><th scope="row">'+e.name+(e.name==='Other'&&values.info.key==='hcss'?'<small>HCSS: Misc 1</small>':'')+'</th><td class="r">'+number(e.value,values.slot+'|element|'+e.name)+'</td></tr>').join('')+'</tbody></table></div>';
+    }
+    function field(label,value,keyName){return value==null||value===''||value==='—'?'':'<div><dt>'+label+'</dt><dd'+(keyName?' data-import-number="'+attr(keyName)+'"':'')+'>'+esc(value)+'</dd></div>';}
     function record(row){
       const id=String(row.ID);
       return '<details class="il-record" data-import-record="'+attr(id)+'"><summary><span>'+esc(d.source(row)||'Unspecified Source')+'</span><code>'+esc(d.code(row))+'</code>'+number(numeric(row.Cost),'record|'+id+'|Cost')+'</summary><dl class="il-fields">'+field('Import Code',d.code(row))+field('Original Description',d.description(row))+field('Subdivision',d.subCode(row))+field('Major Code',d.major(row))+field('Minor Code',d.minor(row))+field('Data Source',d.source(row))+field('Source Total',money(numeric(row.Cost)),'record|'+id+'|Cost|field')+ELEMENTS.map(e=>field(e,money(global.BudgetImportLedger.readComponent(row,e)),'record|'+id+'|'+e)).join('')+field('Percent Complete',numeric(row.Percent_Complete)==null?'—':String(numeric(row.Percent_Complete))+'%')+field('Cost To Complete',money(numeric(row.Cost_to_Complete)),'record|'+id+'|Cost_to_Complete')+field('External Cost Code ID',text(row.Cost_Code_ID))+field('Updated Date',text(row.Updated_Date))+field('Import Status',text(row.Import_Status))+field('Error Response',text(row.Error_Response))+'</dl></details>';
@@ -113,11 +123,16 @@
       const open=!!(ui.expanded&&ui.expanded[group.key]),status=group.missing?'Missing Item':group.different===true?'Different Code':group.different===null?'Code Unavailable':'';
       const row=group.records[0],assigned=group.assigned&&group.assigned.id?group.assigned:null,canAssign=!!(d.canEdit()&&data()&&!data().itemError);
       const context=[d.subName(row),d.subCode(row)].map(text).filter((value,index,list)=>value&&list.indexOf(value)===index).join(' · ');
-      return '<details class="il-line'+(group.missing?' il-missing':'')+'" data-import-ledger-key="'+attr(group.key)+'" '+(open?'open':'')+'><summary class="il-line-summary"><span class="il-identity">'+icon('chevron')+'<span><strong>'+esc(group.label||group.code||'Imported Line')+'</strong><small><code>'+esc(group.code||'—')+'</code><span class="il-source-badge" data-source="'+attr(d.source(row))+'">'+esc(d.source(row)||'Unspecified Source')+'</span></small><small class="il-sub-context">'+esc(context||'Subdivision Unavailable')+'</small></span></span>'+SOURCE_KEYS.map(k=>'<span class="il-source-amount" data-label="'+SOURCE_LABELS[k]+'">'+number(group.sources[k]?group.sources[k].total:null,group.key+'|'+k+'|total')+'</span>').join('')+'<span class="il-row-mapping'+(group.missing?' needs-item':'')+'"><span class="imp-assign-cell" data-imp-id="'+attr(row.ID)+'">'+d.assignHtml(row,assigned,!assigned,canAssign)+'</span>'+(status?'<span class="il-mapping-status warn">'+status+'</span>':'')+'</span></summary><div class="il-line-body">'+(open?detailHtml(group):'')+'</div></details>';
+      const info=sourceInfo(group),amount=numeric(row.Cost);
+      return '<details class="il-line'+(group.missing?' il-missing':'')+'" data-import-ledger-key="'+attr(group.key)+'" '+(open?'open':'')+'><summary class="il-line-summary"><span class="il-identity">'+icon('chevron')+'<span><strong>'+esc(group.label||group.code||'Imported Line')+'</strong><small><code>'+esc(group.code||'—')+'</code></small><small class="il-sub-context">'+esc(context||'Subdivision Unavailable')+'</small></span></span><span class="il-row-source"><span class="il-source-badge" data-source="'+attr(d.source(row))+'">'+esc(info.label)+'</span></span><span class="il-source-amount" data-label="Amount">'+(amount===null?'<span class="il-unreported">Not Reported</span>':number(amount,group.key+'|summary|'+info.key+'|total'))+'</span><span class="il-row-mapping'+(group.missing?' needs-item':'')+'"><span class="imp-assign-cell" data-imp-id="'+attr(row.ID)+'">'+d.assignHtml(row,assigned,!assigned,canAssign)+'</span>'+(status?'<span class="il-mapping-status warn">'+status+'</span>':'')+'</span></summary><div class="il-line-body">'+(open?detailHtml(group):'')+'</div></details>';
     }
     function detailHtml(group){
-      const row=group.records[0],stored=!!(ui.stored&&ui.stored[group.key]),item=group.item,progress=numeric(item&&item.Percent_Complete),ctc=numeric(item&&item.Cost_to_Complete);
-      return '<div class="il-detail-head"><h3>Element Breakdown</h3><div class="il-segments" data-lm-motion="tabs" role="tablist" aria-label="Element Records"><button type="button" role="tab" aria-selected="'+!stored+'" data-import-matrix="import" data-key="'+attr(group.key)+'">Imported</button><button type="button" role="tab" aria-selected="'+stored+'" data-import-matrix="stored" data-key="'+attr(group.key)+'">Budget Item</button></div></div><div data-lm-motion="panel">'+matrix(group,stored)+'</div><div class="il-progress"><span>Budget Item Progress <b data-import-number="'+attr(group.key+'|stored|Percent_Complete')+'">'+esc(progress==null?'—':progress+'%')+'</b></span><span>Cost To Complete '+number(ctc,group.key+'|stored|Cost_to_Complete')+'</span></div><details class="il-original"><summary>Original Import Record</summary>'+record(row)+'</details>';
+      const row=group.records[0],canShowStored=!!(group.item&&sourceInfo(group).key!=='other'),stored=!!(canShowStored&&ui.stored&&ui.stored[group.key]);
+      const values=detailValues(group,stored),progress=numeric(values.record&&values.record.Percent_Complete),ctc=numeric(values.record&&values.record.Cost_to_Complete);
+      const facts=field('Percent Complete',progress===null?null:progress+'%',values.slot+'|Percent_Complete')+field('Cost To Complete',ctc===null?null:money(ctc),values.slot+'|Cost_to_Complete');
+      const total=values.total===null?'':'<div class="il-source-total"><span><small>'+(stored?'Stored Total':'Source Total')+'</small><strong>'+number(values.total,values.slot+'|total')+'</strong></span><span class="il-source-badge" data-source="'+attr(d.source(row))+'">'+esc(values.label)+'</span></div>';
+      const storedIdentity=stored?'<dl class="il-stored-identity">'+field('Budget Item',text(group.item.Item_Name||group.item.Name||group.item.Description))+field('Budget Code',text(group.item.Budget_Code))+'</dl>':'';
+      return '<div class="il-detail-head"><h3>Import Details</h3>'+(canShowStored?'<div class="il-segments" data-lm-motion="tabs" role="tablist" aria-label="Element Records"><button type="button" role="tab" aria-selected="'+!stored+'" data-import-matrix="import" data-key="'+attr(group.key)+'">Imported</button><button type="button" role="tab" aria-selected="'+stored+'" data-import-matrix="stored" data-key="'+attr(group.key)+'">Budget Item</button></div>':'')+'</div><div data-lm-motion="panel">'+storedIdentity+total+matrix(group,stored)+(facts?'<dl class="il-detail-facts">'+facts+'</dl>':'')+'</div><details class="il-original"><summary>Original Import Record</summary>'+record(row)+'</details>';
     }
     function loading(){return '<div class="il-loading" role="status"><div class="il-loading-card"><span class="il-loading-emblem"><span class="il-loading-ring" aria-hidden="true"></span></span><strong>Loading Import Items…</strong></div></div>';}
     function empty(title,action){return '<div class="il-empty"><strong>'+title+'</strong>'+(action||'')+'</div>';}
@@ -144,8 +159,8 @@
       if(ui.differentOnly&&allGroups.some(group=>group.different===null))html+='<div class="il-notice" role="status">Some Assigned Codes Are Unavailable. Different Code Results May Be Incomplete. '+retry+'</div>';
       if(state&&state.status==='loading')html+='<div class="il-caption" role="status">Refreshing Import Items…</div>';
       if(state&&state.status==='error')html+='<div class="il-notice" role="status">Refresh Failed. Showing Previous Data. '+retry+'</div>';
-      html+=visible.length?'<section class="il-flat-ledger" aria-label="Imported Lines"><div class="il-column-head"><span>Imported Line</span><span>Construction Budget</span><span>HCSS Actuals</span><span>GP Actuals</span><span>Map To Budget Item</span></div>'+visible.map(groupHtml).join('')+'</section>':empty(rows().length?'No Matching Import Items':selected()?'No Import Items For This Subdivision':'No Import Items');
-      html+='<div class="il-footer"><span>'+count(visible.length,'visible|line-count')+' Of '+count(rows().length,'scope|line-count')+' Lines · '+esc(selected()||'All Subdivisions')+'</span><span>— No Value · $0.00 Reported Zero</span></div>';
+      html+=visible.length?'<section class="il-flat-ledger" aria-label="Imported Lines"><div class="il-column-head"><span>Imported Line</span><span>Source</span><span>Amount</span><span>Map To Budget Item</span></div>'+visible.map(groupHtml).join('')+'</section>':empty(rows().length?'No Matching Import Items':selected()?'No Import Items For This Subdivision':'No Import Items');
+      html+='<div class="il-footer"><span>'+count(visible.length,'visible|line-count')+' Of '+count(rows().length,'scope|line-count')+' Lines · '+esc(selected()||'All Subdivisions')+'</span></div>';
       const focus=document.activeElement,focusKey=focus&&focus.dataset&&focus.dataset.importMatrix,focusGroup=focus&&focus.dataset&&focus.dataset.key;
       const scroll=host.closest('.main'),top=scroll?scroll.scrollTop:0;
       host.innerHTML=html;if(scroll)scroll.scrollTop=top;
@@ -167,7 +182,7 @@
       if(target.hasAttribute('data-import-matrix')){
         const stored=target.dataset.importMatrix==='stored',group=groups().find(g=>g.key===target.dataset.key),line=target.closest('.il-line');
         (ui.stored||(ui.stored={}))[target.dataset.key]=stored;
-        if(group&&line){line.querySelectorAll('[data-import-matrix]').forEach(button=>button.setAttribute('aria-selected',String((button.dataset.importMatrix==='stored')===stored)));line.querySelector('[data-lm-motion="panel"]').innerHTML=matrix(group,stored);}
+        if(group&&line){line.querySelector('.il-line-body').innerHTML=detailHtml(group);const replacement=[...line.querySelectorAll('[data-import-matrix]')].find(button=>button.dataset.importMatrix===target.dataset.importMatrix);if(replacement)replacement.focus({preventScroll:true});}
       }
     }
     function init(){
