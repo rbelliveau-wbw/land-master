@@ -1,3 +1,49 @@
+## Adaptive Inline Import Details — 122.29.99, November 5, 2026
+
+The approved Adaptive Inline layout uses four columns: Imported Line, Source,
+Amount and Map To Budget Item. Each native import stays in its own flat row.
+The existing complete All Subdivisions reads, database-wide Missing Item and
+Different Code filters, same-subdivision assignment choices and native
+View/Edit Budget Import Items permissions remain unchanged.
+
+Expanded Import Details reads the existing native Data Source classification:
+HeavyJob Budget shows Construction Budget, HeavyJob shows HCSS Actuals and
+Great Plains shows GP Actuals. Only that source's populated elements appear.
+An import with a source total and no elements shows its total without an empty
+breakdown table. Absent, blank and invalid numeric facts are omitted; explicit
+zeroes, negative credits and source precision through four decimals remain
+visible. HCSS: Misc 1 annotates only HCSS Other. Source totals retain their
+native meaning and are never recomputed from element amounts. Unknown sources
+retain their own label and values without borrowing another source's fields.
+
+Imported and Budget Item tabs appear only when the actual mapped item is
+available and its source is recognized. The mapped view reads only the matching
+Budget, HCSS or GP fields, with the actual Budget Item name/code. Percent
+Complete and Cost To Complete come from the selected record and appear only
+when populated. Original Import Record retains the populated native fields.
+The muted blue surfaces, alternating rows, labeled source colors and amber
+missing-item treatment remain. Stable import IDs, distinct summary/imported/
+stored numeric slots and the registered shared motion/number engines are reused.
+
+Changed sources are budget-import-workspace.js, budget-import-workspace.css,
+the widget.html version stamp and test-budget-import-ledger.mjs, accompanied by
+the module/style guides, widget metadata, immutable release and environment
+mapping. No Creator forms or fields change. Existing Budget_Import_Item reads
+and Budget_Item lookup writes are reused; no functions or Custom APIs change.
+No Creator deployment is required. Development and Production use 122.29.99;
+Stage retains its previous mapping. Rollback is Budget Manager **122.29.98**
+through deploy/environments.json and a Pages rebuild; no data rollback is needed.
+
+Regression coverage includes all three source types, sparse/partial elements,
+zeroes, credits, renamed-field precedence, source-specific stored values,
+unknown sources, native lookup identities, complete paged scopes, mapping and
+stale actor/scope guards. Desktop verification in the agent-owned in-app browser
+used local native-shaped fixtures across two subdivisions. It confirmed sparse
+details, populated HCSS facts including zeroes, the mapped GP comparison, both
+global review filters, a same-subdivision assignment and no horizontal overflow
+at 1280px. These checks did not read or change live Creator records. Full
+`npm run validate` and `npm run build:pages` passed before promotion.
+
 ## Import Detail Wording — 122.29.98, November 5, 2026
 
 Removed the explanatory source-total sentence from expanded import details.

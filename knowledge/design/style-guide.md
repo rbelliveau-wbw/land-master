@@ -588,15 +588,20 @@ and use green for nonnegative remaining budgets. It sits to the right on desktop
 and stacks on narrow screens with horizontal overflow contained inside its table.
 
 **Flat Import Review Table (Budget).** Budget Import Items uses one native import
-record per row, with the original description prominent, code/source/subdivision
-context beneath it, aligned currency columns and a visible Choose/Change Budget
-Item control. Keep the list flat without Major Code headings or shared-target
+record per row in four columns: Imported Line, Source, Amount and Map To Budget
+Item. Keep the original description prominent with code/subdivision context
+beneath it, a labeled source badge, right-aligned currency and a visible
+Choose/Change Budget Item control. Keep the list flat without Major Code headings or shared-target
 consolidation. Use alternating muted blue-gray rows, a slate-blue heading and
 soft blue mapping fields to reduce white glare. Keep small, labeled source
 badges in lavender for Construction Budget, blue for HCSS and teal for GP;
 use a warm amber row wash for missing mappings. Expanded detail surfaces retain
-the muted palette. Preserve explicit
-zero versus unavailable values, and keep All Items, Missing Item and Different
+the muted palette. Expanded Import Details shows only the record's own source
+and populated elements/facts; omit absent, blank and invalid values while
+preserving reported zeroes and credits. A total-only import needs no empty
+element table. Show Imported/Budget Item tabs only when the mapped item is
+available for a recognized source, and compare only matching source fields.
+Preserve original record access and native source totals. Keep All Items, Missing Item and Different
 Code available in both All Subdivisions and a selected subdivision. Mount detailed
 source and mapped-item information on expansion; preserve record identity,
 searchable same-subdivision assignment choices, permissions and shared motion.
