@@ -203,8 +203,8 @@ function harness(){
   gate.resolve();await pending;assert.equal(count.textContent,'0');assert.match(button.title,/0 comments/);assert.equal(fullRenders,0);
   c.ZOHO.CREATOR.DATA.getRecordCount=async()=>({code:2898,message:'No permission'});
   await assert.rejects(c.loadBudgetComments('Budget','1',true));assert.equal(count.textContent,'!');assert.match(button.title,/unavailable/);assert.equal(fullRenders,0);
-  nodes.importCt={textContent:'old'};nodes.importsTabLink={style:{}};c.updateImportsTabVisibility();assert.equal(nodes.importCt.textContent,'—','An unselected import workspace has no global badge query');
-  await assert.rejects(c.loadImportItems(false));assert.equal(nodes.importCt.textContent,'—','The editor import cache cannot replace the subdivision-scoped tab badge');assert.equal(c.S.importItemsLoaded,false);
+  nodes.importCt={textContent:'old'};nodes.importsTabLink={style:{}};c.updateImportsTabVisibility();assert.equal(nodes.importCt.textContent,'—','An unopened import workspace performs no global badge query');
+  await assert.rejects(c.loadImportItems(false));assert.equal(nodes.importCt.textContent,'—','The separate editor import cache cannot replace the workspace tab badge');assert.equal(c.S.importItemsLoaded,false);
   assert.equal(data.comments.length,0);
 }
 

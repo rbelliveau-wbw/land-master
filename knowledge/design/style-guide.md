@@ -587,6 +587,21 @@ all budget arithmetic on one horizontal table row, right-align tabular currency,
 and use green for nonnegative remaining budgets. It sits to the right on desktop
 and stacks on narrow screens with horizontal overflow contained inside its table.
 
+**Flat Import Review Table (Budget).** Budget Import Items uses one native import
+record per row, with the original description prominent, code/source/subdivision
+context beneath it, aligned currency columns and a visible Choose/Change Budget
+Item control. Keep the list flat without Major Code headings or shared-target
+consolidation. Use alternating muted blue-gray rows, a slate-blue heading and
+soft blue mapping fields to reduce white glare. Keep small, labeled source
+badges in lavender for Construction Budget, blue for HCSS and teal for GP;
+use a warm amber row wash for missing mappings. Expanded detail surfaces retain
+the muted palette. Preserve explicit
+zero versus unavailable values, and keep All Items, Missing Item and Different
+Code available in both All Subdivisions and a selected subdivision. Mount detailed
+source and mapped-item information on expansion; preserve record identity,
+searchable same-subdivision assignment choices, permissions and shared motion.
+This pattern applies to Budget's import review, not unrelated grouped reports.
+
 Budget matrices use three disclosure levels: categories, budget lines, then
 element rows. The shared toolbar cycles **Expand All Lines → Expand All Elements
 → Collapse All**; each budget line also has a keyboard-accessible chevron.
