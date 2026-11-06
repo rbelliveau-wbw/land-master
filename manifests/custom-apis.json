@@ -77,7 +77,7 @@
       ],
       "matching_creator_function": "exportBudgetSnapshot",
       "confidence": "inferred-name-match",
-      "notes": "Existing OAuth2 POST All users binding retained. Read-only ALL_DETAIL returns up to 20 nonzero rows with pageSize:20; exact JSON string cursors {after,through}. SNAPSHOT_DETAIL uses JSON {budgetId,after,through}, echoes exact budgetId, includes saved zero rows and the same budget-full-detail-v1 contract. SNAPSHOT_META uses a plain budgetId and budget-snapshot-meta-v1 saved summary/approval contract. Widget Excel builds four XLSX sheets and reuses the existing single-file attachment uploader. Legacy PDF/EXCEL/APPROVED_PDF retain existing attachment behavior. See docs/budget-export-statement-limit-2026-11-05.md."
+      "notes": "Existing OAuth2 POST All users binding retained. Read-only ALL_DETAIL batches up to 100 nonzero rows with pageSize:100; exact JSON string cursors {after,through}. SNAPSHOT_DETAIL uses JSON {budgetId,after,through}, echoes exact budgetId, includes saved zero rows and the same budget-full-detail-v1 contract. SNAPSHOT_META uses a plain budgetId and budget-snapshot-meta-v1 saved summary/approval contract. Widget Excel builds four XLSX sheets and reuses the existing single-file attachment uploader. Legacy PDF/EXCEL/APPROVED_PDF retain existing attachment behavior. See docs/budget-export-statement-limit-2026-11-05.md. Full export retains completed pages through bounded minute-throttle recovery and summarizes audits. Publish budgetElementExportValues, budgetElementExportRows and exportBudgetSnapshot together; see docs/budget-full-export-recovery-2026-11-05.md."
     },
     {
       "name": "Get_Budget_Attachment_Preview",

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
-const names=['budgetElementExportRows','budgetElementExportHtml','poElementExportRows'];
+const names=['budgetElementExportValues','budgetElementExportRows','budgetElementExportHtml','poElementExportRows'];
 function compile(source){return translate(source.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)?`recordValues(${body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')})`:whole)).js;}
 const runtime=vm.createContext({});
 vm.runInContext(`

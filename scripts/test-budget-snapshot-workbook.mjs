@@ -88,7 +88,8 @@ assert.deepEqual(grid('Approval History'),[
 assert.equal(round.Sheets['Approval History'].A2.t,'s');assert.equal(round.Sheets['Approval History'].A2.f,undefined);
 
 // Legacy pages still default to 200; advertised small and exact-boundary pages
-// require complete cursor/count verification and a final empty boundary page.
+// require complete cursor/count verification; an exact total ends without an
+// additional empty boundary request.
 const legacy=page([row(0)],'0',1,row(0).id,200);delete legacy.pageSize;
 assert.equal((await E.collect(async()=>legacy)).length,1);
 const appWide=source(records.filter((_,index)=>index!==2));
@@ -96,7 +97,7 @@ assert.equal((await E.collect(appWide.read)).length,226,'application-wide export
 for(const size of [1,20,200]){
   const fixture=source(records.slice(0,size),{size});
   const result=await E.collect(fixture.read,null,null,{budgetId,allowZero:true});
-  assert.equal(result.length,size);assert.equal(fixture.requests.length,2);
+  assert.equal(result.length,size);assert.equal(fixture.requests.length,1);
 }
 const empty=source([]);
 const emptyRows=await E.collect(empty.read,null,null,{budgetId,allowZero:true});
@@ -130,3 +131,4 @@ await assert.rejects(()=>E.collect(async()=>{current=false;return page([row(0)])
 for(const response of [null,{},'not JSON',{code:2898,message:'Denied'},{...meta,ok:false,error:'Read failed'},{...meta,budgetId:'4410926000000000124'},{...meta,summary:null},{...meta,approvals:[{}]},{...meta,summary:{...meta.summary,grandFinal:'100'}}])assert.throws(()=>E.parseSnapshotMeta(response,budgetId));
 assert.throws(()=>E.snapshotWorkbook(X,rows,{...meta,budgetId:'4410926000000000124'}),/different budget/);
 console.log('Budget snapshot: 227 items / 1135 elements, four-sheet XLSX round trip, scope, precision, zeros, formula-safe text, metadata and stable bounded pagination passed.');
+

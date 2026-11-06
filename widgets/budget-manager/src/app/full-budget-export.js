@@ -26,7 +26,10 @@
       if(typeof value==='string'){try{value=JSON.parse(value);}catch(e){throw new Error(value||'Invalid full export response.');}}
       if(value&&value.contract==='budget-full-detail-v1')return value;
       if(!value||typeof value!=='object')break;
-      if(value.code!=null&&String(value.code)!=='3000')throw new Error(value.message||'Full export request failed.');
+      if(value.code!=null&&String(value.code)!=='3000'){
+        var failure=new Error(value.message||value.description||'Full export request failed.');
+        failure.code=String(value.code);failure.cause=value;throw failure;
+      }
       value=value.result!=null?value.result:value.details&&value.details.output!=null?value.details.output:value.output!=null?value.output:value.data;
     }
     throw new Error('The full export service is unavailable.');
@@ -51,19 +54,51 @@
     });
     return meta;
   }
+  function summary(response){
+    try{
+      var page=unwrap(response);
+      return {contract:page.contract,ok:page.ok,pageSize:page.pageSize===undefined?200:page.pageSize,rowCount:Array.isArray(page.rows)?page.rows.length:0,total:page.total,after:page.after,next:page.next,through:page.through,hasMore:page.hasMore};
+    }catch(ignore){return {unreadable:true};}
+  }
+  function failureCode(error){
+    var pending=[error],seen=[];
+    for(var i=0;i<pending.length&&i<64;i++){
+      var value=pending[i];
+      if(typeof value==='string'){try{value=JSON.parse(value);}catch(ignore){continue;}}
+      if(!value||typeof value!=='object'||seen.indexOf(value)>=0)continue;
+      seen.push(value);
+      if(String(value.code)==='2955'||Number(value.status)===429)return '2955';
+      ['cause','response','responseText','result','details','output'].forEach(function(key){if(value[key]!=null&&pending.length<64)pending.push(value[key]);});
+    }
+    return '';
+  }
   async function collect(readPage,onProgress,isCurrent,options){
     options=options||{};
     var budgetId=options.budgetId,scoped=budgetId!=null;
     if(scoped&&(!id(budgetId)||budgetId==='0'))throw new Error('Invalid budget scope in export.');
+    var wait=options.wait||function(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});};
     var after='0',through='0',total=null,pageSize=null,rows=[],elements=[];
+    function check(){if(isCurrent&&!isCurrent())throw new Error('The signed-in user or environment changed. Export again.');}
+    async function read(){
+      for(var attempt=0;;attempt++){
+        check();
+        var cursor={after:after,through:through};
+        if(scoped)cursor.budgetId=budgetId;
+        try{return unwrap(await readPage(cursor));}
+        catch(error){
+          check();
+          var code=options.failureCode?options.failureCode(error):failureCode(error);
+          if(String(code)!=='2955')throw error;
+          if(attempt>=3)throw new Error('Creator is still limiting requests. Please try the export again shortly.');
+          if(options.onThrottle)options.onThrottle(rows.length,total,61000,attempt+1);
+          await wait(61000);check();
+        }
+      }
+    }
     Object.defineProperty(rows,'elementRows',{value:elements});
     if(scoped)Object.defineProperty(rows,'budgetId',{value:budgetId});
     for(;;){
-      if(isCurrent&&!isCurrent())throw new Error('The signed-in user or environment changed. Export again.');
-      var cursor={after:after,through:through};
-      if(scoped)cursor.budgetId=budgetId;
-      var page=unwrap(await readPage(cursor));
-      if(isCurrent&&!isCurrent())throw new Error('The signed-in user or environment changed. Export again.');
+      var page=await read();check();
       if(page.ok!==true)throw new Error(page.error||'Full budget export failed.');
       var effectivePageSize=page.pageSize===undefined?200:page.pageSize;
       if(!Number.isSafeInteger(effectivePageSize)||effectivePageSize<1||effectivePageSize>200||!Array.isArray(page.rows)||page.rows.length>effectivePageSize||!Number.isSafeInteger(page.total)||page.total<0||!id(page.through)||!id(page.next)||page.after!==after||typeof page.hasMore!=='boolean')throw new Error('Incomplete full export response.');
@@ -90,7 +125,7 @@
       });
       if(page.next!==previous||rows.length>total||page.hasMore!==(page.rows.length===pageSize))throw new Error('Full export pagination could not be verified.');
       if(onProgress)onProgress(rows.length,total);
-      if(!page.hasMore){if(rows.length!==total)throw new Error('Some budget rows are missing. Export again.');return rows;}
+      if(!page.hasMore||rows.length===total){if(rows.length!==total)throw new Error('Some budget rows are missing. Export again.');return rows;}
       if(!greater(page.next,after))throw new Error('Full export pagination stopped.');
       after=page.next;
     }
@@ -164,5 +199,6 @@
     detail.forEach(function(row){output.push(['Element Detail'].concat(row,['','']));});
     return '\uFEFF'+output.map(function(row){return row.map(quote).join(',');}).join('\r\n');
   }
-  root.BudgetFullExport={headers:headers,elementHeaders:elementHeaders,collect:collect,workbook:workbook,parseSnapshotMeta:parseSnapshotMeta,snapshotWorkbook:snapshotWorkbook,csv:csv};
+  root.BudgetFullExport={headers:headers,elementHeaders:elementHeaders,collect:collect,workbook:workbook,parseSnapshotMeta:parseSnapshotMeta,snapshotWorkbook:snapshotWorkbook,csv:csv,summary:summary};
 })(typeof window!=='undefined'?window:globalThis);
+

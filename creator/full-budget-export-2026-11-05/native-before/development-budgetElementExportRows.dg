@@ -1,0 +1,185 @@
+list budgetElementExportRows(int budgetItemId)
+{
+	// Read-only element detail shared by downloads, attachments and approval mail.
+	// Never recompute parent totals from snapshots or infer actual elements.
+	rows = List();
+	item = Budget_Item[ID == budgetItemId.toLong()];
+	if(item.count() != 1)
+	{
+		return rows;
+	}
+	department = ifnull(item.Budget_Category.Deparment,"").trim().toLowerCase();
+	defaultElement = "";
+	if(department.contains("development"))
+	{
+		defaultElement = "5";
+	}
+	else if(department.contains("engineering"))
+	{
+		defaultElement = "1";
+	}
+	keys = {"1","2","3","4","5"};
+	labels = {"(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other"};
+	preliminary = {"1":item.Prelim_Labor_Budget,"2":item.Prelim_Materials_Budget,"3":item.Prelim_Equipment_Budget,"4":item.Prelim_Subcontractor_Budget,"5":item.Prelim_Other_Budget};
+	finals = {"1":item.Labor_Budget,"2":item.Materials_Budget,"3":item.Equipment_Budget,"4":item.Subcontractor_Budget,"5":item.Other_Budget};
+	hcssActuals = {"1":item.HCSS_Labor_Actuals,"2":item.HCSS_Materials_Actuals,"3":item.HCSS_Equipment_Actuals,"4":item.HCSS_Subcontractor_Actuals,"5":item.HCSS_Other_Actuals};
+	gpActuals = {"1":item.GP_Labor_Actuals,"2":item.GP_Materials_Actuals,"3":item.GP_Equipment_Actuals,"4":item.GP_Subcontractor_Actuals,"5":item.GP_Other_Actuals};
+	hcssActualsComplete = true;
+	gpActualsComplete = true;
+	preliminaryBlank = true;
+	finalBlank = true;
+	finalComplete = true;
+	for each  element in keys
+	{
+		if(preliminary.get(element) != null)
+		{
+			preliminaryBlank = false;
+		}
+		if(finals.get(element) != null)
+		{
+			finalBlank = false;
+		}
+		else
+		{
+			finalComplete = false;
+		}
+		if(hcssActuals.get(element) == null)
+		{
+			hcssActualsComplete = false;
+		}
+		if(gpActuals.get(element) == null)
+		{
+			gpActualsComplete = false;
+		}
+	}
+	// Read complete saved native allocations directly. The import/batch owns
+	// source reconciliation; GP parent totals can sum separately rounded rows.
+	if(finalBlank && defaultElement != "" && item.Budget_Ttl != null)
+	{
+		finalComplete = true;
+	}
+	imports = Budget_Import_Item[Budget_Item == item.ID && Data_Source == "HeavyJob Budget"];
+	imported = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
+	importComplete = imports.count() > 0;
+	importTotal = 0.0;
+	for each  source in imports
+	{
+		parts = {"1":source.Labor,"2":source.Materials,"3":source.Equipment,"4":source.Subcontractor,"5":source.Other};
+		importTotal = importTotal + ifnull(source.Cost,0.0);
+		for each  element in keys
+		{
+			if(parts.get(element) == null)
+			{
+				importComplete = false;
+			}
+			else
+			{
+				imported.put(element,imported.get(element) + parts.get(element));
+			}
+		}
+	}
+	if(item.Unapproved_Final_Budget_Ttl == null || (importTotal - ifnull(item.Unapproved_Final_Budget_Ttl,0.0)).abs() >= 0.00005)
+	{
+		importComplete = false;
+	}
+	modifications = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
+	modificationsComplete = true;
+	for each  modification in Budget_Modification[Budget_Item == item.ID && Status == "Approved"]
+	{
+		parts = {"1":modification.Labor_Budget,"2":modification.Materials_Budget,"3":modification.Equipment_Budget,"4":modification.Subcontractor_Budget,"5":modification.Other_Budget};
+		sign = 1;
+		if(ifnull(modification.Modification_Type,"") == "Decrease")
+		{
+			sign = -1;
+		}
+		for each  element in keys
+		{
+			if(parts.get(element) == null)
+			{
+				modificationsComplete = false;
+			}
+			else
+			{
+				modifications.put(element,modifications.get(element) + sign * parts.get(element));
+			}
+		}
+	}
+	index = 0;
+	for each  element in keys
+	{
+		preliminaryValue = preliminary.get(element);
+		finalValue = finals.get(element);
+		unapprovedValue = null;
+		hcssValue = null;
+		gpValue = null;
+		if(hcssActualsComplete)
+		{
+			hcssValue = hcssActuals.get(element);
+		}
+		if(gpActualsComplete)
+		{
+			gpValue = gpActuals.get(element);
+		}
+		if(importComplete)
+		{
+			unapprovedValue = imported.get(element);
+		}
+		if(defaultElement != "")
+		{
+			if(preliminaryBlank && item.Prelim_Budget_Ttl != null)
+			{
+				preliminaryValue = 0.0;
+				if(element == defaultElement)
+				{
+					preliminaryValue = item.Prelim_Budget_Ttl;
+				}
+			}
+			if(finalBlank && item.Budget_Ttl != null)
+			{
+				finalValue = 0.0;
+				if(element == defaultElement)
+				{
+					finalValue = item.Budget_Ttl;
+				}
+			}
+			// Department defaults apply to budgets only. Actuals require the complete
+			// measured source split above, including signed credits and explicit zeroes.
+			unapprovedValue = null;
+			if(item.Unapproved_Final_Budget_Ttl != null)
+			{
+				unapprovedValue = 0.0;
+				if(element == defaultElement)
+				{
+					unapprovedValue = item.Unapproved_Final_Budget_Ttl;
+				}
+			}
+		}
+		modificationValue = null;
+		revisedValue = null;
+		if(modificationsComplete)
+		{
+			modificationValue = modifications.get(element);
+		}
+		if(finalValue != null && modificationValue != null)
+		{
+			revisedValue = finalValue + modificationValue;
+		}
+		values = List();
+		values.add(labels.get(index));
+		values.add(preliminaryValue);
+		values.add(unapprovedValue);
+		values.add(finalValue);
+		values.add(modificationValue);
+		values.add(revisedValue);
+		values.add(hcssValue);
+		values.add(gpValue);
+		entry = Map();
+		entry.put("code",element);
+		entry.put("label",labels.get(index));
+		entry.put("values",values);
+		entry.put("finalComplete",finalComplete);
+		rows.add(entry);
+		index = index + 1;
+	}
+	return rows;
+}

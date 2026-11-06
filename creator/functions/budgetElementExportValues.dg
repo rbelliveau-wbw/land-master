@@ -1,0 +1,71 @@
+list budgetElementExportValues(map sourceValues)
+{
+	// Query-free rendering shared by per-item exports and the batched full export.
+	// Input maps are snapshots of the same native fields and aggregate rules.
+	rows = List();
+	department = ifnull(sourceValues.get("department"),"").trim().toLowerCase();
+	preliminary = sourceValues.get("preliminary");
+	finals = sourceValues.get("finals");
+	hcssActuals = sourceValues.get("hcssActuals");
+	gpActuals = sourceValues.get("gpActuals");
+	preliminaryTotal = sourceValues.get("preliminaryTotal");
+	unapprovedTotal = sourceValues.get("unapprovedTotal");
+	finalTotal = sourceValues.get("finalTotal");
+	imported = sourceValues.get("imported");
+	importComplete = sourceValues.get("importComplete") == true;
+	importTotal = ifnull(sourceValues.get("importTotal"),0.0);
+	modifications = sourceValues.get("modifications");
+	modificationsComplete = sourceValues.get("modificationsComplete") == true;
+	defaultElement = "";
+	if(department.contains("development")) { defaultElement = "5"; }
+	else if(department.contains("engineering")) { defaultElement = "1"; }
+	keys = {"1","2","3","4","5"};
+	labels = {"(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other"};
+	hcssActualsComplete = true;
+	gpActualsComplete = true;
+	preliminaryBlank = true;
+	finalBlank = true;
+	finalComplete = true;
+	for each element in keys
+	{
+		if(preliminary.get(element) != null) { preliminaryBlank = false; }
+		if(finals.get(element) != null) { finalBlank = false; }
+		else { finalComplete = false; }
+		if(hcssActuals.get(element) == null) { hcssActualsComplete = false; }
+		if(gpActuals.get(element) == null) { gpActualsComplete = false; }
+	}
+	// Read complete saved native allocations directly. The import/batch owns
+	// source reconciliation; GP parent totals can sum separately rounded rows.
+	if(finalBlank && defaultElement != "" && finalTotal != null) { finalComplete = true; }
+	if(unapprovedTotal == null || (importTotal - ifnull(unapprovedTotal,0.0)).abs() >= 0.00005) { importComplete = false; }
+	index = 0;
+	for each element in keys
+	{
+		preliminaryValue = preliminary.get(element);
+		finalValue = finals.get(element);
+		unapprovedValue = null;
+		hcssValue = null;
+		gpValue = null;
+		if(hcssActualsComplete) { hcssValue = hcssActuals.get(element); }
+		if(gpActualsComplete) { gpValue = gpActuals.get(element); }
+		if(importComplete) { unapprovedValue = imported.get(element); }
+		if(defaultElement != "")
+		{
+			if(preliminaryBlank && preliminaryTotal != null) { preliminaryValue = 0.0; if(element == defaultElement) { preliminaryValue = preliminaryTotal; } }
+			if(finalBlank && finalTotal != null) { finalValue = 0.0; if(element == defaultElement) { finalValue = finalTotal; } }
+			// Department defaults apply to budgets only. Actuals require the complete
+			// measured source split above, including signed credits and explicit zeroes.
+			unapprovedValue = null;
+			if(unapprovedTotal != null) { unapprovedValue = 0.0; if(element == defaultElement) { unapprovedValue = unapprovedTotal; } }
+		}
+		modificationValue = null;
+		revisedValue = null;
+		if(modificationsComplete) { modificationValue = modifications.get(element); }
+		if(finalValue != null && modificationValue != null) { revisedValue = finalValue + modificationValue; }
+		values = {labels.get(index),preliminaryValue,unapprovedValue,finalValue,modificationValue,revisedValue,hcssValue,gpValue};
+		entry = {"code":element,"label":labels.get(index),"values":values,"finalComplete":finalComplete};
+		rows.add(entry);
+		index = index + 1;
+	}
+	return rows;
+}

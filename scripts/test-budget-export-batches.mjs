@@ -7,7 +7,13 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // Adapt native record/list/query/date behavior only; this is not a Creator compiler
 // or proof of the plan's native statement budget.
 const native=fs.readFileSync('creator/functions/exportBudgetSnapshot.dg','utf8');
-const readBranch=native.slice(native.indexOf('// Read-only, application-wide export.'),native.indexOf('// An export persists'));
+// The application-wide 100-row fast path is exercised by the full-export backend
+// suite. Execute the retained scoped snapshot/meta implementation here, including
+// its former ALL_DETAIL alternative, to preserve the newer per-budget behavior.
+const retainedMarker='// Existing scoped snapshot and legacy attachment exports are retained below.';
+assert.ok(native.includes(retainedMarker),'the scoped snapshot and metadata implementation must remain present');
+const retained=native.slice(native.indexOf(retainedMarker)+retainedMarker.length);
+const readBranch=retained.slice(retained.indexOf('// Read-only, application-wide export.'),retained.indexOf('// An export persists'));
 assert.doesNotMatch(readBranch,/insert into|delete from|sendmail|invokeurl|\.toFile\(|\.convertToPDF\(/,'paged reads cannot create files or records');
 assert.match(readBranch,/fullResult\.put\("pageSize",20\)/);
 assert.match(readBranch,/fullResult\.put\("hasMore",fullRows\.size\(\) == 20\)/);
@@ -16,8 +22,11 @@ assert.doesNotMatch(readBranch,/range from 0 to 199/);
 
 function compile(source){
   // Deluge map literals are not part of the basic packet adapter.
-  source=source.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)
-    ?`recordValues(${body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')})`:whole);
+  for(;;){
+    const next=source.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)
+      ?`recordValues(${body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')})`:whole);
+    if(next===source)break;source=next;
+  }
   return translate(source).js
     .replace(/\) desc range from 0 to 0/g,').toReversed().slice(0,1)')
     .replace(/\) range from 0 to 19/g,').slice(0,20)')
@@ -66,6 +75,7 @@ function query(form,predicate,sort){
   return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;},set(){writes++;throw Error('Read-only collection attempted a write');}});
 }
 `,c);
+vm.runInContext(compile(fs.readFileSync('creator/functions/budgetElementExportValues.dg','utf8'))+`;thisapp.budgetElementExportValues=budgetElementExportValues;`,c);
 vm.runInContext(compile(fs.readFileSync('creator/functions/budgetElementExportRows.dg','utf8'))+`;thisapp.budgetElementExportRows=function(id){helperCalls++;return budgetElementExportRows(id);};`,c);
 vm.runInContext(compile('string exportRead(string budgetId, string exportType)\n{\n'+readBranch+'\nreturn "LEGACY";\n}'),c);
 

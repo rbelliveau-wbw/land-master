@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 const context=vm.createContext({});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/full-budget-export.js','utf8'),context);
@@ -50,65 +49,7 @@ calls=0;
 await assert.rejects(()=>E.collect(async cursor=>{
   calls++;return page(calls===1?records.slice(0,200):records.slice(200),cursor.after,calls===1?201:202,records.at(-1).id);
 }),/changed during export/);
-const native=fs.readFileSync('creator/functions/exportBudgetSnapshot.dg','utf8');
-const branch=native.slice(native.indexOf('// Read-only, application-wide export.'),native.indexOf('// An export persists'));
-assert.match(branch,/Budget_Category\.Budget != null/);
-for(const field of ['Prelim_Budget_Ttl','Unapproved_Final_Budget_Ttl','Budget_Ttl','HCSS_Actuals','PROJ_Actual'])assert.ok(branch.includes(`${field} != null && ${field} != 0`));
-const itemQuery=branch.match(/fullItems = Budget_Item\[([^\n]+Prelim_Budget_Ttl[^\n]+)\] sort by ID/)[1];
-for(const alternative of itemQuery.split(' || ')){
-  assert.ok(alternative.includes('ID > afterId && ID <= throughId && Budget_Category.Budget != null'), 'each OR alternative repeats all scope bounds, including after Creator removes grouping');
-}
-assert.match(branch,/Status == "Approved"/);assert.match(branch,/Modification_Type,""\) == "Decrease"/);
-assert.equal([...branch.matchAll(/fullValues.add\(/g)].length,16);
-assert.doesNotMatch(branch,/insert into|sendmail|delete from|Edit_All|Budget_Owner|User_Access\[/,'full export is a global read and cannot write or restrict to owned budgets');
-// Execute the actual new Deluge branch; adapt only native query/range/list
-// syntax and record wrappers to the repository's existing offline test runtime.
-let nativeJs=translate('string fullExport(string budgetId, string exportType)\n{\n'+branch+'\nreturn "LEGACY";\n}').js;
-nativeJs=nativeJs.replace(/\) desc range from 0 to 0/g,').reverse().slice(0,1)')
-  .replace(/\) range from 0 to 19/g,').slice(0,20)')
-  .replaceAll('Budget_Category.row.Budget','row.Budget_Category.Budget');
-const nativeContext=vm.createContext({});
-vm.runInContext(`
-  var zoho={loginuser:'viewer-with-no-owned-budgets'},tables={},writes=0;
-  var thisapp={budgetElementExportRows(){return ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({code:String(index+1),label,values:[label,null,null,null,null,null,null,null]}));}};
-  function ifnull(v,f){return v==null?f:v;}
-  function List(){return [];}
-  function Map(){return {put(k,v){this[k]=v;},get(k){return this[k]??null;},toString(){return JSON.stringify(this);}};}
-  String.prototype.toMap=function(){return JSON.parse(this);};
-  Object.prototype.get=function(k){return this[k]??null;};
-  String.prototype.toLong=function(){return BigInt(this);};
-  Number.prototype.abs=function(){return Math.abs(this);};
-  Array.prototype.add=function(v){this.push(v??null);};
-  Array.prototype.size=Array.prototype.count=function(){return this.length;};
-  var links={Budget_Category:'Budget_Category',Budget:'Add_Budget',Subdivision1:'Subdivision',Project:'Project',Budget_Item:'Budget_Item'};
-  function rec(form,row){return new Proxy(row,{get(o,k){
-    if(k==='valueOf')return ()=>BigInt(o.ID);
-    if(k==='toString')return ()=>String(o.ID);
-    if(links[k]&&o[k]!=null&&!(form==='Add_Budget'&&k==='Project')){var parent=(tables[links[k]]||[]).find(r=>r.ID===o[k]);return parent?rec(links[k],parent):null;}
-    return o[k]??null;
-  },set(){writes++;throw Error('Export must not write');}});}
-  function query(form,predicate,sort){var rows=Array.from(tables[form]||[],r=>rec(form,r)).filter(predicate);if(sort)rows.sort((a,b)=>a[sort]>b[sort]?1:a[sort]<b[sort]?-1:0);return new Proxy(rows,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;}});}
-`+nativeJs,nativeContext);
-nativeContext.tables={
-  Add_Budget:[{ID:'11',Project:'Legacy project',Subdivision1:'31',Subdivision_Code:'001',Budget_Owner:'somebody-else',Archived:true},{ID:'12',Project:'Second project',Subdivision_Code:'002'}],
-  Budget_Category:[{ID:'21',Budget:'11',Deparment:'Engineering',Category_Code:'02100',Budget_Category_Name:'Design'},{ID:'22',Budget:'12',Deparment:'Construction',Category_Code:'03100',Budget_Category_Name:'Clearing'}],
-  Subdivision:[{ID:'31',Subdivision_Name:'First phase',Subdivision_Code:'001',Project:'41'}],Project:[{ID:'41',Project_Name:'Linked project'}],
-  Budget_Item:Array.from({length:202},(_,i)=>({ID:String(4410926000000000000n+BigInt(i+1)),Budget_Category:i%2?'22':'21',Item_Name:'Item '+i,Cost_Code:'02101',Budget_Ttl:i===201?null:100,Prelim_Budget_Ttl:null,Unapproved_Final_Budget_Ttl:0,HCSS_Actuals:0,PROJ_Actual:0,Description:'note',Unit:'LF',Per_Unit:null})),
-  Budget_Modification:[{ID:'51',Budget_Item:records[0].id,Status:'Approved',Modification_Type:'Increase',Amount:100},{ID:'52',Budget_Item:records[0].id,Status:'Approved',Modification_Type:'Decrease',Amount:30},{ID:'53',Budget_Item:records[0].id,Status:'Submitted',Modification_Type:'Increase',Amount:999}]
-};
-const nativeRead=cursor=>JSON.parse(vm.runInContext(`fullExport(${JSON.stringify(JSON.stringify(cursor))},"ALL_DETAIL")`,nativeContext));
-const first=nativeRead({after:'0',through:'0'});
-assert.equal(first.ok,true,first.error);assert.equal(first.total,201);assert.equal(first.rows.length,20);assert.equal(first.pageSize,20);
-assert.equal(first.rows[0].values[0],'Linked project');assert.equal(first.rows[0].values[1],'First phase - 001');
-assert.equal(first.rows[0].values[12],70,'only approved signed amounts contribute');assert.equal(first.rows[0].values[8],null);
-assert.equal(first.rows[1].values[0],'Second project','all budgets include another project and archived/unowned budgets');
-const nativeRows=await E.collect(async cursor=>nativeRead(cursor));assert.equal(nativeRows.length,201);
-assert.equal(nativeContext.writes,0);
-nativeContext.tables.Budget_Item.push({ID:'4410926000000009999',Budget_Category:'21',Item_Name:'Offsetting elements',Cost_Code:'02102',Budget_Ttl:0,Prelim_Budget_Ttl:0,Unapproved_Final_Budget_Ttl:0,HCSS_Actuals:0,PROJ_Actual:0,Labor_Budget:100,Other_Budget:-100,Description:'element-only detail'});
-const withOffsets=nativeRead({after:'0',through:'0'});assert.equal(withOffsets.total,202,'offsetting element fields retain a zero-parent row in native export totals');
-const offsetPage=nativeRead({after:records.at(-1).id,through:withOffsets.through});assert.ok(offsetPage.rows.some(row=>row.id==='4410926000000009999'),'native cursor pages include element-only rows with full bounds');
-assert.equal(nativeRead({after:'bad',through:'0'}).ok,false);
-nativeContext.zoho.loginuser='';assert.equal(nativeRead({after:'0',through:'0'}).ok,false);
+await import('./test-budget-full-export-backend.mjs');
 const html=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');
 assert.match(html,/id="fullBudgetExport"/);assert.match(html,/exportType:"ALL_DETAIL"/);
 console.log('Full budget export: complete pagination, XLSX round-trip, text codes, currency, credits, empty/failed/changed reads and native read-only contract passed.');

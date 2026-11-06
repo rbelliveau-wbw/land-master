@@ -1,3 +1,23 @@
+## Full Export Recovery And Batching — 122.29.102, November 5, 2026
+
+The supplied full-export log reaches 980 of 2,881 items before Creator's minute
+limit (2955). The release honors advertised page sizes, retains completed
+pages through bounded minute-throttle recovery, and summarizes audit metadata
+instead of repeatedly rendering every financial row. Native batch reads return
+100 items per call, reducing that scope from 145 calls to 29 while preserving
+parent totals, all five element rows, signed modifications and unknown amounts.
+
+Creator publication of `budgetElementExportValues`, `budgetElementExportRows`
+and `exportBudgetSnapshot` is required for the speed improvement; existing
+Export_Budget_Snapshot bindings and forms/fields remain unchanged. The three
+functions compiled and persisted in Creator Development; its read-only
+90-item export returned all 450 element rows with the new 100-item capacity.
+The existing scoped snapshot and individual Excel export behavior is preserved.
+Creator 9.152 published these three functions to Stage and Production. The live
+Production audit confirms 2,881 items and 14,405 element rows across 29 successful
+pages with no errors. Rollout and verification limits are recorded in the handoff.
+See [scope, checks, deployment order and rollback](../../docs/budget-full-export-recovery-2026-11-05.md).
+
 ## Bounded Excel Exports — 122.29.101, November 5, 2026
 
 Single-budget Excel builds its four-sheet workbook in the browser from saved
@@ -2340,3 +2360,4 @@ arguments remain. Saved Check/Wire details retain viewing/attachments without a
 new deletion workflow. Other Budget archive and file deletion rules are unchanged.
 [Contract, tests and rollback](../../docs/budget-request-permissions-2026-10-19.md).
 Rollback: last live Budget 122.29.54; retain native authorization guards.
+
