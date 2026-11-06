@@ -7,27 +7,33 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // This is an offline behavior check; native compilation remains a release gate.
 const read = path => fs.readFileSync(path, 'utf8');
 const permissionBody=translate(read('creator/functions/hasConstructionPermission.dg')).js;
+const cityBody=translate(read('creator/functions/globalCityPolicy.dg')).js;
+const cityManifest=JSON.parse(read('creator/workflows/global-city/consumers.json'));
+const cityChoices=JSON.parse(read(cityManifest.source_catalog).match(/thisapp\.variables\.City = (\[[^\n]+\]);/)[1]);
 function runValidation(path, input, tables = {}, rawSource = null) {
   const source = (rawSource??read(path)).replace(/alert\s+([^;]+);/g, 'throw Error($1);').replace(/cancel (?:submit|delete);/g, '');
   const body = translate(`string validateConstruction()\n{\n${source}\nreturn "ok";\n}`).js.replace(/\.length\(\)/g, '.length');
-  const context = vm.createContext({inputJson:JSON.stringify(input), tablesJson:JSON.stringify(tables)});
+  const context = vm.createContext({inputJson:JSON.stringify(input), tablesJson:JSON.stringify(tables),cityChoicesJSON:JSON.stringify(cityChoices)});
   vm.runInContext(`
     var input=JSON.parse(inputJson),tables=JSON.parse(tablesJson);
     function ifnull(value,fallback){return value==null?fallback:value;}
-    function Map(){return {put(key,value){this[key]=value;},toString(){return JSON.stringify(this);}};}
+    function Map(){return {put(key,value){this[key]=value;},get(key){return this[key]??null;},toString(){return JSON.stringify(this);}};}
+    function List(){return [];}
+    function isText(value){return typeof value==='string'&&(value.trim()===''||!Number.isFinite(Number(value)));}
     Array.prototype.size=Array.prototype.count=function(){return this.length;};
     Array.prototype.contains=function(value){return this.includes(value);};
+    Array.prototype.add=function(value){this.push(value);};
     String.prototype.toLong=function(){return Number(this);};
     Number.prototype.addDay=function(days){return this+days;};
     Number.prototype.addHour=function(hours){return this+hours;};
     var zoho={loginuser:'signed-in-user',currentdate:100,currenttime:100};
-    var thisapp={permissions:{profileForUser(user){if(tables.__profileError)throw Error('Denied profile');return user===zoho.loginuser?tables.__profile||'':'';},isUserInProfile(profile){return tables.__profile===profile;}}};
+    var thisapp={variables:{City:JSON.parse(cityChoicesJSON)},permissions:{profileForUser(user){if(tables.__profileError)throw Error('Denied profile');return user===zoho.loginuser?tables.__profile||'':'';},isUserInProfile(profile){return tables.__profile===profile;}}};
     function record(row){return new Proxy(row||{},{get(object,key){return object[key]??null;}});}
     function query(form,predicate){
       const rows=(tables[form]||[]).map(record).filter(predicate);
       return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;},set(array,key,value){if(key in array)array[key]=value;else if(array[0])array[0][key]=value;return true;}});
     }
-  `+permissionBody+';thisapp.hasConstructionPermission=hasConstructionPermission;'+body,context);
+  `+permissionBody+';thisapp.hasConstructionPermission=hasConstructionPermission;'+cityBody+';thisapp.globalCityPolicy=globalCityPolicy;'+body,context);
   const result=vm.runInContext('validateConstruction()',context);
   return {input:context.input, tables:context.tables, result};
 }
@@ -204,7 +210,17 @@ for(const workflow of currentWorkflows.values()){
   const capture=JSON.parse(read(workflow.capture));
   assert.equal(capture.nativeScriptActionCount,1,`${workflow.link}: one native script action`);
   assert.equal(capture.scripts.length,1,`${workflow.link}: capture must include every native script action`);
-  assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.source)),`${workflow.link}: complete body, literal content and parentheses match`);
+  let historicalSource=read(workflow.source);
+  if(workflow.link==='Field_Validations_Contrac'){
+    // This independent capture predates the separately audited City and rejection
+    // additions. Preserve its original native body; do not claim it proves them.
+    const guard=read('creator/schema-changes/construction-rejection-2026-11-06/Contract.Construction_Rejection.validate.dg').trimEnd()+'\n\n';
+    const city=read('creator/workflows/global-city/bindings/Contract.on-validate.dg').trimEnd();
+    assert.ok(historicalSource.startsWith(guard),'new rejection prefix remains intact');
+    assert.ok(historicalSource.trimEnd().endsWith(city),'deployed shared City suffix remains intact');
+    historicalSource=historicalSource.slice(guard.length).trimEnd().slice(0,-city.length).trimEnd();
+  }
+  assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(historicalSource),`${workflow.link}: historical native body remains unchanged outside separately tested additions`);
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.evidence)),`${workflow.link}: authoritative after source`);
 }
 for(const f of pageDeployment.functions){

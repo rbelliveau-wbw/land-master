@@ -1,0 +1,185 @@
+{
+  "status": "development-schema-functions-guards-api-and-requested-profile-configuration-verified",
+  "release_request": {
+    "pmp_authorized": true,
+    "creator_publication_by_user": true,
+    "live_development_test": "requested; submit as Dev/Land Acq, reject as Construction Budgeting",
+    "test_recipient": "rbelliveau@wbdevelopment.com",
+    "live_test_result": "pending"
+  },
+  "observed_date": "2026-11-06",
+  "production_published": false,
+  "widget_deployed": false,
+  "widget_candidate": "1.62.57",
+  "audit_form": {
+    "name": "Construction_Review_Log",
+    "id": "4410926000005833341",
+    "created": true,
+    "fields_reopened": true,
+    "field_count": 10,
+    "unique_required_claim_key_reopened": true,
+    "section_row": 1,
+    "initial_save": "Creator returned a generic error; canonical reread confirmed all ten fields and unique required Claim_Key. Its native default omits maxchar."
+  },
+  "contract_marker": {
+    "name": "Construction_Rejection_Operation",
+    "id": "4410926000005833436",
+    "type": "text",
+    "maxchar": 80,
+    "optional": true,
+    "row": 13,
+    "column": 2,
+    "saved": true,
+    "reopened": true
+  },
+  "functions": {
+    "constructionReviewSnapshot": {
+      "id": "4410926000005833441",
+      "compiled": true,
+      "reopened": true,
+      "source_matches": true,
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+    },
+    "buildConstructionRejectionNotification": {
+      "id": "4410926000005833450",
+      "compiled": true,
+      "reopened": true,
+      "source_matches": true,
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+    },
+    "sendConstructionRejectionNotification": {
+      "id": "4410926000005833457",
+      "compiled": true,
+      "reopened": true,
+      "source_matches": true,
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+    },
+    "manageConstructionReview": {
+      "id": "4410926000005833464",
+      "compiled": true,
+      "reopened": true,
+      "source_matches": true,
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+    }
+  },
+  "workflows": {
+    "Field_Validations_Contrac": {
+      "guard_prepended": true,
+      "reopened": true,
+      "existing_rules_preserved": true,
+      "global_city_call_count": 1
+    },
+    "Validate_Construction_Rev": {
+      "form": "Construction_Review_Log",
+      "event": "Created or Edited / Validations on form submission",
+      "saved_action": "Direct add/edit denied"
+    },
+    "Protect_Construction_Revi": {
+      "form": "Construction_Review_Log",
+      "event": "Deleted / Validations on record deletion",
+      "saved_action": "Direct delete denied"
+    }
+  },
+  "api": {
+    "name": "Manage_Construction_Review_DEV",
+    "enabled": true,
+    "application": "Land Master DEVELOPMENT",
+    "application_id": "4410926000000011391",
+    "namespace": "Default",
+    "function": "manageConstructionReview",
+    "method": "POST",
+    "authentication": "OAuth2",
+    "user_scope": "All users",
+    "content_type": "application/json",
+    "argument_type": "Key and Value",
+    "parameters": [
+      {
+        "name": "payload",
+        "type": "string"
+      }
+    ],
+    "response": "Standard",
+    "reopened": true
+  },
+  "profiles": {
+    "CFO": {
+      "parent_marker_visible": true,
+      "parent_marker_readonly": true,
+      "saved_and_reopened": true,
+      "existing_request_and_comment_routes_preserved": true,
+      "raw_log_add": false,
+      "raw_log_view": false,
+      "raw_log_edit": false,
+      "raw_log_delete": false,
+      "raw_log_more": false,
+      "new_review_grant_added": false
+    },
+    "Dev/Land Acq - Proforma & Budgets": {
+      "parent_marker_visible": true,
+      "parent_marker_readonly": true,
+      "saved_and_reopened": true,
+      "existing_request_and_comment_routes_preserved": true,
+      "raw_log_add": false,
+      "raw_log_view": false,
+      "raw_log_edit": false,
+      "raw_log_delete": false,
+      "raw_log_more": false,
+      "new_review_grant_added": false
+    },
+    "Construction Budgeting": {
+      "parent_marker_visible": true,
+      "parent_marker_readonly": true,
+      "saved_and_reopened": true,
+      "existing_request_and_comment_routes_preserved": true,
+      "raw_log_add": false,
+      "raw_log_view": false,
+      "raw_log_edit": false,
+      "raw_log_delete": false,
+      "raw_log_more": false,
+      "new_review_grant_added": false
+    }
+  },
+  "live_permission_helper": "Reopened hasConstructionPermission and confirmed native Construction Budgeting review/submit and CFO/Dev submit defaults plus existing explicit User Access override.",
+  "native_execution_checks": [
+    {
+      "function": "constructionReviewSnapshot",
+      "input": {
+        "contractId": "1",
+        "operationId": ""
+      },
+      "result": "Executed Successfully; structured construction-review-v1 access-denied snapshot; no writes"
+    },
+    {
+      "function": "manageConstructionReview",
+      "input": {
+        "action": "check",
+        "contractId": "1",
+        "operationId": ""
+      },
+      "result": "Executed Successfully; correct String payload parsed and delegated to structured access-denied snapshot; no writes"
+    }
+  ],
+  "verification_limits": [
+    "No live rejection or email was sent. Positive native mail delivery and authenticated end-user sessions for each profile have not been exercised.",
+    "Stage and Production functions/fields/guards/profile changes require user-controlled Creator promotion, then their respective API bindings must be enabled.",
+    "The immutable frontend release and Development mapping are local; no Git push or hosted promotion was requested."
+  ],
+  "checks": {
+    "focused_backend": "passed",
+    "focused_frontend": "passed",
+    "focused_schema_and_profiles": "passed",
+    "full_npm_validate": "passed with bundled Python on process PATH",
+    "npm_build_pages": "passed",
+    "desktop_ui": "actual-source reason, progress, success, definite-failure and ambiguous-result UI inspected"
+  },
+  "screenshots": {
+    "development_api": "C:/Users/R/Desktop/claude/outputs/construction-rejection/creator-development-api.jpg",
+    "unconfirmed_ui": "C:/Users/R/Desktop/claude/outputs/construction-rejection/unconfirmed-notification.jpg"
+  },
+  "remaining_for_production": [
+    "User-controlled Creator Development to Stage and Production promotion of the matching schema, all four functions, three validation workflows and three profile field restrictions",
+    "Register/enable Manage_Construction_Review_STAGE and Manage_Construction_Review against the matching promoted functions",
+    "Promote matching immutable hosted widget release through the repository release process",
+    "Authorized positive end-to-end native notification verification"
+  ]
+}

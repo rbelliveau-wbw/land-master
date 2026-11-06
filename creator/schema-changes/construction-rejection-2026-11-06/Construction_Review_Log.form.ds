@@ -1,0 +1,127 @@
+// New internal form candidate. Install in Development before the new function.
+// Syntax follows the native Approval_Config_Lock and PO_Phase_Lock forms.
+// Do not expose the form or its generated report to application profiles.
+form Construction_Review_Log
+{
+    displayname = "Construction Review Log"
+    success message = "Construction review recorded"
+    Section
+    (
+        type = section
+        row = 1
+        column = 0
+        width = medium
+    )
+    must have unique Claim_Key
+    (
+        type = text
+        displayname = "Claim Key"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Contract1
+    (
+        type = picklist
+        displayname = "Construction Request"
+        values = Contract.ID
+        displayformat = [Contract_Name]
+        row = 1
+        column = 1
+        width = medium
+    )
+    Kind
+    (
+        type = picklist
+        values = {"Decision","Email"}
+        row = 1
+        column = 1
+        width = medium
+    )
+    Operation_ID
+    (
+        type = text
+        displayname = "Operation ID"
+        maxchar = 80
+        row = 1
+        column = 1
+        width = medium
+    )
+    State
+    (
+        type = picklist
+        values = {"recording","recorded","conflict","not-started","sending","sent","failed","missing-recipient","unknown"}
+        row = 1
+        column = 1
+        width = medium
+    )
+    Snapshot
+    (
+        type = textarea
+        height = 100px
+        row = 1
+        column = 1
+        width = medium
+    )
+    Comment_ID
+    (
+        type = text
+        displayname = "Comment ID"
+        maxchar = 30
+        row = 1
+        column = 1
+        width = medium
+    )
+    Attempt_No
+    (
+        type = number
+        displayname = "Attempt Number"
+        maxchar = 9
+        row = 1
+        column = 1
+        width = medium
+    )
+    Sent_At
+    (
+        type = datetime
+        displayname = "Sent At"
+        timedisplayoptions = "hh:mm:ss"
+        alloweddays = 0,1,2,3,4,5,6
+        row = 1
+        column = 1
+        width = medium
+    )
+    Last_Error
+    (
+        type = textarea
+        displayname = "Last Error"
+        height = 100px
+        row = 1
+        column = 1
+        width = medium
+    )
+    actions
+    {
+        on add
+        {
+            submit
+            (
+                type = submit
+                displayname = "Submit"
+            )
+        }
+        on edit
+        {
+            update
+            (
+                type = submit
+                displayname = "Update"
+            )
+            cancel
+            (
+                type = cancel
+                displayname = "Cancel"
+            )
+        }
+    }
+}

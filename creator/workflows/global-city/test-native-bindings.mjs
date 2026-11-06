@@ -32,8 +32,10 @@ for(const c of manifest.consumers){
 }
 const repositoryBefore=read('creator/workflows/Field_Validations_Contrac.dg'),original=local('native-before/Contract.Field_Validations_Contrac.dg'),merged=local('Contract.Field_Validations_Contrac.merged.dg');
 const codeTokens=source=>source.replace(/"(?:\\.|[^"\\])*"|\/\*[\s\S]*?\*\/|\/\/[^\n]*|\s+/g,token=>token.startsWith('"')?token:'');
-assert.equal(codeTokens(original),codeTokens(repositoryBefore),'live pre-change capture preserves the repository action semantics despite native formatting');
-assert.equal(merged,original.trimEnd()+'\n\n'+local(byForm('Contract').on_validate),'captured live Contract action stays byte-for-byte before the shared binding suffix');
+const rejectionGuard=read('creator/schema-changes/construction-rejection-2026-11-06/Contract.Construction_Rejection.validate.dg');
+assert.equal(codeTokens(repositoryBefore),codeTokens(rejectionGuard.trimEnd()+'\n\n'+original.trimEnd()+'\n\n'+local(byForm('Contract').on_validate)),'current native mirror preserves the historical Contract rules and City suffix plus only the new rejection guard');
+assert.equal(merged,repositoryBefore.trimEnd()+'\n','generated integration copy follows the current native mirror');
+assert.equal((merged.match(/thisapp\.globalCityPolicy\(/g)||[]).length,1,'regeneration may not duplicate the existing City policy');
 assert.ok(merged.lastIndexOf('input.City = requestSubdivision.City;')<merged.indexOf('sharedCityRequested ='));
 compiled.set('Contract:merged',compile(merged));
 

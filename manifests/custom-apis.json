@@ -685,6 +685,82 @@
       ],
       "response_type": "Standard",
       "verification_evidence": "creator/crew-locations/native-installed/Crew_Locations_Widget_STAGE.api-evidence.json"
+    },
+    {
+      "name": "Manage_Construction_Review",
+      "consumers": [
+        "widgets/contract-management/src/app/widget.html"
+      ],
+      "matching_creator_function": "manageConstructionReview",
+      "confidence": "proposed-new-binding-native-verification-pending",
+      "implementation_contract": "creator/schema-changes/construction-rejection-2026-11-06/change.json",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "environment": "Production",
+      "enabled": false,
+      "native_verification": "Prepared registry contract only. Register/enable after user-controlled promotion of the matching function/schema/profile changes; do not bind to Development."
+    },
+    {
+      "name": "Manage_Construction_Review_DEV",
+      "consumers": [
+        "widgets/contract-management/src/app/widget.html"
+      ],
+      "matching_creator_function": "manageConstructionReview",
+      "confidence": "development-binding-verified-2026-11-06",
+      "implementation_contract": "creator/schema-changes/construction-rejection-2026-11-06/change.json",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "environment": "Development",
+      "enabled": true,
+      "application_id": "4410926000000011391",
+      "native_verification": "Saved/reopened Enabled, Land Master DEVELOPMENT, Default.manageConstructionReview, OAuth2 POST All users, application/json Key and Value payload:String, Standard response. Helper negative Check executed safely; no live rejection/email. See creator/schema-changes/construction-rejection-2026-11-06/native-install-progress.json."
+    },
+    {
+      "name": "Manage_Construction_Review_STAGE",
+      "consumers": [
+        "widgets/contract-management/src/app/widget.html"
+      ],
+      "matching_creator_function": "manageConstructionReview",
+      "confidence": "proposed-new-binding-native-verification-pending",
+      "implementation_contract": "creator/schema-changes/construction-rejection-2026-11-06/change.json",
+      "method": "POST",
+      "authentication": "OAuth2",
+      "user_scope": "All users",
+      "argument_type": "Key and Value",
+      "content_type": "application/json",
+      "parameters": [
+        {
+          "name": "payload",
+          "type": "string"
+        }
+      ],
+      "response_type": "Standard",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "environment": "Stage",
+      "enabled": false,
+      "native_verification": "Prepared registry contract only. Register/enable after user-controlled promotion of the matching function/schema/profile changes; do not bind to Development."
     }
   ]
 }

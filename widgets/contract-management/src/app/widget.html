@@ -1951,6 +1951,7 @@ select.apr-in{cursor:pointer}
 .approval-progress-status.success{color:var(--green);font-weight:650}
 .approval-progress-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .approval-progress-actions button[hidden]{display:none}
+.construction-reject-body h3{font-size:14px;line-height:1.5;margin:0 0 18px;overflow-wrap:anywhere}.construction-reject-body .fl{display:block;margin-bottom:8px}.construction-reject-body .req{color:var(--red)}.construction-reject-reason{display:block;width:100%;min-height:110px;resize:vertical;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--text);box-sizing:border-box;font:inherit;font-size:13px;line-height:1.6}.construction-reject-delivery{padding:10px 12px;margin-top:12px;border-radius:7px;background:#edf4fd;color:#285b97;font-size:12px;line-height:1.5}#constructionRejectError{margin:8px 0 0;color:var(--red);font-size:12px;line-height:1.5}.construction-reject-saved{padding:0 26px 16px;font-size:12px;line-height:1.6;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}.construction-reject-saved[hidden]{display:none}
 @keyframes approvalProgressNext{0%,100%{box-shadow:0 0 0 1px rgba(59,130,246,.22),0 0 0 4px rgba(59,130,246,.07)}50%{box-shadow:0 0 0 1px rgba(59,130,246,.42),0 0 0 7px rgba(59,130,246,.13)}}
 @keyframes apprSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.approval-progress-step.next,.approval-progress-spin{animation:none}.approval-progress-bar i{transition:none}}
@@ -1984,16 +1985,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.56"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.56">
-<script src="interaction-motion.js?v=1.62.56"></script>
-<script src="interaction-surfaces.js?v=1.62.56"></script>
-<script src="number-edit-commit.js?v=1.62.56"></script>
-<script src="number-transitions.js?v=1.62.56"></script>
-<script src="number-surfaces.js?v=1.62.56"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.56">
-<link rel="stylesheet" href="report-layout.css?v=1.62.56">
-<link rel="stylesheet" href="construction-board.css?v=1.62.56">
+<script src="success-feedback.js?v=1.62.57"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.57">
+<script src="interaction-motion.js?v=1.62.57"></script>
+<script src="interaction-surfaces.js?v=1.62.57"></script>
+<script src="number-edit-commit.js?v=1.62.57"></script>
+<script src="number-transitions.js?v=1.62.57"></script>
+<script src="number-surfaces.js?v=1.62.57"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.57">
+<link rel="stylesheet" href="report-layout.css?v=1.62.57">
+<link rel="stylesheet" href="construction-board.css?v=1.62.57">
 </head>
 <body>
 
@@ -2042,7 +2043,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.56", pageSize: 200, maxPages: 25,
+  version: "1.62.57", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2063,7 +2064,7 @@ var CFG = {
     takedowns: "All_Takedown_Schedules"
   },
   forms: { action: "Contract_Actions", contract: "Contract", version: "Attachment", approval: "Contract_Approvals", proforma: "Add_Pro_Forma", builder: "Builder", pricing: "Contract_Pricing", takedown: "Takedown_Schedule", comment: "Comment_Log" },
-  customApis: { reviewLOI: "Review_LOI_Request", errorReport: "Report_Proforma_Widget_Error", createAttachment: "Create_Contract_Attachment_Record", deleteAttachment: "Delete_Contract_Attachment", attachmentPreview: "Get_Contract_Attachment_Preview", getUserAccess: "Get_User_Access", updateAssignedToMe: "Update_Assigned_To_Me", completeLotContract: "Complete_Lot_Contract", sendContractApprovals: "Send_Contract_Approvals" }
+  customApis: { reviewLOI: "Review_LOI_Request", errorReport: "Report_Proforma_Widget_Error", createAttachment: "Create_Contract_Attachment_Record", deleteAttachment: "Delete_Contract_Attachment", attachmentPreview: "Get_Contract_Attachment_Preview", getUserAccess: "Get_User_Access", updateAssignedToMe: "Update_Assigned_To_Me", completeLotContract: "Complete_Lot_Contract", sendContractApprovals: "Send_Contract_Approvals", constructionReview: "Manage_Construction_Review" }
 };
 /* Reserve headroom below Creator's per-user minute limit; only reads may retry. */
 /* Normal request timing: no artificial per-minute delay. Respect actual Creator
@@ -3008,7 +3009,8 @@ function sdkInvoke(original,attempt){
   delete config.parameters;
   if(!S.liveSDK)return Promise.reject(new Error('Creator connection required.'));
   var scope=JSON.stringify([runtime.environment,runtime.user,runtime.appLinkName]);
-  var readOnly=String(config.api_name||'').replace(/_(DEV|STAGE)$/i,'')===CFG.customApis.completeLotContract&&config.payload&&config.payload.mode==='Check';
+  var readName=String(config.api_name||'').replace(/_(DEV|STAGE)$/i,''),reviewPayload={};if(readName===CFG.customApis.constructionReview&&config.payload&&typeof config.payload.payload==='string'){try{reviewPayload=JSON.parse(config.payload.payload);}catch(ignore){}}
+  var readOnly=config.payload&&(readName===CFG.customApis.completeLotContract&&config.payload.mode==='Check'||readName===CFG.customApis.constructionReview&&reviewPayload.action==='check');
   var apiName=String(config.api_name||'').replace(/_(DEV|STAGE)$/i,''),payload=config.payload||{},writesContract=apiName===CFG.customApis.completeLotContract&&!readOnly||apiName===CFG.customApis.sendContractApprovals&&payload.mode!=='Check';
   var prepare=writesContract?contractParentWritePreflight(payload.contractId,false,scope):Promise.resolve();
   return prepare.then(function(){return LMData.request('custom:'+config.api_name,function(){var current=LMRuntime.current();if(scope!==JSON.stringify([current.environment,current.user,current.appLinkName]))throw new Error('The Creator session changed.');if(attempt){attempt.dispatched=true;if(attempt.startNativeDeadline)attempt.startNativeDeadline();}return ZOHO.CREATOR.DATA.invokeCustomApi(config);},{readOnly:!!readOnly});}).then(function(response){
@@ -6407,8 +6409,9 @@ function constructionEditOpen(cid){var c=findContract(cid);if(!workVisible(c)||w
 function constructionEditClose(){if(contractInteractionHeld()||S.busy)return false;S.constructionEdit=null;closeOverlays();return true;}
 function constructionEditSave(){var edit=S.constructionEdit,data;if(!edit||S.busy||!needsContractEdit(edit.cid))return Promise.resolve(false);try{data=constructionPayload(edit.draft,true);}catch(error){constructionFormError(error);return Promise.resolve(false);}S.busy=true;contractControls();return updateRecord(edit.cid,data,CFG.reports.contracts).then(function(response){Object.assign(findContract(edit.cid),response.verifiedRow);S.busy=false;S.constructionEdit=null;closeOverlays();renderAll();banner('ok','Construction request saved.');return true;}).catch(function(error){constructionFormError(error);return false;}).finally(function(){contractReleaseBusy();contractControls();});}
 function constructionSummary(c){function field(label,value,wide){return '<div'+(wide?' class="wide"':'')+'><span class="fl">'+label+'</span><p>'+esc(value||'—')+'</p></div>';}return '<div class="construction-request-summary">'+field('Budget Type',c.Contract_Type)+field('Construction Plans',c.Construction_Plans)+field('MUD',constructionMudLabel(c.MUD))+field('Priority',c.Priority)+field('Date Needed',fmtDate(c.Date_Needed))+field('Project',displayValue(c.Project)||ncProjectLabel(lookupId(c.Project)))+field('Territory',c.Territory)+field('Requestor',attachmentAuthorLabel(c))+field('Date Submitted',fmtDate(c.Added_Time))+field('Description',c.Description,true)+'</div>';}
-function constructionReviewDecision(cid,ok){var c=findContract(cid);if(!c||S.busy||c.Status!=='Proposed'||!needs(constructionEditAccess(),'review construction requests'))return Promise.resolve(false);if(ok)return constructionReviewRun(cid,true);confirmDialog({kicker:'Construction review',title:c.Contract_Name||'Construction Task',lead:'Mark this request Rejected?',okLabel:'Reject request',danger:true,onConfirm:function(){return constructionReviewRun(cid,false);}});return Promise.resolve(false);}
+function constructionReviewDecision(cid,ok){var c=findContract(cid);if(!c||S.busy||c.Status!=='Proposed'||!needs(constructionEditAccess(),'review construction requests'))return Promise.resolve(false);return ok?constructionReviewRun(cid,true):constructionRejectOpen(cid);}
 function constructionReviewRun(cid,ok){
+  if(!ok)return constructionRejectOpen(cid);
   var c=findContract(cid);if(!c||workModule(c)!=='construction'||c.Status!=='Proposed'||S.busy||!constructionEditAccess())return Promise.resolve(false);
   closeOverlays();var run=contractWorkflowBegin('review',ok?'Accept Construction Task':'Reject Construction Task',{cid:String(cid)});if(!run)return Promise.resolve(false);
   return contractWorkflowRead(run,'Checking request and templates',function(){return Promise.all([sdkGetAll(CFG.reports.contracts,'(ID == '+cid+')',{fresh:true}),sdkGetAll(CFG.reports.actions,'',{fresh:true})]);}).then(function(results){
@@ -6420,6 +6423,125 @@ function constructionReviewRun(cid,ok){
     contractWorkflowReserve(run,'parent-final-status','update',CFG.reports.contracts);return chain.then(function(){return contractWorkflowStep(run,'parent-final-status','update',CFG.reports.contracts,String(cid),{Status:ok?'New':'Rejected'},true);});
   }).then(function(){return contractWorkflowFinish(run);}).catch(function(error){return contractWorkflowFinish(run,error);});
 }
+/* Construction rejection is one authenticated native operation. A check never
+   repeats the decision, comment or mail, including after a lost response. */
+function constructionRejectStore(){return S.constructionRejectReviews||(S.constructionRejectReviews={});}
+function constructionRejectKnown(cid){var p=constructionRejectStore()[String(cid)];return p&&p.scope===contractMutationScope()&&p.generation===S.contractDataGeneration?p:null;}
+function constructionRejectInert(owner,on){
+  if(on){owner.inertNodes=Array.prototype.slice.call(document.body.children).filter(function(node){return node.id!=='overlays'&&node.id!=='contractApprovalProgress'&&node.tagName!=='SCRIPT';}).map(function(node){var previous=node.inert;node.inert=true;return {node:node,previous:previous};});}
+  else{(owner.inertNodes||[]).forEach(function(entry){entry.node.inert=entry.previous;});owner.inertNodes=[];}
+}
+function constructionRejectDraft(cid){var drafts=S.constructionRejectDrafts||(S.constructionRejectDrafts={}),key=contractMutationScope()+':'+String(cid);return drafts[key]||'';}
+function constructionRejectDraftSet(cid,value){var drafts=S.constructionRejectDrafts||(S.constructionRejectDrafts={});drafts[contractMutationScope()+':'+String(cid)]=String(value||'');}
+function constructionRejectOpen(cid){
+  cid=String(cid);var c=findContract(cid),known=constructionRejectKnown(cid);
+  if(!c||workModule(c)!=='construction'||S.busy||contractInteractionHeld()||!constructionEditAccess())return Promise.resolve(false);
+  if(known)return constructionRejectShow(known,'check');
+  if(c.Status!=='Proposed')return Promise.resolve(false);
+  var modal={cid:cid,scope:contractMutationScope(),generation:S.contractDataGeneration,trigger:document.activeElement};S.constructionRejectModal=modal;
+  pendingDismiss=function(){constructionRejectInert(modal,false);if(S.constructionRejectModal===modal)S.constructionRejectModal=null;if(modal.trigger&&modal.trigger.isConnected)modal.trigger.focus();};
+  openModal(modalHead('Construction Review','Reject Construction Request')+'<div class="modal-body construction-reject-body"><h3 id="constructionRejectName">'+esc(c.Contract_Name||'Construction Task')+'</h3><label class="fl" for="constructionRejectReason">Reason For Rejection <span class="req">*</span></label><textarea id="constructionRejectReason" class="construction-reject-reason" rows="4" maxlength="5000" aria-required="true" aria-describedby="constructionRejectDelivery constructionRejectError" placeholder="Explain what needs to change…" oninput="constructionRejectDraftSet(\''+attr(cid)+'\',this.value)">'+esc(constructionRejectDraft(cid))+'</textarea><div class="construction-reject-delivery" id="constructionRejectDelivery">The submitter receives this reason by email.</div><p id="constructionRejectError" role="alert" aria-live="polite"></p></div><div class="modal-foot"><div class="spacer"></div><button type="button" class="btn ghost" onclick="closeOverlays()">Cancel</button><button type="button" class="btn approval-reject" onclick="constructionRejectSubmit()">Reject And Notify</button></div>','sm construction-reject-modal');
+  var dialog=document.querySelector('#overlays .modal');if(dialog){dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label','Reject Construction Request');dialog.setAttribute('aria-describedby','constructionRejectName');}
+  constructionRejectInert(modal,true);$('constructionRejectReason').value=constructionRejectDraft(cid);$('constructionRejectReason').focus();return Promise.resolve(true);
+}
+function constructionRejectSubmit(){
+  var modal=S.constructionRejectModal,reason=String($('constructionRejectReason')&&$('constructionRejectReason').value||'').trim(),c=modal&&findContract(modal.cid);
+  if(!modal||modal.scope!==contractMutationScope()||modal.generation!==S.contractDataGeneration||S.busy||contractInteractionHeld()||!constructionEditAccess()||!c||c.Status!=='Proposed')return Promise.resolve(false);
+  if(!reason||reason.length>5000){$('constructionRejectError').textContent=!reason?'Enter a reason for rejection.':'Use no more than 5,000 characters.';$('constructionRejectReason').focus();return Promise.resolve(false);}
+  constructionRejectDraftSet(modal.cid,reason);
+  var p={kind:'constructionreject',cid:modal.cid,name:c.Contract_Name||'Construction Task',reason:reason,operationId:'cr-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)+'-'+Math.random().toString(36).slice(2),scope:modal.scope,generation:modal.generation,trigger:modal.trigger,ids:[],last:null};
+  closeOverlays();constructionRejectStore()[p.cid]=p;return constructionRejectShow(p,'reject');
+}
+function constructionRejectView(cid){
+  cid=String(cid);var c=findContract(cid);if(!c||workModule(c)!=='construction'||!constructionAccess()||S.busy||contractInteractionHeld())return Promise.resolve(false);
+  var p=constructionRejectKnown(cid)||{kind:'constructionreject',cid:cid,name:c.Contract_Name||'Construction Task',reason:'',operationId:String(c.Construction_Rejection_Operation||''),scope:contractMutationScope(),generation:S.contractDataGeneration,trigger:document.activeElement,ids:[],last:null};
+  constructionRejectStore()[cid]=p;return constructionRejectShow(p,'check');
+}
+function constructionRejectShow(p,action){
+  if(contractInteractionHeld()||S.busy||p.scope!==contractMutationScope()||p.generation!==S.contractDataGeneration||!constructionAccess())return Promise.resolve(false);
+  p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.visual=null;contractApprovalProgress=p;S.busy=true;constructionRejectInert(p,true);contractControls();
+  $('contractApprovalProgressSteps').textContent='';$('contractApprovalProgress').hidden=false;constructionRejectRender(p);$('contractApprovalProgress').querySelector('.approval-progress-dialog').focus();
+  return constructionRejectPerform(p,action);
+}
+function constructionRejectResponse(p,response){
+  var out=unwrapApi(response);if(!out||typeof out!=='object'||Array.isArray(out)||out.contract!=='construction-review-v1'||String(out.contractId)!==p.cid||p.operationId&&String(out.operationId||'')!==p.operationId){var error=new Error('Construction rejection status is unavailable. The action may have been saved; check this request before another decision.');error.reconciliationUnavailable=true;throw error;}
+  if(!p.operationId&&out.operationId)p.operationId=String(out.operationId);return out;
+}
+function constructionRejectRequest(p,action){
+  if(!contractApprovalCurrent(p)||!constructionAccess()||action!=='check'&&!constructionEditAccess())return Promise.reject(new Error('Construction review access changed. Refresh before another request.'));
+  if(p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending))return Promise.reject(new Error('The previous request has not settled.'));
+  var attempt={scope:p.scope};p.nativeAttempt=attempt;
+  var body={contractId:p.cid,operationId:p.operationId,action:action,reason:action==='reject'?p.reason:''};
+  var config={api_name:CFG.customApis.constructionReview,http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify(body)}};
+  return contractMutationDeadline(attempt,sdkInvoke(config,attempt),'native').then(function(response){if(!contractApprovalCurrent(p))throw new Error('The captured Construction session changed.');return constructionRejectResponse(p,response);}).catch(function(error){
+    if(error&&error.response){try{return constructionRejectResponse(p,error.response);}catch(ignore){}}
+    throw error;
+  });
+}
+function constructionRejectPerform(p,action){
+  return constructionRejectRequest(p,action).then(function(out){if(!contractApprovalCurrent(p)){constructionRejectCancelContext(p);return false;}constructionRejectInspect(p,out);return out;}).catch(function(error){
+    if(!contractApprovalCurrent(p)){constructionRejectCancelContext(p);return false;}
+    if(action!=='check'&&!error.reconciliationUnavailable&&!(p.nativeAttempt&&p.nativeAttempt.nativePending))return constructionRejectRequest(p,'check').then(function(out){constructionRejectInspect(p,out);return out;}).catch(function(checkError){constructionRejectFinish(p,'error',errText(checkError));return false;});
+    constructionRejectFinish(p,'error',errText(error));return false;
+  }).finally(function(){if(contractApprovalProgress===p)constructionRejectRender(p);});
+}
+function constructionRejectCancelContext(p){if(contractApprovalProgress!==p)return;clearTimeout(p.visual);constructionRejectInert(p,false);contractApprovalProgress=null;$('contractApprovalProgress').hidden=true;var saved=$('constructionRejectSaved');if(saved)saved.remove();contractReleaseBusy();}
+function constructionRejectInspect(p,out){
+  p.last=out;p.canRetryEmail=out.canRetryEmail===true&&['failed','not-started','missing-recipient'].indexOf(String(out.emailState))>=0&&constructionEditAccess();
+  if(out.rejectionRecorded===true){p.target=1;p.reason=String(out.reason||p.reason||'');var c=findContract(p.cid);if(c){c.Status='Rejected';c.Construction_Rejection_Operation=p.operationId;}constructionRejectDraftSet(p.cid,'');}
+  if(out.rejectionRecorded===true&&out.commentRecorded===true)p.target=2;
+  if(out.rejectionRecorded===true&&out.commentRecorded===true&&out.emailState==='sent'&&out.emailSentAt){p.target=3;return constructionRejectSettle(p,'success','Request rejected. Email sent to '+String(out.recipient||'the original submitter')+'.');}
+  if(out.rejectionRecorded===true&&out.commentRecorded===true){
+    var message=out.emailState==='missing-recipient'?'Request rejected and reason saved. The submitter has no valid email address.':out.emailState==='failed'?'Request rejected and reason saved. The notification email could not be sent.':'Request rejected and reason saved. Email delivery is unconfirmed. Check Status before another send.';
+    return constructionRejectSettle(p,'warning',message);
+  }
+  constructionRejectSettle(p,'error',String(out.message||'The rejection could not be confirmed. Check Status before another decision.'));
+}
+function constructionRejectSettle(p,kind,message){
+  p.pendingResult={kind:kind,message:message};var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduced)return constructionRejectFinish(p,kind,message);
+  function pace(){if(!contractApprovalCurrent(p))return;if(p.step<p.target){p.step++;constructionRejectRender(p);p.visual=setTimeout(pace,560);}else constructionRejectFinish(p,kind,message);}
+  p.visual=setTimeout(pace,560);
+}
+function constructionRejectFinish(p,kind,message){
+  if(contractApprovalProgress!==p)return;if(!contractApprovalCurrent(p)||!constructionAccess()){constructionRejectCancelContext(p);return;}clearTimeout(p.visual);p.visual=null;p.pendingResult=null;p.terminal=kind;p.message=message;constructionRejectRender(p);
+}
+function constructionRejectRender(p){
+  if(!contractApprovalCurrent(p)||!constructionAccess()){constructionRejectCancelContext(p);return;}
+  var labels=['Recording Rejection','Saving Rejection Reason','Notifying Submitter'],steps=$('contractApprovalProgressSteps');
+  if(!steps.children.length)labels.forEach(function(label){var row=document.createElement('li');row.innerHTML='<span class="approval-progress-icon" aria-hidden="true"></span><span class="approval-progress-main"><span class="approval-progress-name"></span><span class="approval-progress-detail"></span></span><span class="approval-progress-chip"></span>';row.querySelector('.approval-progress-name').textContent=label;steps.appendChild(row);});
+  labels.forEach(function(label,index){var row=steps.children[index],state=p.terminal==='success'?'done':p.terminal?(index<p.target?'done':index===Math.min(p.target,2)?p.terminal==='warning'?'warning':'failed':'pending'):index<p.step?'done':index===p.step?'run':'pending';row.className='approval-progress-step '+state;
+    row.querySelector('.approval-progress-icon').innerHTML=state==='run'?'<span class="approval-progress-spin"></span>':state==='done'?'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l3 3 7-7"/></svg>':state==='failed'?'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>':state==='warning'?'!':String(index+1);
+    row.querySelector('.approval-progress-chip').textContent=state==='done'?'Done':state==='run'?'Running':state==='warning'?(p.canRetryEmail?'Needs Retry':'Unconfirmed'):state==='failed'?'Needs Review':'Up Next';row.querySelector('.approval-progress-detail').textContent='';});
+  $('contractApprovalProgressTitle').textContent=p.terminal==='success'?'Request Rejected':p.terminal==='warning'?'Notification Needs Attention':p.terminal==='error'?'Rejection Needs Attention':'Rejecting Request';
+  $('contractApprovalProgress').querySelector('.approval-progress-kicker').textContent='Construction Review';$('contractApprovalProgressSub').textContent=p.name;
+  var bar=$('contractApprovalProgressBar');bar.className='approval-progress-bar'+(p.terminal?' '+p.terminal:'');bar.setAttribute('data-lm-motion','meter');bar.querySelector('i').style.width=(p.terminal?Math.round(p.target*100/3):Math.round(p.step*100/3))+'%';
+  var status=$('contractApprovalProgressStatus');status.className='approval-progress-status'+(p.terminal?' '+p.terminal:'');status.setAttribute('data-lm-motion','feedback');status.setAttribute('data-state',p.terminal||'pending');status.textContent=p.terminal?p.message:labels[Math.min(p.step,2)]+' — leave this open until it finishes.';
+  var busy=!!(p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending)),retry=$('contractApprovalProgressRetry'),close=$('contractApprovalProgressClose');retry.hidden=!p.terminal||p.terminal==='success';retry.disabled=busy;retry.textContent=p.canRetryEmail?'Retry Email':'Check Status';close.disabled=!p.terminal||busy;close.textContent=p.terminal==='success'?'Done':'Close';close.className=p.terminal==='success'?'btn sm primary':'btn sm';
+  var saved=$('constructionRejectSaved');if(!saved){saved=document.createElement('div');saved.id='constructionRejectSaved';saved.className='construction-reject-saved';steps.parentNode.insertBefore(saved,steps.nextSibling);}saved.hidden=!p.terminal||!p.last||p.last.rejectionRecorded!==true;saved.textContent=saved.hidden?'':'Reason: '+p.reason;
+  if(p.terminal&&!busy&&!p.terminalFocused){p.terminalFocused=true;(retry.hidden?close:retry).focus();}
+}
+function constructionRejectRetry(p){
+  if(!contractApprovalCurrent(p)||!p.terminal||p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending)||!constructionAccess())return Promise.resolve(false);
+  var retryEmail=p.canRetryEmail&&constructionEditAccess();p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.canRetryEmail=false;constructionRejectRender(p);
+  return constructionRejectRequest(p,'check').then(function(out){
+    if(!contractApprovalCurrent(p)){constructionRejectCancelContext(p);return false;}
+    if(retryEmail&&out.rejectionRecorded===true&&out.commentRecorded===true&&out.canRetryEmail===true&&['failed','not-started','missing-recipient'].indexOf(String(out.emailState))>=0&&constructionEditAccess())return constructionRejectPerform(p,'retry-email');
+    constructionRejectInspect(p,out);return out;
+  }).catch(function(error){constructionRejectFinish(p,'error',errText(error));return false;});
+}
+function constructionRejectClose(p){
+  if(!p.terminal||p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending))return false;
+  if(p.last&&p.last.rejectionRecorded===false&&p.last.writeState==='not-started')delete constructionRejectStore()[p.cid];
+  clearTimeout(p.visual);constructionRejectInert(p,false);contractApprovalProgress=null;$('contractApprovalProgress').hidden=true;var saved=$('constructionRejectSaved');if(saved)saved.remove();contractReleaseBusy();
+  if(p.scope===contractMutationScope()&&p.generation===S.contractDataGeneration){renderAll();if(p.trigger&&p.trigger.isConnected)p.trigger.focus();else{var search=$('search');if(search)search.focus();}}
+  return true;
+}
+document.addEventListener('keydown',function(event){
+  var modal=S.constructionRejectModal;if(!modal)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();closeOverlays();return;}if(event.key!=='Tab')return;
+  var dialog=document.querySelector('#overlays .construction-reject-modal'),controls=dialog&&Array.prototype.slice.call(dialog.querySelectorAll('button:not(:disabled),textarea:not(:disabled)'));if(!controls||!controls.length)return;
+  if(event.shiftKey&&document.activeElement===controls[0]){event.preventDefault();controls[controls.length-1].focus();}else if(!event.shiftKey&&document.activeElement===controls[controls.length-1]){event.preventDefault();controls[0].focus();}
+},true);
 function constructionPriorityHTML(value){var label=String(value||'').trim(),kind={ASAP:'asap',High:'high',Medium:'medium'}[label]||'';return '<span class="construction-priority'+(kind?' priority-'+kind:'')+'">'+esc(label||'—')+'</span>';}
 function renderConstructionReviews(){
   var rows=proposedContracts(),held=contractInteractionHeld()?' disabled':'';
@@ -7794,6 +7916,7 @@ function contractProgressCall(p,mode){
   }).finally(function(){if(contractApprovalProgress===p)contractProgressRender(p);});
 }
 function contractProgressRender(p){
+  if(p.kind==='constructionreject')return constructionRejectRender(p);
   var labels=p.kind==="loireject"?LOI_REJECT_LABELS:CONTRACT_PROGRESS_LABELS,steps=$("contractApprovalProgressSteps");
   if(!steps.children.length){
     labels.forEach(function(label){
@@ -7894,6 +8017,7 @@ function contractProgressDeadline(p){
 }
 function contractProgressClose(){
   var p=contractApprovalProgress;if(!p||!p.terminal||p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending))return false;
+  if(p.kind==='constructionreject')return constructionRejectClose(p);
   clearTimeout(p.timer);clearTimeout(p.deadline);clearTimeout(p.visual);contractApprovalProgress=null;$('contractApprovalProgress').hidden=true;contractReleaseBusy();contractControls();
   if(p.scope!==contractMutationScope()||p.generation!==S.contractDataGeneration)return true;
   var navigation=S.contractNavigationGeneration||0;
@@ -7903,6 +8027,7 @@ function contractProgressClose(){
 $("contractApprovalProgressClose").addEventListener("click",contractProgressClose);
 $("contractApprovalProgressRetry").addEventListener("click",function(){
   var p=contractApprovalProgress;if(!p||!p.terminal||!contractApprovalCurrent(p)||p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending))return;
+  if(p.kind==='constructionreject')return constructionRejectRetry(p);
   p.terminal="";p.message="";p.step=0;p.target=0;p.pendingResult=null;p.last=null;p.repairUsed=false;p.reconciliationUnavailable=false;p.started=Date.now();
   p.deadline=setTimeout(function(){contractProgressDeadline(p);},20000);contractProgressRender(p);
   contractProgressCall(p,"Check").then(function(s){
@@ -10243,7 +10368,7 @@ function renderDetail(){
 
   var strip='<div class="info-strip">'
     +'<div class="info-name-block"><div class="info-kicker">'+(construction?(S.actionsMode==="edit"?"Edit Construction Actions":"Request Workspace"):(S.actionsMode==="edit"?"Edit Contract Actions":"Contract Workspace"))+'</div><div class="info-name">'+esc(c.Contract_Name||((construction?"Request ":"Contract ")+c.ID))+'</div></div>'
-    +'<div class="info-nav">'+detailSwitch(c.ID)+(workModule(c)==='construction'&&mayEdit(c.ID)?'<button class="btn sm" onclick="constructionEditOpen(\''+c.ID+'\')">Edit request</button>':'')+contractCommentButton(c)+(hasLotsPricingAccess(c.ID)?'<button class="btn sm"'+(mayChangeLotsPricing(c.ID)&&!contractInteractionHeld()?'':' disabled')+' onclick="clpOpen(\''+c.ID+'\')">Change Lots &amp; Pricing</button>':'')+'</div>'
+    +'<div class="info-nav">'+detailSwitch(c.ID)+(workModule(c)==='construction'&&mayEdit(c.ID)?'<button class="btn sm" onclick="constructionEditOpen(\''+c.ID+'\')">Edit request</button>':'')+(construction&&constructionAccess()&&(c.Status==='Rejected'||c.Construction_Rejection_Operation||constructionRejectKnown(c.ID))?'<button class="btn sm"'+(contractInteractionHeld()?' disabled':'')+' onclick="constructionRejectView(\''+c.ID+'\')">View Rejection</button>':'')+contractCommentButton(c)+(hasLotsPricingAccess(c.ID)?'<button class="btn sm"'+(mayChangeLotsPricing(c.ID)&&!contractInteractionHeld()?'':' disabled')+' onclick="clpOpen(\''+c.ID+'\')">Change Lots &amp; Pricing</button>':'')+'</div>'
     +(c.Contract_Type?'<div class="info-field"><div class="info-lbl">'+(construction?'Budget Type':'Type')+'</div><div class="info-val">'+(isLotContract(c)&&mayChangeLotsPricing(c.ID)?cbo({id:"detail_lot_type",value:lotTypeLabel(c.Contract_Type),opts:["Lot (Master)","Lot (Amendment)"],title:"Change Lot Type & Parent",onpick:"clpOpenType('"+String(c.ID)+"',value)"}):esc(c.Contract_Type))+'</div></div>':'')
     +(isLotContract(c)?'<div class="info-field"><div class="info-lbl">Project</div><div class="info-val">'+(mayChangeLotsPricing(c.ID)?'<button class="info-parent-btn" title="Change Project" onclick="clpOpen(\''+c.ID+'\')">'+esc(lotContractProject(c)?ncProjectLabel(lotContractProject(c)):"Choose Project")+'</button>':esc(displayValue(c.Project)||"—"))+'</div></div><div class="info-field"><div class="info-lbl">Territory</div><div class="info-val">'+esc(c.Territory||"—")+'</div></div>':'')
     +'<div class="info-field"><div class="info-lbl">'+(construction?'Parent Request':'Parent Contract')+'</div><div class="info-val">'+(contractChildren(c.ID).length?esc(contractParentName(c)||"None"):mayEdit(c.ID)?'<button class="info-parent-btn" title="Assign or change '+(construction?'Parent Request':'Parent Contract')+'" onclick="contractParentOpen(\''+c.ID+'\')">'+esc(contractParentName(c)||"Assign parent")+'</button>':esc(contractParentName(c)||"None"))+'</div></div>'

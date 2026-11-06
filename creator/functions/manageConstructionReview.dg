@@ -1,0 +1,135 @@
+string manageConstructionReview(string payload)
+{
+	result = Map(); result.put("ok",false); result.put("contract","construction-review-v1"); result.put("writeState","not-started");
+	cid = ""; op = ""; decisionId = 0;
+	try
+	{
+		if(ifnull(payload,"").len() > 60000) { result.put("message","The review request is too large."); return result.toString(); }
+		p = ifnull(payload,"{}").toMap();
+		action = ifnull(p.get("action"),"").toString().trim().toLowerCase();
+		actions = {"reject","check","retry-email"};
+		if(!actions.contains(action)) { result.put("message","Choose a valid construction review action."); return result.toString(); }
+		typedId = Map(); typedId.put("value",p.get("contractId"));
+		if(!typedId.toString().matches("^[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[1-9][0-9]*\"[ ]*[}][ ]*$"))
+		{
+			result.put("message","The construction request ID must be a string."); return result.toString();
+		}
+		cid = p.get("contractId"); op = ifnull(p.get("operationId"),"").toString().trim();
+		result.put("contractId",cid); result.put("operationId",op);
+		if(action == "check") { return thisapp.constructionReviewSnapshot(cid,op).toString(); }
+		if(thisapp.hasConstructionPermission(zoho.loginuser,true) != true)
+		{
+			result.put("message","Edit All Construction Requests access is required to review this request."); return result.toString();
+		}
+		if(!op.matches("^[A-Za-z0-9-]{20,80}$")) { result.put("message","A unique rejection operation is required."); return result.toString(); }
+		parent = Contract[ID == cid.toLong()];
+		if(parent.count() != 1 || ifnull(parent.Work_Module,"") != "Construction")
+		{
+			result.put("message","The construction request is unavailable."); return result.toString();
+		}
+		existing = Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Decision") && (Operation_ID == op)];
+		if(action == "retry-email")
+		{
+			if(existing.count() != 1) { result.put("message","The saved rejection operation is unavailable."); return result.toString(); }
+			return thisapp.sendConstructionRejectionNotification(existing.ID.toString()).toString();
+		}
+		reason = ifnull(p.get("reason"),"").toString().trim();
+		if(reason == "" || reason.len() > 5000) { result.put("message","Enter a rejection reason of at most 5,000 characters."); return result.toString(); }
+		if(existing.count() > 0)
+		{
+			// Repeated Reject only returns its receipt. Sending is a separate,
+			// explicit guarded retry, so an uncertain first response cannot replay it.
+			return thisapp.constructionReviewSnapshot(cid,op).toString();
+		}
+		activeDecisions = Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Decision") && (State == "recording")];
+		if(activeDecisions.count() > 0)
+		{
+			// A marker assignment can change Modified_Time before the status write.
+			// Never treat that intermediate version as a new review cycle.
+			result.put("message","A rejection is already being processed or needs review. Check the request's saved rejection before taking another action."); return result.toString();
+		}
+		if(parent.Status != "Proposed" || parent.Modified_Time == null)
+		{
+			result.put("status",ifnull(parent.Status,"")); result.put("message","The request is no longer awaiting review. Refresh before reviewing it."); return result.toString();
+		}
+		version = parent.Modified_Time.toLong().toString();
+		claimKey = "decision|" + cid + "|" + version;
+		actor = zoho.loginuser; reviewer = actor.toString(); access = User_Access[User == actor];
+		if(access.count() == 1 && ifnull(access.Full_Name,"").trim() != "") { reviewer = access.Full_Name.trim(); }
+		context = "";
+		if(parent.Project != null)
+		{
+			project = Project[ID == parent.Project];
+			if(project.count() == 1) { context = ifnull(project.Project_Name,""); }
+		}
+		if(parent.Subdivision1 != null)
+		{
+			for each subId in parent.Subdivision1
+			{
+				subdivision = Subdivision[ID == subId];
+				if(subdivision.count() == 1 && ifnull(subdivision.Subdivision_Name,"") != "")
+				{
+					context = if(context == "",subdivision.Subdivision_Name,context + " · " + subdivision.Subdivision_Name);
+				}
+			}
+		}
+		snapshot = Map(); snapshot.put("reason",reason); snapshot.put("actor",actor.toString()); snapshot.put("reviewer",reviewer);
+		snapshot.put("reviewedAt",zoho.currenttime.toString("MMM d, yyyy · h:mm a"));
+		snapshot.put("submitter",ifnull(parent.Added_User,"").toString());
+		snapshot.put("requestName",ifnull(parent.Contract_Name,"Construction Request")); snapshot.put("context",context); snapshot.put("version",version);
+		if(snapshot.toString().len() > 60000) { result.put("message","The saved rejection details are too large."); return result.toString(); }
+		// A native unique decision claim fences concurrent reviewers of this
+		// Proposed version. Its immutable snapshot survives comment edits/deletes.
+		decisionId = insert into Construction_Review_Log
+		[
+			Claim_Key=claimKey
+			Contract1=parent.ID
+			Kind="Decision"
+			Operation_ID=op
+			State="recording"
+			Snapshot=snapshot.toString()
+			Attempt_No=0
+			Added_User=zoho.loginuser
+		];
+		decision = Construction_Review_Log[ID == decisionId];
+		// The native Contract validation guard blocks status edits while this
+		// recording claim exists; check state/version again after acquiring it.
+		parent = Contract[ID == cid.toLong()];
+		activeDecisions = Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Decision") && (State == "recording")];
+		if(parent.count() != 1 || activeDecisions.count() != 1 || parent.Status != "Proposed" || ifnull(parent.Work_Module,"") != "Construction" || parent.Modified_Time == null || parent.Modified_Time.toLong().toString() != version)
+		{
+			decision.State="conflict"; decision.Last_Error="The request changed before rejection.";
+			result.put("message","The request changed before rejection. Refresh before reviewing it."); return result.toString();
+		}
+		result.put("writeState","started");
+		parent.Construction_Rejection_Operation=op;
+		parent.Status="Rejected";
+		commentText = "Request Rejected\n\n" + reason;
+		commentId = insert into Comment_Log
+		[
+			Contract1=parent.ID
+			Comment=commentText
+			User=actor
+			Author_Name=reviewer
+			Edited=false
+			Deleted=false
+			Added_User=zoho.loginuser
+		];
+		decision.Comment_ID=commentId.toString();
+		decision.State="recorded";
+		// Do not invoke postRecordComment: its ordinary owner notification has
+		// different recipients and would create an extra, misleading email.
+		return thisapp.sendConstructionRejectionNotification(decisionId.toString()).toString();
+	}
+	catch(reviewError)
+	{
+		if(decisionId > 0)
+		{
+			// Retain a recording receipt after partial/unknown writes. Do not repeat
+			// the parent mutation, comment insertion, or notification on Check.
+			return thisapp.constructionReviewSnapshot(cid,op).toString();
+		}
+		result.put("message","The review could not start. Another reviewer may already be processing this request; check its status.");
+	}
+	return result.toString();
+}

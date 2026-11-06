@@ -1,0 +1,11 @@
+// Add only this optional server-owned field inside the current Contract form.
+// Do not replace the existing form with a historical export.
+Construction_Rejection_Operation
+(
+    type = text
+    displayname = "Construction Rejection Operation"
+    maxchar = 80
+    row = 13
+    column = 2
+    width = medium
+)

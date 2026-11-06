@@ -1,0 +1,4 @@
+// Internal Construction_Review_Log / Created or Edited / Validate action.
+// The authenticated helper performs native Deluge inserts and updates.
+alert "Construction review history is maintained by the review action.";
+cancel submit;

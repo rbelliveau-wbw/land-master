@@ -38,6 +38,7 @@ data arrives. Denied or pending LOI reads retain an explicitly incomplete count.
 | Pro Forma Reject | Recording rejection | Restarting approval at VP | Sending return email |
 | Budget Modification Reject | Recording rejection | Closing approval chain | Notifying prior approvers |
 | Contract Legal LOI Reject | Recording Legal rejection | Returning LOI to Pro Forma | Notifying Acquisition |
+| Construction Review Reject | Recording rejection | Saving rejection comment | Notifying submitter |
 
 Use the equivalent three short, truthful phases for a new object. A phase is Done only when the targeted persisted state supports it; an API call returning without an error is not proof of routing, delivery, or finalization.
 
@@ -181,3 +182,22 @@ limited to completion mail and changes no approval routing, recipient list,
 PDF packet, progress phase, reconciliation or retry behavior. The source change
 requires user publication of `Send_Proforma_Approval_Email_With_Context` in
 Creator; Pages promotion does not publish it.
+
+
+## Construction Review Rejection — November 6, 2026
+
+The Construction Reject dialog requires a reason, then opens compact progress
+for the saved decision, comment and submitter notification. Its authenticated
+`manageConstructionReview` action stores an immutable original snapshot and
+unique decision/email-attempt claims. Reuse the existing Construction review
+permission; CFO and Dev/Land Acq submit defaults do not become review grants.
+
+Confirmed notification success requires the saved Rejected parent, matching
+decision operation, recorded comment and a matching email attempt stamped only
+after sendmail succeeds. Missing recipient or confirmed mail failure leaves the
+rejection saved with a warning and permits only a guarded email retry. An
+ambiguous sending/unknown attempt permits read-only Check, never automatic
+resend. Preserve acknowledged-save policy, pending duplicate locks, focus,
+reduced motion and targeted lost-reply recovery. See [the feature
+contract](../../docs/construction-rejection-2026-11-06.md) for native guards,
+profile checks, environment API suffixes and deployment evidence.

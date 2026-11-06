@@ -1,0 +1,3 @@
+// Internal Construction_Review_Log / Deleted / Validate action.
+alert "Construction review history cannot be deleted directly.";
+cancel delete;

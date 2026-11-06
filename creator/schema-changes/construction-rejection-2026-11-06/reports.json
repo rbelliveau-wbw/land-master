@@ -1,0 +1,61 @@
+{
+  "status": "existing-projections-preserved-server-check-resolves-pointer",
+  "updates": [
+    {
+      "report": "Construction_Requests",
+      "source_form": "Contract",
+      "add_read_only_fields": [],
+      "required_existing_fields": [
+        "ID",
+        "Work_Module",
+        "Status",
+        "Contract_Name",
+        "Project",
+        "Subdivision1",
+        "Added_User",
+        "Added_Time"
+      ],
+      "preserve_criteria": "Work_Module == Construction",
+      "preserve_existing_grants": true,
+      "optional_read_only_fields": [
+        "Construction_Rejection_Operation"
+      ],
+      "projection_required": false
+    },
+    {
+      "report": "All_Contracts1",
+      "source_form": "Contract",
+      "add_read_only_fields": [],
+      "preserve_criteria": true,
+      "preserve_existing_grants": true,
+      "optional_read_only_fields": [
+        "Construction_Rejection_Operation"
+      ],
+      "projection_required": false
+    }
+  ],
+  "projection_rule": "Preserve existing Quick View and Detail View fields. Rejected requests offer View Rejection without relying on the optional pointer appearing in SDK report projections; scoped read-only Check resolves it server-side. Never expose internal Snapshot, recipient, attempts or Last_Error in a general report.",
+  "new_internal_form": {
+    "name": "Construction_Review_Log",
+    "report_name": null,
+    "report_discovery": "Inspect the report automatically created by Creator and any other reports on this form",
+    "profile_view": false,
+    "profile_add": false,
+    "profile_edit": false,
+    "profile_delete": false,
+    "profile_export": false,
+    "page_embedding": false,
+    "report_name_verified": false,
+    "report_display_name_verified": "Construction Review Log Report"
+  },
+  "unchanged": [
+    "Construction_Comments",
+    "Construction_Actions",
+    "Construction_Attachments",
+    "Legal reports and page",
+    "Contract_Proforma_Choices",
+    "User_Access report permissions"
+  ],
+  "saved_reason_display": "Existing Construction_Comments thread plus scoped Construction review Check response; immutable original retained in internal decision Snapshot",
+  "native_requested_profile_grants_verified": true
+}

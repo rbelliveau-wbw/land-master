@@ -1,0 +1,95 @@
+map constructionReviewSnapshot(string contractId, string operationId)
+{
+	result = Map();
+	result.put("ok",false); result.put("contract","construction-review-v1");
+	result.put("contractId",ifnull(contractId,"")); result.put("operationId",ifnull(operationId,""));
+	result.put("rejectionRecorded",false); result.put("commentRecorded",false);
+	result.put("emailState","not-started"); result.put("emailSentAt",""); result.put("recipient","");
+	result.put("canRetryEmail",false); result.put("writeState","not-started");
+	try
+	{
+		cid = ifnull(contractId,"").trim(); op = ifnull(operationId,"").trim();
+		if(!cid.matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(zoho.loginuser,false) != true)
+		{
+			result.put("message","Construction request access is required."); return result;
+		}
+		parent = Contract[ID == cid.toLong()];
+		if(parent.count() != 1 || ifnull(parent.Work_Module,"") != "Construction")
+		{
+			result.put("message","The construction request is unavailable."); return result;
+		}
+		result.put("status",ifnull(parent.Status,""));
+		if(op == "") { op = ifnull(parent.Construction_Rejection_Operation,"").trim(); }
+		result.put("operationId",op);
+		if(op == "")
+		{
+			result.put("ok",true); result.put("message","No rejection notification is recorded for this request."); return result;
+		}
+		if(!op.matches("^[A-Za-z0-9-]{20,80}$"))
+		{
+			result.put("message","A valid rejection operation is required."); return result;
+		}
+		decision = Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Decision") && (Operation_ID == op)];
+		if(decision.count() == 0)
+		{
+			result.put("ok",true); result.put("message","No rejection was recorded for this operation."); return result;
+		}
+		if(decision.count() != 1)
+		{
+			result.put("writeState","unknown"); result.put("message","The rejection record needs review."); return result;
+		}
+		snapshot = ifnull(decision.Snapshot,"{}").toMap();
+		result.put("decisionId",decision.ID.toString());
+		result.put("reason",ifnull(snapshot.get("reason"),""));
+		result.put("reviewer",ifnull(snapshot.get("reviewer"),""));
+		result.put("reviewedAt",ifnull(snapshot.get("reviewedAt"),""));
+		result.put("commentId",ifnull(decision.Comment_ID,""));
+		rejected = parent.Status == "Rejected" && ifnull(parent.Construction_Rejection_Operation,"") == op;
+		commentRecorded = false; commentId = ifnull(decision.Comment_ID,"");
+		if(commentId.matches("^[1-9][0-9]*$"))
+		{
+			comment = Comment_Log[(ID == commentId.toLong()) && (Contract1 == parent.ID)];
+			commentRecorded = comment.count() == 1;
+		}
+		result.put("rejectionRecorded",rejected); result.put("commentRecorded",commentRecorded);
+		state = "not-started"; recipient = ""; sentAt = ""; latestAttempt = 0;
+		for each attempt in Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Email") && (Operation_ID == op)]
+		{
+			if(ifnull(attempt.Attempt_No,0) > latestAttempt)
+			{
+				latestAttempt = attempt.Attempt_No;
+				state = ifnull(attempt.State,"unknown");
+				mailSnapshot = ifnull(attempt.Snapshot,"{}").toMap();
+				recipient = ifnull(mailSnapshot.get("recipient"),"");
+				sentAt = "";
+				if(attempt.Sent_At != null) { sentAt = attempt.Sent_At.toString("MMM d, yyyy · h:mm a"); }
+			}
+		}
+		if(state == "sent" && sentAt == "") { state = "unknown"; }
+		result.put("ok",true); result.put("emailState",state); result.put("emailSentAt",sentAt); result.put("recipient",recipient);
+		result.put("emailSent",state == "sent" && sentAt != "");
+		result.put("attemptNo",latestAttempt);
+		complete = decision.State == "recorded" && rejected && commentRecorded;
+		result.put("writeState",if(complete,"acknowledged",if(decision.State == "conflict","not-started","unknown")));
+		retryStates = {"not-started","failed","missing-recipient"};
+		canRetry = complete && thisapp.hasConstructionPermission(zoho.loginuser,true) == true && retryStates.contains(state);
+		result.put("canRetryEmail",canRetry);
+		message = "The rejection outcome needs review. Check the request before taking another action.";
+		if(decision.State == "conflict") { message = "The request changed before rejection. Refresh before reviewing it."; }
+		else if(complete)
+		{
+			message = "Request rejected. The notification has not been sent.";
+			if(state == "sent") { message = "Request rejected. Email sent to " + recipient + "."; }
+			else if(state == "missing-recipient") { message = "Request rejected. The submitter's email address is unavailable."; }
+			else if(state == "failed") { message = "Request rejected. The notification could not be prepared."; }
+			else if(state == "sending" || state == "unknown") { message = "Request rejected. Email delivery could not be confirmed; do not resend."; }
+		}
+		result.put("message",message);
+		return result;
+	}
+	catch(snapshotError)
+	{
+		result.put("ok",false); result.put("writeState","unknown"); result.put("message","The rejection status could not be checked.");
+	}
+	return result;
+}

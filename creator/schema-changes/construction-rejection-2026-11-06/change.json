@@ -1,0 +1,186 @@
+{
+  "change": "construction-rejection-2026-11-06",
+  "status": "development-configuration-verified-candidate-1.62.57",
+  "source_authority": "Current committed schema/contracts plus authenticated native Development source, API, field and requested-profile readback on 2026-11-06; detailed limits in native-install-progress.json",
+  "generated_metadata_refreshed": false,
+  "new_form": "Construction_Review_Log",
+  "form_source": "Construction_Review_Log.form.ds",
+  "parent_field": {
+    "form": "Contract",
+    "link_name": "Construction_Rejection_Operation",
+    "type": "text",
+    "maxchar": 80,
+    "mandatory": false,
+    "source": "Contract.Construction_Rejection_Operation.field.ds",
+    "server_owned": true,
+    "row": 13,
+    "column": 2
+  },
+  "log_fields": [
+    {
+      "link_name": "Claim_Key",
+      "type": "text",
+      "native_length": "Creator default; canonical native serialization omits maxchar",
+      "expected_key_max_characters": 100,
+      "mandatory": true,
+      "unique": true
+    },
+    {
+      "link_name": "Contract1",
+      "type": "picklist",
+      "lookup_form": "Contract",
+      "display_field": "Contract_Name"
+    },
+    {
+      "link_name": "Kind",
+      "type": "picklist",
+      "choices": [
+        "Decision",
+        "Email"
+      ]
+    },
+    {
+      "link_name": "Operation_ID",
+      "type": "text",
+      "maxchar": 80
+    },
+    {
+      "link_name": "State",
+      "type": "picklist",
+      "choices": [
+        "recording",
+        "recorded",
+        "conflict",
+        "not-started",
+        "sending",
+        "sent",
+        "failed",
+        "missing-recipient",
+        "unknown"
+      ]
+    },
+    {
+      "link_name": "Snapshot",
+      "type": "textarea",
+      "backend_max_characters": 60000,
+      "purpose": "Immutable decision reason, authenticated actor, submitted-by identity, time, parent context and recipient snapshot"
+    },
+    {
+      "link_name": "Comment_ID",
+      "type": "text",
+      "maxchar": 30
+    },
+    {
+      "link_name": "Attempt_No",
+      "type": "number",
+      "maxchar": 9
+    },
+    {
+      "link_name": "Sent_At",
+      "type": "datetime",
+      "purpose": "Populated only after sendmail returns successfully"
+    },
+    {
+      "link_name": "Last_Error",
+      "type": "textarea",
+      "backend_max_characters": 2000,
+      "purpose": "Sanitized internal failure context; never a general report field"
+    }
+  ],
+  "function": {
+    "name": "manageConstructionReview",
+    "source": "creator/functions/manageConstructionReview.dg",
+    "argument": "payload:string",
+    "return": "string",
+    "contract": "construction-review-v1"
+  },
+  "helper_functions_install_first": [
+    {
+      "name": "buildConstructionRejectionNotification",
+      "source": "creator/functions/buildConstructionRejectionNotification.dg",
+      "argument": "decisionId:string",
+      "return": "map"
+    },
+    {
+      "name": "constructionReviewSnapshot",
+      "source": "creator/functions/constructionReviewSnapshot.dg",
+      "arguments": [
+        "contractId:string",
+        "operationId:string"
+      ],
+      "return": "map"
+    },
+    {
+      "name": "sendConstructionRejectionNotification",
+      "source": "creator/functions/sendConstructionRejectionNotification.dg",
+      "argument": "decisionId:string",
+      "return": "map"
+    }
+  ],
+  "api_names": [
+    "Manage_Construction_Review",
+    "Manage_Construction_Review_DEV",
+    "Manage_Construction_Review_STAGE"
+  ],
+  "permissions": "permissions.json",
+  "reports": "reports.json",
+  "required_workflows": [
+    {
+      "form": "Contract",
+      "event": "Created or Edited / Validations on form submission",
+      "native_workflow": "Field_Validations_Contrac",
+      "source": "Contract.Construction_Rejection.validate.dg",
+      "installed_mirror": "creator/workflows/Field_Validations_Contrac.dg",
+      "install": "Prepend guard to the existing sole script action while preserving its full current body and globalCityPolicy suffix; do not add a duplicate action/workflow",
+      "purpose": "Reject native pointer changes, status changes during a recording claim and Proposed-to-Rejected bypass"
+    },
+    {
+      "form": "Construction_Review_Log",
+      "event": "Created or Edited / Validations on form submission",
+      "source": "Construction_Review_Log.validate.dg",
+      "purpose": "Deny direct native form/record-API audit writes"
+    },
+    {
+      "form": "Construction_Review_Log",
+      "event": "Deleted / Validations on record deletion",
+      "source": "Construction_Review_Log.delete.dg",
+      "purpose": "Deny direct deletion of rejection history"
+    }
+  ],
+  "new_user_access_flags": [],
+  "existing_permission_helper": "hasConstructionPermission",
+  "new_page_required": false,
+  "installation_order": [
+    "Inspect current native form names and avoid duplicate fields",
+    "Internal log form with required unique Claim_Key",
+    "Optional parent pointer",
+    "Native guards and internal form/report denial for every application profile",
+    "Read-only pointer projection and requested profile field checks",
+    "New function and all environment API bindings",
+    "Independent native source and profile readback",
+    "Development positive and negative native checks",
+    "User-controlled Stage and Production publication"
+  ],
+  "environments": {
+    "Development": {
+      "installed": true,
+      "verified": true,
+      "verification_scope": "Native schema, compiled/reopened helpers, validation actions, API binding and requested profile metadata; safe negative executions only. No live notification sent.",
+      "evidence": "native-install-progress.json"
+    },
+    "Stage": {
+      "published": false,
+      "verified": false
+    },
+    "Production": {
+      "published": false,
+      "verified": false
+    }
+  },
+  "native_evidence": "native-install-progress.json",
+  "rejection_reason_limit": 5000,
+  "retention": "Preserve the original decision snapshot independently of editable or deleted Comment_Log entries. Do not backfill historical Rejected requests or resend old decisions.",
+  "rollback": "Restore previous widget mapping; disable only the three new Custom API bindings. Preserve log rows and optional parent field. Keep the native bypass/immutability guards until a reviewed alternate rejection path exists. Do not erase prior decisions or mail evidence.",
+  "widget_candidate": "1.62.57",
+  "rollback_widget_version": "1.62.56"
+}

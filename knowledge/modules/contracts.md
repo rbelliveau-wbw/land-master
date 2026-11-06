@@ -1556,3 +1556,17 @@ Checks cover Legal/Construction parent pills, retained child hierarchy and
 parent assignment, plus Contract-only multi-VP preview and unchanged one-VP
 rules elsewhere. Full validation and Pages build are release gates.
 Rollback Contract Management Production to **1.62.49**.
+
+
+## Construction Rejection Notifications — November 6, 2026
+
+Construction Review collects a required rejection reason and uses the guarded
+Creator review action to preserve the original decision, post its comment and
+notify Contract.Added_User. Missing or failed email leaves a saved rejection
+with a notification warning; unknown sends are checked without blind resending.
+CFO and Dev/Land Acq retain submit/read defaults, Construction Budgeting retains
+review access, and explicit existing edit grants remain effective. The internal
+log is not a directly accessible profile report. Creator fields, unique claims,
+validation, profile/report checks and three environment API bindings must be
+installed separately from the hosted widget. See [implementation, native
+installation, permissions, regressions and rollback](../../docs/construction-rejection-2026-11-06.md).

@@ -1,0 +1,87 @@
+map sendConstructionRejectionNotification(string decisionId)
+{
+	result = Map(); result.put("ok",false); result.put("contract","construction-review-v1"); result.put("writeState","not-started");
+	cid = ""; op = ""; attemptId = 0;
+	try
+	{
+		if(!ifnull(decisionId,"").matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(zoho.loginuser,true) != true)
+		{
+			result.put("message","Construction review access is required."); return result;
+		}
+		decision = Construction_Review_Log[(ID == decisionId.toLong()) && (Kind == "Decision")];
+		if(decision.count() != 1) { result.put("message","The rejection record is unavailable."); return result; }
+		cid = decision.Contract1.toString(); op = decision.Operation_ID;
+		before = thisapp.constructionReviewSnapshot(cid,op);
+		if(before.get("canRetryEmail") != true) { return before; }
+		// Preparation is read-only. No address/body failure can have sent email.
+		notification = thisapp.buildConstructionRejectionNotification(decisionId);
+		// Use the attempt number captured by the eligibility snapshot. Reading a
+		// live counter after preparation would let a concurrent stale retry skip
+		// ahead and claim a second send while the first attempt is still running.
+		nextAttempt = ifnull(before.get("attemptNo"),0) + 1;
+		claimKey = "email|" + decisionId + "|" + nextAttempt.toString();
+		mailSnapshot = Map(); mailSnapshot.put("recipient",ifnull(notification.get("to"),""));
+		mailSnapshot.put("decisionId",decisionId); mailSnapshot.put("actor",zoho.loginuser.toString());
+		// Claim_Key MUST be native No Duplicate Values. Only the successful insert
+		// owns this attempt; concurrent retries cannot both cross the send boundary.
+		attemptId = insert into Construction_Review_Log
+		[
+			Claim_Key=claimKey
+			Contract1=decision.Contract1
+			Kind="Email"
+			Operation_ID=op
+			State="sending"
+			Snapshot=mailSnapshot.toString()
+			Attempt_No=nextAttempt
+			Added_User=zoho.loginuser
+		];
+		attempt = Construction_Review_Log[ID == attemptId];
+		decision.Attempt_No=nextAttempt;
+		if(notification.get("eligible") != true)
+		{
+			attempt.State=ifnull(notification.get("state"),"failed");
+			attempt.Last_Error=ifnull(notification.get("reason"),"The notification could not be prepared.");
+			return thisapp.constructionReviewSnapshot(cid,op);
+		}
+		// Recheck the targeted decision after acquiring the unique send claim.
+		parent = Contract[ID == decision.Contract1];
+		if(parent.count() != 1 || parent.Status != "Rejected" || ifnull(parent.Work_Module,"") != "Construction" || ifnull(parent.Construction_Rejection_Operation,"") != op || decision.State != "recorded")
+		{
+			attempt.State="failed"; attempt.Last_Error="The request changed before notification.";
+			return thisapp.constructionReviewSnapshot(cid,op);
+		}
+		attempt.State="sending";
+		try
+		{
+			sendmail
+			[
+				from :"Notifications@wbdevelopment.com"
+				to :notification.get("to")
+				subject :notification.get("subject")
+				message :notification.get("body")
+			]
+			// A sent stamp is written only after sendmail succeeds. Never infer mail
+			// delivery from the rejected parent status or an elapsed progress stage.
+			attempt.Sent_At=zoho.currenttime;
+			attempt.State="sent";
+		}
+		catch(mailError)
+		{
+			// An exception across sendmail/stamping is ambiguous. Retain the claim
+			// and do not offer an automatic or blind resend of this notification.
+			attempt.State="unknown";
+			attempt.Last_Error="Email delivery could not be confirmed. Check delivery before any resend.";
+		}
+		return thisapp.constructionReviewSnapshot(cid,op);
+	}
+	catch(sendError)
+	{
+		if(cid != "" && op != "")
+		{
+			// A failed/unknown claim is never ownership. Read its current state only.
+			return thisapp.constructionReviewSnapshot(cid,op);
+		}
+		result.put("writeState","unknown"); result.put("message","The notification outcome could not be checked.");
+	}
+	return result;
+}

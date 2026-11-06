@@ -1,0 +1,31 @@
+// Prepend inside the EXISTING Field_Validations_Contrac sole script action.
+// Preserve its complete current body, including the globalCityPolicy suffix.
+// Do not create a duplicate native workflow or duplicate the existing script.
+// Native Deluge record operations in the guarded helper bypass this form action.
+rejectionStoredParent = Contract[ID == input.ID];
+rejectionPointerBefore = "";
+if(rejectionStoredParent.count() > 0)
+{
+    rejectionPointerBefore = ifnull(rejectionStoredParent.Construction_Rejection_Operation,"");
+}
+if(ifnull(input.Construction_Rejection_Operation,"") != rejectionPointerBefore)
+{
+    alert "Construction review history can only be recorded by the review action.";
+    cancel submit;
+}
+if(rejectionStoredParent.count() > 0 && ifnull(rejectionStoredParent.Work_Module,"") == "Construction")
+{
+    // Prevent native Accept/Edit from racing a claimed rejection operation.
+    rejectionInFlight = Construction_Review_Log[(Contract1 == input.ID) && (Kind == "Decision") && (State == "recording")];
+    if(rejectionInFlight.count() > 0 && input.Status != rejectionStoredParent.Status)
+    {
+        alert "A construction review is in progress. Check its result before changing status.";
+        cancel submit;
+    }
+    // Direct status writes cannot bypass the reason and notification operation.
+    if(rejectionStoredParent.Status == "Proposed" && input.Status == "Rejected")
+    {
+        alert "Use Reject in Construction Review to record a reason and notify the submitter.";
+        cancel submit;
+    }
+}

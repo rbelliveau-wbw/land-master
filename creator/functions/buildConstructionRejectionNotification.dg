@@ -1,0 +1,59 @@
+map buildConstructionRejectionNotification(string decisionId)
+{
+	result = Map(); result.put("eligible",false); result.put("state","failed");
+	result.put("reason","The rejection notification could not be prepared.");
+	try
+	{
+		if(!ifnull(decisionId,"").matches("^[1-9][0-9]*$")) { return result; }
+		decision = Construction_Review_Log[(ID == decisionId.toLong()) && (Kind == "Decision")];
+		if(decision.count() != 1 || decision.State != "recorded") { return result; }
+		parent = Contract[ID == decision.Contract1];
+		if(parent.count() != 1 || ifnull(parent.Work_Module,"") != "Construction" || parent.Status != "Rejected" || ifnull(parent.Construction_Rejection_Operation,"") != decision.Operation_ID) { return result; }
+		snapshot = ifnull(decision.Snapshot,"{}").toMap();
+		// Added_User is Creator's username, not necessarily an email address.
+		// Resolve the original submitter through the existing User Access pattern;
+		// do not substitute request owners or the currently signed-in reviewer.
+		submitter = ifnull(snapshot.get("submitter"),"").toString().trim();
+		access = User_Access[User == submitter];
+		recipient = "";
+		if(access.count() == 1)
+		{
+			recipient = ifnull(access.Approver_Email,"").toString().trim().toLowerCase();
+			if(recipient == "") { recipient = ifnull(access.User,"").toString().trim().toLowerCase(); }
+		}
+		else if(access.count() == 0) { recipient = submitter.toLowerCase(); }
+		if(!recipient.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+([.][A-Za-z0-9-]+)+$"))
+		{
+			result.put("state","missing-recipient"); result.put("reason","The original submitter has no valid email address on file."); return result;
+		}
+		environmentName = ifnull(thisapp.environment.type,"").toString().trim().toLowerCase();
+		appBase = "https://creatorapp.zoho.com/wbdevelopment";
+		if(environmentName != "production")
+		{
+			if(environmentName != "development" && environmentName != "stage") { return result; }
+			appBase = appBase + "/environment/" + environmentName;
+		}
+		recordUrl = appBase + "/land-master/#Page:Construction?contractId=" + parent.ID.toString() + "&recordView=list";
+		recordName = ifnull(snapshot.get("requestName"),"Construction Request").toString().replaceAll("\r"," ").replaceAll("\n"," ");
+		safeName = thisapp.PF_Packet_Escape(recordName);
+		safeReviewer = thisapp.PF_Packet_Escape(ifnull(snapshot.get("reviewer"),""));
+		safeWhen = thisapp.PF_Packet_Escape(ifnull(snapshot.get("reviewedAt"),""));
+		safeContext = thisapp.PF_Packet_Escape(ifnull(snapshot.get("context"),""));
+		safeReason = thisapp.PF_Packet_Escape(ifnull(snapshot.get("reason"),"")).replaceAll("\r\n","\n").replaceAll("\r","\n").replaceAll("\n","<br>");
+		safeUrl = thisapp.PF_Packet_Escape(recordUrl);
+		body = "<div style='margin:0;padding:24px 12px;background:#f1f5fb;color:#1a304b;font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.5;'><table role='presentation' cellpadding='0' cellspacing='0' border='0' width='590' align='center' bgcolor='#ffffff' style='width:100%;max-width:590px;background:#ffffff;border:1px solid #dce5ef;border-radius:10px;'><tr><td style='padding:19px 26px;border-bottom:1px solid #dce5ef;font-size:12px;font-weight:bold;letter-spacing:.7px;color:#123d73;'>LAND MASTER · CONSTRUCTION</td></tr><tr><td style='padding:26px;'><div style='font-size:11px;font-weight:bold;letter-spacing:1px;color:#a83232;'>REQUEST REJECTED</div><h2 style='font-size:22px;line-height:28px;margin:7px 0 0;color:#1a304b;overflow-wrap:anywhere;'>" + safeName + "</h2>";
+		if(safeContext != "") { body = body + "<div style='margin-top:8px;color:#66758a;'>" + safeContext + "</div>"; }
+		body = body + "<div style='margin-top:20px;color:#66758a;'>Rejected by <b style='color:#1a304b;'>" + safeReviewer + "</b><br>" + safeWhen + "</div><div style='margin-top:20px;font-weight:bold;'>Reason for Rejection</div><table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0'><tr><td style='padding:15px 17px;background:#f0f5fc;color:#1a304b;border-left:3px solid #123d73;overflow-wrap:anywhere;word-break:break-word;'>" + safeReason + "</td></tr></table><table role='presentation' cellpadding='0' cellspacing='0' border='0'><tr><td style='padding-top:25px;'><table role='presentation' cellpadding='0' cellspacing='0' border='0'><tr><td align='center' bgcolor='#164d91' style='padding:11px 18px;background:#164d91;border-radius:7px;'><a href='" + safeUrl + "' style='display:inline-block;color:#ffffff;text-decoration:none;font-size:13px;font-weight:bold;'>Open Request</a></td></tr></table></td></tr></table></td></tr></table></div>";
+		subjectLine = "Construction Request Rejected · " + recordName;
+		if(environmentName == "development") { subjectLine = "[DEV TEST] " + subjectLine; }
+		if(environmentName == "stage") { subjectLine = "[STAGE TEST] " + subjectLine; }
+		result.put("eligible",true); result.put("state","not-started"); result.put("reason","");
+		result.put("to",recipient); result.put("subject",subjectLine); result.put("body",body); result.put("recordUrl",recordUrl);
+		return result;
+	}
+	catch(notificationError)
+	{
+		result.put("eligible",false); result.put("state","failed"); result.put("reason","The rejection notification could not be prepared.");
+	}
+	return result;
+}
