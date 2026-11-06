@@ -14,7 +14,8 @@ lookup assignments, identity query, reverse-ownership guard and fallback return.
 Only the create/reuse changes were applied to the current native function,
 preserving its other code. No submission or notification was executed.
 Other installation statuses are recorded separately in [change.json](change.json).
-These fragments are candidates, not an exported schema or proof of publication.
+The required installation and user-controlled production promotion are complete.
+These fragments remain installation references, not an exported schema.
 Generated October metadata and historical snapshots are preserved.
 
 Development `All_Contracts1` and `All_Contracts` expose the saved Pro Forma
@@ -40,9 +41,11 @@ everything in Creator. Live Production Legal showed the new header and the
 Pro Forma picker successfully queried the dedicated report with 93 options;
 the agent only opened, searched and closed it. No business-record write or
 Send to Legal was executed. The final Dev/Land profile View grant was saved
-after that publication, so only its user promotion remains pending. Do not
-treat that last grant as published until further evidence. The agent initiated
-no Creator publication. Hosted Production `1.62.56` has successful CI/site
+after that publication, then separately promoted by the user. Refreshed native
+Environments confirms Stage `9.157`, Production `9.157`, **No changes available**
+and no lock. All required installation and promotion work is complete. The
+optional Board, validation and visibility candidates remain uninstalled. The
+agent initiated no Creator publication. Hosted Production `1.62.56` has successful CI/site
 deployment and a verified public artifact.
 
 Install the components in `change.json` order. Add only the listed report fields
@@ -67,15 +70,15 @@ all existing Construction, city, parent-master and lot validation actions.
 `creator/functions/Create_LOI_Contract.dg` is already compiled and reopened in
 Development. Its existing Custom API name and argument stay unchanged.
 
-Before user promotion, check Development SDK reads for `Proforma` and
+Regression scenarios cover Development SDK reads for `Proforma` and
 `Subdivision_Code`, edit permission separation, source identity reuse after a
 rename, PSA/LOI subtype separation, duplicate-source rejection, and unchanged
 lot/subdivision mismatch protection. A real Send to Legal creates a document and
 may notify Legal; do not trigger one just to check report visibility. An offline
 regression is not a native compiler or live submission test.
 
-The user reported publishing the initial Creator components; Production
-field/report reads are verified. The final Dev/Land profile grant still needs
-the user's separate promotion. The function compiled/reopened in Development,
-but no actual Production Send to Legal was executed. Rollback instructions are
-in `change.json`.
+The user confirmed publishing both the initial Creator components and final
+Dev/Land profile grant; the native Environments UI verifies Production `9.157`
+with no changes left to publish. Production field/report reads are verified.
+The function compiled/reopened in Development, but no actual Production Send
+to Legal was executed. Rollback instructions are in `change.json`.

@@ -1,5 +1,5 @@
 {
-  "status": "development-partially-installed; production-not-published",
+  "status": "required-reports-installed-and-user-promoted; optional-native-board-candidate-not-installed",
   "generated_metadata_refreshed": false,
   "preserve": ["criteria", "existing columns", "sort", "grouping", "actions", "existing edit/delete grants"],
   "updates": [

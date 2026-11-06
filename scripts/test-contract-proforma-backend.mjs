@@ -11,7 +11,24 @@ const permissions=JSON.parse(read(base+'permissions.json'));
 assert.equal(manifest.field.link_name,'Proforma');
 assert.equal(manifest.field.values,'Add_Pro_Forma.ID');
 assert.equal(manifest.field.native_mandatory,false,'Legacy links remain optional.');
-assert.equal(manifest.creator_production_published,false,'A repository release must not claim Creator publication.');
+if(manifest.creator_production_published){
+  assert.equal(manifest.creator_production_publication_verified,true,'Published state needs separate native confirmation.');
+  assert.equal(manifest.creator_promotion_owner,'user');
+  assert.equal(manifest.creator_publication_initiated_by_this_agent,false);
+  assert.equal(manifest.native_production_version,'9.157');
+  assert.match(manifest.production_evidence.creator_publication,/User confirmed/);
+  assert.equal(manifest.production_evidence.environments.Stage,'9.157');
+  assert.equal(manifest.production_evidence.environments.Production,'9.157');
+  assert.equal(manifest.production_evidence.environments.changes,'No changes available');
+  assert.equal(manifest.production_evidence.environments.maintenance_lock,false);
+  assert.deepEqual(manifest.production_evidence.remaining_required_actions,[]);
+  assert.equal(permissions.production_published,true);
+  assert.equal(permissions.development_evidence['Dev/Land Acq - Proforma & Budgets'].production_published,true);
+  assert.deepEqual(permissions.remaining_feature_required,[],'All required grants must be complete before reporting full publication.');
+}else{
+  assert.equal(manifest.creator_production_publication_verified,false);
+  assert.ok(permissions.remaining_feature_required.length||manifest.production_evidence?.remaining_action,'Unpublished state must identify the outstanding promotion or check.');
+}
 const picker=reports.create.find(row=>row.report==='Contract_Proforma_Choices');
 assert.deepEqual(picker.fields,['ID','Name','Territory','LOI_Contract']);
 assert.equal(picker.read_only,true);

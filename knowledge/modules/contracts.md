@@ -31,8 +31,8 @@ and Edit unchecked; Contract has no custom field restrictions and Name/Territory
 LOI Contract visibility is checked. After the earlier user-reported publication,
 Dev/Land Acq's picker View grant was saved and reopened checked, with Edit
 unchecked and no custom Contract field restrictions. All required Development
-installation/checks are complete. Only user promotion of that final Dev/Land
-profile grant remains pending. New native
+installation/checks and user-controlled promotions are complete, including that
+final Dev/Land profile grant. New native
 Proforma validation/visibility actions are optional defense-in-depth/convenience
 candidates; existing lot/subdivision validation remains unchanged. The optional
 `All_Contracts_v2` Board field is not read by this widget. Existing full Pro Forma report/Modify All permissions
@@ -40,7 +40,10 @@ were unchanged. Generated metadata remains the historical export.
 The user reported promoting the earlier Creator components after the external
 maintenance lock cleared. Production Legal's new header and dedicated Pro Forma
 picker were verified, including 93 options returned; only open/search/close was
-performed. The later Dev/Land grant is not yet confirmed published. Hosted
+performed. The user confirmed the final Dev/Land promotion, and refreshed
+Creator Environments shows Stage `9.157`, Production `9.157`, **No changes
+available** and no maintenance lock. Required native installation/promotion is
+complete; optional Board/validation/visibility candidates remain uninstalled. Hosted
 Production `1.62.56` has successful CI/site deployment and a verified public
 artifact. No Creator publication was initiated by this agent. No Proforma
 widget or new Custom API is needed.

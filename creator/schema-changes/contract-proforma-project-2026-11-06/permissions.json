@@ -1,6 +1,7 @@
 {
-  "status": "required-development-grants-and-checks-complete; final-dev-land-profile-production-promotion-pending",
-  "production_published": false,
+  "status": "required-development-grants-checks-and-production-promotion-complete",
+  "production_published": true,
+  "native_production_version": "9.157",
   "new_user_access_flags": [],
   "existing_widget_authorization": "Reuse existing Legal module access and mayEdit for inline writes. ctEdit can edit all open contracts; the existing ctPropose / Propose_Contract_Changes flag is now labelled Edit Owned Contracts and Actions and can edit open contracts owned by the current User Access ID. Completed contracts remain read-only. No new edit grant is introduced.",
   "native_contract_field": {"form": "Contract", "field": "Proforma", "visibility": "Everyone", "admin_only": false, "write_grant": "Only existing native Contract edit/report grants; do not grant new edit, Modify All or Delete access."},
@@ -8,11 +9,11 @@
   "development_evidence": {
     "Contract Mgmt": {"picker_view": "saved-and-reopened-checked", "picker_edit": "reopened-and-unchecked", "existing_all_proforma_fields_and_modify_all": "already existed; unchanged"},
     "CFO": {"picker_view": "reopened-and-checked", "picker_edit": "reopened-and-unchecked", "contract_field_permissions": "No custom field restrictions", "proforma_picker_field_permissions": "Name, Territory and LOI Contract Visibility checked; unchanged", "existing_all_proforma_fields_and_modify_all": "already existed; unchanged"},
-    "Dev/Land Acq - Proforma & Budgets": {"picker_view": "After user-reported publication this grant was unchecked; saved now and reopened checked", "picker_edit": "reopened-and-unchecked", "contract_field_permissions": "No custom field restrictions", "production_published": false, "production_status": "Final additive View grant needs user promotion; not yet confirmed published"},
+    "Dev/Land Acq - Proforma & Budgets": {"picker_view": "After the initial publication this grant was unchecked; saved and reopened checked", "picker_edit": "reopened-and-unchecked", "contract_field_permissions": "No custom field restrictions", "production_published": true, "production_status": "Final user promotion confirmed; refreshed native Environments shows Stage/Production 9.157 and No changes available"},
     "maintenance": "Earlier external publication lock cleared and required Development work resumed. This agent did not initiate publication. No new financial/token grant was added; existing All_Pro_Formas_All_Fields access was preserved."
   },
-  "remaining_feature_required": ["User promotion of the final Development Dev/Land Acq - Proforma & Budgets picker View grant"],
-  "production_evidence": "Earlier Creator promotion user-reported; live Production picker returned 93 options without writes. This does not prove the later Dev/Land profile grant is published.",
+  "remaining_feature_required": [],
+  "production_evidence": "User confirmed initial and final profile promotions. Refreshed native Environments shows Stage 9.157, Production 9.157, No changes available and no lock. Live Production picker returned 93 options without business-record writes or Send to Legal.",
   "profile_selection_rule": "Apply the additive read grant only to existing profiles already authorized to view Legal contracts, including any additional existing Legal profile confirmed in the current app. Preserve their current record scope.",
   "additive_report_grant": {"form": "Add_Pro_Forma", "report": "Contract_Proforma_Choices", "view": true, "view_all": true, "fields": ["ID", "Name", "Territory", "LOI_Contract"], "add": false, "edit": false, "modify_all": false, "delete": false, "export": false},
   "pregrant_report_guard": "Minimize both Quick View and Detail View to the four allowed fields, or disable record-detail navigation. Check related-list, edit, export and custom-action exposure before granting access; the report must not expose the default full Pro Forma record.",
