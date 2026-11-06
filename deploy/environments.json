@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T15:53:53.130Z",
+  "generated_at": "2026-11-06T16:14:13.193Z",
   "note": "Creator registrations retain stable Production URLs. Migrated widget loaders select frontend assets using the authenticated Creator initialization environment; Custom API routing also follows that environment.",
   "environments": {
     "development": {
