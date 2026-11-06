@@ -89,3 +89,40 @@ Local required checks passed: npm run validate (complete suite) and npm run buil
 The bundled Python runtime was used because the system Python command is an
 uninstalled Store alias; normal child-process permissions were required by the
 release helper regression. No repository checks were skipped.
+
+## Changed Files
+
+- widgets/forecast-manager/src/app/forecast-contract-review.js and
+  forecast-contract-review.css: cards, title controls, groups, separate legacy
+  view, year options, native reads and CSV scope.
+- widgets/forecast-manager/src/app/forecast-review-model.js: all supported years,
+  fixed legacy window, native Project grouping, archive policy and month values.
+- widgets/forecast-manager/src/app/forecast-app.js and widget.html: centered
+  navigation and three-page routing; editor write behavior is preserved.
+- shared/interaction-surfaces.js and its ten synchronized widget copies:
+  review-scope selection registration.
+- scripts/test-forecast-contract-review.mjs and
+  scripts/serve-forecast-review-fixture.mjs: native shapes and desktop fixtures.
+- Forecast widget config/dependency inventory, manifests/widgets.json,
+  manifests/widget-dependencies.json, deploy/environments.json and immutable
+  releases/forecast-manager/1.9.0/: versioned release and environment routing.
+- Forecast README, module/design guides and this delivery record: current
+  behavior, verification and rollback.
+
+## Native Development Verification
+
+PR #140 merged as 8064914ed064ebdc2d7714a85cc892103926d588 after CI passed.
+Main CI and the Development Pages deployment passed. The signed-in native
+Forecast_Manager1 page loaded 1.9.0 through its permanent widget registration.
+
+The complete live read showed 12 Builder/Subdivision records, six distinct
+schedule cards and eight legacy cards. All three grouping modes used native
+Project/Territory/Builder names. Expansion showed the saved AAA01 schedule and
+both matching contracts, including their actual closing terms, completion
+dates and recent-sales quantities; blank financials remained blank.
+The archived Complete contract had no review issue and disappeared in Needs
+Review. Selecting WFY 2045 showed one real record/one schedule; Legacy stayed at
+eight records/eight schedules. Restoring 2026–2028 and Refresh returned 12/six
+without an error. The existing Builder Forecasts view loaded AAA Springs Phase
+01 and its three native schedule cards without an error. No records were
+created or changed.
