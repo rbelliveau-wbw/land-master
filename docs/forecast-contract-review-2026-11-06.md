@@ -1,4 +1,4 @@
-# Forecast Manager Contract Review — 1.8.1
+# Forecast Manager Contract Review — 1.8.2
 
 Adds the approved Contract Review page with native records, a separate Legacy
 Cards group, contract matching/status, takedown details and CSV export. Removes
@@ -41,7 +41,7 @@ An unresolved assignment remains a separately identified review record.
   including visibility filters and expanded detail rows. Numeric counts and
   saved schedule quantities reuse ForecastNumbers with actor/record keys.
 - Shared data synchronization and its adoption check now include Forecast
-  Manager. Source/release metadata and Development mapping use 1.8.1.
+  Manager. Source/release metadata and Development mapping use 1.8.2.
 
 ## Creator Impact
 
@@ -49,6 +49,11 @@ No Creator writes or schema changes. No new/modified functions or Custom APIs.
 The existing forecastManagerWidget catalog still supplies authorized choices;
 the review uses the signed-in user's existing native report read permissions.
 A denied report is an actual error, never a synthetic empty contract list.
+The native schedule report does not expose Add_Contract_Contract_Name. That
+optional lookup cannot block the register or be treated as a known blank link.
+Builder/Subdivision matches and schedule membership use their separately
+verified identities. When the optional link is available, it supports link
+review issues; CSV explicitly records whether it was available.
 No Creator publication is required. Production mapping stays at 1.7.24 until
 explicitly promoted.
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-06T19:29:10.893Z",
+  "generated_at": "2026-11-06T19:41:13.025Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -274,13 +274,13 @@
       "slug": "forecast-manager",
       "name": "Forecast Manager",
       "module": "forecasting",
-      "version": "1.8.1",
+      "version": "1.8.2",
       "description": "Forecast editing and a read-only 2026/2027 Contract Review with legacy schedules, closing terms and CSV export.",
       "source_entry": "widgets/forecast-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",
       "baseline_zip": null,
       "html_title": "Forecast Manager",
-      "source_sha256": "ff8a2b0d7c52cf9a798d97ca364ac008d762855a95c52d9dfa146a9a3ad9d33a",
+      "source_sha256": "1e9e40953c7f6502e68aaebd7a44e0926b3121bae6e0e42bd63e0fe18b01b2c6",
       "baseline_zip_sha256": null,
       "plugin_manifest": {
         "service": "CREATOR",

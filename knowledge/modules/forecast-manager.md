@@ -449,7 +449,7 @@ purple rails without body-cell fill. Existing number-transition wrappers, real
 values, input/caret behavior, writes and exports are unchanged. No Creator forms,
 fields, functions or Custom APIs change; no Creator deployment is required. See
 [release and rollback details](../releases/forecast-manager-v1.7.9-2026-10-15.md).
-## Contract Review — 1.8.1, November 6, 2026
+## Contract Review — 1.8.2, November 6, 2026
 
 Adds a read-only Contract Review page beside Builder Forecasts. It uses native
 SDK v2 All_Forecast_Years, All_Contracts1 and All_Takedown_Schedules reads through

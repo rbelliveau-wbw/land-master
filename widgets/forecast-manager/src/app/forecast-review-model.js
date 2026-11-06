@@ -39,7 +39,7 @@
   function build(data,catalog){
     required(data.years,['Subdivision1','Builder1','Forecast_Year','Status'],'All_Forecast_Years');
     required(data.contracts,['Subdivision1','Builder','Contract_Type','Status','Archive'],'All_Contracts1');
-    required(data.schedules,['Subdivisions','Builder1','Add_Contract_Contract_Name'],'All_Takedown_Schedules');
+    required(data.schedules,['Subdivisions','Builder1'],'All_Takedown_Schedules');
     if(!Array.isArray(catalog?.subdivisions)||!Array.isArray(catalog?.builders))throw new Error('Forecast choices are unavailable.');
     const subdivisions=new Map(catalog.subdivisions.map(row=>[id(row.id),row]));
     const builders=new Map(catalog.builders.map(row=>[id(row.id),row]));
@@ -75,7 +75,7 @@
     }
     for(const row of data.schedules){
       const scheduleId=id(row.ID),builderId=single(row.Builder1),subdivisionIds=ids(row.Subdivisions),contractId=single(row.Add_Contract_Contract_Name);
-      const schedule={id:scheduleId,code:String(row.Takedown_Schedule_Code||scheduleId),builderId,subdivisionIds,contractId,contract:contractById.get(contractId)||null,raw:row,
+      const schedule={id:scheduleId,code:String(row.Takedown_Schedule_Code||scheduleId),builderId,subdivisionIds,contractId,contractLinkKnown:own(row,'Add_Contract_Contract_Name'),contract:contractById.get(contractId)||null,raw:row,
         subdivisions:subdivisionIds.map(sub=>subdivisions.get(sub)?.name||'Subdivision '+sub)};
       for(const sub of subdivisionIds.length?subdivisionIds:[''])group(sub,builderId,'schedule:'+scheduleId).schedules.push(schedule);
     }
@@ -87,8 +87,8 @@
       if(row.contracts.some(c=>c.archived))issues.push('Archived Contract');
       if(row.parents.length&&!row.schedules.length)issues.push('No Schedule');
       if(baselineYears.some(year=>row.parents.filter(parent=>parent.year===year).length>1))issues.push('Duplicate Forecast Year');
-      if(row.schedules.some(s=>!s.contractId))issues.push('Unlinked Schedule');
-      if(row.schedules.some(s=>s.contractId&&!row.contracts.some(c=>c.id===s.contractId)))issues.push('Schedule Contract Mismatch');
+      if(row.schedules.some(s=>s.contractLinkKnown&&!s.contractId))issues.push('Unlinked Schedule');
+      if(row.schedules.some(s=>s.contractLinkKnown&&s.contractId&&!row.contracts.some(c=>c.id===s.contractId)))issues.push('Schedule Contract Mismatch');
       row.issues=issues;
       row.years=baselineYears.filter(year=>row.parents.some(parent=>parent.year===year));
       if(row.parents.length)active.push(row);
@@ -103,11 +103,11 @@
       &&(legacy||!attention||row.issues.length));
   }
   function csv(active,legacy,years){
-    const lines=[['Group','Builder','Builder ID','Subdivision','Subdivision ID','Forecast Years','Forecast Record IDs','Contract Found','Contract IDs','Contract Names','Contract Statuses','Archived Contract Included','Schedule ID','Schedule Code','Schedule Contract ID','Schedule Subdivision IDs','Total Lot Obligation','Initial Closing Date','Takedown Start Date','Initial Lots','Initial Delay Days','Second Closing Lots','Second Closing Days','Subsequent Lots','Subsequent Days','End Date','Last Takedown Date','Last Takedown Lots','Lots Sold','Lots Expected','Review']];
+    const lines=[['Group','Builder','Builder ID','Subdivision','Subdivision ID','Forecast Years','Forecast Record IDs','Contract Found','Contract IDs','Contract Names','Contract Statuses','Archived Contract Included','Schedule ID','Schedule Code','Schedule Contract ID','Schedule Contract Link Available','Schedule Subdivision IDs','Total Lot Obligation','Initial Closing Date','Takedown Start Date','Initial Lots','Initial Delay Days','Second Closing Lots','Second Closing Days','Subsequent Lots','Subsequent Days','End Date','Last Takedown Date','Last Takedown Lots','Lots Sold','Lots Expected','Review']];
     for(const [group,rows] of [['Forecasts',active],['Legacy',legacy]])for(const row of rows){
       for(const schedule of row.schedules.length?row.schedules:[null]){
         const s=schedule?.raw||{},parents=row.parents.filter(parent=>years===null||years.includes(parent.year));
-        lines.push([group,row.builder,row.builderId,row.subdivision,row.subdivisionId,[...new Set(parents.map(parent=>parent.year))].join(' | '),parents.map(parent=>parent.id).join(' | '),row.contracts.length?'Found':'Not Found',row.contracts.map(c=>c.id).join(' | '),row.contracts.map(c=>c.name).join(' | '),row.contracts.map(c=>c.status).join(' | '),row.contracts.some(c=>c.archived)?'Yes':'No',schedule?.id,schedule?.code,schedule?.contractId,schedule?.subdivisionIds.join(' | '),s.Total_Lot_Obligation,s.Initial_Closing_Date,s.Takedown_Start_Date,s.Initial_Takedown,s.Initial_Delay_Days,s.Second_Closing_Lots,s.Second_Closing_Days,s.Continued_Takedown,s.Continued_Takedown_Delay_Days,s.Takedown_End_Date,s.Last_Takedown_Date,s.Last_Takedown_Amount,s.Lots_Sold,s.Lots_Expected,row.issues.join(' | ')]);
+        lines.push([group,row.builder,row.builderId,row.subdivision,row.subdivisionId,[...new Set(parents.map(parent=>parent.year))].join(' | '),parents.map(parent=>parent.id).join(' | '),row.contracts.length?'Found':'Not Found',row.contracts.map(c=>c.id).join(' | '),row.contracts.map(c=>c.name).join(' | '),row.contracts.map(c=>c.status).join(' | '),row.contracts.some(c=>c.archived)?'Yes':'No',schedule?.id,schedule?.code,schedule?.contractId,schedule?(schedule.contractLinkKnown?'Yes':'No'):'',schedule?.subdivisionIds.join(' | '),s.Total_Lot_Obligation,s.Initial_Closing_Date,s.Takedown_Start_Date,s.Initial_Takedown,s.Initial_Delay_Days,s.Second_Closing_Lots,s.Second_Closing_Days,s.Continued_Takedown,s.Continued_Takedown_Delay_Days,s.Takedown_End_Date,s.Last_Takedown_Date,s.Last_Takedown_Amount,s.Lots_Sold,s.Lots_Expected,row.issues.join(' | ')]);
       }
     }
     const cell=value=>{const text=String(value??'');return '"'+(/^[\s]*[=+@-]/.test(text)?"'":'')+text.replace(/"/g,'""')+'"';};
