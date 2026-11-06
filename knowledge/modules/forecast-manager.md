@@ -449,3 +449,34 @@ purple rails without body-cell fill. Existing number-transition wrappers, real
 values, input/caret behavior, writes and exports are unchanged. No Creator forms,
 fields, functions or Custom APIs change; no Creator deployment is required. See
 [release and rollback details](../releases/forecast-manager-v1.7.9-2026-10-15.md).
+## Contract Review — 1.8.1, November 6, 2026
+
+Adds a read-only Contract Review page beside Builder Forecasts. It uses native
+SDK v2 All_Forecast_Years, All_Contracts1 and All_Takedown_Schedules reads through
+the existing shared LMData reader. Existing catalog metadata supplies the exact
+Builder/Subdivision identities and Territory labels. No new Creator function,
+Custom API, field, form, report, permission or publication is needed.
+
+The main register includes every Status == Builder Forecast_Year parent in WFY
+2026 or 2027, including blank/zero counts and duplicate parents. Group by exact
+Subdivision1 + Builder1 IDs. Contract Found preserves the existing Lot / Lot
+(Master) / Lot (Amendment) Builder/Subdivision match across all statuses and
+Archive values; status and Archive remain separate fields. Schedule membership
+uses its own Builder1 and Subdivisions, independently of contract matching.
+Keep multiple contracts/schedules distinct, with their exact IDs and saved terms.
+
+Legacy Cards contains schedules without a matching 2026/2027 Builder forecast
+parent. It follows Territory/Subdivision/Builder/search filters but is independent
+of the chosen subset of fiscal years. Shared schedules retain all Subdivisions
+and whole-record terms. Missing assignments, mismatched linked contracts,
+archived contracts, missing schedules and duplicate years remain reviewable.
+
+Native reads are lazy on first tab entry, complete/counted/cursor-paged, and
+actor/environment scoped. Filters and disclosures use already loaded data.
+Refresh reloads records and catalog; export uses the visible main records plus
+the filtered legacy group, even if its disclosure is closed. Errors disable
+export, and failed complete reads clear retained rows. The editor keeps
+its existing selected subdivision, years, pending edits and mutation guards.
+
+No explanatory captions or scope footnotes appear in the new page, per the
+user's explicit direction. See [delivery, verification and rollback](../../docs/forecast-contract-review-2026-11-06.md).

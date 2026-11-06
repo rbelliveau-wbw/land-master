@@ -98,6 +98,7 @@
     }else if(module==='forecast-manager'){
       tab('.segments','[data-view]','#matrixScroll');
       list('#matrix','tbody tr[data-builder]',row=>row.dataset.builder,()=>state().sub);
+      list('#reviewActive,#reviewLegacyRows','tr[data-review-row]',row=>row.dataset.reviewRow,()=>options.actor?.()?.user,{visibility:true,hostKey:host=>host.id,highlight:false});
       surfaceExtra.push('.popover,.dialog');
       status('#saveStatus');
       status('.month-cell','.month-cell',node=>node.dataset.monthId||node.id||M.identity(node));

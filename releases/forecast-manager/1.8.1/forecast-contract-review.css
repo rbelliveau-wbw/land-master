@@ -1,0 +1,74 @@
+/* Contract Review shares Forecast Manager's native palette and report controls. */
+.forecast-pages{display:flex;align-items:center;gap:5px;width:max-content;padding:4px;margin-bottom:16px;background:#e3eaf3;border:1px solid #cbd7e6;border-radius:8px}
+.forecast-pages button{min-height:32px;padding:6px 14px;background:transparent;border:0;border-radius:5px;color:#5c7394;font-weight:700;font-size:12px}
+.forecast-pages button[aria-selected=true]{background:#0b2345;color:#fff}
+.review-toolbar .filter{flex:1 1 180px;max-width:310px;min-width:150px}
+.review-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 16px;background:linear-gradient(145deg,#0b2345,#173d72);border-radius:9px 9px 0 0;color:#fff}
+.review-heading h2{font-size:16px;font-weight:750}
+.review-heading .btn{color:#fff;background:#ffffff10;border-color:#ffffff35}
+#contractReviewPanel{position:relative}
+.review-register,.review-legacy{background:#fff;border:1px solid var(--line);border-radius:0 0 9px 9px;overflow:hidden}
+.review-register{border-top:0}
+.review-tools{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:11px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.review-count{font-size:11px;color:var(--muted)}
+.review-actions{display:flex;align-items:center;gap:10px}
+.review-search input{width:195px;min-height:32px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;padding:5px 9px;color:var(--text);font-size:12px}
+.review-scope{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid var(--line);background:#eef2f8;border-radius:7px}
+.review-scope button{font-size:11px;font-weight:650;background:transparent;color:var(--muted);border:0;border-radius:4px;padding:5px 9px;white-space:nowrap}
+.review-scope button[aria-pressed=true]{background:#fff;color:var(--text);box-shadow:0 1px 3px #0b234515}
+.review-table-scroll{overflow:auto;max-height:52vh;overscroll-behavior:contain}
+.review-table{width:100%;min-width:980px;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12px}
+.review-table th,.review-table td{text-align:left;white-space:normal;border-right:0;border-bottom:1px solid #dde5ef;padding:12px 13px;vertical-align:middle;overflow-wrap:anywhere}
+.review-table thead{position:sticky;top:0;z-index:2}
+.review-table thead tr:first-child th{height:auto;padding:10px 13px;background:#e6eef7;border-right:0;border-bottom:1px solid #c6d4e5;font-size:10px;font-weight:750;color:#526f92}
+.review-table strong{display:block;font-size:12px;font-weight:750;color:#234d82}
+.review-table small{display:block;margin-top:3px;color:#5c7394;font-size:10px;line-height:1.45}
+.review-table tbody tr.review-row:nth-of-type(4n+3)>td{background:#f6f9fc}
+.review-table tbody tr.review-row:hover>td{background:#edf4fc}
+.review-table tbody tr.review-open>td{background:#e8f0fb}
+.review-table tbody tr.review-open>td:first-child{box-shadow:inset 3px 0 #2563eb}
+.review-muted{color:#7187a3}
+.review-year{display:inline-block;border:1px solid #ccdaeb;border-radius:4px;background:#f8fbff;padding:1px 5px;margin-right:4px;font-size:10px;font-weight:600}
+.review-found{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 6px;border-radius:5px}
+.review-found svg{width:12px;height:12px}
+.review-found.yes{color:#047857;background:#eaf7f1}
+.review-found.no{color:#9c650f;background:#fff5e2}
+.review-issues{color:#986419;font-size:11px}
+.review-toggle{display:grid;place-items:center;width:26px;height:27px;padding:0;border:1px solid #c6d5e6;border-radius:6px;background:#fff;color:#6984a4;box-sizing:border-box}
+.review-toggle svg{width:13px;height:13px;transition:transform 190ms cubic-bezier(.22,.7,.25,1)}
+.review-toggle[aria-expanded=true]{border-color:#84a7d5;color:#2563eb}
+.review-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+.review-table .review-detail-row>td{padding:0 14px 14px;background:#f0f5fa}
+.review-detail{border:1px solid #cedcea;border-radius:0 0 7px 7px;background:#fff;padding:14px}
+.review-detail-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:8px}
+.review-detail h3{font-size:12px;color:#27486f;font-weight:750;margin:0}
+.review-parents{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:4px 12px;color:#69819d;font-size:10px}
+.review-detail-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px}
+.review-detail-table th,.review-detail-table td{padding:9px 10px;white-space:normal;vertical-align:top;text-align:left;border-right:0;border-bottom:1px solid #e3ebf4}
+.review-detail-table thead{position:static}
+.review-detail-table thead tr:first-child th{font-size:10px;font-weight:650;background:#f1f5fa;padding:8px 10px}
+.review-detail-table tbody tr:hover td{background:#fff}
+.review-detail-table strong{font-size:11px}
+.review-detail-table td{color:#294b70}
+.review-contracts th:first-child{width:47%}
+.review-detail-scroll{overflow-x:auto}
+.review-schedules{min-width:1210px}
+.review-schedules th:first-child{width:17%}
+.review-schedules th:nth-child(2){width:14%}
+.review-schedules th:nth-child(4){width:13%}
+.review-schedule-heading{margin-top:17px!important;margin-bottom:8px!important}
+.review-empty,.review-no-matches>td{text-align:center!important;padding:25px!important;color:#7387a1}
+.review-legacy{border-radius:9px;margin-top:17px}
+.review-legacy>summary{display:flex;align-items:center;gap:8px;padding:12px 14px;background:#e9f0f8;list-style:none;font-size:13px;font-weight:750;color:#294b70;cursor:pointer}
+.review-legacy>summary::-webkit-details-marker{display:none}
+.review-legacy>summary>svg{margin-left:auto;transition:transform 190ms cubic-bezier(.22,.7,.25,1)}
+.review-legacy[open]>summary>svg{transform:rotate(180deg)}
+.review-badge{padding:1px 6px;color:#986419;background:#fff4dd;border-radius:5px;font-size:10px}
+.review-legacy .review-table-scroll{max-height:38vh}
+.review-loading{display:flex;align-items:center;justify-content:center;min-height:340px;padding:24px;text-align:center}
+.review-loading-card{display:flex;align-items:center;gap:15px;max-width:100%;padding:20px 25px;border:1px solid #d7e4f2;border-radius:14px;background:#fffffffa;box-shadow:0 10px 32px #173b6412;color:#214d79;font-size:14px;font-weight:650}
+.review-loading-emblem{display:grid;place-items:center;flex:none;width:48px;height:48px;border-radius:50%;background:#edf4fc}
+.review-loading-ring{box-sizing:border-box;width:30px;height:30px;border:3px solid #c8d9ee;border-top-color:#285b97;border-right-color:#285b97;border-radius:50%}
+.review-loading:not([hidden]) .review-loading-ring{animation:review-loading-turn .85s linear infinite}
+@keyframes review-loading-turn{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.review-loading:not([hidden]) .review-loading-ring{animation:none}.review-toggle svg,.review-legacy>summary>svg{transition:none}}

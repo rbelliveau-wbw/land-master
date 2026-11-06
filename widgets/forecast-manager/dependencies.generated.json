@@ -2,12 +2,22 @@
   "custom_apis": [],
   "forms_referenced": [
     "Builder",
+    "Contract",
     "Forecast",
-    "Subdivision"
+    "Forecast_Year",
+    "Subdivision",
+    "Takedown_Schedule"
   ],
-  "reports_referenced": [],
+  "reports_referenced": [
+    "All_Forecast_Years",
+    "All_Contracts1",
+    "All_Takedown_Schedules"
+  ],
   "sdk_calls": [
-    "ZOHO.CREATOR.init"
+    "ZOHO.CREATOR.UTIL.getInitParams",
+    "ZOHO.CREATOR.DATA.getRecords",
+    "ZOHO.CREATOR.DATA.getRecordCount",
+    "ZOHO.CREATOR.DATA.invokeCustomApi"
   ],
   "external_domains": [
     "static.zohocdn.com"

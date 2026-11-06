@@ -2,7 +2,7 @@
   'use strict';
   const M = ForecastModel, $ = id => document.getElementById(id);
   const icons = {check:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3 3 7-7"/></svg>',close:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>'};
-  const S = {ready:false,catalog:null,snapshot:null,sub:'',territories:null,builders:null,years:[],view:'forecast',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
+  const S = {ready:false,catalog:null,snapshot:null,sub:'',territories:null,builders:null,years:[],view:'forecast',page:'forecasts',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
@@ -67,6 +67,7 @@
   function years() {return S.years.length ? S.years : forecastYears();}
   function rows() {return S.snapshot?M.visibleMatrix(S.snapshot,builders().sort((a,b)=>name(a).localeCompare(name(b))),years()):[];}
   function controls() {
+    document.querySelectorAll('[data-forecast-page]').forEach(button=>{button.disabled=!S.ready||!S.catalog||busy()||!!creationReview();});
     ['territoryPicker','subPicker','builderPicker','yearPicker','refresh','export','add'].forEach(id=>{$(id).disabled=!S.ready || !S.catalog || busy() || !!creationReview() || (id==='export'||id==='add') && !S.snapshot;});
     document.querySelectorAll('[data-create-builder]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview();button.textContent=S.creating && S.creation && button.dataset.createBuilder===S.creation.destination.builderId && button.dataset.createYear===S.creation.destination.year?'Creating…':'Create Forecast';});
     $('check').hidden=!changed()&&!creationReview(); $('check').disabled=busy(); $('discard').hidden=!changed(); $('discard').disabled=busy();
@@ -84,6 +85,16 @@
     if(S.catalog&&!S.catalog.subdivisions.some(row=>Object.hasOwn(row,'territory')))$('territoryPicker').title='Territory choices require the updated Forecast Manager function.';
     $('builderText').textContent=S.builders?S.builders.length+' builder'+(S.builders.length===1?'':'s'):'All for subdivision';
     $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All Years with Forecasts';
+    if(S.page==='review')$('refresh').disabled=!S.ready||!S.catalog||ForecastContractReview.busy();
+  }
+  function setPage(page) {
+    if(!['forecasts','review'].includes(page)||busy()||creationReview())return;
+    if(changed()){notice('Check or discard local changes before changing tabs.',true);return;}
+    closePicker();S.page=page;
+    $('forecastsPanel').hidden=page!=='forecasts';$('contractReviewPanel').hidden=page!=='review';
+    document.querySelectorAll('[data-forecast-page]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.forecastPage===page)));
+    if(page==='review')ForecastContractReview.open();
+    controls();
   }
   // Zero suppression is presentation-only; stored values and exports stay explicit.
   function matrixCount(value) {return S.view!=='forecast' && Number(value||0)===0 ? '' : count(value);}
@@ -297,6 +308,7 @@
   }
   function closePicker() {if(S.picker){const p=S.picker; p.element.remove();p.anchor.setAttribute('aria-expanded','false');p.anchor.removeAttribute('aria-controls');S.picker=null;}}
   function pickerOptions(kind) {
+    if(kind.startsWith('review-'))return ForecastContractReview.options(kind.slice(7));
     if(kind==='assignBuilder')return S.catalog.builders.filter(row=>row.type==='Builder'&&!ForecastBuilderActions.isPlaceholder(row)).map(row=>({id:row.id,label:row.name}));
     if(kind==='territories')return [...new Set(S.catalog.subdivisions.map(territoryOf))].sort((a,b)=>a.localeCompare(b)).map(territory=>({id:territory,label:territory}));
     if(kind==='sub')return availableSubdivisions().map(row=>({id:row.id,label:row.name,detail:row.code}));
@@ -306,9 +318,9 @@
   }
   function openPicker(anchor,kind) {
     if(S.picker && S.picker.anchor===anchor) {closePicker();return;}
-    closePicker();const multi=kind==='builders'||kind==='years'||kind==='territories', current=kind==='territories'?S.territories:kind==='sub'?S.sub:kind==='newBuilder'?S.newBuilder:kind==='newYear'?S.newYear:kind==='builders'?S.builders:S.years;
-    const p={anchor,kind,multi,all:kind==='territories'?S.territories===null:kind==='builders'?S.builders===null:kind==='years'?S.years.length===0:false,selected:new Set(multi?current||[]:[current]),options:pickerOptions(kind)};
-    const label=kind.includes('Year')||kind==='years'?'Fiscal Year':kind==='sub'?'Subdivision':kind==='territories'?'Territory':'Builder';
+    closePicker();const review=kind.startsWith('review-'),multi=review||kind==='builders'||kind==='years'||kind==='territories', current=review?ForecastContractReview.selection(kind.slice(7)):kind==='territories'?S.territories:kind==='sub'?S.sub:kind==='newBuilder'?S.newBuilder:kind==='newYear'?S.newYear:kind==='builders'?S.builders:S.years;
+    const p={anchor,kind,multi,all:review?current===null:kind==='territories'?S.territories===null:kind==='builders'?S.builders===null:kind==='years'?S.years.length===0:false,selected:new Set(multi?current||[]:[current]),options:pickerOptions(kind)};
+    const label=kind.includes('Year')||kind==='years'||kind==='review-years'?'Fiscal Year':kind==='sub'||kind==='review-subdivision'?'Subdivision':kind==='territories'||kind==='review-territory'?'Territory':'Builder';
     p.element=document.createElement('section');p.element.className='popover';p.element.dataset.multi=String(multi);p.element.id='forecast-picker';p.element.setAttribute('role','dialog');p.element.setAttribute('aria-label',label+' picker');p.element.innerHTML='<header><input aria-label="Search '+label+'" placeholder="Search '+label+'"><button class="close-btn" data-pop-close aria-label="'+(kind.startsWith('new')?'Close picker':'Clear '+label+' filter')+'">'+icons.close+'</button></header>'+(multi?'<div class="picker-selection" role="status"></div>':'')+'<div class="options" role="listbox" aria-label="'+label+'"'+(multi?' aria-multiselectable="true"':'')+'></div>'+(multi?'<footer><button class="btn" data-pop-all>All</button><button class="btn" data-pop-clear>Clear</button><button class="btn" data-pop-visible>Select visible</button><button class="btn primary" data-pop-done>Done</button></footer>':'');
     ($('modal').hidden?document.body:$('modal').querySelector('.dialog')).appendChild(p.element);S.picker=p;anchor.setAttribute('aria-expanded','true');drawOptions(p);
     anchor.setAttribute('aria-controls',p.element.id);positionPicker(p);p.element.querySelector('input').focus();
@@ -338,6 +350,7 @@
   }
   function commitPicker(p) {
     const values=[...p.selected];
+    if(p.kind.startsWith('review-')){if(!ForecastContractReview.applyFilter(p.kind.slice(7),p.all?null:values))return;closePicker();p.anchor.focus();return;}
     if(p.kind==='assignBuilder'){closePicker();ForecastBuilderActions.confirm(p.anchor.dataset.assignName,values[0]);return;}
     if((p.kind==='territories'||p.kind==='sub'||p.kind==='builders'||p.kind==='years') && changed()){closePicker();notice('Check or discard local changes before changing filters.',true);return;}
     const nextSub=values[0]||'', subdivisionChanged=p.kind==='sub'&&nextSub!==S.sub;
@@ -358,6 +371,7 @@
     if(window.LMSuccess)LMSuccess.show('Forecast CSV ready.');
   }
   document.addEventListener('click',event=>{
+    const page=event.target.closest('[data-forecast-page]');if(page&&!page.disabled){setPage(page.dataset.forecastPage);return;}
     const picker=event.target.closest('[data-picker]');if(picker&&!picker.disabled){openPicker(picker,picker.dataset.picker);return;}
     if(S.picker&&!event.composedPath().includes(S.picker.element)&&!S.picker.element.contains(event.target)&&!S.picker.anchor.contains(event.target))closePicker();
     const create=event.target.closest('[data-create-builder]');if(create&&!create.disabled)startCreation(create.dataset.createBuilder,create.dataset.createYear);
@@ -367,7 +381,8 @@
   $('matrix').addEventListener('focusout',event=>{const input=event.target,entry=S.entries.get(input.dataset.forecast);if(S.view==='outlook'&&input.dataset.forecast&&input.value==='0'&&(!entry||entry.phase==='saved'))input.value='';});
   $('matrix').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('matrix').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...document.querySelectorAll('[data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
-  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{const before=S.snapshot,catalog=S.catalog,sub=S.sub,refresh=()=>load(true);return window.LMMotion?LMMotion.refresh($('workspace'),refresh,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before||S.catalog!==catalog}):refresh();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
+  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{if(S.page==='review')return ForecastContractReview.refresh();const before=S.snapshot,catalog=S.catalog,sub=S.sub,refresh=()=>load(true);return window.LMMotion?LMMotion.refresh($('workspace'),refresh,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before||S.catalog!==catalog}):refresh();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
+  $('forecastPages').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!event.target.matches('[data-forecast-page]'))return;event.preventDefault();const page=event.key==='Home'?'forecasts':event.key==='End'?'review':S.page==='forecasts'?'review':'forecasts';setPage(page);document.querySelector('[data-forecast-page="'+S.page+'"]').focus();});
   $('dialogClose').addEventListener('click',closeDialog);$('dialogCancel').addEventListener('click',closeDialog);$('dialogAction').addEventListener('click',()=>{if(S.dialog&&S.dialog.action&&!$('dialogAction').disabled)S.dialog.action();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){if(S.picker){const anchor=S.picker.anchor;closePicker();anchor.focus();}else if(S.dialog){event.preventDefault();closeDialog();}return;}
@@ -390,6 +405,7 @@
   }
   window.ForecastApp=Object.freeze({decode});
   ForecastBuilderActions.connect({S,esc,name,busy,changed,creationReview,openDialog,closeDialog,openPicker,request,applySnapshot,render,controls,patch,notice});
+  ForecastContractReview.connect({ready:()=>S.ready,catalog:()=>S.catalog,controls,readCatalog});
   if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("forecast-manager",{state:()=>S,ready:()=>S.ready,actor:()=>({sub:S.sub,user:LMRuntime.current().user})});
   boot();
 })();
