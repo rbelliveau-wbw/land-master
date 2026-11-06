@@ -1,0 +1,3676 @@
+{
+  "source_profile": "Accounting - Lot Management",
+  "source_profile_development_id": "4410926000000090001",
+  "ross_profile": "Accounting - Lot Management - Ross",
+  "ross_profile_development_id": "4410926000005833480",
+  "environment": "Development",
+  "rows_compared_including_header": 107,
+  "module_rows_compared": 106,
+  "differences": [
+    {
+      "module": "Add Lots",
+      "development_form_id": "4410926000000032411",
+      "permission": "Create (UI Access)",
+      "before": true,
+      "after": false
+    },
+    {
+      "module": "Mass Create Lots",
+      "development_form_id": "4410926000000036656",
+      "permission": "Create (UI Access)",
+      "before": true,
+      "after": false
+    },
+    {
+      "module": "Mass Create Lots Subform",
+      "development_form_id": "4410926000003077067",
+      "permission": "Create (UI Access)",
+      "before": true,
+      "after": false
+    }
+  ],
+  "all_other_captured_module_cells_equal": true,
+  "capture_scope": "Read-only DOM snapshots of the saved native permission editors. Lots Edit reports were also inspected individually. Field permissions and API/Security settings were inherited by native Duplicate and not changed.",
+  "module_summary": [
+    {
+      "module": "Add Budget",
+      "development_component_id": "4410926000001377007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Builder",
+      "development_component_id": "4410926000000032167",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Builder Takedown",
+      "development_component_id": "4410926000000147072",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "All Builder Takedowns",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "Export/Print, View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Company",
+      "development_component_id": "4410926000000054354",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Contract",
+      "development_component_id": "4410926000000197013",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Equipment",
+      "development_component_id": "4410926000002461003",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Forecast",
+      "development_component_id": "4410926000000579007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Forecast Year",
+      "development_component_id": "4410926000000686007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Lots",
+      "development_component_id": "4410926000000032411",
+      "source_access": true,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "3 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "3 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "Export/Print, View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Pro Forma",
+      "development_component_id": "4410926000001813003",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Project",
+      "development_component_id": "4410926000000054031",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "All Projects",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "All Projects",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Property",
+      "development_component_id": "4410926000000056007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Subdivision",
+      "development_component_id": "4410926000000032019",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "All Subdivisions",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "All Subdivisions",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Takedown Schedule",
+      "development_component_id": "4410926000000035007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Takedown Template",
+      "development_component_id": "4410926000000270009",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "2 Reports",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Tax Parcel Year",
+      "development_component_id": "4410926000000409026",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Tax Rate",
+      "development_component_id": "4410926000000035238",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Add Taxing Jurisdiction",
+      "development_component_id": "4410926000000296105",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Additional Items",
+      "development_component_id": "4410926000001313007",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "All Additional Items",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "All Additional Items",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "All Additional Items",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Config Audit",
+      "development_component_id": "4410926000005117602",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Config Lock",
+      "development_component_id": "4410926000005117689",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Policy",
+      "development_component_id": "4410926000005117410",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Role",
+      "development_component_id": "4410926000005117253",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Role Assignment",
+      "development_component_id": "4410926000005117318",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approval Route Snapshot",
+      "development_component_id": "4410926000005117513",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Attachment",
+      "development_component_id": "4410926000000964222",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Approvals",
+      "development_component_id": "4410926000003233025",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Category",
+      "development_component_id": "4410926000001394066",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Import Item",
+      "development_component_id": "4410926000001488003",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Item",
+      "development_component_id": "4410926000001377209",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Modification",
+      "development_component_id": "4410926000004332002",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Budget Months",
+      "development_component_id": "4410926000001345357",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Comment Log",
+      "development_component_id": "4410926000004743010",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Construction Cost Curve",
+      "development_component_id": "4410926000001345087",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Construction Review Log",
+      "development_component_id": "4410926000005833341",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Contract Actions",
+      "development_component_id": "4410926000001136098",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Contract Approvals",
+      "development_component_id": "4410926000000978028",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Contract Pricing",
+      "development_component_id": "4410926000001106118",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Contracts Management Search",
+      "development_component_id": "4410926000001097692",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Crew",
+      "development_component_id": "4410926000005295307",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Crew_Assignment",
+      "development_component_id": "4410926000005295381",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Crew_Schedule_Lock",
+      "development_component_id": "4410926000005295655",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Crew_Test_Record",
+      "development_component_id": "4410926000005295731",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Crew_Timecards",
+      "development_component_id": "4410926000005549102",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Employees",
+      "development_component_id": "4410926000005549015",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Equipment Maintenance Cost",
+      "development_component_id": "4410926000002461393",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Equipment Usage Year",
+      "development_component_id": "4410926000002461165",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "External System Mapping",
+      "development_component_id": "4410926000003027145",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Forecast Search",
+      "development_component_id": "4410926000000587041",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Land Installments",
+      "development_component_id": "4410926000002201031",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "LOI Worksheet",
+      "development_component_id": "4410926000004017070",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Lot Mix Row",
+      "development_component_id": "4410926000004356224",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Lot Search",
+      "development_component_id": "4410926000000142651",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "Saved Searches",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "Saved Searches",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "Saved Searches",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Create Forecasts",
+      "development_component_id": "4410926000000581032",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Create Lots",
+      "development_component_id": "4410926000000036656",
+      "source_access": true,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "Mass Create Lots Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "Mass Create Lots Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "Mass Create Lots Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Create Lots Subform",
+      "development_component_id": "4410926000003077067",
+      "source_access": true,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "Mass Create Lots Subform Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "Mass Create Lots Subform Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "Mass Create Lots Subform Report",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Create Tax",
+      "development_component_id": "4410926000000450294",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Create Tax Rates",
+      "development_component_id": "4410926000000572007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Update Lots",
+      "development_component_id": "4410926000000180015",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "All Mass Updates",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "All Mass Updates",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "All Mass Updates",
+          "checkboxes": [
+            true
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "View all, Modify all",
+          "checkboxes": [
+            true
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Mass Update Tax",
+      "development_component_id": "4410926000000516007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Milestones",
+      "development_component_id": "4410926000001775025",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Payment Request",
+      "development_component_id": "4410926000005003017",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "PO Currency Probe",
+      "development_component_id": "4410926000005117184",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "PO Item",
+      "development_component_id": "4410926000005117011",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "PO Operation",
+      "development_component_id": "4410926000005117797",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "PO Phase Lock",
+      "development_component_id": "4410926000005117898",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Proforma AI Review",
+      "development_component_id": "4410926000004589098",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Proforma Item",
+      "development_component_id": "4410926000002626194",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Proforma Months",
+      "development_component_id": "4410926000001840156",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Proforma Phase",
+      "development_component_id": "4410926000001840022",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Property Transfer",
+      "development_component_id": "4410926000005217021",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Redline Review",
+      "development_component_id": "4410926000001691003",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Schedule_Change_Log",
+      "development_component_id": "4410926000005295561",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Settings",
+      "development_component_id": "4410926000000686646",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "System Search",
+      "development_component_id": "4410926000000129031",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Task_Schedule",
+      "development_component_id": "4410926000005295471",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Tax Parcel Search",
+      "development_component_id": "4410926000000492041",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Tax Rate Template",
+      "development_component_id": "4410926000000509007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Tax Table Search",
+      "development_component_id": "4410926000000483009",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Territory",
+      "development_component_id": "4410926000004356007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "User Access",
+      "development_component_id": "4410926000003582007",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Vendors",
+      "development_component_id": "4410926000005073011",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Workflow Export Lock",
+      "development_component_id": "4410926000005449018",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Workflow Run Log",
+      "development_component_id": "4410926000005295017",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Edit",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "Delete",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        },
+        {
+          "column": "More",
+          "summary": "",
+          "checkboxes": [
+            false
+          ]
+        }
+      ]
+    },
+    {
+      "module": "Approvals HTML Page",
+      "development_component_id": "4410926000000978422",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Budgets",
+      "development_component_id": "4410926000003549004",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Contract Management",
+      "development_component_id": "4410926000001097088",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Contract Mgmt",
+      "development_component_id": "4410926000003267040",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Crew Locations",
+      "development_component_id": "4410926000005295936",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Data Insights",
+      "development_component_id": "4410926000004781023",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Estimating",
+      "development_component_id": "4410926000005188138",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Forecast Management",
+      "development_component_id": "4410926000000587001",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Forecast Manager",
+      "development_component_id": "4410926000005113003",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Forms & Reports",
+      "development_component_id": "4410926000004297001",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Land & Projects",
+      "development_component_id": "4410926000000129011",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Legal",
+      "development_component_id": "4410926000003923019",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Lot Management",
+      "development_component_id": "4410926000000085141",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Lot Management V2",
+      "development_component_id": "4410926000002082036",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Lots & Takedowns",
+      "development_component_id": "4410926000004265116",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Pro Forma Approval Response",
+      "development_component_id": "4410926000004196058",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Pro Formas",
+      "development_component_id": "4410926000003276026",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Proforma Management",
+      "development_component_id": "4410926000001883110",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Queue Live Embed",
+      "development_component_id": "4410926000003088244",
+      "source_access": true,
+      "ross_access": true,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Settings",
+      "development_component_id": "4410926000001262028",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "Tax Parcel Management",
+      "development_component_id": "4410926000000492360",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    },
+    {
+      "module": "View Budget",
+      "development_component_id": "4410926000002416001",
+      "source_access": false,
+      "ross_access": false,
+      "retained_cells": [
+        {
+          "column": "View",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Edit",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "Delete",
+          "summary": "-",
+          "checkboxes": []
+        },
+        {
+          "column": "More",
+          "summary": "-",
+          "checkboxes": []
+        }
+      ]
+    }
+  ]
+}

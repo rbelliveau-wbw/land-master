@@ -1,0 +1,79 @@
+form Contract
+{
+    title
+    {
+        displayname = "Add Contract"
+        on add = "Create Contract"
+        on edit = "Edit Contract"
+    }
+    success message = "Contract Added Successfully"
+    actions
+    {
+        on add
+        {
+            submit
+            (
+                type = submit
+                displayname = "Submit"
+            )
+            reset
+            (
+                type = reset
+                displayname = "Reset"
+            )
+        }
+        on edit
+        {
+            update
+            (
+                type = submit
+                displayname = "Update"
+            )
+            cancel
+            (
+                type = cancel
+                displayname = "Cancel"
+            )
+        }
+    }
+}
+    Send_Email_Form_Propertie2 as "Send Email - Form Properties"
+{
+    type =  presuccess
+    form = Contract
+        status = inactive
+    on start
+    {
+        actions
+        {
+            sendmail
+            (
+                from : "Notifications@wbdevelopment.com"
+                to : "zoho.adminuserid"
+                subject : "Land Master : New entry added"
+                message : "<div>Hello,<br><br>A new entry added in 'Add Contract' form of 'Land Master' application.<br><br><br><br><br><br><br></div>"
+                attachments : template : _default as inline
+            )
+        }
+    }
+}
+
+
+    device specific settings
+    (
+        web
+        (
+            field alignment = "right"
+        )
+        Mobile
+        (
+            field alignment = "auto"
+        )
+        Tablet
+        (
+            field alignment = "auto"
+        )
+    )
+
+
+}

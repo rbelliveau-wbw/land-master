@@ -1,0 +1,84 @@
+{
+  "status": "published-to-production-and-assigned-to-ross",
+  "date": "2026-11-06",
+  "application": "Land Master",
+  "scope": "Ross only; preserve all existing edit and mass update rights",
+  "source_profile": {
+    "name": "Accounting - Lot Management",
+    "development_id": "4410926000000090001",
+    "production_id": "4410926000000093407",
+    "changed": false
+  },
+  "ross_profile": {
+    "name": "Accounting - Lot Management - Ross",
+    "development_id": "4410926000005833480",
+    "production_id": "4410926000005839102",
+    "creation_method": "Native Duplicate Permission Set"
+  },
+  "assignment": {
+    "user": "ross@wbdevelopment.com",
+    "creator_username": "ross_wbdevelopment",
+    "user_id": "4410926000003194001",
+    "role_before": "Accounting",
+    "role_after": "Accounting",
+    "permission_before": "Accounting - Lot Management",
+    "permission_after": "Accounting - Lot Management - Ross",
+    "verification": "Native user details showed the saved Production assignment after the submission dialog closed.",
+    "other_users_changed": false
+  },
+  "removed_grants": [
+    {"form": "Lots", "native_label": "Add Lots", "grant": "Create", "ui_column": "Access"},
+    {"form": "Mass_Create_Lots", "native_label": "Mass Create Lots", "grant": "Create", "ui_column": "Access"},
+    {"form": "Mass_Create_Lots_Subform", "native_label": "Mass Create Lots Subform", "grant": "Create", "ui_column": "Access"}
+  ],
+  "retained": {
+    "all_existing_edit_grants": true,
+    "lots_view_all": true,
+    "lots_modify_all": true,
+    "lots_export": true,
+    "lots_edit_reports": ["All_Active_Lots", "All_Active_Lots_List_View", "All_Active_Lots_Spreadsheet"],
+    "Mass_Update_Lots": {"create": true, "view_all": true, "modify_all": true, "edit_report": "All_Mass_Updates"},
+    "Lot_Search_create": true,
+    "Builder_Takedown_permissions": "Inherited unchanged",
+    "field_permissions": "Inherited unchanged through native duplication",
+    "api_and_security_permissions": "Inherited unchanged; API access remains disabled",
+    "User_Access_flags": "Unchanged"
+  },
+  "native_release": {
+    "title": "Ross Lot Creation Restriction",
+    "type": "Minor",
+    "previous_production_version": "9.159",
+    "stage_version": "9.160",
+    "production_version": "9.160",
+    "package_id": "4410926000005837056",
+    "promotion_authorization": "User explicitly instructed: you promote in creator, overriding the usual PMP handoff.",
+    "selected_components": [
+      {"patch": "701#4410926000005833480", "component": "Accounting - Lot Management - Ross", "reason": "Requested permission profile"},
+      {"patch": "201#4410926000000197013", "component": "Contract form properties", "reason": "Creator required dependency; all 79 rendered property lines matched Stage exactly"},
+      {"patch": "201#4410926000005833341", "component": "Construction_Review_Log form properties", "reason": "Creator required an empty form definition referenced by the duplicated profile; no fields, reports, workflows, or functions selected"}
+    ],
+    "unrelated_pending_components_selected": false,
+    "construction_review_feature_published": false,
+    "business_records_written_for_testing": false
+  },
+  "verification": {
+    "saved_profiles_reopened": true,
+    "module_rows_compared": 106,
+    "only_differences": "Three Create grants changed from true to false; every other captured module permission cell matched the original.",
+    "lots_edit_report_selection_inspected": true,
+    "profile_name_allowlist_search": "No exact dependency on Accounting - Lot Management in current source functions, workflows, widgets, shared code, or manifests.",
+    "end_user_runtime": "Ross was not impersonated; actual create, edit, or mass update writes were not performed under his credentials. Verification covers published native configuration and saved assignment.",
+    "comparison": "native-profile-comparison.json"
+  },
+  "implementation": {
+    "enforcement": "Native Creator form-create permissions. Mass creation is denied at its helper form; SDK import inserts target Lots and inherit the native deny.",
+    "frontend_changes": false,
+    "custom_control_visibility": "Existing custom import/create controls may remain visible; native authorization rejects prohibited creation. No email hardcoding, new identity path, or separate widget permission flag introduced.",
+    "functions_changed": [],
+    "custom_apis_changed": [],
+    "fields_changed": [],
+    "widget_release_required": false,
+    "widget_environment_mappings_changed": false
+  },
+  "rollback": "Reassign only Ross to the unchanged Accounting - Lot Management profile. Leave every other user's assignment unchanged. No business-data rollback is required."
+}
