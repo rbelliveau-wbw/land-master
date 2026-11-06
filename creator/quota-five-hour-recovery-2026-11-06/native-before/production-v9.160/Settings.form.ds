@@ -1,0 +1,359 @@
+form Settings
+		{
+			success message = "Settings save successfully."
+			Forecast_Settings
+			(
+				type = section
+				displayname = "Forecast Settings"
+	 			row = 1
+	 			column = 0   
+				width = medium
+			)
+			General_Settings
+			(
+				type = section
+				displayname = "General Settings"
+				visibility = true
+	 			row = 2
+	 			column = 0   
+				width = medium
+			)
+			Approval_Reminder_Interval_Days
+			(
+				type = number
+				displayname = "Approval Reminder Interval (Days)"
+				initial value = 3
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Next_Workflow_Run
+			(
+    			type = datetime
+				displayname = "Next Workflow Run"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Next_Approval_Reminder_Date
+			(
+    			type = date
+				displayname = "Next Approval Reminder Date"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Workflow_Log_Failure_Recipients
+			(
+				type = list	
+				displayname = "Workflow Log Failure Recipients"
+				values  = User_Access[ID != 0].ID
+    			displayformat = [Full_Name]
+				advanced field search = true
+				sortorder = ascending
+				height = 60px
+	 			row = 2
+	 			column = 1   
+				width = large
+			)
+			Current_Batch
+			(
+				type = number
+				displayname = "Current Batch"
+				maxchar = 1
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			plain
+			(
+    			type = plaintext
+				value = "<div style=\"border-bottom: 1px dashed black; background-color: rgb(244, 246, 249); text-align: center\"><b><span class=\"size\" style=\"font-size: 18px\">Forecast Settings </span> </b> <br /></div>"
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Open_Forecasting_Window
+			(
+    			type = checkbox
+				displayname = "Open Forecasting Window"
+				initial value = false
+    			description
+    			[
+    				type = tooltip
+    			 	message = "Allows editing for current and future month forecasting."
+    			]
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Unlock_All_Forecasts
+			(
+    			type = checkbox
+				displayname = "Unlock All Forecasts"
+				initial value = false
+    			description
+    			[
+    				type = tooltip
+    			 	message = "Unlocks all the fields in Forecasts and Forecast Years, also prevents hiding."
+    			]
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)
+			Contracts_Settings
+			(
+				type = section
+				displayname = "Contracts Settings"
+				visibility = true
+	 			row = 3
+	 			column = 0   
+				width = medium
+			)
+			Receive_Legal_Notifications
+			(
+    			type = text
+				displayname = "Legal Notification Recipients"
+    			description
+    			[
+    				type = tooltip
+    			 	message = "Enter email addresses separated by commas (ex. guy@wbedevelopment.com,girl@wbdevelopment.com)"
+    			]
+	 			row = 3
+	 			column = 1   
+				width = medium
+			)
+			Builder_Approval_Template
+			(
+				type = list	
+				displayname = "Builder Approval Template"
+				values  = Contract_Approvals[Contract_Template == "Builder"].ID
+    			displayformat = [Approver]
+				advanced field search = true
+				sortorder = ascending
+				height = 60px
+				private = true
+	 			row = 3
+	 			column = 1   
+				width = medium
+			)
+			Builder_Contract_Action_Template
+			(
+				type = list	
+				displayname = "Builder Contract Action Template"
+				values  = Contract_Actions[Type_field is not null].ID
+    			displayformat = [Type_field + " - " + Type_field]
+				sortorder = ascending
+				height = 60px
+				private = true
+	 			row = 3
+	 			column = 2   
+				width = medium
+			)
+			Budget_Settings
+			(
+				type = section
+				displayname = "Budget Settings"
+	 			row = 4
+	 			column = 0   
+				width = medium
+			)
+			plain1
+			(
+    			type = plaintext
+				value = "<div style=\"border-bottom: 1px dashed black; background-color: rgb(244, 246, 249); text-align: center\"><b><span class=\"size\" style=\"font-size: 18px\">Budget Settings </span> </b> <br /></div>"
+	 			row = 4
+	 			column = 1   
+				width = medium
+			)
+			COO_Approval_Threshold
+			(
+				displayname = "COO Approval Threshold"
+				type = USD
+				format = commadotwestern
+    			description
+    			[
+    				type = tooltip
+    			 	message = "Amount to where COO gets added to Budget Modification approvals."
+    			]
+	 			row = 4
+	 			column = 1   
+				width = medium
+			)
+			Multi_Line
+			(
+    			type = textarea
+				displayname = "Multi Line"
+				height = 100px
+	 			row = 4
+	 			column = 1   
+				width = medium
+			)
+			plain2
+			(
+    			type = plaintext
+				value = "<div style=\"border-bottom: 1px dashed black; background-color: rgb(244, 246, 249); text-align: center\"><b><span class=\"size\" style=\"font-size: 18px\">Defaults </span> </b> <br /></div>"
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Capital_Cost
+			(
+    			type = percentage
+				displayname = "Capital Cost"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Points
+			(
+    			type = percentage
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Admin_Cost
+			(
+    			type = percentage
+				displayname = "Admin Cost"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Engineering_Markup
+			(
+    			type = percentage
+				displayname = "Engineering Markup"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Engineering_Sub_Markup
+			(
+    			type = percentage
+				displayname = "Engineering Sub Markup"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Construction_Markup
+			(
+    			type = percentage
+				displayname = "Construction Markup"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Construction_Sub_Markup
+			(
+    			type = percentage
+				displayname = "Construction Sub Markup"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Profit_Share
+			(
+    			type = percentage
+				displayname = "Profit Share"
+				maxchar = 3
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			PF_Review_Criteria
+			(
+    			type = textarea
+				displayname = "PF Review Criteria"
+				height = 300px
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			PF_Review_Model
+			(
+    			type = text
+				displayname = "PF Review Model"
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			PF_Review_Provider
+			(
+    			type = text
+				displayname = "PF Review Provider"
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			PF_Review_Criteria_Updated
+			(
+    			type = datetime
+				displayname = "PF Review Criteria Updated"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Plat_Review_Criteria
+			(
+    			type = textarea
+				displayname = "Plat Review Criteria"
+				height = 300px
+	 			row = 4
+	 			column = 2   
+				width = medium
+			)
+			Construction_Curve
+			(
+				type = grid
+				displayname = "Construction Curve"
+				values  = Construction_Curve.ID
+    			bidirectional = Settings
+				auto width = false
+	 			row = 5
+	 			column = 1   
+				width = medium
+			)
+	
+			actions
+			{
+				on add
+				{
+					submit
+					(
+   						type = submit
+   						displayname = "Submit"
+					)
+					reset
+					(
+   						type = reset
+   						displayname = "Reset"
+					)
+				}
+				on edit
+				{
+					Save
+					(
+   						type = submit
+   						displayname = "Save"
+					)
+					cancel
+					(
+   						type = cancel
+   						displayname = "Cancel"
+					)
+				}
+			}
+		}

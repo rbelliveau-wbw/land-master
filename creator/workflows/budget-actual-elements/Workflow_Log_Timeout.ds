@@ -19,17 +19,32 @@ Workflow_Log_Timeout as "Workflow Log Timeout"
 					try
 					{
 						state = ifnull(run.Export_State,"{}").toMap();
-						actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
-						if(state.get("version") == 1 && actualWorkflows.contains(state.get("workflow")) && state.get("actualDeadline") != null && state.get("actualDeadline").toLong() > zoho.currenttime.toLong() && state.get("actualDeadline").toLong() <= run.Started_At.addMinutes(120).toLong() + 1000)
+						// New runs suppress this record timer. If an already-queued timer still
+						// arrives, defer only after the shared clock is independently confirmed.
+						if(state.get("callbackPolicy") == "shared-recovery-30m")
+						{
+							thisapp.workflowExportRecover("arm");
+							deferActual = true;
+						}
+						actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_HCSS_1"};
+						if(!deferActual && state.get("version") == 1 && actualWorkflows.contains(state.get("workflow")) && state.get("actualDeadline") != null && state.get("actualDeadline").toLong() > zoho.currenttime.toLong() && state.get("actualDeadline").toLong() <= run.Started_At.addMinutes(120).toLong() + 1000)
 						{
 							watchKey = run.ID.toString() + "|wake|" + state.get("tick") + "|10";
 							watch = Workflow_Export_Lock[Claim_Key == watchKey];
 							waitingWithResume = state.get("phase") == "waiting" && run.Resume_At != null;
 							validPhase = state.get("phase") == "processing" || state.get("phase") == "polling" || waitingWithResume;
 							deferActual = validPhase && watch.count() == 1 && watch.Wake_At != null && watch.Wake_At > zoho.currenttime;
+							// A handoff briefly exposes its successor before that tick is armed.
+							// The prior tick's existing watchdog still bounds this exact transition.
+							if(!deferActual && state.get("phase") == "arming" && state.get("tick").toLong() > 0)
+							{
+								previousTick = state.get("tick").toLong() - 1;
+								previousWatchKey = run.ID.toString() + "|wake|" + previousTick + "|10";
+								previousWatch = Workflow_Export_Lock[Claim_Key == previousWatchKey];
+								deferActual = previousWatch.count() == 1 && previousWatch.Wake_At != null && previousWatch.Wake_At > zoho.currenttime;
+							}
 						}
-					}
-					catch(watchStateError)
+					}	catch (watchStateError)
 					{
 						deferActual = false;
 					}

@@ -47,7 +47,7 @@ string workflowExportRun(string queuedAuditId)
 			auditRowChanged = false;
 			auditSourceKeys = Map();
 			auditRecordKey = "";
-			try 
+			try
 			{
 				// === 1) Analytics identifiers ===
 				orgId = "700732567";
@@ -157,7 +157,7 @@ string workflowExportRun(string queuedAuditId)
 			auditRowChanged = false;
 			auditSourceKeys = Map();
 			auditRecordKey = "";
-			try 
+			try
 			{
 				//Iterates through every Budget Category and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
 				for each  budgCat in Budget_Category[ID != 0 && Budget.Subdivision1 != NULL]
@@ -215,7 +215,7 @@ string workflowExportRun(string queuedAuditId)
 			auditRowChanged = false;
 			auditSourceKeys = Map();
 			auditRecordKey = "";
-			try 
+			try
 			{
 				//Iterates through every Budget  and takes the matching SUbdvision and gets Zoho Projects/Analytics data and writes it to the category
 				for each  budG in Add_Budget[ID != 0]
@@ -268,12 +268,29 @@ string workflowExportRun(string queuedAuditId)
 		if(budgetAction < 3)
 		{
 			nextAuditId = "";
-			try 
+			try
 			{
 				nextAction = budgetAction + 1;
-				nextAudit = thisapp.workflowRunLog({"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action " + nextAction + "/3)","system":"Zoho Analytics"});
+				nextPolicy = ifnull(state.get("callbackPolicy"),"").toString();
+				nextStartupHoldId = "";
+				nextStartupTarget = queuedAuditId + "|budget-successor|" + nextAction;
+				nextStartEvent = {"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action " + nextAction + "/3)","system":"Zoho Analytics","callbackPolicy":nextPolicy,"queueWorkflow":runKey};
+				if(nextPolicy == "shared-recovery-30m")
+				{
+					nextStartupHoldId = thisapp.workflowRecoveryHold("begin","audit",nextStartupTarget);
+					nextStartState = {"version":1,"callbackPolicy":nextPolicy,"workflow":runKey,"phase":"preparing","tick":0,"budgetAction":nextAction,"predecessor":queuedAuditId,"startupHoldId":nextStartupHoldId,"startupHoldTarget":nextStartupTarget};
+					nextStartEvent.put("exportState",nextStartState.toString());
+					thisapp.workflowRecoveryHold("check",nextStartupHoldId,"");
+				}
+				nextAudit = thisapp.workflowRunLog(nextStartEvent);
 				nextAuditId = nextAudit.get("id");
-				nextState = {"version":1,"workflow":runKey,"phase":"arming","tick":0,"budgetAction":nextAction,"predecessor":queuedAuditId,"requests":List()};
+				nextState = {"version":1,"callbackPolicy":nextPolicy,"workflow":runKey,"phase":"arming","tick":0,"budgetAction":nextAction,"predecessor":queuedAuditId,"requests":List()};
+				if(nextStartupHoldId != "")
+				{
+					thisapp.workflowRecoveryHold("close",nextStartupHoldId,nextAuditId.toString());
+					nextState.put("startupHoldId",nextStartupHoldId);
+					nextState.put("startupHoldTarget",nextStartupTarget);
+				}
 				nextAt = zoho.currenttime.addMinutes(1);
 				thisapp.workflowRunLog({"action":"update","id":nextAuditId,"stage":"Queued Budget action " + nextAction,"exportState":nextState.toString(),"clearResume":true,"details":"Predecessor " + queuedAuditId + " completed. Separate native execution; no previous business action is replayed."});
 				thisapp.workflowExportWake(nextAuditId,0,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
@@ -288,7 +305,7 @@ string workflowExportRun(string queuedAuditId)
 			{
 				// The completed business action must commit even if a later queue
 				// acknowledgement is lost. Its one-shot process claim remains held.
-				try 
+				try
 				{
 					if(nextAuditId != "")
 					{
@@ -318,7 +335,7 @@ string workflowExportRun(string queuedAuditId)
 		auditRowChanged = false;
 		auditSourceKeys = Map();
 		auditRecordKey = "";
-		try 
+		try
 		{
 			// Schedule: daily, Settings.Next_Workflow_Run, America/Chicago.
 			// Destination: Add Subdivision (internal form name: Subdivision).
@@ -333,7 +350,7 @@ string workflowExportRun(string queuedAuditId)
 			skippedCount = 0;
 			operationStage = "initializing";
 			currentProjectCode = "";
-			try 
+			try
 			{
 				orgId = "700732567";
 				workspaceId = "2107789000000003001";
@@ -431,7 +448,7 @@ string workflowExportRun(string queuedAuditId)
 						dateText = ifnull(taskRow.get("Due Date"),"").toString().trim();
 						if(taskName == "Final Acceptance" || taskName == "Accept - Muni" && projectCode != null && dateText != "")
 						{
-							try 
+							try
 							{
 								// Preserve the source calendar date; discard its time of day.
 								dueDate = null;
@@ -674,7 +691,7 @@ string workflowExportRun(string queuedAuditId)
 							}
 							else
 							{
-								try 
+								try
 								{
 									scheduleState.put("format",if(scheduleState.get("text").matches("[0-9]{2} [A-Za-z]{3}, [0-9]{4}.*"),"dd MMM, yyyy",if(scheduleState.get("text").matches("[0-9]{4}-[0-9]{2}-[0-9]{2}.*"),"yyyy-MM-dd",if(scheduleState.get("text").matches("[0-9]{2}-[0-9]{2}-[0-9]{4}.*"),"MM-dd-yyyy",if(scheduleState.get("text").matches("[0-9]{2}/[0-9]{2}/[0-9]{4}.*"),"MM/dd/yyyy","")))));
 									if(scheduleState.get("format") != "")
@@ -815,7 +832,7 @@ string workflowExportRun(string queuedAuditId)
 		auditRowChanged = false;
 		auditSourceKeys = Map();
 		auditRecordKey = "";
-		try 
+		try
 		{
 			//THIS CODE UPDATES ZOHO PROJECTS PROJECT START DATE/END DATE BASED ON EARLIEST MILESTONE START DATE AND LATEST MILESTONE END DATE
 			//IT USES A QUERY TABLE IN ANALYTICS TO CHECK FOR PROJECTS WHERE THE AFOREMENTIONED DATES ARE NOT IN SYNC AND UPDATES ANYTHING IN THAT QUERY
@@ -927,7 +944,7 @@ string workflowExportRun(string queuedAuditId)
 		duplicateCount = 0;
 		auditWriteAttempted = false;
 		batch = 0;
-		try 
+		try
 		{
 			settings = Settings[ID != 0];
 			if(settings.count() != 1)
@@ -1118,186 +1135,7 @@ string workflowExportRun(string queuedAuditId)
 	}
 	else if(runKey == "Budgets_Import_Load_HCSS_1")
 	{
-		auditReceived = 0;
-		auditProcessed = 0;
-		auditCreated = 0;
-		auditUpdated = 0;
-		auditUpdatedIds = List();
-		auditSkipped = 0;
-		auditMissingMapping = 0;
-		auditNoBudget = 0;
-		auditNoEligible = false;
-		auditWriteAttempted = false;
-		auditRowChanged = false;
-		auditSourceKeys = Map();
-		auditRecordKey = "";
-		try 
-		{
-			// ================================================
-			// Script: Analytics → Budget_Import_Item Upsert
-			// What it does:
-			// - Exports selected columns from a Zoho Analytics view.
-			// - Builds a list of Subdivision codes that have Budgets.
-			// - For each exported row whose JobCode is in that list:
-			//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
-			//     • Else insert a new Budget_Import_Item with mapped fields.
-			// Notes:
-			// - Ensure TotalActualCost is numeric (normalize if needed).
-			// - Requires valid Analytics connection (zoho_analytics_connection).
-			// ================================================
-			portalId = "700737166";
-			orgId = "700732567";
-			workspaceId = "2107789000000003001";
-			viewId = "2107789000023687048";
-			// === 2) Analytics request setup ===
-			headers = Map();
-			headers.put("ZANALYTICS-ORGID",orgId);
-			config = Map();
-			config.put("responseFormat","json");
-			cols = List();
-			cols.add("H.zzz_CostCodeID_Guid");
-			cols.add("H.Major Code");
-			cols.add("H.Minor Code");
-			cols.add("H.Total Budget Decimal");
-			cols.add("H.BudgetedLabor");
-			cols.add("H.BudgetedMaterial");
-			cols.add("H.BudgetedEquipment");
-			cols.add("H.BudgetedSubcontract");
-			cols.add("H.Budget_Misc1_Cost");
-			cols.add("J.JobCodeFinal");
-			cols.add("H.JobCode");
-			cols.add("H.CostCodeDescription");
-			config.put("selectedColumns",cols);
-			// === 3) Kick off the async export job ===
-			rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
-			auditReceived = rows.size();
-			// Validate the full component projection before any import writes.
-			// A present SQL null means zero; an omitted export column is an error.
-			hcssComponentColumns = {"H.BudgetedLabor","H.BudgetedMaterial","H.BudgetedEquipment","H.BudgetedSubcontract","H.Budget_Misc1_Cost"};
-			for each  componentSourceRow in rows
-			{
-				componentSourceKeys = componentSourceRow.keys();
-				for each  componentSourceColumn in hcssComponentColumns
-				{
-					if(!componentSourceKeys.contains(componentSourceColumn))
-					{
-						throw "HCSS budget export is missing component column: " + componentSourceColumn + ". No budget import writes started.";
-					}
-					validatedComponent = ifnull(componentSourceRow.get(componentSourceColumn),0).toDecimal();
-				}
-			}
-			// === 8) Loop through every analytics row and update each project ===
-			//get all Subdiv codes that have a Budget
-			budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
-			for each  rec in rows
-			{
-				auditProcessed = auditProcessed + 1;
-				auditRowChanged = false;
-				hcssCostMapping = External_System_Mapping[External_Code = rec.get("H.JobCode") && External_System == "HeavyJob"];
-				if(hcssCostMapping.count() == 0)
-				{
-					auditMissingMapping = auditMissingMapping + 1;
-					auditSkipped = auditSkipped + 1;
-					continue;
-				}
-				if(hcssCostMapping.count() != 1 || hcssCostMapping.Subdivision1 == null)
-				{
-					throw "Duplicate or broken external mapping; source row=" + auditProcessed;
-				}
-				if(!budgCodes.contains(hcssCostMapping.Subdivision1.Subdivision_Code))
-				{
-					auditNoBudget = auditNoBudget + 1;
-					auditSkipped = auditSkipped + 1;
-					continue;
-				}
-				if(budgCodes.contains(hcssCostMapping.Subdivision1.Subdivision_Code))
-				{
-					if(rec.get("H.Total Budget Decimal") == null || rec.get("H.Total Budget Decimal").toString().trim() == "")
-					{
-						throw "Eligible Analytics row has no cost; source row=" + auditProcessed;
-					}
-					validatedCost = rec.get("H.Total Budget Decimal").toDecimal();
-					codeBuild = rec.get("H.JobCode") + "-B-" + rec.get("H.Minor Code");
-					if(auditSourceKeys.get(codeBuild) != null)
-					{
-						throw "Duplicate Analytics source key: " + codeBuild;
-					}
-					auditSourceKeys.put(codeBuild,true);
-					auditRecordKey = codeBuild;
-					budgimpItem = Budget_Import_Item[Code = codeBuild && Data_Source == "HeavyJob Budget"];
-					if(budgimpItem.count() > 1)
-					{
-						throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
-					}
-					if(budgimpItem.count() == 1)
-					{
-						auditWriteAttempted = true;
-						budgimpItem.Cost=rec.get("H.Total Budget Decimal").toLong();
-						budgimpItem.Labor=ifnull(rec.get("H.BudgetedLabor"),0).toDecimal();
-						budgimpItem.Materials=ifnull(rec.get("H.BudgetedMaterial"),0).toDecimal();
-						budgimpItem.Equipment=ifnull(rec.get("H.BudgetedEquipment"),0).toDecimal();
-						budgimpItem.Subcontractor=ifnull(rec.get("H.BudgetedSubcontract"),0).toDecimal();
-						budgimpItem.Other=ifnull(rec.get("H.Budget_Misc1_Cost"),0).toDecimal();
-						auditWriteAttempted = true;
-						budgimpItem.Updated_Date=zoho.currentdate;
-						auditWriteAttempted = true;
-						budgimpItem.Data_Source="HeavyJob Budget";
-						auditDestination = budgimpItem.ID.toString();
-						if(!auditUpdatedIds.contains(auditDestination))
-						{
-							auditUpdatedIds.add(auditDestination);
-							auditUpdated = auditUpdated + 1;
-						}
-						auditRowChanged = true;
-					}
-					if(budgimpItem.count() == 0)
-					{
-						impItem = insert into Budget_Import_Item
-						[
-							Data_Source="HeavyJob Budget"
-							Cost=rec.get("H.Total Budget Decimal").toLong()
-							Labor=ifnull(rec.get("H.BudgetedLabor"),0).toDecimal()
-							Materials=ifnull(rec.get("H.BudgetedMaterial"),0).toDecimal()
-							Equipment=ifnull(rec.get("H.BudgetedEquipment"),0).toDecimal()
-							Subcontractor=ifnull(rec.get("H.BudgetedSubcontract"),0).toDecimal()
-							Other=ifnull(rec.get("H.Budget_Misc1_Cost"),0).toDecimal()
-							Cost_Code_Description=rec.get("H.CostCodeDescription")
-							Code=codeBuild
-							Subdivision_Code=hcssCostMapping.Subdivision1.Subdivision_Code
-							Major_Code=rec.get("H.Major Code")
-							Minor_Code=rec.get("H.Minor Code")
-							Added_User=zoho.loginuser
-							Cost_Code_ID=rec.get("H.zzz_CostCodeID_Guid")
-							Updated_Date=zoho.currentdate
-						];
-						auditCreated = auditCreated + 1;
-						auditRowChanged = true;
-						//CREATE MILESTONE IN CREATOR
-					}
-				}
-				if(!auditRowChanged)
-				{
-					auditSkipped = auditSkipped + 1;
-				}
-			}
-			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
-			auditFinalStatus = "Success";
-			if(auditNoEligible)
-			{
-				auditFinalStatus = "Skipped";
-			}
-			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
-		}		catch (auditError)
-		{
-			auditStatus = "Failed";
-			if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
-			{
-				auditStatus = "Partial";
-			}
-			auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
-			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
-			throw auditError;
-		}
+		return thisapp.budgetPlanImportRun(auditId);
 	}
 	else if(runKey == "Budgets_Import_Load_CTC_C")
 	{
@@ -1314,7 +1152,7 @@ string workflowExportRun(string queuedAuditId)
 		auditRowChanged = false;
 		auditSourceKeys = Map();
 		auditRecordKey = "";
-		try 
+		try
 		{
 			// ================================================
 			// Script: Analytics → Budget_Import_Item Upsert

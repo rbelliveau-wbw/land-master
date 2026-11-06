@@ -1,0 +1,53 @@
+{
+  "environment": "production",
+  "source_file": "Land_Master (21).ds",
+  "source_sha256": "424455119f7576c1147c27e79bfcca01ad3b3a7f0b3268b47d8b2286410bb8a7",
+  "scope": "Five active maintenance schedules retained unchanged; separate from the immutable original capture manifest.",
+  "components": [
+    {
+      "name": "Set_Close_Date_Lots1",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/production/production-v9_154-fresh/Set_Close_Date_Lots1.ds",
+      "line_start": 77702,
+      "line_end": 77754,
+      "sha256": "c8577458acebe0e0708ac4f88487eed8cae3ec777e5bed94f331fe5f021b75a4",
+      "bytes": 1774,
+      "explicit_status": null
+    },
+    {
+      "name": "Update_Sold_Contracted_Fo1",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/production/production-v9_154-fresh/Update_Sold_Contracted_Fo1.ds",
+      "line_start": 77755,
+      "line_end": 77798,
+      "sha256": "00fc85f88cb5ee39c8726382cc009df8727f3fe99a98ea5199ad4b483c1957d2",
+      "bytes": 2464,
+      "explicit_status": null
+    },
+    {
+      "name": "Update_Actual_Lots_Foreca1",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/production/production-v9_154-fresh/Update_Actual_Lots_Foreca1.ds",
+      "line_start": 77799,
+      "line_end": 77837,
+      "sha256": "ac461b2866ee25d3a266fe3b11393aafe78d65cdffcfe8602485c606d299b9a5",
+      "bytes": 1340,
+      "explicit_status": null
+    },
+    {
+      "name": "Check_for_Stuck_Budget_Ap",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/production/production-v9_154-fresh/Check_for_Stuck_Budget_Ap.ds",
+      "line_start": 77838,
+      "line_end": 77856,
+      "sha256": "67b60cad76320f8cc6c4a9387059db43014ac0cb32c5735a1641507202c11776",
+      "bytes": 350,
+      "explicit_status": null
+    },
+    {
+      "name": "Recalc_Budget_Modificatio",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/production/production-v9_154-fresh/Recalc_Budget_Modificatio.ds",
+      "line_start": 77875,
+      "line_end": 77894,
+      "sha256": "447c353f7ee9ab9ae4f67d1aad50c5c91eda7b73a388b6164ce54330aab9bb09",
+      "bytes": 467,
+      "explicit_status": null
+    }
+  ]
+}

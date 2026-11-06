@@ -81,10 +81,56 @@ map workflowRunLog(map event)
 			}
 		}
 	}
+	// New queue runs use one shared recovery timer. Preserve independent audit
+	// commits and on-success form actions; suppress only redundant schedule triggers.
+	callbackPolicy = ifnull(event.get("callbackPolicy"),"").toString();
+	if(action == "start" && callbackPolicy == "shared-recovery-30m")
+	{
+		queueWorkflow = ifnull(event.get("queueWorkflow"),"").toString();
+		if(queueWorkflow == "")
+		{
+			throw "A shared-recovery run requires its queue workflow identity.";
+		}
+		initialState = {"version":1,"callbackPolicy":callbackPolicy,"workflow":queueWorkflow,"phase":"preparing","tick":0,"checkpointAt":zoho.currenttime.toLong()};
+		fields.put("Export_State",initialState.toString());
+	}
+	if(action != "start")
+	{
+		policyRun = Workflow_Run_Log[ID == runIdText.toLong()];
+		if(policyRun.count() == 1 && policyRun.Export_State != null)
+		{
+			try
+			{
+				policyState = policyRun.Export_State.toMap();
+				callbackPolicy = ifnull(policyState.get("callbackPolicy"),callbackPolicy).toString();
+			}
+			catch(policyReadError)
+			{
+				// A malformed legacy state must not prevent a terminal audit write.
+				callbackPolicy = ifnull(event.get("callbackPolicy"),"").toString();
+			}
+		}
+	}
 	// Optional continuation metadata; existing audit events retain their contract.
 	if(event.get("exportState") != null)
 	{
 		exportStateText = event.get("exportState").toString();
+		if(exportStateText.length() > 60000)
+		{
+			throw "Export state is too large; no state was truncated.";
+		}
+		sharedState = callbackPolicy == "shared-recovery-30m" || exportStateText.contains("shared-recovery-30m");
+		if(sharedState)
+		{
+			checkpointState = exportStateText.toMap();
+			callbackPolicy = ifnull(checkpointState.get("callbackPolicy"),callbackPolicy).toString();
+			if(callbackPolicy == "shared-recovery-30m")
+			{
+				checkpointState.put("callbackPolicy",callbackPolicy);
+				checkpointState.put("checkpointAt",zoho.currenttime.toLong());
+				exportStateText = checkpointState.toString();
+			}
+		}
 		if(exportStateText.length() > 60000)
 		{
 			throw "Export state is too large; no state was truncated.";
@@ -100,6 +146,10 @@ map workflowRunLog(map event)
 		fields.put("Resume_At",null);
 	}
 	payload = {"data":fields};
+	if(callbackPolicy == "shared-recovery-30m")
+	{
+		payload.put("skip_workflow",{"schedules"});
+	}
 	if(action == "start")
 	{
 		http = invokeurl

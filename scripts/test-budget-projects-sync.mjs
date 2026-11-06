@@ -100,8 +100,8 @@ for(const statement of ['subdiv.Acres=acres;','subdiv.Lot_Total_Residential=lotT
   expectedImport=expectedImport.replace(removal,'');
 }
 expectedImport=expectedImport.replace('subdiv.Projects_Status=status;','subdiv.Projects_Status=status;\n\t\t\t\t\t\t\t// Budget owns Acres, residential lots, and street LF. Do not import those quantities.');
-// Preserve the complete November2 native body, allowing only this task's three
-// actual-source delegations and source-agnostic Budget_Import_Item field names.
+// Preserve the complete November2 native body, allowing the approved native
+// actual/plan-source delegations and source-agnostic Import field names.
 // Budget Item budget fields and every unrelated import/recovery branch remain
 // covered by the full-body comparison rather than a few presence assertions.
 const currentNative=fs.readFileSync('creator/workflows/budget-actual-elements/native-before/workflowExportRun.dg','utf8').replace(/\r\n/g,'\n');
@@ -116,8 +116,29 @@ let budgetImportBranch=expectedProcessor.slice(bounds.start,bounds.end);
 for(const field of ['Labor','Materials','Equipment','Subcontractor','Other'])budgetImportBranch=budgetImportBranch.replaceAll(field+'_Budget',field);
 expectedProcessor=expectedProcessor.slice(0,bounds.start)+budgetImportBranch+expectedProcessor.slice(bounds.end);
 function nativeTokens(text){return text.match(/"(?:\\.|[^"\\])*"|\/\/[^\n]*|\/\*[\s\S]*?\*\/|[^\s]/g).filter(token=>!token.startsWith('//')&&!token.startsWith('/*')).join('');}
+// The November5 live Development/Production capture already delegates the HCSS
+// plan source to its bounded importer. Keep that approved native change while
+// retaining the full-body comparison for every other import branch.
+bounds=branchBounds(expectedProcessor,'Budgets_Import_Load_HCSS_1','Budgets_Import_Load_CTC_C');
+expectedProcessor=expectedProcessor.slice(0,bounds.start)+'\n\telse if(runKey == "Budgets_Import_Load_HCSS_1")\n\t{\n\t\treturn thisapp.budgetPlanImportRun(auditId);\n\t}\n'+expectedProcessor.slice(bounds.end);
+const quotaNative=fs.readFileSync('creator/quota-reduction-2026-11-05/native-before/development/workflowExportRun.dg','utf8').replace(/\r\n/g,'\n');
+assert.equal(nativeTokens(quotaNative),nativeTokens(expectedProcessor),'fresh live baseline differs only by the approved bounded HCSS plan delegation');
+// Quota reduction changes only successor queue coordination, never destination
+// writes, source selection, counts, failure handling or predecessor ownership.
+expectedProcessor=expectedProcessor.replace('nextAudit = thisapp.workflowRunLog({"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action " + nextAction + "/3)","system":"Zoho Analytics"});',
+  'nextPolicy = ifnull(state.get("callbackPolicy"),"").toString();\nif(nextPolicy == "shared-recovery-30m")\n{\nthisapp.workflowExportRecover("arm");\n}\nnextAudit = thisapp.workflowRunLog({"action":"start","workflow":"Update Budgets w/ Projects Info - Budget (action " + nextAction + "/3)","system":"Zoho Analytics","callbackPolicy":nextPolicy,"queueWorkflow":runKey});');
+expectedProcessor=expectedProcessor.replace('nextState = {"version":1,"workflow":runKey,','nextState = {"version":1,"callbackPolicy":nextPolicy,"workflow":runKey,');
 assert.equal((importProcessor.match(/if\(runKey == "Daily_Crew_Timecards" \|\| runKey == "Daily_Crew_Labor"\)/g)||[]).length,1,'exactly one Crew continuation branch');
-assert.equal(nativeTokens(importProcessor),nativeTokens(expectedProcessor),'preserve the full native import/recovery body outside the authorized actual delegations and staging renames');
+// The current release changes only the already-reviewed successor startup
+// coordination. Preserve the complete deployed business processor and the older
+// quantity-ownership/delegation proof above. Its new handoff executes in
+// test-quota-startup-integrations.mjs, including failure and no-replay cases.
+const freshQuotaNative=fs.readFileSync('creator/quota-five-hour-recovery-2026-11-06/native-before/production-v9.160/workflowExportRun.dg','utf8');
+assert.equal(nativeTokens(freshQuotaNative),nativeTokens(expectedProcessor),'fresh Production matches the approved prior quota baseline before idle-recovery startup changes');
+const successorStartup=/nextPolicy = ifnull\(state\.get\("callbackPolicy"\),""\)\.toString\(\);[\s\S]*?nextAt = zoho\.currenttime\.addMinutes\(1\);/;
+assert.ok(successorStartup.test(importProcessor)&&successorStartup.test(expectedProcessor),'both processors expose exactly the existing Budget successor boundary');
+const preservedBusinessProcessor=importProcessor.replace(successorStartup,expectedProcessor.match(successorStartup)[0]);
+assert.equal(nativeTokens(preservedBusinessProcessor),nativeTokens(expectedProcessor),'preserve every deployed destination write, source, count, failure and predecessor guard outside the explicit startup handoff');
 assert.doesNotMatch(importProcessor,/\b(?:subdiv|budgCat|budG)\.(?:Acres|Lot_Total_Residential|Equiv_LF_of_Street)\s*=/,'scheduled imports cannot overwrite Budget-owned quantities');
 assert.match(importProcessor,/subdiv\.Projects_Status=status;/,'preserve Subdivision status imports');
 assert.match(deluge,/type :PATCH/);

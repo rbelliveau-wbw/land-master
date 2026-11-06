@@ -1,0 +1,18 @@
+			Budgets_Check_HCSS_Budget1 as "Budgets - Check HCSS Budget Lines - 5 Batches"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportEnqueue("Budgets_Check_HCSS_Budget1");
+					)
+					}
+				}
+			}

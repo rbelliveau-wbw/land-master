@@ -1,0 +1,39 @@
+			Update_Actual_Lots_Foreca1 as "Update Actual Lots - Forecast"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						for each  forecast in Forecast[Forecast_Start_Date > zoho.currentdate.subDay(60) && Forecast_Start_Date < zoho.currentdate.addDay(45)]
+										{
+											forecastEnddate = forecast.Forecast_Start_Date.addMonth(1);
+											lotsScheduled = Lots[Subdivision == forecast.Subdivision1 && Builder1 == forecast.Builder1 && Purchase_Date >= forecast.Forecast_Start_Date && Purchase_Date < forecastEnddate && Close_Date == null && Status == "Scheduled"].count();
+											lotsSold = Lots[Subdivision == forecast.Subdivision1 && Builder1 == forecast.Builder1 && Close_Date >= forecast.Forecast_Start_Date && Close_Date < forecastEnddate && Status == "Sold"].count();
+											if(lotsSold == 0)
+											{
+												forecast.Actual_Lots=null;
+											}
+											else
+											{
+												forecast.Actual_Lots=lotsSold;
+											}
+											if(lotsScheduled == 0)
+											{
+												forecast.Scheduled_Lots=null;
+											}
+											else
+											{
+												forecast.Scheduled_Lots=lotsScheduled;
+											}
+										}
+					)
+					}
+				}
+			}

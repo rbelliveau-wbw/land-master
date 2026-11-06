@@ -99,6 +99,8 @@ console.log('PASS: actual crew sync audit bodies reconcile every source row, pre
 
 
 // A planned workflow must also be accepted by the live continuation guard.
-const tick=fs.readFileSync('creator/functions/workflowExportTick.dg','utf8'),plan=fs.readFileSync('creator/functions/workflowExportPlan.dg','utf8'),enqueue=fs.readFileSync('creator/functions/workflowExportEnqueue.dg','utf8'),worker=fs.readFileSync('creator/functions/workflowExportRun.dg','utf8');
+const tick=fs.readFileSync('creator/functions/workflowExportTick.dg','utf8'),plan=fs.readFileSync('creator/functions/workflowExportPlan.dg','utf8'),enqueue=fs.readFileSync('creator/functions/workflowExportEnqueueCaptured.dg','utf8'),worker=fs.readFileSync('creator/functions/workflowExportRun.dg','utf8');
+const enqueueEntry=fs.readFileSync('creator/functions/workflowExportEnqueue.dg','utf8');
+assert.match(enqueueEntry,/return thisapp\.workflowExportEnqueueCaptured\(workflow,-1,"",-1\);/);
 const allowed=tick.match(/allowed = \{([^}]+)\}/)[1];
 for(const key of ['Daily_Crew_Timecards','Daily_Crew_Labor']){assert.ok(allowed.includes('"'+key+'"'));assert.ok(plan.includes('workflow == "'+key+'"'));assert.ok(enqueue.includes('"'+key+'":'));assert.ok(worker.includes('runKey == "'+key+'"'));}

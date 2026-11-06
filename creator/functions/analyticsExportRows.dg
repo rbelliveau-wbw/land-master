@@ -3,9 +3,12 @@ list analyticsExportRows(string viewId, map config, string auditId, bool allowEm
 	// A completion code, not elapsed time, authorizes the download.
 	stage = "Creating Analytics export";
 	jobId = ifnull(config.get("_resumeJobId"),"").toString();
+	acknowledgedCompletion = config.get("_resumeJobComplete") == true;
 	config.remove("_resumeJobId");
+	config.remove("_resumeJobComplete");
 	preparedJob = jobId != "";
-	try 
+	skipWaitingCheckpoint = preparedJob && acknowledgedCompletion;
+	try
 	{
 		headers = Map();
 		headers.put("ZANALYTICS-ORGID","700732567");
@@ -40,11 +43,12 @@ list analyticsExportRows(string viewId, map config, string auditId, bool allowEm
 			}
 		}
 		stage = "Waiting for Analytics export";
-		if(auditId != "")
+		// Owned completed jobs need no waiting checkpoint; retain the download and row-count checkpoints.
+		if(auditId != "" && !skipWaitingCheckpoint)
 		{
 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"reference":jobId});
 		}
-		completed = false;
+		completed = preparedJob && acknowledgedCompletion;
 		jobCode = "";
 		// Twelve checks, with a ten-second pause only between pending responses.
 		// Retains the app's existing delay service; no business data is sent to it.
@@ -53,16 +57,34 @@ list analyticsExportRows(string viewId, map config, string auditId, bool allowEm
 		{
 			attempts = {1};
 		}
+		if(completed)
+		{
+			// Owned prepared readers retain the immutable completed job; a second
+			// status request adds no source validation. The download is still checked.
+			attempts = List();
+		}
 		for each  attempt in attempts
 		{
-			statusHttp = invokeurl
-			[
-				url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
-				type :GET
-				headers:headers
-				detailed:true
-				connection:"zoho_analytics_connection"
-			];
+			try
+			{
+				statusHttp = invokeurl
+				[
+					url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
+					type :GET
+					headers:headers
+					detailed:true
+					connection:"zoho_analytics_connection"
+				];
+			}			catch (statusReadError)
+			{
+				readErrorText = statusReadError.toString().toLowerCase();
+				readTimedOut = readErrorText.contains("api call is taking too long") || readErrorText.contains("socket timeout");
+				if(readTimedOut)
+				{
+					throw "ANALYTICS_READ_TIMEOUT|status|" + jobId + "|" + statusReadError.toString();
+				}
+				throw statusReadError;
+			}
 			if(statusHttp.get("responseCode") != 200)
 			{
 				throw "Analytics job-status HTTP " + statusHttp.get("responseCode") + "; job=" + jobId;
@@ -105,14 +127,26 @@ list analyticsExportRows(string viewId, map config, string auditId, bool allowEm
 		{
 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":stage,"reference":jobId});
 		}
-		dataHttp = invokeurl
-		[
-			url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId + "/data?exportFormat=json"
-			type :GET
-			headers:headers
-			detailed:true
-			connection:"zoho_analytics_connection"
-		];
+		try
+		{
+			dataHttp = invokeurl
+			[
+				url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId + "/data?exportFormat=json"
+				type :GET
+				headers:headers
+				detailed:true
+				connection:"zoho_analytics_connection"
+			];
+		}		catch (dataReadError)
+		{
+			readErrorText = dataReadError.toString().toLowerCase();
+			readTimedOut = readErrorText.contains("api call is taking too long") || readErrorText.contains("socket timeout");
+			if(readTimedOut)
+			{
+				throw "ANALYTICS_READ_TIMEOUT|download|" + jobId + "|" + dataReadError.toString();
+			}
+			throw dataReadError;
+		}
 		if(dataHttp.get("responseCode") != 200)
 		{
 			throw "Analytics download HTTP " + dataHttp.get("responseCode") + "; job=" + jobId;

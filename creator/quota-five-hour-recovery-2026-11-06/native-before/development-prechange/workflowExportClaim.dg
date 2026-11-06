@@ -1,0 +1,61 @@
+bool workflowExportClaim(string claimKey)
+                 {
+                 	// Reuse the native unique-key lock pattern and the audit connection's
+                 	// independent transaction. An unknown claim never authorizes a replay.
+                 	owned = false;
+                 	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+                 	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+                 	environments = {"development","stage","production"};
+                 	if(!environments.contains(runtimeType))
+                 	{
+                 		throw "Unknown Creator environment for export claim.";
+                 	}
+                 	if(!claimKey.matches("[0-9]+[|](tick[|][0-9]+|process|actual[|](preflight|apply)[|][0-9]+|actual-row[|][a-f0-9]{64}|starter[|][0-5]|starter-notice[|][0-5])"))
+                 	{
+                 		throw "Invalid export claim key.";
+                 	}
+                 	existing = Workflow_Export_Lock[Claim_Key == claimKey];
+                 	if(existing.count() > 0)
+                 	{
+                 		return false;
+                 	}
+                 	headers = {"Content-Type":"application/json"};
+                 	if(runtimeType != "production")
+                 	{
+                 		headers.put("environment",runtimeLink);
+                 	}
+                 	payload = {"data":{"Claim_Key":claimKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a")}};
+                 	try 
+                 	{
+                 		http = invokeurl
+                 		[
+                 			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 			type :POST
+                 			parameters:payload.toString()
+                 			headers:headers
+                 			detailed:true
+                 			connection:"workflow_audit_admin"
+                 		];
+                 		if(http.get("responseCode") >= 200 && http.get("responseCode") < 300)
+                 		{
+                 			body = http.get("responseText").toString().toMap();
+                 			ack = body;
+                 			if(body.get("result") != null)
+                 			{
+                 				if(body.get("result").size() != 1 || body.get("data") != null)
+                 				{
+                 					return false;
+                 				}
+                 				ack = body.get("result").get(0);
+                 			}
+                 			if(ifnull(body.get("code"),"").toString() == "3000" && ifnull(ack.get("code"),"").toString() == "3000" && ack.get("data") != null && ack.get("error") == null && body.get("error") == null)
+                 			{
+                 				owned = ifnull(ack.get("data").get("ID"),"").toString().matches("[0-9]+");
+                 			}
+                 		}
+                 	}	catch (claimError)
+                 	{
+                 		info "Export claim was not acknowledged; no work was replayed. " + claimKey;
+                 	}
+                 	return owned;
+                 }

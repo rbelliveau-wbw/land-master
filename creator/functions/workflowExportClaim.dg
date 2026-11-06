@@ -10,7 +10,7 @@ bool workflowExportClaim(string claimKey)
 	{
 		throw "Unknown Creator environment for export claim.";
 	}
-	if(!claimKey.matches("[0-9]+[|](tick[|][0-9]+|process|actual[|](preflight|apply)[|][0-9]+|actual-row[|][a-f0-9]{64})"))
+	if(!claimKey.matches("[0-9]+[|](tick[|][0-9]+|process|actual[|](preflight|apply)[|][0-9]+|actual-row[|][a-f0-9]{64}|starter[|][0-5]|starter-notice[|][0-5])"))
 	{
 		throw "Invalid export claim key.";
 	}
@@ -25,7 +25,7 @@ bool workflowExportClaim(string claimKey)
 		headers.put("environment",runtimeLink);
 	}
 	payload = {"data":{"Claim_Key":claimKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a")}};
-	try 
+	try
 	{
 		http = invokeurl
 		[

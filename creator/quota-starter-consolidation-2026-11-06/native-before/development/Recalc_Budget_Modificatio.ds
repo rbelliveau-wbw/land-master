@@ -1,0 +1,20 @@
+			Recalc_Budget_Modificatio as "Recalc Budget Modification Final - Budgets"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						// Nightly safety net: keep Budget_Item.Revised_Final in sync with approved modifications.
+										result = thisapp.recalcAllRevisedFinals();
+										info result;
+					)
+					}
+				}
+			}

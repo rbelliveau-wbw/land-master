@@ -1,0 +1,63 @@
+string workflowStarterStart(string settingsId)
+{
+	if(!settingsId.matches("[1-9][0-9]*"))
+	{
+		throw "The grouped starter requires its exact Settings record ID.";
+	}
+	settings = Settings[ID == settingsId.toLong()];
+	if(settings.count() != 1 || settings.Next_Workflow_Run == null)
+	{
+		throw "The grouped starter requires one Settings record with its original cycle date.";
+	}
+	cycleDate = settings.Next_Workflow_Run;
+	frameId = "";
+	if(cycleDate <= zoho.currenttime)
+	{
+		// The starter may run before the anchor. The first immutable frame wins.
+		capturedBatch = 0;
+		cursor = settings.Current_Batch;
+		if(cursor != null && cursor >= 0 && cursor <= 4)
+		{
+			capturedBatch = cursor;
+		}
+		cycleText = cycleDate.toString("MM/dd/yyyy hh:mm:ss a");
+		frameId = thisapp.workflowStarterFrame(settingsId,cycleText,capturedBatch);
+	}
+	else
+	{
+		// The anchor freezes before advancing. Read its already-durable old frame;
+		// never derive the old batch from a later live Settings cursor.
+		framePrefix = "0|starter|" + settingsId + "|";
+		recentAfter = zoho.currenttime.addMinutes(-180);
+		latestEpoch = 0;
+		scanned = 0;
+		for each candidate in Workflow_Export_Lock[Claim_Key.contains(framePrefix) && Cycle_State != null && Claimed_At >= recentAfter] range from 0 to 7
+		{
+			scanned = scanned + 1;
+			candidateState = candidate.Cycle_State.toMap();
+			if(candidateState.get("version") == 1 && candidateState.get("kind") == "starter-cycle" && candidateState.get("settingsId") == settingsId)
+			{
+				candidateDate = candidateState.get("cycleAt").toDateTime("MM/dd/yyyy hh:mm:ss a");
+				candidateExpiry = candidateState.get("expiresAtText").toDateTime("MM/dd/yyyy hh:mm:ss a");
+				if(candidateDate <= zoho.currenttime && candidateExpiry > zoho.currenttime)
+				{
+					candidateEpoch = candidateState.get("cycleEpoch").toLong();
+					if(candidateEpoch > latestEpoch)
+					{
+						latestEpoch = candidateEpoch;
+						frameId = candidate.ID.toString();
+					}
+				}
+			}
+		}
+		if(scanned == 8)
+		{
+			throw "Starter frame lookup reached its bounded scan; no batch was inferred.";
+		}
+		if(frameId == "")
+		{
+			throw "Settings already advanced but no acknowledged due starter frame exists. No batch was inferred or route launched.";
+		}
+	}
+	return thisapp.workflowStarterDispatch(frameId);
+}

@@ -1,0 +1,9 @@
+			Current_Batch
+			(
+				type = number
+				displayname = "Current Batch"
+				maxchar = 1
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)

@@ -30,13 +30,19 @@ string budgetActualImportRun(string auditId)
 		{
 			throw "Invalid actual import ownership, workflow, batch or phase.";
 		}
+		actualChunkProfile = ifnull(state.get("actualChunkProfile"),"").toString();
+		if(actualChunkProfile != "" && actualChunkProfile != "scan100-write25-v1")
+		{
+			throw "Unknown actual import chunk profile; no source read, claim or business write started.";
+		}
+		chunkRowLimit = 25;
+		if(actualChunkProfile == "scan100-write25-v1")
+		{
+			chunkRowLimit = 100;
+		}
 		if(state.get("actualDeadline") == null || state.get("actualDeadline").toLong() > run.Started_At.addMinutes(120).toLong() + 1000 || zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
 		{
 			throw "Actual import exceeded its fixed two-hour deadline; no continuation was replayed.";
-		}
-		if(!thisapp.workflowExportClaim(auditId + "|actual|" + actualPhase + "|" + chunkStart))
-		{
-			throw "Actual chunk claim was not acknowledged; no automatic replay. Phase=" + actualPhase + "; index=" + chunkStart;
 		}
 		state.put("actualPhase",actualPhase);
 		state.put("actualIndex",chunkStart);
@@ -53,7 +59,49 @@ string budgetActualImportRun(string auditId)
 		request = requests.get(0);
 		config = request.get("config");
 		// Reuse the completed export job. Never create a fresh source between chunks.
-		rows = thisapp.workflowPreparedExportRows(request.get("view"),config,auditId,true);
+		try
+		{
+			rows = thisapp.workflowPreparedExportRows(request.get("view"),config,auditId,true);
+		}		catch (sourceReadError)
+		{
+			// Only the reader's narrowly marked GET timeout permits a continuation.
+			// Audit/queue failures, source validation and writes never enter this path.
+			if(!sourceReadError.toString().contains("ANALYTICS_READ_TIMEOUT|"))
+			{
+				throw sourceReadError;
+			}
+			readRetries = ifnull(state.get("actualReadRetries"),0).toLong();
+			if(readRetries >= 2)
+			{
+				throw "Analytics source read failed after two scheduled retries; original job=" + request.get("job") + "; " + sourceReadError.toString();
+			}
+			nextAt = zoho.currenttime.addMinutes(1);
+			if(nextAt.toLong() >= state.get("actualDeadline").toLong())
+			{
+				throw "Analytics source read retry would exceed the original two-hour deadline; " + sourceReadError.toString();
+			}
+			state.put("actualReadRetries",readRetries + 1);
+			nextTick = state.get("tick").toLong() + 1;
+			state.put("tick",nextTick);
+			state.put("phase","arming");
+			counts = {"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0};
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving Analytics read retry","exportState":state.toString(),"counts":counts,"clearResume":true});
+			thisapp.workflowExportWake(auditId,nextTick,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+			if(nextAt <= zoho.currenttime)
+			{
+				throw "Analytics read retry wake-up elapsed before acknowledgement.";
+			}
+			state.put("phase","waiting");
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Analytics source read retry queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; phase=" + actualPhase + "; source cursor=" + chunkStart + "; original job=" + request.get("job") + "; read retry=" + (readRetries + 1) + "/2. No work in this chunk started; prior acknowledged chunks were not replayed. " + sourceReadError.toString()});
+			return "Analytics source read retry queued";
+		}
+		state.put("actualReadRetries",0);
+		// A failed read must not consume the immutable validation/apply claim.
+		// The tick still owns this execution; claim only when the source is present.
+		if(!thisapp.workflowExportClaim(auditId + "|actual|" + actualPhase + "|" + chunkStart))
+		{
+			throw "Actual chunk claim was not acknowledged; no automatic replay. Phase=" + actualPhase + "; index=" + chunkStart;
+		}
 		if(state.get("actualReceived") != null && rows.size() != received)
 		{
 			throw "Completed Analytics export row count changed between chunks.";
@@ -80,13 +128,14 @@ string budgetActualImportRun(string auditId)
 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Skipped","stage":"Empty filtered actual source","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Source=" + workflow + "; batch=" + batch + ". Empty exports never clear prior costs or elements.","clearResume":true});
 			return "Empty source; no business writes";
 		}
-		chunkEnd = chunkStart + 25;
+		chunkEnd = chunkStart + chunkRowLimit;
 		if(chunkEnd > received)
 		{
 			chunkEnd = received;
 		}
-		// subList includes start and excludes end. Only these <=25 source rows run
-		// Deluge validation/write statements; no full-export scan occurs per step.
+		// subList includes start and excludes end. The profile bounds source scans;
+		// apply also stops before the next row after 25 creates/updates. Legacy
+		// runs retain their original 25-row chunks. No full-export scan occurs.
 		chunk = rows.subList(chunkStart,chunkEnd);
 		systemName = "Great Plains";
 		dataSource = "Great Plains";
@@ -114,9 +163,20 @@ string budgetActualImportRun(string auditId)
 			state.put("actualWriteAttempted",true);
 			writeAttempted = true;
 		}
-		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Actuals " + actualPhase + " rows " + (chunkStart + 1) + "-" + chunkEnd,"exportState":state.toString(),"details":"Source=" + workflow + "; batch=" + batch + "; original job=" + request.get("job") + "; completed preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + ". Each execution processes at most 25 source rows.","clearResume":true});
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Actuals " + actualPhase + " rows " + (chunkStart + 1) + "-" + chunkEnd,"exportState":state.toString(),"details":"Source=" + workflow + "; batch=" + batch + "; original job=" + request.get("job") + "; completed preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + ". At most " + chunkRowLimit + " source rows and 25 creates/updates per execution.","clearResume":true});
+		rowClaimKeys = List();
+		chunkMutationStart = created + updated;
 		for each  rec in chunk
 		{
+			if(actualChunkProfile == "scan100-write25-v1" && actualPhase == "apply")
+			{
+				// Do not consume or validate the next row until its successor owns
+				// the exact remaining cursor. Acknowledged mutations are never replayed.
+				if(created + updated - chunkMutationStart >= 25)
+				{
+					break;
+				}
+			}
 			rowIndex = rowIndex + 1;
 			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
 			{
@@ -219,12 +279,16 @@ string budgetActualImportRun(string auditId)
 			}
 			if(actualPhase == "preflight")
 			{
-				// Independent unique locks detect duplicate job/cost keys across all
-				// preflight chunks without serializing an unbounded set in Export_State.
-				if(!thisapp.workflowExportClaim(auditId + "|actual-row|" + zoho.encryption.sha256(recordKey)))
+				// Validate this chunk completely before independently committing its
+				// unique row locks in one request. Native uniqueness still arbitrates
+				// races; existing locks preserve cross-chunk duplicate detection.
+				rowClaimKey = auditId + "|actual-row|" + zoho.encryption.sha256(recordKey);
+				existingRowClaim = Workflow_Export_Lock[Claim_Key == rowClaimKey];
+				if(rowClaimKeys.contains(rowClaimKey) || existingRowClaim.count() > 0)
 				{
 					throw "Duplicate actual source key or unacknowledged validation claim: " + recordKey + ". No business writes started.";
 				}
+				rowClaimKeys.add(rowClaimKey);
 			}
 			else
 			{
@@ -268,6 +332,24 @@ string budgetActualImportRun(string auditId)
 				processed = processed + 1;
 			}
 		}
+		// An apply scan can end at the mutation cap before its planned slice end.
+		// Persist only the completely acknowledged prefix, including skipped rows.
+		chunkEnd = rowIndex;
+		if(actualPhase == "preflight")
+		{
+			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+			{
+				throw "Actual import reached its fixed deadline before committing row validation claims.";
+			}
+			if(!thisapp.workflowExportClaimRows(auditId,rowClaimKeys))
+			{
+				throw "Duplicate actual source key or unacknowledged validation claim batch; source rows=" + (chunkStart + 1) + "-" + chunkEnd + ". No business writes started; partial or unknown claims are never replayed.";
+			}
+			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+			{
+				throw "Actual row validation acknowledgement arrived after the fixed import deadline.";
+			}
+		}
 		state.put("actualCreated",created);
 		state.put("actualUpdated",updated);
 		state.put("actualSkipped",skipped);
@@ -308,8 +390,7 @@ string budgetActualImportRun(string auditId)
 		state.put("phase","waiting");
 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Actuals " + state.get("actualPhase") + " queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; next source index=" + state.get("actualIndex") + "; preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + "; original completed job retained."});
 		return "Actual import continuation queued";
-	}
-	catch(actualError)
+	}	catch (actualError)
 	{
 		status = "Failed";
 		if(writeAttempted || created > 0 || updated > 0)

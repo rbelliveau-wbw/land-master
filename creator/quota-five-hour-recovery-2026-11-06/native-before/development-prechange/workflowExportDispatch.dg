@@ -1,0 +1,63 @@
+string workflowExportDispatch(string wakeupId)
+                 {
+                 	if(!wakeupId.matches("[0-9]+"))
+                 	{
+                 		throw "Wake-up requires a record ID.";
+                 	}
+                 	wake = Workflow_Export_Lock[ID == wakeupId.toLong()];
+                 	if(wake.count() != 1 || wake.Wake_At == null || wake.Wake_At > zoho.currenttime)
+                 	{
+                 		return "Inactive wake-up";
+                 	}
+                 	key = ifnull(wake.Claim_Key,"").toString();
+                 	if(key.matches("0[|]recovery[|][0-9]+"))
+                 	{
+                 		return thisapp.workflowExportRecover(wakeupId);
+                 	}
+                 	if(!key.matches("[0-9]+[|]wake[|][0-9]+[|](0|2|10)"))
+                 	{
+                 		return "Not a continuation wake-up";
+                 	}
+                 	parts = key.toList("|");
+                 	auditId = parts.get(0);
+                 	expectedTick = parts.get(2).toLong();
+                 	run = Workflow_Run_Log[ID == auditId.toLong()];
+                 	if(run.count() != 1 || run.Run_Status != "Running")
+                 	{
+                 		return "Inactive run";
+                 	}
+                 	state = run.Export_State.toMap();
+                 	actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_HCSS_1"};
+                 	if(parts.get(3) == "10" && actualWorkflows.contains(state.get("workflow")))
+                 	{
+                 		ownedTick = state.get("tick") == expectedTick;
+                 		unarmedSuccessor = state.get("phase") == "arming" && state.get("tick") == expectedTick + 1;
+                 		busyPhase = state.get("phase") == "processing" || state.get("phase") == "polling" || state.get("phase") == "arming";
+                 		uncertain = ownedTick && busyPhase;
+                 		if(ownedTick && state.get("phase") == "waiting")
+                 		{
+                 			watchClaimKey = auditId + "|tick|" + expectedTick;
+                 			claim = Workflow_Export_Lock[Claim_Key == watchClaimKey];
+                 			uncertain = claim.count() > 0;
+                 		}
+                 		if(uncertain || unarmedSuccessor)
+                 		{
+                 			watchStatus = "Failed";
+                 			if(state.get("actualWriteAttempted") == true || state.get("actualPhase") == "apply")
+                 			{
+                 				watchStatus = "Partial";
+                 			}
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":watchStatus,"stage":"Actual import acknowledgement missing","message":"The actual import tick did not reach a durable continuation or terminal acknowledgement within ten minutes. No work was replayed.","details":"Source=" + state.get("workflow") + "; batch=" + state.get("batch") + "; tick=" + expectedTick + "; phase=" + state.get("phase") + "; source cursor=" + ifnull(state.get("actualIndex"),0) + ". Check the last chunk and destination records before a manual retry; its operations may have completed or rolled back.","counts":{"received":run.Rows_Received,"processed":run.Rows_Processed,"created":run.Rows_Created,"updated":run.Rows_Updated,"skipped":run.Rows_Skipped,"failed":1},"clearResume":true});
+                 			return "Unacknowledged actual tick stopped; no replay";
+                 		}
+                 	}
+                 	if(run.Resume_At == null)
+                 	{
+                 		return "Inactive run";
+                 	}
+                 	if(state.get("version") != 1 || state.get("phase") != "waiting" || state.get("tick") != expectedTick)
+                 	{
+                 		return "Stale wake-up";
+                 	}
+                 	return thisapp.workflowExportTick(auditId);
+                 }

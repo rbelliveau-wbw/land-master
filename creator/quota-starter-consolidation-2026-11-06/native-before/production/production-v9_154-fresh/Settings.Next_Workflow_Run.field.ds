@@ -1,0 +1,10 @@
+			Next_Workflow_Run
+			(
+    			type = datetime
+				displayname = "Next Workflow Run"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 2
+	 			column = 1   
+				width = medium
+			)

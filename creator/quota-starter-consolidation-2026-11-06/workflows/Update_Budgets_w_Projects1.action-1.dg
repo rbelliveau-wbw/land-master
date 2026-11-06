@@ -1,0 +1,3 @@
+// Retain this existing Settings/Next_Workflow_Run schedule as the one group starter.
+// Disable only the other five queue-only wrappers; retain their rollback bodies.
+thisapp.workflowStarterStart(input.ID.toString());

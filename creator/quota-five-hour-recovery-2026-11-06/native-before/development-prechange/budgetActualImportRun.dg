@@ -1,0 +1,404 @@
+string budgetActualImportRun(string auditId)
+                 {
+                 	if(!auditId.matches("[0-9]+"))
+                 	{
+                 		throw "Actual import requires its original Workflow Log ID.";
+                 	}
+                 	run = Workflow_Run_Log[ID == auditId.toLong()];
+                 	if(run.count() != 1 || run.Run_Status != "Running")
+                 	{
+                 		throw "Actual import run is no longer active.";
+                 	}
+                 	state = run.Export_State.toMap();
+                 	workflow = ifnull(state.get("workflow"),"").toString();
+                 	actualPhase = ifnull(state.get("actualPhase"),"preflight").toString();
+                 	chunkStart = ifnull(state.get("actualIndex"),0).toLong();
+                 	batch = ifnull(state.get("batch"),-1).toLong();
+                 	created = ifnull(state.get("actualCreated"),0).toLong();
+                 	updated = ifnull(state.get("actualUpdated"),0).toLong();
+                 	skipped = ifnull(state.get("actualSkipped"),0).toLong();
+                 	processed = ifnull(state.get("actualProcessed"),0).toLong();
+                 	received = ifnull(state.get("actualReceived"),0).toLong();
+                 	recordKey = "";
+                 	rowIndex = chunkStart;
+                 	writeAttempted = ifnull(state.get("actualWriteAttempted"),false);
+                 	try 
+                 	{
+                 		allowed = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
+                 		validActualPhase = actualPhase == "preflight" || actualPhase == "apply";
+                 		if(state.get("version") != 1 || state.get("phase") != "processing" || !allowed.contains(workflow) || batch < 0 || batch > 4 || validActualPhase != true)
+                 		{
+                 			throw "Invalid actual import ownership, workflow, batch or phase.";
+                 		}
+                 		actualChunkProfile = ifnull(state.get("actualChunkProfile"),"").toString();
+                 		if(actualChunkProfile != "" && actualChunkProfile != "scan100-write25-v1")
+                 		{
+                 			throw "Unknown actual import chunk profile; no source read, claim or business write started.";
+                 		}
+                 		chunkRowLimit = 25;
+                 		if(actualChunkProfile == "scan100-write25-v1")
+                 		{
+                 			chunkRowLimit = 100;
+                 		}
+                 		if(state.get("actualDeadline") == null || state.get("actualDeadline").toLong() > run.Started_At.addMinutes(120).toLong() + 1000 || zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 		{
+                 			throw "Actual import exceeded its fixed two-hour deadline; no continuation was replayed.";
+                 		}
+                 		state.put("actualPhase",actualPhase);
+                 		state.put("actualIndex",chunkStart);
+                 		requests = state.get("requests");
+                 		if(requests.size() == 0)
+                 		{
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Skipped","stage":"Actual import batch has no mapped jobs","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Source=" + workflow + "; batch=" + batch + ". No export or business writes started.","clearResume":true});
+                 			return "No mapped jobs in batch";
+                 		}
+                 		if(requests.size() != 1 || state.get("actualScope") == null)
+                 		{
+                 			throw "Actual import must retain exactly one captured source and mapping scope.";
+                 		}
+                 		request = requests.get(0);
+                 		config = request.get("config");
+                 		// Reuse the completed export job. Never create a fresh source between chunks.
+                 		try 
+                 		{
+                 			rows = thisapp.workflowPreparedExportRows(request.get("view"),config,auditId,true);
+                 		}		catch (sourceReadError)
+                 		{
+                 			// Only the reader's narrowly marked GET timeout permits a continuation.
+                 			// Audit/queue failures, source validation and writes never enter this path.
+                 			if(!sourceReadError.toString().contains("ANALYTICS_READ_TIMEOUT|"))
+                 			{
+                 				throw sourceReadError;
+                 			}
+                 			readRetries = ifnull(state.get("actualReadRetries"),0).toLong();
+                 			if(readRetries >= 2)
+                 			{
+                 				throw "Analytics source read failed after two scheduled retries; original job=" + request.get("job") + "; " + sourceReadError.toString();
+                 			}
+                 			nextAt = zoho.currenttime.addMinutes(1);
+                 			if(nextAt.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "Analytics source read retry would exceed the original two-hour deadline; " + sourceReadError.toString();
+                 			}
+                 			state.put("actualReadRetries",readRetries + 1);
+                 			nextTick = state.get("tick").toLong() + 1;
+                 			state.put("tick",nextTick);
+                 			state.put("phase","arming");
+                 			counts = {"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0};
+                 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving Analytics read retry","exportState":state.toString(),"counts":counts,"clearResume":true});
+                 			thisapp.workflowExportWake(auditId,nextTick,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+                 			if(nextAt <= zoho.currenttime)
+                 			{
+                 				throw "Analytics read retry wake-up elapsed before acknowledgement.";
+                 			}
+                 			state.put("phase","waiting");
+                 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Analytics source read retry queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; phase=" + actualPhase + "; source cursor=" + chunkStart + "; original job=" + request.get("job") + "; read retry=" + (readRetries + 1) + "/2. No work in this chunk started; prior acknowledged chunks were not replayed. " + sourceReadError.toString()});
+                 			return "Analytics source read retry queued";
+                 		}
+                 		state.put("actualReadRetries",0);
+                 		// A failed read must not consume the immutable validation/apply claim.
+                 		// The tick still owns this execution; claim only when the source is present.
+                 		if(!thisapp.workflowExportClaim(auditId + "|actual|" + actualPhase + "|" + chunkStart))
+                 		{
+                 			throw "Actual chunk claim was not acknowledged; no automatic replay. Phase=" + actualPhase + "; index=" + chunkStart;
+                 		}
+                 		if(state.get("actualReceived") != null && rows.size() != received)
+                 		{
+                 			throw "Completed Analytics export row count changed between chunks.";
+                 		}
+                 		received = rows.size();
+                 		state.put("actualReceived",received);
+                 		if(chunkStart < 0 || chunkStart > received)
+                 		{
+                 			throw "Actual import cursor or complete-source preflight is invalid.";
+                 		}
+                 		if(actualPhase == "preflight" && ifnull(state.get("actualValidated"),0) != chunkStart)
+                 		{
+                 			throw "Actual import preflight cursor is invalid.";
+                 		}
+                 		if(actualPhase == "apply")
+                 		{
+                 			if(state.get("actualValidated") != received || processed != chunkStart)
+                 			{
+                 				throw "Actual import apply cursor or complete-source preflight is invalid.";
+                 			}
+                 		}
+                 		if(received == 0)
+                 		{
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Skipped","stage":"Empty filtered actual source","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Source=" + workflow + "; batch=" + batch + ". Empty exports never clear prior costs or elements.","clearResume":true});
+                 			return "Empty source; no business writes";
+                 		}
+                 		chunkEnd = chunkStart + chunkRowLimit;
+                 		if(chunkEnd > received)
+                 		{
+                 			chunkEnd = received;
+                 		}
+                 		// subList includes start and excludes end. The profile bounds source scans;
+                 		// apply also stops before the next row after 25 creates/updates. Legacy
+                 		// runs retain their original 25-row chunks. No full-export scan occurs.
+                 		chunk = rows.subList(chunkStart,chunkEnd);
+                 		systemName = "Great Plains";
+                 		dataSource = "Great Plains";
+                 		jobColumn = "WS_Job_Number_Trim";
+                 		majorColumn = "Cost_Code_Number_1";
+                 		minorColumn = "Cost_Code_Number_2";
+                 		costColumn = "Total_Actuals";
+                 		descriptionColumn = "Cost_Code_Description";
+                 		codeMarker = "-GP-";
+                 		if(workflow == "Budgets_Import_Load_HCSS_")
+                 		{
+                 			systemName = "HeavyJob";
+                 			dataSource = "HeavyJob";
+                 			jobColumn = "H.JobCode";
+                 			majorColumn = "Major Code";
+                 			minorColumn = "H.Minor Code";
+                 			costColumn = "TotalActualCost";
+                 			descriptionColumn = "CostCodeDescription";
+                 			codeMarker = "-HJ-";
+                 		}
+                 		if(actualPhase == "apply")
+                 		{
+                 			// Independently commit the possible-write checkpoint before native writes.
+                 			// A hard execution limit then remains visible to the per-tick watchdog.
+                 			state.put("actualWriteAttempted",true);
+                 			writeAttempted = true;
+                 		}
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Actuals " + actualPhase + " rows " + (chunkStart + 1) + "-" + chunkEnd,"exportState":state.toString(),"details":"Source=" + workflow + "; batch=" + batch + "; original job=" + request.get("job") + "; completed preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + ". At most " + chunkRowLimit + " source rows and 25 creates/updates per execution.","clearResume":true});
+                 		rowClaimKeys = List();
+                 		chunkMutationStart = created + updated;
+                 		for each  rec in chunk
+                 		{
+                 			if(actualChunkProfile == "scan100-write25-v1" && actualPhase == "apply")
+                 			{
+                 				// Do not consume or validate the next row until its successor owns
+                 				// the exact remaining cursor. Acknowledged mutations are never replayed.
+                 				if(created + updated - chunkMutationStart >= 25)
+                 				{
+                 					break;
+                 				}
+                 			}
+                 			rowIndex = rowIndex + 1;
+                 			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "Actual import reached its fixed deadline during the current chunk.";
+                 			}
+                 			job = ifnull(rec.get(jobColumn),"").toString().trim();
+                 			minorText = ifnull(rec.get(minorColumn),"").toString().trim();
+                 			recordKey = job + codeMarker + minorText;
+                 			// analyticsExportRows checks the first row's schema; every bounded row
+                 			// is checked here, including rows later than the first continuation.
+                 			keys = rec.keys();
+                 			for each  column in config.get("selectedColumns")
+                 			{
+                 				if(!keys.contains(column))
+                 				{
+                 					throw "Actual export row is missing column " + column + "; key=" + recordKey;
+                 				}
+                 			}
+                 			if(job == "" || !minorText.matches("[0-9]+") || ifnull(rec.get(majorColumn),"").toString().trim() == "" || ifnull(rec.get(costColumn),"").toString().trim() == "")
+                 			{
+                 				throw "Actual source row lacks a valid job, cost code or total; key=" + recordKey;
+                 			}
+                 			major = rec.get(majorColumn).toLong();
+                 			minor = minorText.toLong();
+                 			if(workflow == "Budgets_Import_Load_GP_Co")
+                 			{
+                 				if(minor < 3000 || minor >= 4000)
+                 				{
+                 					throw "GP Construction returned an out-of-scope cost code: " + recordKey;
+                 				}
+                 			}
+                 			if(workflow == "Budgets_Import_Great_Plai1")
+                 			{
+                 				inDevelopmentRange = minor >= 4000 && minor < 5000;
+                 				inReimbursementRange = minor >= 8000 && minor < 9000;
+                 				if(inDevelopmentRange != true && inReimbursementRange != true)
+                 				{
+                 					throw "GP Development returned an out-of-scope cost code: " + recordKey;
+                 				}
+                 			}
+                 			// Preserve the parent and each selected element independently at the
+                 			// destination's four-decimal precision. Differences are allowed.
+                 			total = rec.get(costColumn).toDecimal().round(4);
+                 			parts = List();
+                 			for each  element in {"Labor","Materials","Equipment","Subcontractor","Other"}
+                 			{
+                 				if(rec.get(element) == null || rec.get(element).toString().trim() == "")
+                 				{
+                 					throw "Actual source has an unknown " + element + " amount; key=" + recordKey;
+                 				}
+                 				amount = rec.get(element).toDecimal().round(4);
+                 				parts.add(amount);
+                 			}
+                 			// HCSS selects Misc 1 as Other. Trucking, Supplies, Misc 2 and Misc 3
+                 			// are intentionally ignored; never redistribute a total difference.
+                 			// Unclassified_Actuals is diagnostic only and does not block import.
+                 			if(systemName == "Great Plains")
+                 			{
+                 				if(rec.get("Unclassified_Count") == null || rec.get("Unclassified_Count").toDecimal() != 0)
+                 				{
+                 					throw "GP actual source contains an unknown Cost_Element; key=" + recordKey;
+                 				}
+                 			}
+                 			expected = state.get("actualScope").get(job);
+                 			if(expected == null)
+                 			{
+                 				throw "Actual source job is outside its captured batch: " + recordKey;
+                 			}
+                 			mapping = External_System_Mapping[External_Code == job && External_System == systemName];
+                 			if(mapping.count() != 1 || mapping.Subdivision1 == null || mapping.Subdivision1.ID.toString() != expected.get("id") || mapping.Subdivision1.Subdivision_Code != expected.get("code") || mapping.Subdivision1.ID % 5 != batch)
+                 			{
+                 				throw "Actual source mapping changed, is missing or ambiguous; key=" + recordKey;
+                 			}
+                 			subdivisionCode = expected.get("code");
+                 			eligible = Add_Budget[Subdivision_Code == subdivisionCode];
+                 			if(eligible.count() == 0)
+                 			{
+                 				throw "Captured actual source no longer has an eligible Budget; key=" + recordKey;
+                 			}
+                 			destination = Budget_Import_Item[Code == recordKey];
+                 			if(destination.count() > 1)
+                 			{
+                 				throw "Actual destination key is duplicated or belongs to another source: " + recordKey;
+                 			}
+                 			if(destination.count() == 1)
+                 			{
+                 				if(destination.Data_Source != dataSource)
+                 				{
+                 					throw "Actual destination key is duplicated or belongs to another source: " + recordKey;
+                 				}
+                 				if(destination.Subdivision_Code != subdivisionCode || destination.Major_Code != major || destination.Minor_Code != minor)
+                 				{
+                 					throw "Actual destination identity differs from its captured mapping or cost codes; key=" + recordKey + ". Reconcile the existing assignment before retrying; no row was reassigned.";
+                 				}
+                 			}
+                 			description = ifnull(rec.get(descriptionColumn),"").toString();
+                 			if(destination.count() == 0 && description.length() > 100)
+                 			{
+                 				throw "Actual source description exceeds the destination's 100-character field; key=" + recordKey;
+                 			}
+                 			if(actualPhase == "preflight")
+                 			{
+                 				// Validate this chunk completely before independently committing its
+                 				// unique row locks in one request. Native uniqueness still arbitrates
+                 				// races; existing locks preserve cross-chunk duplicate detection.
+                 				rowClaimKey = auditId + "|actual-row|" + zoho.encryption.sha256(recordKey);
+                 				existingRowClaim = Workflow_Export_Lock[Claim_Key == rowClaimKey];
+                 				if(rowClaimKeys.contains(rowClaimKey) || existingRowClaim.count() > 0)
+                 				{
+                 					throw "Duplicate actual source key or unacknowledged validation claim: " + recordKey + ". No business writes started.";
+                 				}
+                 				rowClaimKeys.add(rowClaimKey);
+                 			}
+                 			else
+                 			{
+                 				if(destination.count() == 0)
+                 				{
+                 					newId = insert into Budget_Import_Item
+                 					[
+                 						Code=recordKey
+                 						Data_Source=dataSource
+                 						Subdivision_Code=subdivisionCode
+                 						Major_Code=major
+                 						Minor_Code=minor
+                 						Cost=total
+                 						Labor=parts.get(0)
+                 						Materials=parts.get(1)
+                 						Equipment=parts.get(2)
+                 						Subcontractor=parts.get(3)
+                 						Other=parts.get(4)
+                 						Cost_Code_Description=description
+                 						Cost_Code_ID=recordKey
+                 						Updated_Date=zoho.currentdate
+                 						Added_User=zoho.loginuser
+                 					];
+                 					created = created + 1;
+                 				}
+                 				else if(destination.Cost != total || destination.Labor != parts.get(0) || destination.Materials != parts.get(1) || destination.Equipment != parts.get(2) || destination.Subcontractor != parts.get(3) || destination.Other != parts.get(4))
+                 				{
+                 					destination.Cost=total;
+                 					destination.Labor=parts.get(0);
+                 					destination.Materials=parts.get(1);
+                 					destination.Equipment=parts.get(2);
+                 					destination.Subcontractor=parts.get(3);
+                 					destination.Other=parts.get(4);
+                 					destination.Updated_Date=zoho.currentdate;
+                 					updated = updated + 1;
+                 				}
+                 				else
+                 				{
+                 					skipped = skipped + 1;
+                 				}
+                 				processed = processed + 1;
+                 			}
+                 		}
+                 		// An apply scan can end at the mutation cap before its planned slice end.
+                 		// Persist only the completely acknowledged prefix, including skipped rows.
+                 		chunkEnd = rowIndex;
+                 		if(actualPhase == "preflight")
+                 		{
+                 			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "Actual import reached its fixed deadline before committing row validation claims.";
+                 			}
+                 			if(!thisapp.workflowExportClaimRows(auditId,rowClaimKeys))
+                 			{
+                 				throw "Duplicate actual source key or unacknowledged validation claim batch; source rows=" + (chunkStart + 1) + "-" + chunkEnd + ". No business writes started; partial or unknown claims are never replayed.";
+                 			}
+                 			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "Actual row validation acknowledgement arrived after the fixed import deadline.";
+                 			}
+                 		}
+                 		state.put("actualCreated",created);
+                 		state.put("actualUpdated",updated);
+                 		state.put("actualSkipped",skipped);
+                 		state.put("actualProcessed",processed);
+                 		state.put("actualIndex",chunkEnd);
+                 		counts = {"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0};
+                 		if(actualPhase == "preflight")
+                 		{
+                 			state.put("actualValidated",chunkEnd);
+                 			if(chunkEnd == received)
+                 			{
+                 				state.put("actualPhase","apply");
+                 				state.put("actualIndex",0);
+                 			}
+                 		}
+                 		else if(chunkEnd == received)
+                 		{
+                 			state.put("phase","complete");
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"Actual element import completed","exportState":state.toString(),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; job=" + request.get("job") + "; preflight=" + received + "; applied=" + processed + ". Existing totals and source-specific element amounts imported; no source or aggregate was substituted.","clearResume":true});
+                 			return "Actual source completed";
+                 		}
+                 		// Advance only after every native operation in this chunk acknowledged.
+                 		// Wake-up creation and state save retain unknown-write no-replay behavior.
+                 		nextTick = state.get("tick").toLong() + 1;
+                 		state.put("tick",nextTick);
+                 		state.put("phase","arming");
+                 		nextAt = zoho.currenttime.addMinutes(1);
+                 		if(nextAt.toLong() >= state.get("actualDeadline").toLong())
+                 		{
+                 			throw "Actual continuation would exceed the original two-hour deadline.";
+                 		}
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving actual import continuation","exportState":state.toString(),"counts":counts,"clearResume":true});
+                 		thisapp.workflowExportWake(auditId,nextTick,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+                 		if(nextAt <= zoho.currenttime)
+                 		{
+                 			throw "Actual continuation wake-up elapsed before acknowledgement.";
+                 		}
+                 		state.put("phase","waiting");
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Actuals " + state.get("actualPhase") + " queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; next source index=" + state.get("actualIndex") + "; preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + "; original completed job retained."});
+                 		return "Actual import continuation queued";
+                 	}	catch (actualError)
+                 	{
+                 		status = "Failed";
+                 		if(writeAttempted || created > 0 || updated > 0)
+                 		{
+                 			status = "Partial";
+                 		}
+                 		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":status,"stage":"Actual element " + actualPhase + " failed","message":actualError.toString(),"counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":1},"details":"Source=" + workflow + "; batch=" + batch + "; phase=" + actualPhase + "; source row=" + rowIndex + "; key=" + recordKey + "; chunk index=" + chunkStart + ". Counts identify acknowledged native operations; the failing Creator transaction may roll back. Review destinations before any manual retry. No automatic replay.","clearResume":true});
+                 		throw actualError;
+                 	}
+                 	return "Actual import ended without a terminal result";
+                 }

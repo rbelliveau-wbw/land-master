@@ -1,0 +1,65 @@
+{
+  "environment": "development",
+  "source_file": "Land_Master (20).ds",
+  "source_sha256": "1e4861757c3465390628ad917dcf68deff0b1686d0c3b0db03b9ff967d80d6b7",
+  "captured_at_utc": "2026-11-06T16:50:59.734Z",
+  "scope": "Supplement only: four dependencies and Lock schema. Original ten-component manifest and captures remain unchanged.",
+  "exact_capture": "Original UTF-8 byte ranges, including indentation and source line endings.",
+  "components": [
+    {
+      "name": "workflowExportClaim",
+      "kind": "function",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/development/workflowExportClaim.dg",
+      "line_start": 52505,
+      "line_end": 52565,
+      "source_byte_start": 3220604,
+      "source_byte_end_exclusive": 3223637,
+      "sha256": "afb3277f654b7f6c11ebac45083533aa1a3eca4cc2b4128d6fcdf47a910ede32",
+      "bytes": 3033
+    },
+    {
+      "name": "workflowExportRecover",
+      "kind": "function",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/development/workflowExportRecover.dg",
+      "line_start": 53107,
+      "line_end": 53443,
+      "source_byte_start": 3256192,
+      "source_byte_end_exclusive": 3274255,
+      "sha256": "d20d7f7f470edfd6874b51025edb2cdfb57a488417e39534261d2efc0f8bfe66",
+      "bytes": 18063
+    },
+    {
+      "name": "workflowExportPlan",
+      "kind": "function",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/development/workflowExportPlan.dg",
+      "line_start": 52788,
+      "line_end": 53045,
+      "source_byte_start": 3237574,
+      "source_byte_end_exclusive": 3252202,
+      "sha256": "cc84007e87594a19c5091f0731b14574f63fd8bd94eb2a147bffab26670d7c17",
+      "bytes": 14628
+    },
+    {
+      "name": "workflowRunLog",
+      "kind": "function",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/development/workflowRunLog.dg",
+      "line_start": 55726,
+      "line_end": 55931,
+      "source_byte_start": 3412999,
+      "source_byte_end_exclusive": 3423476,
+      "sha256": "2109823875761ccbc2212068f0655fc02c002819cfdef16c3f9ae8f4ebda1289",
+      "bytes": 10477
+    },
+    {
+      "name": "Workflow_Export_Lock",
+      "kind": "form",
+      "file": "creator/quota-starter-consolidation-2026-11-06/native-before/development/Workflow_Export_Lock.form.ds",
+      "line_start": 16960,
+      "line_end": 17024,
+      "source_byte_start": 373966,
+      "source_byte_end_exclusive": 375034,
+      "sha256": "7d508710e22ad0740db23eafded799a623622ca3dc7d07f599f4dc8e6d7258be",
+      "bytes": 1068
+    }
+  ]
+}

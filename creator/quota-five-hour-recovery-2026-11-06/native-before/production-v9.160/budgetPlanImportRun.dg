@@ -1,0 +1,455 @@
+string budgetPlanImportRun(string auditId)
+                 {
+                 	if(!auditId.matches("[0-9]+"))
+                 	{
+                 		throw "HCSS budget import requires its original Workflow Log ID.";
+                 	}
+                 	run = Workflow_Run_Log[ID == auditId.toLong()];
+                 	if(run.count() != 1 || run.Run_Status != "Running")
+                 	{
+                 		throw "HCSS budget import run is no longer active.";
+                 	}
+                 	state = run.Export_State.toMap();
+                 	workflow = ifnull(state.get("workflow"),"").toString();
+                 	actualPhase = ifnull(state.get("actualPhase"),"preflight").toString();
+                 	chunkStart = ifnull(state.get("actualIndex"),0).toLong();
+                 	batch = ifnull(state.get("batch"),-1).toLong();
+                 	created = ifnull(state.get("actualCreated"),0).toLong();
+                 	updated = ifnull(state.get("actualUpdated"),0).toLong();
+                 	skipped = ifnull(state.get("actualSkipped"),0).toLong();
+                 	processed = ifnull(state.get("actualProcessed"),0).toLong();
+                 	received = ifnull(state.get("actualReceived"),0).toLong();
+                 	missingMappings = ifnull(state.get("budgetMissingMappings"),0).toLong();
+                 	noBudget = ifnull(state.get("budgetNoBudget"),0).toLong();
+                 	recordKey = "";
+                 	rowIndex = chunkStart;
+                 	writeAttempted = ifnull(state.get("actualWriteAttempted"),false);
+                 	try 
+                 	{
+                 		validActualPhase = actualPhase == "preflight" || actualPhase == "apply";
+                 		if(state.get("version") != 1 || state.get("phase") != "processing" || workflow != "Budgets_Import_Load_HCSS_1" || batch < 0 || batch > 4 || validActualPhase != true)
+                 		{
+                 			throw "Invalid HCSS budget import ownership, workflow, batch or phase.";
+                 		}
+                 		if(state.get("budgetScopeCaptured") != true)
+                 		{
+                 			initialRequests = state.get("requests");
+                 			if(initialRequests.size() != 1)
+                 			{
+                 				throw "HCSS budget import requires exactly one captured export.";
+                 			}
+                 			initialRequest = initialRequests.get(0);
+                 			if(initialRequest.get("view") != "2107789000023687048" || initialRequest.get("code") != "1004" || ifnull(initialRequest.get("job"),"") == "")
+                 			{
+                 				throw "HCSS budget import source is not the original completed export.";
+                 			}
+                 			// Analytics expiryTime is UTC epoch milliseconds. Creator's native
+                 			// toLong date representation must not be compared with that value.
+                 			// Translate only the remaining duration back to the native clock.
+                 			// unixEpoch uses whole seconds. Normalize the native base to that same
+                 			// precision so translating the duration cannot shorten the safety margin.
+                 			expiryNow = zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a").toDateTime("MM/dd/yyyy hh:mm:ss a");
+                 			expiryNowUtc = expiryNow.toString("dd-MMM-yyyy HH:mm:ss","UTC").unixEpoch("UTC");
+                 			expiryStartedUtc = run.Started_At.toString("dd-MMM-yyyy HH:mm:ss","UTC").unixEpoch("UTC");
+                 			// Missing/invalid expiry uses the existing conservative run-start bound.
+                 			deadlineAt = run.Started_At.addMinutes(55);
+                 			expiryText = ifnull(initialRequest.get("expiryTime"),"").toString();
+                 			if(expiryText.matches("[0-9]{13}"))
+                 			{
+                 				expiry = expiryText.toLong();
+                 				if(expiry > expiryStartedUtc && expiry <= expiryNowUtc + 65 * 60000)
+                 				{
+                 					remainingMinutes = ((expiry - expiryNowUtc) / 60000).toLong();
+                 					deadlineAt = expiryNow.addMinutes(remainingMinutes - 5);
+                 				}
+                 			}
+                 			state.put("actualDeadline",deadlineAt.toLong());
+                 			state.put("actualDeadlineAt",deadlineAt.toString("MM/dd/yyyy hh:mm:ss a"));
+                 			// Capture exclusions and identities once. Later mappings/budgets cannot
+                 			// expand this source's business scope between validation/apply chunks.
+                 			budgetCodes = Add_Budget[ID != 0].distinct(Subdivision_Code);
+                 			mappingScope = Map();
+                 			mappingCounts = Map();
+                 			for each  mapping in External_System_Mapping[External_System == "HeavyJob"]
+                 			{
+                 				job = ifnull(mapping.External_Code,"").toString();
+                 				mappingCounts.put(job,ifnull(mappingCounts.get(job),0) + 1);
+                 				capturedMapping = {"id":mapping.ID.toString(),"subdivision":"","code":""};
+                 				if(mapping.Subdivision1 != null)
+                 				{
+                 					capturedMapping.put("subdivision",mapping.Subdivision1.ID.toString());
+                 					capturedMapping.put("code",ifnull(mapping.Subdivision1.Subdivision_Code,"").toString());
+                 				}
+                 				mappingScope.put(job,capturedMapping);
+                 			}
+                 			state.put("budgetCodes",budgetCodes);
+                 			state.put("budgetMappings",mappingScope);
+                 			state.put("budgetMappingCounts",mappingCounts);
+                 			state.put("budgetScopeCaptured",true);
+                 		}
+                 		if(state.get("actualDeadline") == null || state.get("actualDeadline").toLong() > run.Started_At.addMinutes(120).toLong() || zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 		{
+                 			throw "HCSS budget import source deadline elapsed; no continuation was replayed.";
+                 		}
+                 		state.put("actualPhase",actualPhase);
+                 		state.put("actualIndex",chunkStart);
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Reading HCSS budget " + actualPhase + " source","exportState":state.toString(),"clearResume":true});
+                 		requests = state.get("requests");
+                 		if(requests.size() == 0)
+                 		{
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Skipped","stage":"HCSS budget import batch has no mapped jobs","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Source=" + workflow + "; batch=" + batch + ". No export or business writes started.","clearResume":true});
+                 			return "No mapped jobs in batch";
+                 		}
+                 		if(requests.size() != 1 || state.get("budgetScopeCaptured") != true)
+                 		{
+                 			throw "HCSS budget import must retain exactly one captured source and mapping scope.";
+                 		}
+                 		request = requests.get(0);
+                 		config = request.get("config");
+                 		// Reuse the completed export job. Never create a fresh source between chunks.
+                 		try 
+                 		{
+                 			rows = thisapp.workflowPreparedExportRows(request.get("view"),config,auditId,false);
+                 		}		catch (sourceReadError)
+                 		{
+                 			// Only the reader's narrowly marked GET timeout permits a continuation.
+                 			// Audit/queue failures, source validation and writes never enter this path.
+                 			if(!sourceReadError.toString().contains("ANALYTICS_READ_TIMEOUT|"))
+                 			{
+                 				throw sourceReadError;
+                 			}
+                 			readRetries = ifnull(state.get("actualReadRetries"),0).toLong();
+                 			if(readRetries >= 2)
+                 			{
+                 				throw "Analytics source read failed after two scheduled retries; original job=" + request.get("job") + "; " + sourceReadError.toString();
+                 			}
+                 			nextAt = zoho.currenttime.addMinutes(1);
+                 			if(nextAt.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "Analytics source read retry would exceed the original source expiry deadline; " + sourceReadError.toString();
+                 			}
+                 			state.put("actualReadRetries",readRetries + 1);
+                 			nextTick = state.get("tick").toLong() + 1;
+                 			state.put("tick",nextTick);
+                 			state.put("phase","arming");
+                 			counts = {"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0};
+                 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving Analytics read retry","exportState":state.toString(),"counts":counts,"clearResume":true});
+                 			thisapp.workflowExportWake(auditId,nextTick,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+                 			if(nextAt <= zoho.currenttime)
+                 			{
+                 				throw "Analytics read retry wake-up elapsed before acknowledgement.";
+                 			}
+                 			state.put("phase","waiting");
+                 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Analytics source read retry queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; phase=" + actualPhase + "; source cursor=" + chunkStart + "; original job=" + request.get("job") + "; read retry=" + (readRetries + 1) + "/2. No work in this chunk started; prior acknowledged chunks were not replayed. " + sourceReadError.toString()});
+                 			return "Analytics source read retry queued";
+                 		}
+                 		state.put("actualReadRetries",0);
+                 		// A failed read must not consume the immutable validation/apply claim.
+                 		// The tick still owns this execution; claim only when the source is present.
+                 		if(!thisapp.workflowExportClaim(auditId + "|actual|" + actualPhase + "|" + chunkStart))
+                 		{
+                 			throw "HCSS budget chunk claim was not acknowledged; no automatic replay. Phase=" + actualPhase + "; index=" + chunkStart;
+                 		}
+                 		if(state.get("actualReceived") != null && rows.size() != received)
+                 		{
+                 			throw "Completed Analytics export row count changed between chunks.";
+                 		}
+                 		received = rows.size();
+                 		state.put("actualReceived",received);
+                 		if(chunkStart < 0 || chunkStart > received)
+                 		{
+                 			throw "HCSS budget import cursor or complete-source preflight is invalid.";
+                 		}
+                 		if(actualPhase == "preflight" && ifnull(state.get("actualValidated"),0) != chunkStart)
+                 		{
+                 			throw "HCSS budget import preflight cursor is invalid.";
+                 		}
+                 		if(actualPhase == "apply")
+                 		{
+                 			if(state.get("actualValidated") != received || processed != chunkStart)
+                 			{
+                 				throw "HCSS budget import apply cursor or complete-source preflight is invalid.";
+                 			}
+                 		}
+                 		if(received == 0)
+                 		{
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Skipped","stage":"Empty HCSS budget source","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Source=" + workflow + "; batch=" + batch + ". Empty exports never clear prior costs or elements.","clearResume":true});
+                 			return "Empty source; no business writes";
+                 		}
+                 		chunkEnd = chunkStart + 125;
+                 		if(chunkEnd > received)
+                 		{
+                 			chunkEnd = received;
+                 		}
+                 		// subList includes start and excludes end. Component validation and writes
+                 		// visit <=125 rows; the lean global key scan runs only on the first step.
+                 		chunk = rows.subList(chunkStart,chunkEnd);
+                 		// Two full phases must fit before this immutable export expires.
+                 		sourceChunks = ((received + 124) / 125).toLong();
+                 		if(actualPhase == "preflight" && chunkStart == 0)
+                 		{
+                 			minimumWaits = sourceChunks * 2 - 1;
+                 			if(zoho.currenttime.addMinutes(minimumWaits).toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "HCSS budget source is too large for the remaining export lifetime; no business writes started. Rows=" + received;
+                 			}
+                 		}
+                 		if(actualPhase == "apply" && chunkStart == 0)
+                 		{
+                 			if(zoho.currenttime.addMinutes(sourceChunks - 1).toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "HCSS budget preflight left insufficient export lifetime for apply; no business writes started.";
+                 			}
+                 		}
+                 		// HCSS_BUDGET_SOURCE_SCAN_BEGIN
+                 		if(state.get("budgetSourceKeysValidated") != true)
+                 		{
+                 			// One lean read-only scan retains the original global eligible key guard.
+                 			// Only a boolean/count checkpoint persists; no per-row API locks are needed.
+                 			sourceKeys = Map();
+                 			sourceScanIndex = 0;
+                 			sourceEligible = 0;
+                 			sourceExcluded = 0;
+                 			for each  sourceRow in rows
+                 			{
+                 				sourceScanIndex = sourceScanIndex + 1;
+                 				sourceJob = ifnull(sourceRow.get("H.JobCode"),"").toString();
+                 				sourceMappingCount = ifnull(state.get("budgetMappingCounts").get(sourceJob),0);
+                 				if(sourceMappingCount == 0)
+                 				{
+                 					sourceExcluded = sourceExcluded + 1;
+                 					continue;
+                 				}
+                 				sourceMapping = state.get("budgetMappings").get(sourceJob);
+                 				if(sourceMappingCount != 1 || ifnull(sourceMapping.get("subdivision"),"") == "")
+                 				{
+                 					throw "Duplicate or broken external mapping; source row=" + sourceScanIndex + "; job=" + sourceJob;
+                 				}
+                 				if(!state.get("budgetCodes").contains(sourceMapping.get("code")))
+                 				{
+                 					sourceExcluded = sourceExcluded + 1;
+                 					continue;
+                 				}
+                 				sourceKey = sourceJob + "-B-" + sourceRow.get("H.Minor Code");
+                 				if(sourceKeys.get(sourceKey) != null)
+                 				{
+                 					throw "Duplicate Analytics source key: " + sourceKey + "; source row=" + sourceScanIndex;
+                 				}
+                 				sourceKeys.put(sourceKey,true);
+                 				sourceEligible = sourceEligible + 1;
+                 			}
+                 			state.put("budgetSourceKeysValidated",true);
+                 			state.put("budgetSourceEligible",sourceEligible);
+                 			state.put("budgetSourceExcluded",sourceExcluded);
+                 		}
+                 		// HCSS_BUDGET_SOURCE_SCAN_END
+                 		// HCSS_BUDGET_COMPONENT_PARSER_BEGIN
+                 		hcssComponentColumns = {"H.BudgetedLabor","H.BudgetedMaterial","H.BudgetedEquipment","H.BudgetedSubcontract","H.Budget_Misc1_Cost"};
+                 		componentSourceIndex = chunkStart;
+                 		validatedBudgetRows = List();
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Validating HCSS budget components","counts":{"received":received}});
+                 		for each  componentSourceRow in chunk
+                 		{
+                 			componentSourceIndex = componentSourceIndex + 1;
+                 			componentRecordKey = ifnull(componentSourceRow.get("H.JobCode"),"").toString() + "-B-" + ifnull(componentSourceRow.get("H.Minor Code"),"").toString();
+                 			recordKey = componentRecordKey;
+                 			componentSourceKeys = componentSourceRow.keys();
+                 			for each  componentSourceColumn in hcssComponentColumns
+                 			{
+                 				if(!componentSourceKeys.contains(componentSourceColumn))
+                 				{
+                 					throw "HCSS budget export is missing component column: " + componentSourceColumn + "; source row=" + componentSourceIndex + "; key=" + componentRecordKey + ". No budget import writes started.";
+                 				}
+                 				componentRaw = componentSourceRow.get(componentSourceColumn);
+                 				componentText = ifnull(componentRaw,"").toString().trim();
+                 				try 
+                 				{
+                 					validatedComponent = 0.0;
+                 					if(componentText != "")
+                 					{
+                 						// Validate before removing a symbol/group separator. Arbitrary
+                 						// text, another currency or malformed grouping is never zeroed.
+                 						if(componentText.matches("([$][-]?|[-][$])([0-9]+|[0-9]{1,3}(,[0-9]{3})+)([.][0-9]+)?"))
+                 						{
+                 							componentText = componentText.replaceAll("[$]","").replaceAll(",","");
+                 						}
+                 						validatedComponent = componentText.toDecimal();
+                 					}
+                 				}				catch (componentConversionError)
+                 				{
+                 					throw "HCSS budget component is not a decimal; source row=" + componentSourceIndex + "; key=" + componentRecordKey + "; column=" + componentSourceColumn + "; value=" + ifnull(componentRaw,"<null>").toString() + ". No budget import writes started.";
+                 				}
+                 				// Reuse the exact validated decimal for both native write branches.
+                 				componentSourceRow.put(componentSourceColumn,validatedComponent);
+                 			}
+                 			validatedBudgetRows.add(componentSourceRow);
+                 		}
+                 		chunk = validatedBudgetRows;
+                 		// HCSS_BUDGET_COMPONENT_PARSER_END
+                 		recordKey = "";
+                 		budgetCodes = state.get("budgetCodes");
+                 		mappingScope = state.get("budgetMappings");
+                 		mappingCounts = state.get("budgetMappingCounts");
+                 		if(actualPhase == "apply")
+                 		{
+                 			state.put("actualWriteAttempted",true);
+                 			writeAttempted = true;
+                 		}
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"HCSS budget " + actualPhase + " rows " + (chunkStart + 1) + "-" + chunkEnd,"exportState":state.toString(),"details":"Original completed job=" + request.get("job") + "; validated=" + ifnull(state.get("actualValidated"),0) + "/" + received + "; at most 125 source rows per execution.","clearResume":true});
+                 		for each  rec in chunk
+                 		{
+                 			rowIndex = rowIndex + 1;
+                 			if(zoho.currenttime.toLong() >= state.get("actualDeadline").toLong())
+                 			{
+                 				throw "HCSS budget source expired before this row.";
+                 			}
+                 			if(actualPhase == "apply")
+                 			{
+                 				processed = processed + 1;
+                 			}
+                 			job = ifnull(rec.get("H.JobCode"),"").toString();
+                 			mappingCount = ifnull(mappingCounts.get(job),0);
+                 			if(mappingCount == 0)
+                 			{
+                 				if(actualPhase == "apply")
+                 				{
+                 					missingMappings = missingMappings + 1;
+                 					skipped = skipped + 1;
+                 				}
+                 				continue;
+                 			}
+                 			capturedMapping = mappingScope.get(job);
+                 			if(mappingCount != 1 || ifnull(capturedMapping.get("subdivision"),"") == "")
+                 			{
+                 				throw "Duplicate or broken external mapping; source row=" + rowIndex + "; job=" + job;
+                 			}
+                 			if(!budgetCodes.contains(capturedMapping.get("code")))
+                 			{
+                 				if(actualPhase == "apply")
+                 				{
+                 					noBudget = noBudget + 1;
+                 					skipped = skipped + 1;
+                 				}
+                 				continue;
+                 			}
+                 			if(actualPhase == "apply")
+                 			{
+                 				capturedCode = capturedMapping.get("code");
+                 				currentBudgets = Add_Budget[Subdivision_Code == capturedCode];
+                 				if(currentBudgets.count() == 0)
+                 				{
+                 					throw "Captured HCSS budget scope no longer has a budget; subdivision=" + capturedCode + ". No new row write started.";
+                 				}
+                 			}
+                 			currentMapping = External_System_Mapping[External_System == "HeavyJob" && External_Code == job];
+                 			if(currentMapping.count() != 1 || currentMapping.Subdivision1 == null)
+                 			{
+                 				throw "Captured HCSS budget mapping became ambiguous or broken; job=" + job;
+                 			}
+                 			if(currentMapping.ID.toString() != capturedMapping.get("id") || currentMapping.Subdivision1.ID.toString() != capturedMapping.get("subdivision") || currentMapping.Subdivision1.Subdivision_Code != capturedMapping.get("code"))
+                 			{
+                 				throw "Captured HCSS budget mapping changed; job=" + job;
+                 			}
+                 			if(rec.get("H.Total Budget Decimal") == null || rec.get("H.Total Budget Decimal").toString().trim() == "")
+                 			{
+                 				throw "Eligible Analytics row has no cost; source row=" + rowIndex;
+                 			}
+                 			validatedCost = rec.get("H.Total Budget Decimal").toDecimal();
+                 			recordKey = job + "-B-" + rec.get("H.Minor Code");
+                 			destination = Budget_Import_Item[Code == recordKey && Data_Source == "HeavyJob Budget"];
+                 			if(destination.count() > 1)
+                 			{
+                 				throw "Duplicate destination records: HCSS budget; source row=" + rowIndex + "; key=" + recordKey;
+                 			}
+                 			if(actualPhase == "apply")
+                 			{
+                 				if(destination.count() == 1)
+                 				{
+                 					destination.Cost=validatedCost.toLong();
+                 					destination.Labor=rec.get("H.BudgetedLabor");
+                 					destination.Materials=rec.get("H.BudgetedMaterial");
+                 					destination.Equipment=rec.get("H.BudgetedEquipment");
+                 					destination.Subcontractor=rec.get("H.BudgetedSubcontract");
+                 					destination.Other=rec.get("H.Budget_Misc1_Cost");
+                 					destination.Updated_Date=zoho.currentdate;
+                 					destination.Data_Source="HeavyJob Budget";
+                 					updated = updated + 1;
+                 				}
+                 				else
+                 				{
+                 					newId = insert into Budget_Import_Item
+                 					[
+                 						Data_Source="HeavyJob Budget"
+                 						Cost=validatedCost.toLong()
+                 						Labor=rec.get("H.BudgetedLabor")
+                 						Materials=rec.get("H.BudgetedMaterial")
+                 						Equipment=rec.get("H.BudgetedEquipment")
+                 						Subcontractor=rec.get("H.BudgetedSubcontract")
+                 						Other=rec.get("H.Budget_Misc1_Cost")
+                 						Cost_Code_Description=rec.get("H.CostCodeDescription")
+                 						Code=recordKey
+                 						Subdivision_Code=capturedMapping.get("code")
+                 						Major_Code=rec.get("H.Major Code")
+                 						Minor_Code=rec.get("H.Minor Code")
+                 						Added_User=zoho.loginuser
+                 						Cost_Code_ID=rec.get("H.zzz_CostCodeID_Guid")
+                 						Updated_Date=zoho.currentdate
+                 					];
+                 					created = created + 1;
+                 				}
+                 			}
+                 		}
+                 		state.put("budgetMissingMappings",missingMappings);
+                 		state.put("budgetNoBudget",noBudget);
+                 		state.put("actualCreated",created);
+                 		state.put("actualUpdated",updated);
+                 		state.put("actualSkipped",skipped);
+                 		state.put("actualProcessed",processed);
+                 		state.put("actualIndex",chunkEnd);
+                 		counts = {"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":0};
+                 		if(actualPhase == "preflight")
+                 		{
+                 			state.put("actualValidated",chunkEnd);
+                 			if(chunkEnd == received)
+                 			{
+                 				state.put("actualPhase","apply");
+                 				state.put("actualIndex",0);
+                 			}
+                 		}
+                 		else if(chunkEnd == received)
+                 		{
+                 			state.put("phase","complete");
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Success","stage":"HCSS budget import completed","exportState":state.toString(),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; job=" + request.get("job") + "; preflight=" + received + "; applied=" + processed + ". Original HCSS budget totals and components imported; missing mappings=" + missingMappings + "; no budget=" + noBudget + ".","clearResume":true});
+                 			return "HCSS budget source completed";
+                 		}
+                 		// Advance only after every native operation in this chunk acknowledged.
+                 		// Wake-up creation and state save retain unknown-write no-replay behavior.
+                 		nextTick = state.get("tick").toLong() + 1;
+                 		state.put("tick",nextTick);
+                 		state.put("phase","arming");
+                 		nextAt = zoho.currenttime.addMinutes(1);
+                 		if(nextAt.toLong() >= state.get("actualDeadline").toLong())
+                 		{
+                 			throw "HCSS budget continuation would exceed the original source expiry deadline.";
+                 		}
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving HCSS budget continuation","exportState":state.toString(),"counts":counts,"clearResume":true});
+                 		thisapp.workflowExportWake(auditId,nextTick,nextAt.toString("MM/dd/yyyy hh:mm:ss a"));
+                 		if(nextAt <= zoho.currenttime)
+                 		{
+                 			throw "HCSS budget continuation wake-up elapsed before acknowledgement.";
+                 		}
+                 		state.put("phase","waiting");
+                 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"HCSS budget " + state.get("actualPhase") + " queued","exportState":state.toString(),"resumeAt":nextAt.toString("MM/dd/yyyy hh:mm:ss a"),"counts":counts,"details":"Source=" + workflow + "; batch=" + batch + "; next source index=" + state.get("actualIndex") + "; preflight=" + ifnull(state.get("actualValidated"),0) + "/" + received + "; original completed job retained."});
+                 		return "HCSS budget import continuation queued";
+                 	}	catch (actualError)
+                 	{
+                 		status = "Failed";
+                 		if(writeAttempted || created > 0 || updated > 0)
+                 		{
+                 			status = "Partial";
+                 		}
+                 		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":status,"stage":"HCSS budget " + actualPhase + " failed","message":actualError.toString(),"counts":{"received":received,"processed":processed,"created":created,"updated":updated,"skipped":skipped,"failed":1},"details":"Source=" + workflow + "; batch=" + batch + "; phase=" + actualPhase + "; source row=" + rowIndex + "; key=" + recordKey + "; chunk index=" + chunkStart + ". Counts identify acknowledged native operations; the failing Creator transaction may roll back. Review destinations before any manual retry. No automatic replay.","clearResume":true});
+                 		throw actualError;
+                 	}
+                 	return "HCSS budget import ended without a terminal result";
+                 }

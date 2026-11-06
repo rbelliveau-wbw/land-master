@@ -1,0 +1,169 @@
+string workflowExportEnqueueCaptured(string workflow, int capturedBatch, string starterFrameId, int starterRouteIndex)
+{
+	enqueuedAt = zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a").toDateTime("MM/dd/yyyy hh:mm:ss a");
+	workflowNames = {"Daily_Crew_Labor":"Daily Crew Labor","Daily_Crew_Timecards":"Daily Crew Timecards","Update_Budgets_w_Projects1":"Update Budgets w/ Projects Info - Budget (action 1/3)","Sync_Final_Acceptance_Due":"Zoho Projects - Sync Subdivision Schedule Dates","Update_Projects_Start_End":"Update Projects Start/End Date - Zoho Projects","Budgets_Check_HCSS_Budget1":"Budgets - Check HCSS Budget Lines - 5 Batches","Budgets_Import_Load_GP_Co":"Budgets - Import/Load GP Const Costs","Budgets_Import_Great_Plai1":"Budgets - Import Great Plains Development Costs","Budgets_Import_Load_HCSS_1":"Budgets - Import/Load HCSS Budget Cost","Budgets_Import_Load_HCSS_":"Budgets - Import/Load HCSS Job Cost Summary","Budgets_Import_Load_CTC_C":"Budgets - Import/Load CTC & % Complete"};
+	offsets = {"Daily_Crew_Labor":1,"Daily_Crew_Timecards":1,"Update_Budgets_w_Projects1":1,"Sync_Final_Acceptance_Due":5,"Update_Projects_Start_End":6,"Budgets_Check_HCSS_Budget1":3,"Budgets_Import_Load_GP_Co":8,"Budgets_Import_Great_Plai1":9,"Budgets_Import_Load_HCSS_1":10,"Budgets_Import_Load_HCSS_":1,"Budgets_Import_Load_CTC_C":1};
+	display = workflowNames.get(workflow);
+	if(display == null)
+	{
+		throw "Unknown export workflow: " + workflow;
+	}
+	batched = workflow == "Budgets_Check_HCSS_Budget1" || workflow == "Budgets_Import_Load_GP_Co" || workflow == "Budgets_Import_Great_Plai1" || workflow == "Budgets_Import_Load_HCSS_";
+	framed = starterFrameId != "";
+	startupHoldId = "";
+	startupHoldTarget = "";
+	if(framed)
+	{
+		// Only the dispatcher that just acquired this route's independent claim
+		// invokes this core. Existing or unknown claims never authorize a replay.
+		if(!starterFrameId.matches("[1-9][0-9]*") || starterRouteIndex < 0 || starterRouteIndex > 5 || capturedBatch < 0 || capturedBatch > 4)
+		{
+			throw "Invalid captured starter identity, route index or batch.";
+		}
+		frame = Workflow_Export_Lock[ID == starterFrameId.toLong()];
+		if(frame.count() != 1 || frame.Cycle_State == null)
+		{
+			throw "Captured starter frame is missing or ambiguous.";
+		}
+		frameState = frame.Cycle_State.toMap();
+		frameRoutes = {"Update_Budgets_w_Projects1","Sync_Final_Acceptance_Due","Budgets_Check_HCSS_Budget1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1"};
+		if(frameState.get("version") != 1 || frameState.get("kind") != "starter-cycle" || frameState.get("routes") == null || frameState.get("batch") != capturedBatch)
+		{
+			throw "Captured starter frame version, kind, routes or batch differs.";
+		}
+		if(frameState.get("routes").size() != frameRoutes.size() || frameRoutes.get(starterRouteIndex) != workflow)
+		{
+			throw "Captured starter workflow is outside its exact route index.";
+		}
+		frameRouteIndex = 0;
+		for each frameRoute in frameRoutes
+		{
+			if(frameState.get("routes").get(frameRouteIndex) != frameRoute)
+			{
+				throw "Captured starter frame route order differs.";
+			}
+			frameRouteIndex = frameRouteIndex + 1;
+		}
+		frameSettingsId = ifnull(frameState.get("settingsId"),"").toString();
+		frameCycleAt = ifnull(frameState.get("cycleAt"),"").toString().toDateTime("MM/dd/yyyy hh:mm:ss a");
+		frameExpiresAt = ifnull(frameState.get("expiresAtText"),"").toString().toDateTime("MM/dd/yyyy hh:mm:ss a");
+		if(!frameSettingsId.matches("[1-9][0-9]*") || frameState.get("cycleEpoch") != frameCycleAt.toLong() || frameState.get("expiresAt") != frameExpiresAt.toLong())
+		{
+			throw "Captured starter frame has an invalid cycle identity or deadline.";
+		}
+		if(frame.Claim_Key != "0|starter|" + frameSettingsId + "|" + frameCycleAt.toLong() || frameExpiresAt.toLong() != frameCycleAt.addMinutes(120).toLong() || frameCycleAt > zoho.currenttime || frameExpiresAt <= zoho.currenttime)
+		{
+			throw "Captured starter frame is future, expired or differs from its immutable key.";
+		}
+		routeClaimKey = starterFrameId + "|starter|" + starterRouteIndex;
+		routeClaim = Workflow_Export_Lock[Claim_Key == routeClaimKey];
+		if(routeClaim.count() != 1 || routeClaim.Claimed_At == null)
+		{
+			throw "Captured starter route has no independently acknowledged attempt claim.";
+		}
+		if(frameState.get("startupHoldId") != null)
+		{
+			thisapp.workflowRecoveryHold("target",frameState.get("startupHoldId").toString(),starterFrameId);
+		}
+		if(!batched)
+		{
+			capturedBatch = 0;
+		}
+	}
+	else if(capturedBatch != -1 || starterRouteIndex != -1)
+	{
+		throw "A legacy enqueue requires its uncaptured batch and route markers.";
+	}
+	if(!framed)
+	{
+		startupHoldTarget = workflow + "|" + zoho.currenttime.toLong() + "|" + randomNumber(100000000,999999999).toString();
+		startupHoldId = thisapp.workflowRecoveryHold("begin","audit",startupHoldTarget);
+	}
+	else
+	{
+		// The independently committed frame protects each framed child handoff.
+		thisapp.workflowExportRecover("arm");
+	}
+	if(framed)
+	{
+		if(frameExpiresAt <= zoho.currenttime)
+		{
+			throw "Captured starter frame expired before its first audit could start.";
+		}
+	}
+	startEvent = {"action":"start","workflow":display,"system":"Zoho Analytics","callbackPolicy":"shared-recovery-30m","queueWorkflow":workflow};
+	if(framed)
+	{
+		// The first independent audit POST atomically retains the route identity,
+		// including when its acknowledgement is lost before auditId is returned.
+		startState = {"version":1,"callbackPolicy":"shared-recovery-30m","workflow":workflow,"phase":"preparing","tick":0,"batch":capturedBatch,"starterFrameId":starterFrameId,"starterRouteIndex":starterRouteIndex};
+		startEvent.put("exportState",startState.toString());
+	}
+	else
+	{
+		startState = {"version":1,"callbackPolicy":"shared-recovery-30m","workflow":workflow,"phase":"preparing","tick":0,"startupHoldId":startupHoldId,"startupHoldTarget":startupHoldTarget};
+		startEvent.put("exportState",startState.toString());
+		thisapp.workflowRecoveryHold("check",startupHoldId,"");
+	}
+	audit = thisapp.workflowRunLog(startEvent);
+	auditId = audit.get("id");
+	if(!framed)
+	{
+		thisapp.workflowRecoveryHold("close",startupHoldId,auditId.toString());
+	}
+	try
+	{
+		if(!framed)
+		{
+			capturedBatch = 0;
+			if(batched)
+			{
+				settings = Settings[ID != 0];
+				if(settings.count() != 1)
+				{
+					throw "Expected exactly one Settings record.";
+				}
+				cursor = settings.Current_Batch;
+				if(cursor != null && cursor >= 0 && cursor <= 4)
+				{
+					capturedBatch = cursor;
+				}
+			}
+		}
+		plan = thisapp.workflowExportPlan(workflow,capturedBatch);
+		resumeAt = zoho.currenttime.addMinutes(offsets.get(workflow));
+		state = {"version":1,"callbackPolicy":"shared-recovery-30m","workflow":workflow,"phase":"arming","tick":0,"batch":capturedBatch,"requests":plan.get("requests"),"deadline":resumeAt.addMinutes(15).toLong(),"deadlineAt":resumeAt.addMinutes(15).toString("MM/dd/yyyy hh:mm:ss a")};
+		if(!framed)
+		{
+			state.put("startupHoldId",startupHoldId);
+			state.put("startupHoldTarget",startupHoldTarget);
+		}
+		if(framed)
+		{
+			state.put("starterFrameId",starterFrameId);
+			state.put("starterRouteIndex",starterRouteIndex);
+		}
+		if(workflow == "Budgets_Import_Load_GP_Co" || workflow == "Budgets_Import_Great_Plai1" || workflow == "Budgets_Import_Load_HCSS_")
+		{
+			// Only new actual runs select the larger scan; existing cursors retain their profile.
+			state.put("actualChunkProfile","scan100-write25-v1");
+			state.put("actualScope",plan.get("actualScope"));
+			state.put("actualDeadline",enqueuedAt.addMinutes(120).toLong());
+			state.put("actualDeadlineAt",enqueuedAt.addMinutes(120).toString("MM/dd/yyyy hh:mm:ss a"));
+		}
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving export wake-ups","exportState":state.toString(),"clearResume":true,"details":"Resumable export; original run and batch retained. All sources must complete before business writes; 15-minute export deadline after scheduled start."});
+		thisapp.workflowExportWake(auditId,0,resumeAt.toString("MM/dd/yyyy hh:mm:ss a"));
+		if(resumeAt <= zoho.currenttime)
+		{
+			throw "Export wake-up window elapsed before handoff acknowledgement.";
+		}
+		state.put("phase","waiting");
+		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Queued for Analytics export","exportState":state.toString(),"resumeAt":resumeAt.toString("MM/dd/yyyy hh:mm:ss a")});
+		return auditId;
+	}	catch (enqueueError)
+	{
+		thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Preparing Analytics export","message":enqueueError.toString(),"details":"Source=" + workflow + "; captured batch=" + capturedBatch + ". No business writes started; an unknown wake-up was not replayed.","counts":{"failed":1},"clearResume":true});
+		throw enqueueError;
+	}
+	return "";
+}

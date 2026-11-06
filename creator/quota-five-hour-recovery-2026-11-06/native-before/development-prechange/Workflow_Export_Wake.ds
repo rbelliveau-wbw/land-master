@@ -1,0 +1,17 @@
+Workflow_Export_Wake as "Workflow Export Wake"
+			{
+				type =  schedule
+				form = Workflow_Export_Lock
+				start = Wake_At
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportDispatch(input.ID.toString());
+					)
+					}
+				}
+			}

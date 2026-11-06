@@ -1,0 +1,342 @@
+{
+  "environment": "production",
+  "version": "9.160",
+  "capturedAt": "2026-11-06T22:08:09.961Z",
+  "source_file": "C:/Users/R/Downloads/Land_Master (29).ds",
+  "source_sha256": "a84983e26df8bc33535c5afcc0fdfc8a5f2c85f579663c54b23166c7dcafe605",
+  "components": [
+    {
+      "name": "analyticsExportRows",
+      "kind": "function",
+      "file": "analyticsExportRows.dg",
+      "line_start": 21322,
+      "line_end": 21511,
+      "sha256": "bef88dc982a2486db6335aa9068bd73afe62fd720998d012766dd2a0c1f47e05",
+      "localMatches": true
+    },
+    {
+      "name": "budgetActualImportRun",
+      "kind": "function",
+      "file": "budgetActualImportRun.dg",
+      "line_start": 24040,
+      "line_end": 24443,
+      "sha256": "69433e5f9a6af9bf07de6b0304ed14189e8d3e176ac89c9099e14da1308dfeb1",
+      "localMatches": true
+    },
+    {
+      "name": "budgetPlanImportRun",
+      "kind": "function",
+      "file": "budgetPlanImportRun.dg",
+      "line_start": 24733,
+      "line_end": 25187,
+      "sha256": "4b056323f94e9c998089462ef6ff95fac78d74c10a09f189482c4174abd6d260",
+      "localMatches": true
+    },
+    {
+      "name": "Budgets_Check_HCSS_Budget1",
+      "kind": "workflow",
+      "file": "Budgets_Check_HCSS_Budget1.ds",
+      "line_start": 78703,
+      "line_end": 78721,
+      "sha256": "7b7908e2b8045b022c9bf8043a4fdbef3a2d59bfde907d67684b4086db758d7e",
+      "localMatches": null
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "kind": "workflow",
+      "file": "Budgets_GP_Construction_A.ds",
+      "line_start": 78810,
+      "line_end": 78828,
+      "sha256": "a31f1060f5c78ebb211fc6bbf54c69136949b43ee379cf073152b2fc83f0f732",
+      "localMatches": null
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "kind": "workflow",
+      "file": "Budgets_GP_Development_Ac.ds",
+      "line_start": 78829,
+      "line_end": 78847,
+      "sha256": "271de3881d267c99ec51c35a142ef387f738579c6b3f28a1248a7920309d9bee",
+      "localMatches": null
+    },
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "kind": "workflow",
+      "file": "Budgets_HCSS_Actuals_Batc.ds",
+      "line_start": 78791,
+      "line_end": 78809,
+      "sha256": "f7d848a7d2369ce9c3167656ec8808cc13baf817211842717591b97950f66689",
+      "localMatches": null
+    },
+    {
+      "name": "Check_for_Stuck_Budget_Ap",
+      "kind": "workflow",
+      "file": "Check_for_Stuck_Budget_Ap.ds",
+      "line_start": 78527,
+      "line_end": 78545,
+      "sha256": "9f672874a8a798fedd94cf0138447559057a1f52c74b46598f176fd5b5b86d09",
+      "localMatches": null
+    },
+    {
+      "name": "Finalize_Workflow_Run_Log",
+      "kind": "workflow",
+      "file": "Finalize_Workflow_Run_Log.ds",
+      "line_start": 74231,
+      "line_end": 74317,
+      "sha256": "e8ce795f2da457e0a9ad7ae623bf41bee435c2984eaa980eaaad8aea97d98a20",
+      "localMatches": null
+    },
+    {
+      "name": "Next_Workflow_Run_Next_Ba",
+      "kind": "workflow",
+      "file": "Next_Workflow_Run_Next_Ba.ds",
+      "line_start": 78265,
+      "line_end": 78314,
+      "sha256": "b3022c38d576a6fd7cf32eeb938b4eecb77fc9b208e353d0e2b2f69e2528bf3c",
+      "localMatches": null
+    },
+    {
+      "name": "Recalc_Budget_Modificatio",
+      "kind": "workflow",
+      "file": "Recalc_Budget_Modificatio.ds",
+      "line_start": 78564,
+      "line_end": 78583,
+      "sha256": "44c076e676d9aa5d4dd09937ede5ab12b6e6a4618d2f162e4f6fc3e3b4e3867b",
+      "localMatches": null
+    },
+    {
+      "name": "Settings",
+      "kind": "form",
+      "file": "Settings.form.ds",
+      "line_start": 15104,
+      "line_end": 15462,
+      "sha256": "3afec3b1b266305a6b759c7b963b67efff05baf0fa0d18030a86560e7a40f717",
+      "localMatches": null
+    },
+    {
+      "name": "Set_Close_Date_Lots1",
+      "kind": "workflow",
+      "file": "Set_Close_Date_Lots1.ds",
+      "line_start": 78391,
+      "line_end": 78443,
+      "sha256": "6ac9d569cacb88b7fc3e46449ed9ba711457f261fb29f09c3ed60e55bbfb1c81",
+      "localMatches": null
+    },
+    {
+      "name": "Sync_Final_Acceptance_Due",
+      "kind": "workflow",
+      "file": "Sync_Final_Acceptance_Due.ds",
+      "line_start": 78604,
+      "line_end": 78622,
+      "sha256": "db33486afd005744ef38ab21c68fee59c6ed052b8b95ea53a1e522eb90093f67",
+      "localMatches": null
+    },
+    {
+      "name": "Update_Actual_Lots_Foreca1",
+      "kind": "workflow",
+      "file": "Update_Actual_Lots_Foreca1.ds",
+      "line_start": 78488,
+      "line_end": 78526,
+      "sha256": "ac7597f90dceb843f1209279095acae49c11d45d87d55ce6ffb59fa3a0840728",
+      "localMatches": null
+    },
+    {
+      "name": "Update_Budgets_w_Projects1",
+      "kind": "workflow",
+      "file": "Update_Budgets_w_Projects1.ds",
+      "line_start": 78546,
+      "line_end": 78563,
+      "sha256": "d99c957040ffb38b902bedf93a42b9035ce4e39dd2df2fd98bee8e967cce6f5c",
+      "localMatches": null
+    },
+    {
+      "name": "Update_Sold_Contracted_Fo1",
+      "kind": "workflow",
+      "file": "Update_Sold_Contracted_Fo1.ds",
+      "line_start": 78444,
+      "line_end": 78487,
+      "sha256": "18a35ad12d66b88129198798d8df1cdd3b13edd8bf1cd91daa902cdc4832a9dc",
+      "localMatches": null
+    },
+    {
+      "name": "workflowExportClaim",
+      "kind": "function",
+      "file": "workflowExportClaim.dg",
+      "line_start": 52693,
+      "line_end": 52753,
+      "sha256": "72caa1fed0c50160bebb8a854f040eee7f8875a761962e227dc3b26886f9c00f",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportClaimRows",
+      "kind": "function",
+      "file": "workflowExportClaimRows.dg",
+      "line_start": 52754,
+      "line_end": 52855,
+      "sha256": "85f8754db4730e41298f7284f482e77c2db60e130bd581bd96bedc4d430c1712",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportDispatch",
+      "kind": "function",
+      "file": "workflowExportDispatch.dg",
+      "line_start": 52856,
+      "line_end": 52918,
+      "sha256": "f1c3fe5a92434d49654b440b2d09e0f7e04caeae3af525f6eb878bd03cf14dee",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportEnqueue",
+      "kind": "function",
+      "file": "workflowExportEnqueue.dg",
+      "line_start": 52919,
+      "line_end": 52923,
+      "sha256": "563759ce76d2f83e3698c622a551238baca446ecf0e664d7a58f324bb21bf2fa",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportEnqueueCaptured",
+      "kind": "function",
+      "file": "workflowExportEnqueueCaptured.dg",
+      "line_start": 52924,
+      "line_end": 53063,
+      "sha256": "fd6ee3a1df3d5ef5df97629460fcdfe6e1c790ffdb26b1d01f31449db719da03",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportPlan",
+      "kind": "function",
+      "file": "workflowExportPlan.dg",
+      "line_start": 53064,
+      "line_end": 53321,
+      "sha256": "0d205427040e44c78581bfd7a2a902a4f976b1e1d7a2e1f7d799e05708f443d8",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportRecover",
+      "kind": "function",
+      "file": "workflowExportRecover.dg",
+      "line_start": 53383,
+      "line_end": 53734,
+      "sha256": "72d5d551eab9ac27a12c74195443aa3215d4a6abcce4fb21a8489f7d25ec82bb",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportRun",
+      "kind": "function",
+      "file": "workflowExportRun.dg",
+      "line_start": 53735,
+      "line_end": 54991,
+      "sha256": "361899a2e441fcdaceb9034848d259c1ecda39dad320bcda3c4c750af9ed2de9",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportTick",
+      "kind": "function",
+      "file": "workflowExportTick.dg",
+      "line_start": 54992,
+      "line_end": 55313,
+      "sha256": "2b18cda8ec4ef5ccab218c8194399f253429258acd3121e27ec30b471be4e708",
+      "localMatches": true
+    },
+    {
+      "name": "workflowExportWake",
+      "kind": "function",
+      "file": "workflowExportWake.dg",
+      "line_start": 55314,
+      "line_end": 55427,
+      "sha256": "07e156c8ff53cdd67dbb0b9e407421da6f91d5c68b1a94efc8fe930989174994",
+      "localMatches": true
+    },
+    {
+      "name": "workflowPreparedExportRows",
+      "kind": "function",
+      "file": "workflowPreparedExportRows.dg",
+      "line_start": 55428,
+      "line_end": 55468,
+      "sha256": "92c17943a145875b0f0494241e99efb628e5315080bfda9c3661967e17f3f0dd",
+      "localMatches": true
+    },
+    {
+      "name": "workflowRunLog",
+      "kind": "function",
+      "file": "workflowRunLog.dg",
+      "line_start": 55469,
+      "line_end": 55674,
+      "sha256": "828e668756b7c24dd1eda4360def06117ad9e23bc31a1412e4cba3d1ad776e65",
+      "localMatches": true
+    },
+    {
+      "name": "workflowStarterDispatch",
+      "kind": "function",
+      "file": "workflowStarterDispatch.dg",
+      "line_start": 55675,
+      "line_end": 55856,
+      "sha256": "4fac202f5a08549df5d344dc350a96b2216099fb307288a0d89f810ea6b9acca",
+      "localMatches": true
+    },
+    {
+      "name": "workflowStarterFrame",
+      "kind": "function",
+      "file": "workflowStarterFrame.dg",
+      "line_start": 55857,
+      "line_end": 55956,
+      "sha256": "b98d6daaadc3763d40e4132dfce3677a129c5e87a6265cac59ea9ca7c6f7f15a",
+      "localMatches": true
+    },
+    {
+      "name": "workflowStarterStart",
+      "kind": "function",
+      "file": "workflowStarterStart.dg",
+      "line_start": 55957,
+      "line_end": 56019,
+      "sha256": "6578b9392449caa5afe6848ec58a6022381e89983a42db2edbfee0453c79759e",
+      "localMatches": true
+    },
+    {
+      "name": "Workflow_Export_Continue",
+      "kind": "workflow",
+      "file": "Workflow_Export_Continue.ds",
+      "line_start": 78722,
+      "line_end": 78739,
+      "sha256": "ef264cc5f5e8fb4370b814439581727316fed220720324fe3534ff647b7d871f",
+      "localMatches": null
+    },
+    {
+      "name": "Workflow_Export_Lock",
+      "kind": "form",
+      "file": "Workflow_Export_Lock.form.ds",
+      "line_start": 17001,
+      "line_end": 17074,
+      "sha256": "c245b5afb65ed3a072998b14889564d7fc2a380ec00132369a7178e7ad6863af",
+      "localMatches": null
+    },
+    {
+      "name": "Workflow_Export_Wake",
+      "kind": "workflow",
+      "file": "Workflow_Export_Wake.ds",
+      "line_start": 78740,
+      "line_end": 78756,
+      "sha256": "a003eee7a24ff8e71afcbe90505a07bfb029939e1fd73271b326d391a59df33f",
+      "localMatches": null
+    },
+    {
+      "name": "Workflow_Log_Timeout",
+      "kind": "workflow",
+      "file": "Workflow_Log_Timeout.ds",
+      "line_start": 78623,
+      "line_end": 78681,
+      "sha256": "5d299db0d4b835879d38508e816322a0c5bbb7890eaad5b1276770e22cee9002",
+      "localMatches": null
+    },
+    {
+      "name": "Workflow_Run_Log",
+      "kind": "form",
+      "file": "Workflow_Run_Log.form.ds",
+      "line_start": 17075,
+      "line_end": 17281,
+      "sha256": "470bf2c0df3d8194279c63fcc001e195ed4f9254ff29cf1e658e659504d872de",
+      "localMatches": null
+    }
+  ]
+}

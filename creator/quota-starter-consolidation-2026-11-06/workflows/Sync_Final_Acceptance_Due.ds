@@ -1,0 +1,19 @@
+			Sync_Final_Acceptance_Due as "Zoho Projects - Sync Subdivision Schedule Dates"
+			{
+				type =  schedule
+				status = inactive
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportEnqueue("Sync_Final_Acceptance_Due");
+					)
+					}
+				}
+			}

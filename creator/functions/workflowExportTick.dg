@@ -29,7 +29,7 @@ string workflowExportTick(string auditId)
 	{
 		try
 		{
-			actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
+			actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_HCSS_1"};
 			validActualPhase = state.get("actualPhase") == "preflight" || state.get("actualPhase") == "apply";
 			if(!actualWorkflows.contains(workflow) || validActualPhase != true)
 			{
@@ -37,8 +37,7 @@ string workflowExportTick(string auditId)
 			}
 			state.put("phase","processing");
 			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Resuming actual element " + state.get("actualPhase"),"exportState":state.toString(),"clearResume":true});
-		}
-		catch(actualResumeError)
+		}		catch (actualResumeError)
 		{
 			actualStatus = "Failed";
 			if(state.get("actualWriteAttempted") == true)
@@ -49,6 +48,10 @@ string workflowExportTick(string auditId)
 			throw actualResumeError;
 		}
 		// Keep the helper's independent Failed/Partial handling outside this catch.
+		if(workflow == "Budgets_Import_Load_HCSS_1")
+		{
+			return thisapp.budgetPlanImportRun(auditId);
+		}
 		return thisapp.budgetActualImportRun(auditId);
 	}
 	// Budget successors have no Analytics work. They execute only after the
@@ -56,7 +59,7 @@ string workflowExportTick(string auditId)
 	budgetAction = state.get("budgetAction");
 	if(budgetAction != null)
 	{
-		try 
+		try
 		{
 			if(workflow != "Update_Budgets_w_Projects1" || (budgetAction != 2 && budgetAction != 3))
 			{
@@ -85,7 +88,7 @@ string workflowExportTick(string auditId)
 		}
 		return thisapp.workflowExportRun(auditId);
 	}
-	try 
+	try
 	{
 		// A fixed deadline belongs to the original run, not to each poll.
 		if(zoho.currenttime.toLong() >= state.get("deadline").toLong())
@@ -97,6 +100,7 @@ string workflowExportTick(string auditId)
 		thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Checking Analytics export","exportState":state.toString(),"clearResume":true});
 		headers = {"ZANALYTICS-ORGID":"700732567"};
 		pending = false;
+		readRetryDetails = "";
 		activeJobs = 0;
 		for each  existingRequest in state.get("requests")
 		{
@@ -162,14 +166,51 @@ string workflowExportTick(string auditId)
 					pending = true;
 					continue;
 				}
-				statusHttp = invokeurl
-				[
-					url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
-					type :GET
-					headers:headers
-					detailed:true
-					connection:"zoho_analytics_connection"
-				];
+				statusReadTimedOut = false;
+				try
+				{
+					statusHttp = invokeurl
+					[
+						url :"https://analyticsapi.zoho.com/restapi/v2/bulk/workspaces/2107789000000003001/exportjobs/" + jobId
+						type :GET
+						headers:headers
+						detailed:true
+						connection:"zoho_analytics_connection"
+					];
+				}				catch (statusReadError)
+				{
+					readErrorText = statusReadError.toString().toLowerCase();
+					statusReadTimedOut = readErrorText.contains("api call is taking too long") || readErrorText.contains("socket timeout");
+					if(!statusReadTimedOut)
+					{
+						throw statusReadError;
+					}
+					readRetries = ifnull(request.get("statusReadRetries"),0).toLong();
+					if(readRetries >= 2)
+					{
+						throw "Analytics status read failed after two scheduled retries; job=" + jobId + "; " + statusReadError.toString();
+					}
+					request.put("statusReadRetries",readRetries + 1);
+					readRetryDetails = readRetryDetails + "Job=" + jobId + "; status read retry=" + (readRetries + 1) + "/2; " + statusReadError.toString() + ". ";
+				}
+				if(statusReadTimedOut)
+				{
+					savedRequests = List();
+					for each  savedRequest in state.get("requests")
+					{
+						if(savedRequest.get("view") == request.get("view"))
+						{
+							savedRequests.add(request);
+						}
+						else
+						{
+							savedRequests.add(savedRequest);
+						}
+					}
+					state.put("requests",savedRequests);
+					pending = true;
+					continue;
+				}
 				if(statusHttp.get("responseCode") != 200)
 				{
 					throw "Analytics job-status HTTP " + statusHttp.get("responseCode") + "; job=" + jobId;
@@ -185,6 +226,11 @@ string workflowExportTick(string auditId)
 					throw "Analytics status identified a different job.";
 				}
 				code = ifnull(job.get("jobCode"),"").toString();
+				if(code == "1004" && job.get("expiryTime") != null)
+				{
+					request.put("expiryTime",job.get("expiryTime").toString());
+				}
+				request.put("statusReadRetries",0);
 				request.put("code",code);
 				request.put("checkedAt",zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"));
 				savedRequests = List();
@@ -224,7 +270,21 @@ string workflowExportTick(string auditId)
 			}
 			state.put("phase","arming");
 			state.put("tick",tick + 1);
-			nextCheck = zoho.currenttime.addMinutes(1);
+			pollMinutes = 1;
+			if(state.get("callbackPolicy") == "shared-recovery-30m")
+			{
+				pollNumber = ifnull(state.get("pollNumber"),0).toLong();
+				if(pollNumber == 1)
+				{
+					pollMinutes = 2;
+				}
+				else if(pollNumber >= 2)
+				{
+					pollMinutes = 4;
+				}
+				state.put("pollNumber",pollNumber + 1);
+			}
+			nextCheck = zoho.currenttime.addMinutes(pollMinutes);
 			deadline = state.get("deadlineAt").toDateTime("MM/dd/yyyy hh:mm:ss a");
 			if(nextCheck > deadline)
 			{
@@ -237,7 +297,7 @@ string workflowExportTick(string auditId)
 				throw "Continuation wake-up window elapsed before handoff acknowledgement.";
 			}
 			state.put("phase","waiting");
-			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Waiting for Analytics exports","exportState":state.toString(),"resumeAt":nextCheck.toString("MM/dd/yyyy hh:mm:ss a")});
+			thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Waiting for Analytics exports","exportState":state.toString(),"resumeAt":nextCheck.toString("MM/dd/yyyy hh:mm:ss a"),"details":readRetryDetails + "Original jobs and fixed export deadline retained; no business writes started."});
 			return "Pending Analytics exports";
 		}
 		if(zoho.currenttime.toLong() >= state.get("deadline").toLong())

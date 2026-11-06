@@ -1,0 +1,19 @@
+Budgets_GP_Development_Ac as "Budgets - GP Development Actuals - Batches"
+			{
+				type =  schedule
+				form = Settings
+					status = inactive
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportEnqueue("Budgets_Import_Great_Plai1");
+					)
+					}
+				}
+			}

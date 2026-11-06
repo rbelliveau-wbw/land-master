@@ -1,0 +1,223 @@
+{
+  "environment": "stage",
+  "creatorVersion": "9.161",
+  "status": "passed",
+  "matched": 41,
+  "total": 41,
+  "sourceSha256": "4e270320f162f487b181922246cce55cd2f0b38a78af1d8c470ae51fd98e0594",
+  "expectedCounts": {
+    "functions": 19,
+    "workflows": 16,
+    "forms": 3,
+    "group_checks": 1,
+    "probe_absences": 2
+  },
+  "checks": [
+    {
+      "name": "analyticsExportRows",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "budgetActualImportRun",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "budgetPlanImportRun",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportClaim",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportClaimRows",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportDispatch",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportEnqueue",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportEnqueueCaptured",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportPlan",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportRecover",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportRun",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportTick",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowExportWake",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowPreparedExportRows",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowRunLog",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowStarterDispatch",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowStarterFrame",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowStarterStart",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "workflowRecoveryHold",
+      "kind": "function",
+      "match": true
+    },
+    {
+      "name": "Budgets_Check_HCSS_Budget1",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Check_for_Stuck_Budget_Ap",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Finalize_Workflow_Run_Log",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Next_Workflow_Run_Next_Ba",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Recalc_Budget_Modificatio",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Set_Close_Date_Lots1",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Sync_Final_Acceptance_Due",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Update_Actual_Lots_Foreca1",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Update_Budgets_w_Projects1",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Update_Sold_Contracted_Fo1",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Workflow_Export_Continue",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Workflow_Export_Wake",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Workflow_Log_Timeout",
+      "kind": "workflow",
+      "match": true
+    },
+    {
+      "name": "Settings",
+      "kind": "form",
+      "match": true
+    },
+    {
+      "name": "Workflow_Export_Lock",
+      "kind": "form",
+      "match": true
+    },
+    {
+      "name": "Workflow_Run_Log",
+      "kind": "form",
+      "match": true
+    },
+    {
+      "name": "Settings shared schedule group",
+      "kind": "schedule_group",
+      "match": true
+    },
+    {
+      "name": "workflowStarterProbe",
+      "kind": "probe_absent",
+      "match": true
+    },
+    {
+      "name": "workflowQuotaChunkProbe",
+      "kind": "probe_absent",
+      "match": true
+    }
+  ],
+  "note": "Technical source parity only; no run records, account data, local paths, or billing measurements are included."
+}

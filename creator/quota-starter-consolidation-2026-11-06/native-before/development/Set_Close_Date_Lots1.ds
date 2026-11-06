@@ -1,0 +1,53 @@
+			Set_Close_Date_Lots1 as "Set Close Date - Lots"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						// Close lots whose purchase date has arrived.
+										for each  lot in Lots[Purchase_Date != null && Purchase_Date <= zoho.currentdate]
+										{
+											if(lot.Close_Date == null || lot.Close_Date != lot.Purchase_Date)
+											{
+												lot.Close_Date_Text=lot.Purch_Date_Text;
+												lot.Close_Date=lot.Purchase_Date;
+											}
+											if(lot.Status != "Sold")
+											{
+												lot.Status="Sold";
+											}
+										}
+										// Future purchases stay Scheduled until a Close Date is recorded.
+										for each  lot in Lots[Purchase_Date != null && Close_Date == null && Status != "Scheduled"]
+										{
+											lot.Status="Scheduled";
+										}
+										// A builder assignment without either date is Contracted.
+										for each  lot in Lots[Builder1 != null && Builder1.Builder_Name != "Placeholder" && Purchase_Date == null && Close_Date == null && Status == "Open"]
+										{
+											lot.Status="Contracted";
+										}
+										// Restore a status when a previously scheduled purchase date was cleared.
+										for each  lot in Lots[Purchase_Date == null && Close_Date == null && Status == "Scheduled"]
+										{
+											lot.Status="Open";
+											if(lot.Builder1 != null && lot.Builder1.Builder_Name != "Placeholder")
+											{
+												lot.Status="Contracted";
+											}
+										}
+										for each  lot in Lots[ID != 0 && Status == "Open"]
+										{
+											lot.Builder1=4410926000000693249;
+										}
+					)
+					}
+				}
+			}

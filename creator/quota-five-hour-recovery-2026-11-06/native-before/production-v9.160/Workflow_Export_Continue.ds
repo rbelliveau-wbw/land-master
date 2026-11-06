@@ -1,0 +1,18 @@
+Workflow_Export_Continue as "Workflow Export Continue"
+			{
+				type =  schedule
+				form = Workflow_Run_Log
+				start = Resume_At
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportTick(input.ID.toString());
+					)
+					}
+				}
+			}

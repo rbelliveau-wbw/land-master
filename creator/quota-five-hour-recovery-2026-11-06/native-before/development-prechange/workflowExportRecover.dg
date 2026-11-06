@@ -1,0 +1,352 @@
+string workflowExportRecover(string heartbeatId)
+                 {
+                 	// One immutable clock row per half-hour, shared by all new queue runs.
+                 	// Arm the successor before scanning. Recovery never executes business work.
+                 	policy = "shared-recovery-30m";
+                 	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+                 	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+                 	environments = {"development","stage","production"};
+                 	if(!environments.contains(runtimeType))
+                 	{
+                 		throw "Unknown Creator environment for export recovery.";
+                 	}
+                 	if(heartbeatId != "arm")
+                 	{
+                 		if(!heartbeatId.matches("[0-9]+"))
+                 		{
+                 			throw "Recovery requires its immutable clock record ID.";
+                 		}
+                 		currentClock = Workflow_Export_Lock[ID == heartbeatId.toLong()];
+                 		if(currentClock.count() != 1 || currentClock.Wake_At == null)
+                 		{
+                 			throw "Recovery clock record is missing or ambiguous.";
+                 		}
+                 		currentKey = ifnull(currentClock.Claim_Key,"").toString();
+                 		if(!currentKey.matches("0[|]recovery[|][0-9]+"))
+                 		{
+                 			throw "Recovery received a different callback identity.";
+                 		}
+                 		if(currentClock.Wake_At > zoho.currenttime)
+                 		{
+                 			return "Recovery clock is not due";
+                 		}
+                 		clockParts = currentKey.toList("|");
+                 		if(clockParts.get(2).toLong() != currentClock.Wake_At.toLong())
+                 		{
+                 			throw "Recovery clock date differs from its immutable key.";
+                 		}
+                 	}
+                 	headers = {"Content-Type":"application/json"};
+                 	if(runtimeType != "production")
+                 	{
+                 		headers.put("environment",runtimeLink);
+                 	}
+                 	hourStart = zoho.currenttime.toString("MM/dd/yyyy hh:00:00 a").toDateTime("MM/dd/yyyy hh:mm:ss a");
+                 	nextClockAt = hourStart.addMinutes(30);
+                 	if(zoho.currenttime.toString("mm").toLong() >= 30)
+                 	{
+                 		nextClockAt = hourStart.addMinutes(60);
+                 	}
+                 	nextClockKey = "0|recovery|" + nextClockAt.toLong();
+                 	nextClock = Workflow_Export_Lock[Claim_Key == nextClockKey];
+                 	if(nextClock.count() == 0)
+                 	{
+                 		clockPayload = {"data":{"Claim_Key":nextClockKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Wake_At":nextClockAt.toString("MM/dd/yyyy hh:mm:ss a")},"result":{"fields":{"Claim_Key"}}};
+                 		try 
+                 		{
+                 			clockHttp = invokeurl
+                 			[
+                 				url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 				type :POST
+                 				parameters:clockPayload.toString()
+                 				headers:headers
+                 				detailed:true
+                 				connection:"workflow_audit_admin"
+                 			];
+                 			// The unique key also permits read-only reconciliation after a lost
+                 			// acknowledgement or a racing creator. Never repeat this POST.
+                 		}		catch (clockCreateError)
+                 		{
+                 			info "Recovery clock reply lost; reconciling its unique key without replay.";
+                 		}
+                 		nextClock = Workflow_Export_Lock[Claim_Key == nextClockKey];
+                 	}
+                 	if(nextClock.count() != 1 || nextClock.Wake_At == null)
+                 	{
+                 		throw "No acknowledged shared recovery successor; primary queue was not armed.";
+                 	}
+                 	if(nextClock.Wake_At.toLong() != nextClockAt.toLong())
+                 	{
+                 		throw "Shared recovery successor has a different immutable date.";
+                 	}
+                 	if(nextClock.Wake_At <= zoho.currenttime)
+                 	{
+                 		throw "Shared recovery successor elapsed before acknowledgement; primary queue was not armed.";
+                 	}
+                 	if(heartbeatId == "arm")
+                 	{
+                 		return nextClock.ID.toString();
+                 	}
+                 	// Delayed or duplicate historic clocks compete for the same current slot.
+                 	// Only its independently acknowledged owner may scan or finish stale runs.
+                 	scanSlot = nextClockAt.addMinutes(-30).toLong();
+                 	if(!thisapp.workflowExportClaim("0|tick|" + scanSlot))
+                 	{
+                 		return "Recovery slot already owned or acknowledgement unknown";
+                 	}
+                 	staleBefore = zoho.currenttime.addMinutes(-30).toLong();
+                 	// Starter frames are independent immutable intents. Resume only through
+                 	// their per-route claim protocol; a failed frame cannot stop child recovery.
+                 	// Arm-only calls returned above, avoiding Frame -> arm -> Frame recursion.
+                 	starterStaleAt = zoho.currenttime.addMinutes(-30);
+                 	starterOldestAt = zoho.currenttime.addMinutes(-180);
+                 	for each  starterFrame in Workflow_Export_Lock[Cycle_State != null && Claim_Key.contains("0|starter|") && Claimed_At <= starterStaleAt && Claimed_At >= starterOldestAt] range from 0 to 7
+                 	{
+                 		try 
+                 		{
+                 			thisapp.workflowStarterDispatch(starterFrame.ID.toString());
+                 		}		catch (starterRecoveryError)
+                 		{
+                 			info "Shared recovery could not reconcile starter frame " + starterFrame.ID + ": " + starterRecoveryError.toString() + ". No route was replayed.";
+                 		}
+                 	}
+                 	fallbackRows = List();
+                 	fallbackKeys = List();
+                 	scanned = 0;
+                 	finished = 0;
+                 	// Filter to this policy so legacy runs cannot crowd out new jobs. The bound
+                 	// keeps one failed worker from exhausting the recovery execution budget.
+                 	for each  recoveryRun in Workflow_Run_Log[Run_Status == "Running" && Export_State.contains("shared-recovery-30m")] range from 0 to 99
+                 	{
+                 		scanned = scanned + 1;
+                 		try 
+                 		{
+                 			recoverySnapshot = recoveryRun.Export_State.toString();
+                 			recoveryState = recoverySnapshot.toMap();
+                 			if(recoveryState.get("callbackPolicy") != policy || recoveryState.get("version") != 1)
+                 			{
+                 				continue;
+                 			}
+                 			checkpointAt = ifnull(recoveryState.get("checkpointAt"),0).toLong();
+                 			if(checkpointAt <= 0 || checkpointAt > staleBefore)
+                 			{
+                 				continue;
+                 			}
+                 			auditId = recoveryRun.ID.toString();
+                 			phase = ifnull(recoveryState.get("phase"),"").toString();
+                 			tick = ifnull(recoveryState.get("tick"),0).toLong();
+                 			if(phase == "waiting")
+                 			{
+                 				// A delayed primary can own its tick before publishing its first
+                 				// phase checkpoint. Its fresh claim is progress, even if state is old.
+                 				currentTickKey = auditId + "|tick|" + tick;
+                 				currentTickClaim = Workflow_Export_Lock[Claim_Key == currentTickKey];
+                 				if(currentTickClaim.count() > 0)
+                 				{
+                 					if(currentTickClaim.count() != 1 || currentTickClaim.Claimed_At == null)
+                 					{
+                 						continue;
+                 					}
+                 					if(currentTickClaim.Claimed_At.toLong() > staleBefore)
+                 					{
+                 						continue;
+                 					}
+                 				}
+                 			}
+                 			possibleWrites = phase == "processing";
+                 			if(recoveryState.get("actualPhase") != null)
+                 			{
+                 				possibleWrites = recoveryState.get("actualWriteAttempted") == true || recoveryState.get("actualPhase") == "apply";
+                 			}
+                 			failureStatus = "Failed";
+                 			if(possibleWrites)
+                 			{
+                 				failureStatus = "Partial";
+                 			}
+                 			expired = false;
+                 			if(recoveryState.get("actualPhase") != null)
+                 			{
+                 				expired = recoveryState.get("actualDeadline") == null;
+                 				if(!expired)
+                 				{
+                 					expired = zoho.currenttime.toLong() >= recoveryState.get("actualDeadline").toLong();
+                 				}
+                 			}
+                 			else if(recoveryState.get("deadline") != null)
+                 			{
+                 				expired = zoho.currenttime.toLong() >= recoveryState.get("deadline").toLong();
+                 			}
+                 			counts = {"received":ifnull(recoveryRun.Rows_Received,0),"processed":ifnull(recoveryRun.Rows_Processed,0),"created":ifnull(recoveryRun.Rows_Created,0),"updated":ifnull(recoveryRun.Rows_Updated,0),"skipped":ifnull(recoveryRun.Rows_Skipped,0),"failed":1};
+                 			if(expired)
+                 			{
+                 				if(!possibleWrites)
+                 				{
+                 					failureStatus = "Timed Out";
+                 				}
+                 				if(phase == "waiting")
+                 				{
+                 					terminalClaimKey = auditId + "|tick|" + tick;
+                 					terminalClaim = Workflow_Export_Lock[Claim_Key == terminalClaimKey];
+                 					if(terminalClaim.count() == 0)
+                 					{
+                 						// Own the original unique tick before stopping an unclaimed
+                 						// run. A racing primary or unknown reply cancels this finish.
+                 						if(!thisapp.workflowExportClaim(terminalClaimKey))
+                 						{
+                 							continue;
+                 						}
+                 					}
+                 					else
+                 					{
+                 						if(terminalClaim.count() != 1 || terminalClaim.Claimed_At == null)
+                 						{
+                 							continue;
+                 						}
+                 						if(terminalClaim.Claimed_At.toLong() > staleBefore)
+                 						{
+                 							continue;
+                 						}
+                 					}
+                 				}
+                 				freshRun = Workflow_Run_Log[ID == auditId.toLong()];
+                 				if(freshRun.count() != 1 || freshRun.Run_Status != "Running" || freshRun.Export_State != recoverySnapshot)
+                 				{
+                 					continue;
+                 				}
+                 				thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"stage":"Shared recovery deadline","message":"The original export/import deadline expired without a terminal acknowledgement. No work was replayed.","details":"Source=" + recoveryState.get("workflow") + "; tick=" + tick + "; phase=" + phase + "; checkpoint=" + checkpointAt + ". Review any possible destination writes before retrying.","counts":counts,"clearResume":true});
+                 				finished = finished + 1;
+                 				continue;
+                 			}
+                 			if(phase == "waiting" && recoveryRun.Resume_At != null)
+                 			{
+                 				if(recoveryRun.Resume_At > zoho.currenttime)
+                 				{
+                 					continue;
+                 				}
+                 				tickClaimKey = auditId + "|tick|" + tick;
+                 				tickClaim = Workflow_Export_Lock[Claim_Key == tickClaimKey];
+                 				if(tickClaim.count() == 0)
+                 				{
+                 					// Recover a missed delivery in a separate native execution. This
+                 					// callback still competes with the primary for the original tick.
+                 					fallbackKey = auditId + "|wake|" + tick + "|2";
+                 					fallback = Workflow_Export_Lock[Claim_Key == fallbackKey];
+                 					if(fallback.count() == 0)
+                 					{
+                 						fallbackAt = zoho.currenttime.addMinutes(1);
+                 						withinDeadline = true;
+                 						if(recoveryState.get("actualPhase") != null)
+                 						{
+                 							withinDeadline = fallbackAt.toLong() < recoveryState.get("actualDeadline").toLong();
+                 						}
+                 						else if(recoveryState.get("deadline") != null)
+                 						{
+                 							withinDeadline = fallbackAt.toLong() < recoveryState.get("deadline").toLong();
+                 						}
+                 						if(withinDeadline)
+                 						{
+                 							fallbackRows.add({"Claim_Key":fallbackKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Wake_At":fallbackAt.toString("MM/dd/yyyy hh:mm:ss a")});
+                 							fallbackKeys.add(fallbackKey);
+                 							continue;
+                 						}
+                 					}
+                 					else if(fallback.Wake_At != null && fallback.Wake_At > zoho.currenttime)
+                 					{
+                 						continue;
+                 					}
+                 				}
+                 			}
+                 			if(phase == "waiting")
+                 			{
+                 				terminalClaimKey = auditId + "|tick|" + tick;
+                 				terminalClaim = Workflow_Export_Lock[Claim_Key == terminalClaimKey];
+                 				if(terminalClaim.count() == 0)
+                 				{
+                 					if(!thisapp.workflowExportClaim(terminalClaimKey))
+                 					{
+                 						continue;
+                 					}
+                 				}
+                 				else
+                 				{
+                 					if(terminalClaim.count() != 1 || terminalClaim.Claimed_At == null)
+                 					{
+                 						continue;
+                 					}
+                 					if(terminalClaim.Claimed_At.toLong() > staleBefore)
+                 					{
+                 						continue;
+                 					}
+                 				}
+                 			}
+                 			freshRun = Workflow_Run_Log[ID == auditId.toLong()];
+                 			if(freshRun.count() != 1 || freshRun.Run_Status != "Running" || freshRun.Export_State != recoverySnapshot)
+                 			{
+                 				continue;
+                 			}
+                 			thisapp.workflowRunLog({"action":"finish","id":auditId,"status":failureStatus,"stage":"Shared recovery acknowledgement missing","message":"No durable progress for thirty minutes; the shared recovery check stopped this run without replaying its work.","details":"Source=" + recoveryState.get("workflow") + "; tick=" + tick + "; phase=" + phase + "; checkpoint=" + checkpointAt + ". An owned or ambiguous tick is never replayed. Check destination records before a manual retry.","counts":counts,"clearResume":true});
+                 			finished = finished + 1;
+                 		}		catch (recoveryRunError)
+                 		{
+                 			info "Shared recovery could not reconcile run " + recoveryRun.ID + ": " + recoveryRunError.toString() + ". No work was replayed.";
+                 		}
+                 	}
+                 	if(fallbackRows.size() > 0)
+                 	{
+                 		fallbackPayload = {"data":fallbackRows,"result":{"fields":{"Claim_Key"}}};
+                 		fallbackHttp = invokeurl
+                 		[
+                 			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 			type :POST
+                 			parameters:fallbackPayload.toString()
+                 			headers:headers
+                 			detailed:true
+                 			connection:"workflow_audit_admin"
+                 		];
+                 		if(fallbackHttp.get("responseCode") < 200 || fallbackHttp.get("responseCode") >= 300)
+                 		{
+                 			throw "Recovery callback response failed; successor clock remains armed. No batch replay.";
+                 		}
+                 		fallbackBody = fallbackHttp.get("responseText").toString().toMap();
+                 		if(ifnull(fallbackBody.get("code"),"").toString() != "3000" || fallbackBody.get("error") != null)
+                 		{
+                 			throw "Recovery callback acknowledgement failed; no batch replay.";
+                 		}
+                 		fallbackAcks = fallbackBody.get("result");
+                 		if(fallbackAcks == null)
+                 		{
+                 			fallbackAcks = List();
+                 			fallbackAcks.add(fallbackBody);
+                 		}
+                 		if(fallbackAcks.size() != fallbackKeys.size())
+                 		{
+                 			throw "Recovery callback count is ambiguous; no batch replay.";
+                 		}
+                 		ackKeys = List();
+                 		ackIds = List();
+                 		for each  fallbackAck in fallbackAcks
+                 		{
+                 			if(ifnull(fallbackAck.get("code"),"").toString() != "3000" || fallbackAck.get("data") == null || fallbackAck.get("error") != null)
+                 			{
+                 				throw "A recovery callback was not acknowledged; no batch replay.";
+                 			}
+                 			ackKey = ifnull(fallbackAck.get("data").get("Claim_Key"),"").toString();
+                 			ackId = ifnull(fallbackAck.get("data").get("ID"),"").toString();
+                 			if(!fallbackKeys.contains(ackKey) || !ackId.matches("[0-9]+"))
+                 			{
+                 				throw "A recovery callback identifies a different record; no batch replay.";
+                 			}
+                 			if(ackKeys.contains(ackKey) || ackIds.contains(ackId))
+                 			{
+                 				throw "Duplicate recovery callback acknowledgement; no batch replay.";
+                 			}
+                 			ackKeys.add(ackKey);
+                 			ackIds.add(ackId);
+                 		}
+                 	}
+                 	if(scanned == 100)
+                 	{
+                 		info "Shared recovery reached its 100-run scan bound; inspect the active export backlog.";
+                 	}
+                 	return "Shared recovery scanned " + scanned + "; finished " + finished + "; fallback callbacks " + fallbackRows.size();
+                 }

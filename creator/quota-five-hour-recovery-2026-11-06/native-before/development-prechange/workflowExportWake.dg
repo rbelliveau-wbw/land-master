@@ -1,0 +1,114 @@
+string workflowExportWake(string auditId, int tick, string resumeAt)
+                 {
+                 	if(!auditId.matches("[0-9]+") || tick < 0)
+                 	{
+                 		throw "Invalid continuation wake-up identity.";
+                 	}
+                 	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+                 	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+                 	environments = {"development","stage","production"};
+                 	if(!environments.contains(runtimeType))
+                 	{
+                 		throw "Unknown Creator environment for export wake-up.";
+                 	}
+                 	headers = {"Content-Type":"application/json"};
+                 	if(runtimeType != "production")
+                 	{
+                 		headers.put("environment",runtimeLink);
+                 	}
+                 	due = resumeAt.toDateTime("MM/dd/yyyy hh:mm:ss a");
+                 	// In-flight runs keep their original callbacks. New runs use one primary
+                 	// callback, after the shared recovery clock has its independent acknowledgement.
+                 	delays = {0,2};
+                 	wakeState = Map();
+                 	wakeRun = Workflow_Run_Log[ID == auditId.toLong()];
+                 	if(wakeRun.count() == 1)
+                 	{
+                 		wakeState = wakeRun.Export_State.toMap();
+                 		actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_HCSS_1"};
+                 		if(actualWorkflows.contains(wakeState.get("workflow")))
+                 		{
+                 			delays = {0,2,10};
+                 		}
+                 	}
+                 	if(wakeState.get("callbackPolicy") == "shared-recovery-30m")
+                 	{
+                 		thisapp.workflowExportRecover("arm");
+                 		delays = {0};
+                 	}
+                 	rows = List();
+                 	expectedKeys = List();
+                 	for each  delay in delays
+                 	{
+                 		claimKey = auditId + "|wake|" + tick + "|" + delay;
+                 		existing = Workflow_Export_Lock[Claim_Key == claimKey];
+                 		if(existing.count() > 0)
+                 		{
+                 			throw "Wake-up already exists; no ambiguous queue replay: " + claimKey;
+                 		}
+                 		wakeDue = due.addMinutes(delay);
+                 		if(delay == 10 && wakeState.get("actualDeadlineAt") != null)
+                 		{
+                 			actualDeadline = wakeState.get("actualDeadlineAt").toDateTime("MM/dd/yyyy hh:mm:ss a");
+                 			if(wakeDue > actualDeadline)
+                 			{
+                 				wakeDue = actualDeadline;
+                 			}
+                 		}
+                 		rows.add({"Claim_Key":claimKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Wake_At":wakeDue.toString("MM/dd/yyyy hh:mm:ss a")});
+                 		expectedKeys.add(claimKey);
+                 	}
+                 	// One independent request acknowledges every intended immutable callback.
+                 	// A partial or lost response is never retried as an entire batch.
+                 	payload = {"data":rows,"result":{"fields":{"Claim_Key"}}};
+                 	http = invokeurl
+                 	[
+                 		url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 		type :POST
+                 		parameters:payload.toString()
+                 		headers:headers
+                 		detailed:true
+                 		connection:"workflow_audit_admin"
+                 	];
+                 	if(http.get("responseCode") < 200 || http.get("responseCode") >= 300)
+                 	{
+                 		throw "Wake-up creation HTTP " + http.get("responseCode") + "; no queue replay.";
+                 	}
+                 	body = http.get("responseText").toString().toMap();
+                 	if(ifnull(body.get("code"),"").toString() != "3000" || body.get("error") != null)
+                 	{
+                 		throw "Wake-up creation was not acknowledged; no queue replay.";
+                 	}
+                 	acks = body.get("result");
+                 	if(acks == null)
+                 	{
+                 		acks = List();
+                 		acks.add(body);
+                 	}
+                 	if(acks.size() != expectedKeys.size())
+                 	{
+                 		throw "Ambiguous wake-up acknowledgement count; no queue replay.";
+                 	}
+                 	acknowledgedKeys = List();
+                 	acknowledgedIds = List();
+                 	for each  ack in acks
+                 	{
+                 		if(ifnull(ack.get("code"),"").toString() != "3000" || ack.get("data") == null || ack.get("error") != null)
+                 		{
+                 			throw "A wake-up record was not acknowledged; no queue replay.";
+                 		}
+                 		ackId = ifnull(ack.get("data").get("ID"),"").toString();
+                 		ackKey = ifnull(ack.get("data").get("Claim_Key"),"").toString();
+                 		if(!ackId.matches("[0-9]+") || !expectedKeys.contains(ackKey))
+                 		{
+                 			throw "Wake-up acknowledgement identifies a different record; no queue replay.";
+                 		}
+                 		if(acknowledgedKeys.contains(ackKey) || acknowledgedIds.contains(ackId))
+                 		{
+                 			throw "Duplicate wake-up acknowledgement; no queue replay.";
+                 		}
+                 		acknowledgedKeys.add(ackKey);
+                 		acknowledgedIds.add(ackId);
+                 	}
+                 	return "All intended wake-ups acknowledged in one request";
+                 }

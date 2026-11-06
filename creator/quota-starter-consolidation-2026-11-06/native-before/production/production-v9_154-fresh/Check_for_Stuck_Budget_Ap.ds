@@ -1,0 +1,19 @@
+			Check_for_Stuck_Budget_Ap as "Check for Stuck Budget Approvals"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						result = thisapp.approvalWatchdog();
+										info result;
+					)
+					}
+				}
+			}

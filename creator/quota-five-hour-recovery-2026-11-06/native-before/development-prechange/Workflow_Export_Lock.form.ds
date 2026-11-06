@@ -1,0 +1,74 @@
+form Workflow_Export_Lock
+		{
+			displayname = "Workflow Export Lock"
+			success message = "Workflow Export Lock Added Successfully"
+			Section
+			(
+				type = section
+	 			row = 1
+	 			column = 0   
+				width = medium
+			)
+			must have unique Claim_Key
+			(
+    			type = text
+				displayname = "Claim Key"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Claimed_At
+			(
+    			type = datetime
+				displayname = "Claimed At"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Wake_At
+			(
+    			type = datetime
+				displayname = "Wake At"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Cycle_State
+			(
+    			type = textarea
+				displayname = "Cycle State"
+				height = 150px
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+	
+			actions
+			{
+				on add
+				{
+					submit
+					(
+   						type = submit
+   						displayname = "Submit"
+					)
+				}
+				on edit
+				{
+					update
+					(
+   						type = submit
+   						displayname = "Update"
+					)
+					cancel
+					(
+   						type = cancel
+   						displayname = "Cancel"
+					)
+				}
+			}
+		}

@@ -10,6 +10,9 @@ function compile(source){
   const head=s.match(/^\s*(map|list)\s+(\w+)\(([^)]*)\)\s*\{/),args=head[3].split(',').map(arg=>arg.trim().split(/\s+/).at(-1));
   s=s.replace(head[0],`function ${head[2]}(${args.join(',')}){`);
   s=s.replace(/invokeurl\s*\[([\s\S]*?)\]/g,(_,request)=>'fixtureHttp({'+request.trim().split('\n').map(line=>line.trim()).filter(Boolean).map(line=>line.replace(/^type\s*:\s*(\w+)$/,(_,type)=>'type:"'+type+'"')).join(',')+'})');
+  // Policy lookup is a native record query, not another HTTP request. Retain
+  // the exact ID scope and expose only the native fields used by this helper.
+  s=s.replace(/Workflow_Run_Log\[ID == (\w+)\.toLong\(\)\]/g,'fixtureAuditById($1)');
   s=s.replace(/\{\s*((?:(?:STRINGTOKEN\d+END|\d+)\s*,\s*)*(?:STRINGTOKEN\d+END|\d+))\s*\}/g,'[$1]');
   s=s.replace(/for each\s+(\w+) in ([^\n{]+)/g,'for ($1 of $2)');
   const variables=[...new Set([...s.matchAll(/(?<![.\w])([A-Za-z_]\w*)\s*=(?!=)/g)].map(match=>match[1]).concat([...s.matchAll(/for \((\w+) of/g)].map(match=>match[1])))].filter(name=>!args.includes(name));
@@ -17,17 +20,19 @@ function compile(source){
   s=s.replace(/STRINGTOKEN(\d+)END/g,(_,index)=>strings[Number(index)]);
   return {name:head[2],type:head[1],source:s};
 }
-function runtime(name,responder,environment='Development'){
+function runtime(name,responder,environment='Development',auditRows=[]){
   const calls=[],events=[],delays=[];
-  const c=vm.createContext({console,fixtureResponder:responder,calls,events,delays,environment});
+  const c=vm.createContext({console,fixtureResponder:responder,calls,events,delays,environment,fixtureAuditRows:JSON.stringify(auditRows)});
   vm.runInContext(`
     function ifnull(value,fallback){return value==null?fallback:value;}
     function Map(){return {};}
     function List(){return [];}
     Object.defineProperties(Object.prototype,{get:{value:function(key){return this[key]??null;}},put:{value:function(key,value){this[key]=value;}},remove:{value:function(key){delete this[key];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});
     Array.prototype.size=function(){return this.length;};Array.prototype.get=function(key){return this[key]??null;};Array.prototype.contains=function(value){return this.includes(value);};Array.prototype.add=function(value){this.push(value);};
-    String.prototype.toMap=function(){return JSON.parse(this);};String.prototype.matches=function(pattern){return new RegExp('^(?:'+pattern+')$').test(this);};String.prototype.left=function(count){if(count>this.length)throw new Error('Native left index out of range');return this.slice(0,count);};String.prototype.lengthCall=function(){return this.length;};
-    var zoho={currenttime:{toString(){return '10/21/2026 11:30:00 AM';}}};
+    String.prototype.toMap=function(){return JSON.parse(this);};String.prototype.matches=function(pattern){return new RegExp('^(?:'+pattern+')$').test(this);};String.prototype.contains=function(value){return this.includes(value);};String.prototype.left=function(count){if(count>this.length)throw new Error('Native left index out of range');return this.slice(0,count);};String.prototype.lengthCall=function(){return this.length;};
+    var zoho={currenttime:{toString(){return '10/21/2026 11:30:00 AM';},toLong(){return Date.UTC(2026,9,21,11,30);}}};
+    var auditRows=JSON.parse(fixtureAuditRows);
+    function fixtureAuditById(id){const found=auditRows.filter(row=>row.ID===String(id));return {count(){return found.length;},Export_State:found[0]?.Export_State??null};}
     var thisapp={environment:{type:environment,linkname:environment.toLowerCase()},workflowRunLog(event){events.push(JSON.parse(JSON.stringify(event)));return {id:'4410926000000000001'};}};
     function getUrl(url){delays.push(url);return {};}
     function fixtureHttp(config){calls.push(config);return JSON.parse(JSON.stringify(fixtureResponder(config,calls.length)));}
@@ -93,6 +98,19 @@ for(const env of ['Development','Stage','Production']){
   const h=runtime('workflowRunLog',()=>ok({code:3000,result:[{code:3000,data:{ID}}]}));
   h.execute([{action:'finish',id:ID,status:'Failed',stage:'API request',message:'short',details:'short',counts:{failed:1}}]);
   const payload=JSON.parse(h.calls[0].parameters);assert.equal(h.calls[0].type,'PATCH');assert.equal(payload.data.Message,'short');assert.equal(payload.data.Rows_Failed,1);assert.equal(payload.skip_workflow,undefined,'Completion must trigger the independent email workflow');
+}
+{
+  const state={version:1,callbackPolicy:'shared-recovery-30m',phase:'waiting',tick:3};
+  const h=runtime('workflowRunLog',()=>ok({code:3000,data:{ID}}),'Development',[{ID,Export_State:JSON.stringify(state)}]);
+  h.execute([{action:'finish',id:ID,status:'Failed',message:'Recovery fixture'}]);
+  const payload=JSON.parse(h.calls[0].parameters);
+  assert.deepEqual(payload.skip_workflow,['schedules'],'new-policy terminal audit suppresses per-record timers only');
+  assert.ok(!payload.skip_workflow.includes('form_workflow'),'independent failure notices/final timestamps remain enabled');
+  assert.equal(h.calls.length,1,'native policy lookup adds no Developer API or External Call');
+  const update=runtime('workflowRunLog',()=>ok({code:3000,data:{ID}}),'Stage',[{ID,Export_State:JSON.stringify(state)}]);
+  update.execute([{action:'update',id:ID,exportState:JSON.stringify(state)}]);
+  const checkpoint=JSON.parse(JSON.parse(update.calls[0].parameters).data.Export_State);
+  assert.equal(checkpoint.callbackPolicy,state.callbackPolicy);assert.equal(checkpoint.checkpointAt,Date.UTC(2026,9,21,11,30));
 }
 for(const reply of [{code:3001,message:'Rejected'},{code:3000,data:{ID:'999'}},{code:3000,result:[]},{code:3000,result:[{code:3001,data:{ID}}]},{code:3000,data:{ID},result:[{code:3000,data:{ID}}]}]){
   const h=runtime('workflowRunLog',()=>ok(reply));assert.throws(()=>h.execute([{action:'finish',id:ID,status:'Failed'}]));assert.equal(h.calls.length,1,'Ambiguous audit writes are not replayed');

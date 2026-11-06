@@ -1,0 +1,18 @@
+Update_Budgets_w_Projects1 as "Update Budgets w/ Projects Info - Budget"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowStarterStart(input.ID.toString());
+					)
+					}
+				}
+			}

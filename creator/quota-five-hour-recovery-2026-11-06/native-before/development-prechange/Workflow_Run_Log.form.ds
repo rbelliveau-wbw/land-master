@@ -1,0 +1,207 @@
+form Workflow_Run_Log
+		{
+			displayname = "Workflow Run Log"
+			success message = "Workflow log saved."
+			Section
+			(
+				type = section
+	 			row = 1
+	 			column = 0   
+				width = medium
+			)
+			must have Workflow_Name
+			(
+    			type = text
+				displayname = "Workflow"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			must have External_System
+			(
+    			type = text
+				displayname = "External System"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			must have Run_Status
+			(
+				type = picklist
+				displayname = "Status"
+				values = {"Running","Success","Failed","Partial","Skipped","Timed Out"}
+				initial value = "Running"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			must have Started_At
+			(
+    			type = datetime
+				displayname = "Started At"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Finished_At
+			(
+    			type = datetime
+				displayname = "Finished At"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Duration_Seconds
+			(
+				type = decimal
+				displayname = "Duration (Seconds)"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Stage
+			(
+    			type = text
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			External_Reference
+			(
+    			type = text
+				displayname = "External Reference"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Received
+			(
+				type = number
+				displayname = "Rows Received"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Processed
+			(
+				type = number
+				displayname = "Rows Processed"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Created
+			(
+				type = number
+				displayname = "Rows Created"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Updated
+			(
+				type = number
+				displayname = "Rows Updated"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Skipped
+			(
+				type = number
+				displayname = "Rows Skipped"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Rows_Failed
+			(
+				type = number
+				displayname = "Rows Failed"
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Message
+			(
+    			type = textarea
+				height = 150px
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Details
+			(
+    			type = textarea
+				height = 150px
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Failure_Notified
+			(
+    			type = checkbox
+				displayname = "Failure Notified"
+				initial value = false
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Notification_Error
+			(
+    			type = textarea
+				displayname = "Notification Error"
+				height = 150px
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Export_State
+			(
+    			type = textarea
+				displayname = "Export State"
+				height = 150px
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+			Resume_At
+			(
+    			type = datetime
+				displayname = "Resume At"
+				timedisplayoptions = "hh:mm:ss"
+				alloweddays = 0,1,2,3,4,5,6
+	 			row = 1
+	 			column = 1   
+				width = large
+			)
+	
+			actions
+			{
+				on add
+				{
+					submit
+					(
+   						type = submit
+   						displayname = "Submit"
+					)
+				}
+				on edit
+				{
+					update
+					(
+   						type = submit
+   						displayname = "Update"
+					)
+					cancel
+					(
+   						type = cancel
+   						displayname = "Cancel"
+					)
+				}
+			}
+		}

@@ -1,0 +1,19 @@
+Budgets_HCSS_Actuals_Batc as "Budgets - HCSS Actuals - Batches"
+			{
+				type =  schedule
+				form = Settings
+					status = inactive
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						thisapp.workflowExportEnqueue("Budgets_Import_Load_HCSS_");
+					)
+					}
+				}
+			}

@@ -1,0 +1,189 @@
+string workflowStarterDispatch(string frameId)
+{
+	if(!frameId.matches("[1-9][0-9]*"))
+	{
+		throw "Starter dispatch requires its exact immutable frame ID.";
+	}
+	frame = Workflow_Export_Lock[ID == frameId.toLong()];
+	if(frame.count() != 1 || frame.Cycle_State == null)
+	{
+		throw "The immutable starter frame is missing or ambiguous.";
+	}
+	state = frame.Cycle_State.toMap();
+	settingsId = ifnull(state.get("settingsId"),"").toString();
+	cycleAt = ifnull(state.get("cycleAt"),"").toString();
+	batchText = ifnull(state.get("batch"),"").toString();
+	if(!batchText.matches("[0-4]"))
+	{
+		throw "The starter frame has no exact captured batch.";
+	}
+	batch = batchText.toLong();
+	verifiedFrameId = thisapp.workflowStarterFrame(settingsId,cycleAt,batch);
+	if(verifiedFrameId != frameId)
+	{
+		throw "The starter frame ID differs from its immutable unique identity.";
+	}
+	routes = state.get("routes");
+	indices = {0,1,2,3,4,5};
+	staleBefore = zoho.currenttime.addMinutes(-30);
+	children = Map();
+	noticeAudits = Map();
+	linkedRecords = 0;
+	// Full child identity is seeded atomically by the canonical logger start.
+	// This is read-only reconciliation of prior/unknown handoffs, not a save comparison.
+	for each linkedRun in Workflow_Run_Log[Export_State.contains("starterFrameId") && Export_State.contains(frameId)] range from 0 to 31
+	{
+		linkedRecords = linkedRecords + 1;
+		linkedState = linkedRun.Export_State.toMap();
+		if(ifnull(linkedState.get("starterFrameId"),"").toString() == frameId)
+		{
+			linkedIndex = ifnull(linkedState.get("starterRouteIndex"),-1).toLong();
+			if(linkedIndex >= 0 && linkedIndex <= 5)
+			{
+				if(linkedState.get("workflow") == routes.get(linkedIndex))
+				{
+					linkedKey = linkedIndex.toString();
+					if(linkedState.get("kind") == "starter-notice")
+					{
+						if(noticeAudits.get(linkedKey) != null)
+						{
+							throw "More than one starter notice audit owns a route; no work was replayed.";
+						}
+						noticeAudits.put(linkedKey,linkedRun.ID.toString());
+					}
+					else
+					{
+						if(children.get(linkedKey) != null)
+						{
+							throw "More than one child audit owns a starter route; no work was replayed.";
+						}
+						children.put(linkedKey,{"id":linkedRun.ID.toString(),"status":linkedRun.Run_Status});
+					}
+				}
+			}
+		}
+	}
+	if(linkedRecords == 32)
+	{
+		throw "Starter child reconciliation reached its bounded scan; inspect the frame before retrying.";
+	}
+	results = List();
+	notices = List();
+	acknowledged = 0;
+	launched = 0;
+	unknown = 0;
+	expired = 0;
+	for each routeIndex in indices
+	{
+		route = routes.get(routeIndex);
+		indexKey = routeIndex.toString();
+		result = {"index":routeIndex,"workflow":route};
+		child = children.get(indexKey);
+		if(child != null)
+		{
+			result.put("status","Already has its independent audit");
+			result.put("auditId",child.get("id"));
+			result.put("auditStatus",child.get("status"));
+			acknowledged = acknowledged + 1;
+			results.add(result);
+			continue;
+		}
+		claimKey = frameId + "|starter|" + routeIndex;
+		routeClaim = Workflow_Export_Lock[Claim_Key == claimKey];
+		if(routeClaim.count() > 0)
+		{
+			result.put("status","Owned route; no replay");
+			unknown = unknown + 1;
+			if(routeClaim.count() != 1 || routeClaim.Claimed_At == null)
+			{
+				notices.add({"index":routeIndex,"workflow":route,"status":"Failed","message":"The starter route has an ambiguous ownership record and no linked child acknowledgement. No enqueue was replayed."});
+			}
+			else if(routeClaim.Claimed_At <= staleBefore)
+			{
+				notices.add({"index":routeIndex,"workflow":route,"status":"Failed","message":"The starter route was claimed thirty minutes ago but has no linked child acknowledgement. The outcome is unknown; no enqueue was replayed."});
+			}
+			results.add(result);
+			continue;
+		}
+		if(zoho.currenttime.toLong() >= state.get("expiresAt").toLong())
+		{
+			result.put("status","First-launch window expired");
+			expired = expired + 1;
+			notices.add({"index":routeIndex,"workflow":route,"status":"Timed Out","message":"This route was never claimed before the starter cycle's two-hour first-launch window expired. No late import was started."});
+			results.add(result);
+			continue;
+		}
+		try
+		{
+			if(!thisapp.workflowExportClaim(claimKey))
+			{
+				result.put("status","Route claim not acknowledged; no enqueue");
+				unknown = unknown + 1;
+			}
+			else
+			{
+				// The first real enqueue retains its own original offsets and deadlines.
+				// No existing run, wake, source or deadline is modified on recovery.
+				childId = thisapp.workflowExportEnqueueCaptured(route,batch,frameId,routeIndex);
+				if(!childId.matches("[1-9][0-9]*"))
+				{
+					throw "The canonical enqueue returned no exact child audit ID.";
+				}
+				result.put("status","Queued with independent audit");
+				result.put("auditId",childId);
+				launched = launched + 1;
+				acknowledged = acknowledged + 1;
+			}
+		}
+		catch(routeError)
+		{
+			// Ordinary errors never prevent the remaining independent routes from starting.
+			// The immutable attempt claim prohibits replay after any unknown handoff.
+			result.put("status","Enqueue failed or was not acknowledged; no replay");
+			result.put("error",routeError.toString());
+			unknown = unknown + 1;
+		}
+		results.add(result);
+	}
+	noticeResults = List();
+	for each notice in notices
+	{
+		noticeIndex = notice.get("index").toLong();
+		noticeKey = noticeIndex.toString();
+		if(noticeAudits.get(noticeKey) != null)
+		{
+			noticeResults.add({"index":noticeIndex,"auditId":noticeAudits.get(noticeKey),"status":"Existing notice; no duplicate"});
+			continue;
+		}
+		try
+		{
+			noticeClaimKey = frameId + "|starter-notice|" + noticeIndex;
+			if(thisapp.workflowExportClaim(noticeClaimKey))
+			{
+				noticeRoute = notice.get("workflow");
+				noticeState = {"version":1,"callbackPolicy":"shared-recovery-30m","kind":"starter-notice","workflow":noticeRoute,"phase":"preparing","tick":0,"starterFrameId":frameId,"starterRouteIndex":noticeIndex,"noticeStatus":notice.get("status"),"noticeMessage":notice.get("message")};
+				noticeAudit = thisapp.workflowRunLog({"action":"start","workflow":"Queue Starter - Missing Route Acknowledgement","system":"Zoho Analytics","callbackPolicy":"shared-recovery-30m","queueWorkflow":noticeRoute,"exportState":noticeState.toString()});
+				noticeId = noticeAudit.get("id");
+				thisapp.workflowRunLog({"action":"finish","id":noticeId,"status":notice.get("status"),"stage":"Starter route not acknowledged","message":notice.get("message"),"details":"Frame=" + frameId + "; cycle=" + cycleAt + "; batch=" + batch + "; route=" + noticeRoute + "; index=" + noticeIndex + ". Other unclaimed routes remain independently recoverable. Existing child work was not replayed.","counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":1},"clearResume":true});
+				noticeResults.add({"index":noticeIndex,"auditId":noticeId,"status":"Durable failure notice recorded"});
+			}
+			else
+			{
+				noticeResults.add({"index":noticeIndex,"status":"Notice ownership not acknowledged; no duplicate audit"});
+			}
+		}
+		catch(noticeError)
+		{
+			noticeResults.add({"index":noticeIndex,"status":"Notice acknowledgement unknown; no replay","error":noticeError.toString()});
+			info "Starter failure notice was not acknowledged for frame " + frameId + "; route=" + noticeIndex + "; " + noticeError.toString();
+		}
+	}
+	if(state.get("startupHoldId") != null)
+	{
+		// Independent reconciliation clears intent only after every child or terminal notice exists.
+		thisapp.workflowRecoveryHold("settle",frameId,"");
+	}
+	report = {"frameId":frameId,"cycleAt":cycleAt,"batch":batch,"acknowledged":acknowledged,"newlyQueued":launched,"ownedWithoutAcknowledgement":unknown,"expiredUnclaimed":expired,"routes":results,"notices":noticeResults};
+	report.put("ok",acknowledged == 6);
+	return report.toString();
+}

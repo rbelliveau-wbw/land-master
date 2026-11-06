@@ -1,0 +1,555 @@
+string workflowQuotaChunkProbe(string requestText)
+{
+	// Development-only verification. Do not include this helper in a release.
+	// It calls the real queue and worker; no source, cursor or due date is replaced.
+	if(ifnull(thisapp.environment.type,"").toString().toLowerCase() != "development")
+	{
+		throw "The chunk verification helper can execute only in Development.";
+	}
+	probeStartedAt = zoho.currenttime.toLong();
+	response = Map();
+	response.put("ok",false);
+	response.put("environment","development");
+	try
+	{
+		request = requestText.toMap();
+		action = ifnull(request.get("action"),"status").toString();
+		allowedActions = {"enqueue","status","step","scopes","sourceCounts","dualStep","claimCapacity","preparedPair"};
+		if(!allowedActions.contains(action))
+		{
+			throw "Unknown Development probe action.";
+		}
+		allowedWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
+		auditId = ifnull(request.get("auditId"),"").toString();
+		response.put("action",action);
+		if(action == "claimCapacity")
+		{
+			// Fresh independent validation keys only: no Wake_At or business records.
+			claimNonce = zoho.currenttime.toLong().toString();
+			claimIndices = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99};
+			capacityKeys = List();
+			for each claimIndex in claimIndices
+			{
+				capacityDigest = zoho.encryption.sha256("quota-capacity|" + claimNonce + "|" + claimIndex);
+				capacityKeys.add("0|actual-row|" + capacityDigest);
+			}
+			capacityAcknowledged = thisapp.workflowExportClaimRows("0",capacityKeys);
+			response.put("requested",capacityKeys.size());
+			response.put("acknowledged",capacityAcknowledged);
+			response.put("nonce",claimNonce);
+			response.put("ok",capacityAcknowledged);
+			response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+			return response.toString();
+		}
+		if(action == "preparedPair")
+		{
+			// Reuse one checked immutable real source; create no export or mapping fixtures.
+			referenceId = ifnull(request.get("referenceAuditId"),"").toString();
+			if(!referenceId.matches("[1-9][0-9]*"))
+			{
+				throw "preparedPair requires the exact successful reference Workflow Log ID.";
+			}
+			referenceRun = Workflow_Run_Log[ID == referenceId.toLong()];
+			if(referenceRun.count() != 1 || referenceRun.Run_Status != "Success" || referenceRun.Started_At == null || referenceRun.Export_State == null)
+			{
+				throw "The prepared source reference must be a complete successful audit.";
+			}
+			referenceState = referenceRun.Export_State.toMap();
+			if(!allowedWorkflows.contains(referenceState.get("workflow")) || referenceState.get("version") != 1 || referenceState.get("actualChunkProfile") != "scan100-write25-v1" || referenceState.get("phase") != "complete")
+			{
+				throw "The reference must be a completed actual import with the exact chunk profile.";
+			}
+			referenceReceived = ifnull(referenceState.get("actualReceived"),0).toLong();
+			if(referenceReceived <= 0 || referenceState.get("actualValidated") != referenceReceived || referenceState.get("actualProcessed") != referenceReceived || referenceRun.Rows_Processed != referenceReceived || referenceRun.Rows_Received != referenceReceived)
+			{
+				throw "The reference must have fully validated and processed its nonempty original source.";
+			}
+			referenceMaximumAt = referenceRun.Started_At.addMinutes(50);
+			if(referenceRun.Started_At > zoho.currenttime || referenceMaximumAt <= zoho.currenttime)
+			{
+				throw "The reference must be younger than fifty minutes in the native application clock.";
+			}
+			referenceRequests = referenceState.get("requests");
+			if(referenceRequests.size() != 1 || referenceState.get("actualScope") == null)
+			{
+				throw "The reference must retain exactly one captured source and its mapping scope.";
+			}
+			referenceRequest = referenceRequests.get(0);
+			expectedViews = {"Budgets_Import_Load_GP_Co":"2107789000031077002","Budgets_Import_Great_Plai1":"2107789000029311186","Budgets_Import_Load_HCSS_":"2107789000023717814"};
+			if(referenceRequest.get("code") != "1004" || referenceRequest.get("view") != expectedViews.get(referenceState.get("workflow")) || ifnull(referenceRequest.get("job"),"") == "" || referenceRequest.get("allowEmpty") != true)
+			{
+				throw "The reference is not the original completed Analytics source for this actual route.";
+			}
+			verifiedConfig = referenceRequest.get("config").toString().toMap();
+			verifiedConfig.put("_resumeJobId",referenceRequest.get("job"));
+			// Recheck completion and download. Do not compare Analytics epoch expiry to native time.
+			verifiedConfig.put("_resumeJobComplete",false);
+			verifiedRows = thisapp.analyticsExportRows(referenceRequest.get("view"),verifiedConfig,"",true);
+			if(verifiedRows.size() != referenceReceived)
+			{
+				throw "The immutable source row count no longer matches its successful reference.";
+			}
+			pairDeadline = zoho.currenttime.addMinutes(10);
+			if(pairDeadline > referenceMaximumAt)
+			{
+				pairDeadline = referenceMaximumAt;
+			}
+			if(pairDeadline <= zoho.currenttime)
+			{
+				throw "The prepared source verification outlasted its bounded reference window.";
+			}
+			thisapp.workflowExportRecover("arm");
+			pairNames = {"Budgets_Import_Load_GP_Co":"Budgets - Import/Load GP Const Costs","Budgets_Import_Great_Plai1":"Budgets - Import Great Plains Development Costs","Budgets_Import_Load_HCSS_":"Budgets - Import/Load HCSS Job Cost Summary"};
+			pairAuditIds = List();
+			pairMembers = {1,2};
+			try
+			{
+				for each pairMember in pairMembers
+				{
+					if(pairDeadline <= zoho.currenttime)
+					{
+						throw "The prepared pair deadline elapsed before its handoff.";
+					}
+					pairAudit = thisapp.workflowRunLog({"action":"start","workflow":pairNames.get(referenceState.get("workflow")),"system":"Zoho Analytics","callbackPolicy":"shared-recovery-30m","queueWorkflow":referenceState.get("workflow")});
+					pairId = pairAudit.get("id");
+					pairAuditIds.add(pairId);
+					response.put("auditIds",pairAuditIds);
+					pairState = referenceState.toString().toMap();
+					pairState.put("version",1);
+					pairState.put("callbackPolicy","shared-recovery-30m");
+					pairState.put("actualChunkProfile","scan100-write25-v1");
+					pairState.put("phase","waiting");
+					pairState.put("actualPhase","preflight");
+					pairState.put("tick",0);
+					pairState.put("pollNumber",0);
+					pairState.put("actualIndex",0);
+					pairState.put("actualValidated",0);
+					pairState.put("actualProcessed",0);
+					pairState.put("actualCreated",0);
+					pairState.put("actualUpdated",0);
+					pairState.put("actualSkipped",0);
+					pairState.put("actualReadRetries",0);
+					pairState.put("actualWriteAttempted",false);
+					pairState.remove("actualReceived");
+					pairState.put("deadline",pairDeadline.toLong());
+					pairState.put("deadlineAt",pairDeadline.toString("MM/dd/yyyy hh:mm:ss a"));
+					pairState.put("actualDeadline",pairDeadline.toLong());
+					pairState.put("actualDeadlineAt",pairDeadline.toString("MM/dd/yyyy hh:mm:ss a"));
+					pairResumeAt = zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a");
+					thisapp.workflowRunLog({"action":"update","id":pairId,"stage":"Development prepared source capacity probe","exportState":pairState.toString(),"resumeAt":pairResumeAt,"counts":{"received":0,"processed":0,"created":0,"updated":0,"skipped":0,"failed":0},"details":"Development-only aggregate capacity probe; reference=" + referenceId + "; member=" + pairMember + "; original job=" + referenceRequest.get("job") + ". No new export, source substitution, mapping change or Wake callback. Manual due Tick retains native claims and original importer guards."});
+				}
+			}
+			catch(pairSetupError)
+			{
+				for each pairId in pairAuditIds
+				{
+					try
+					{
+						thisapp.workflowRunLog({"action":"finish","id":pairId,"status":"Failed","stage":"Prepared source capacity setup failed","message":pairSetupError.toString(),"counts":{"failed":1},"clearResume":true});
+					}
+					catch(pairFinishError)
+					{
+						response.put("cleanupError",pairFinishError.toString());
+					}
+				}
+				throw pairSetupError;
+			}
+			response.put("referenceAuditId",referenceId);
+			response.put("sourceJob",referenceRequest.get("job"));
+			response.put("sourceRows",verifiedRows.size());
+			response.put("deadlineAt",pairDeadline.toString("MM/dd/yyyy hh:mm:ss a"));
+			response.put("ok",true);
+			response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+			return response.toString();
+		}
+		if(action == "dualStep")
+		{
+			// Aggregate two independent real continuations in one native execution.
+			// This measures aggregate workload; it does not claim a single 100-row slice ran.
+			dualIds = request.get("auditIds");
+			if(dualIds == null)
+			{
+				throw "dualStep requires exactly two different Workflow Log IDs.";
+			}
+			if(dualIds.size() != 2)
+			{
+				throw "dualStep requires exactly two different Workflow Log IDs.";
+			}
+			firstDualId = ifnull(dualIds.get(0),"").toString();
+			secondDualId = ifnull(dualIds.get(1),"").toString();
+			if(!firstDualId.matches("[1-9][0-9]*") || !secondDualId.matches("[1-9][0-9]*") || firstDualId == secondDualId)
+			{
+				throw "dualStep IDs must be numeric and different; no alias or duplicate run is allowed.";
+			}
+			checkedDualIds = List();
+			checkedDualIds.add(firstDualId);
+			checkedDualIds.add(secondDualId);
+			dualBefore = Map();
+			// Validate BOTH jobs before either is executed. Native tick ownership is unchanged.
+			for each dualId in checkedDualIds
+			{
+				dualRun = Workflow_Run_Log[ID == dualId.toLong()];
+				if(dualRun.count() != 1 || dualRun.Run_Status != "Running" || dualRun.Resume_At == null)
+				{
+					throw "Both dualStep runs must exist, be Running and have a real continuation date.";
+				}
+				dualState = dualRun.Export_State.toMap();
+				if(!allowedWorkflows.contains(dualState.get("workflow")) || dualState.get("version") != 1 || dualState.get("actualChunkProfile") != "scan100-write25-v1" || dualState.get("phase") != "waiting")
+				{
+					throw "Both dualStep runs must be waiting actual imports with the exact scan100-write25-v1 profile.";
+				}
+				if(dualRun.Resume_At > zoho.currenttime)
+				{
+					throw "Both dualStep runs must be due. No date was changed.";
+				}
+				dualBefore.put(dualId,{"phase":dualState.get("phase"),"actualPhase":dualState.get("actualPhase"),"index":ifnull(dualState.get("actualIndex"),0),"validated":ifnull(dualState.get("actualValidated"),0),"processed":ifnull(dualRun.Rows_Processed,0),"created":ifnull(dualRun.Rows_Created,0),"updated":ifnull(dualRun.Rows_Updated,0),"skipped":ifnull(dualRun.Rows_Skipped,0),"tick":dualState.get("tick"),"checkpointAt":dualState.get("checkpointAt")});
+			}
+			dualResults = List();
+			dualPassed = true;
+			dualValidated = 0;
+			dualProcessed = 0;
+			dualMutated = 0;
+			for each dualId in checkedDualIds
+			{
+				dualStartedAt = zoho.currenttime.toLong();
+				dualResult = {"auditId":dualId,"before":dualBefore.get(dualId)};
+				dualError = "";
+				try
+				{
+					dualResult.put("stepResult",thisapp.workflowExportTick(dualId));
+				}
+				catch(dualTickError)
+				{
+					dualError = dualTickError.toString();
+					dualResult.put("stepError",dualError);
+				}
+				dualAfterRun = Workflow_Run_Log[ID == dualId.toLong()];
+				if(dualAfterRun.count() != 1 || dualAfterRun.Export_State == null)
+				{
+					throw "A dualStep audit run could not be read after its real continuation.";
+				}
+				dualAfterState = dualAfterRun.Export_State.toMap();
+				dualBeforeSnapshot = dualBefore.get(dualId);
+				dualValidatedDelta = ifnull(dualAfterState.get("actualValidated"),0).toLong() - dualBeforeSnapshot.get("validated").toLong();
+				dualProcessedDelta = ifnull(dualAfterRun.Rows_Processed,0).toLong() - dualBeforeSnapshot.get("processed").toLong();
+				dualCreatedDelta = ifnull(dualAfterRun.Rows_Created,0).toLong() - dualBeforeSnapshot.get("created").toLong();
+				dualUpdatedDelta = ifnull(dualAfterRun.Rows_Updated,0).toLong() - dualBeforeSnapshot.get("updated").toLong();
+				dualMutationDelta = dualCreatedDelta + dualUpdatedDelta;
+				dualBoundsPassed = dualValidatedDelta >= 0 && dualValidatedDelta <= 100 && dualProcessedDelta >= 0 && dualProcessedDelta <= 100 && dualMutationDelta >= 0 && dualMutationDelta <= 25;
+				dualPreflightPassed = true;
+				if(dualAfterState.get("actualPhase") == "apply" || dualMutationDelta > 0)
+				{
+					dualPreflightPassed = ifnull(dualAfterState.get("actualValidated"),0).toLong() == ifnull(dualAfterState.get("actualReceived"),0).toLong();
+				}
+				dualProfilePassed = dualAfterState.get("actualChunkProfile") == "scan100-write25-v1";
+				dualResultPassed = dualBoundsPassed && dualPreflightPassed && dualProfilePassed && dualError == "";
+				dualResult.put("after",{"status":dualAfterRun.Run_Status,"phase":dualAfterState.get("phase"),"actualPhase":dualAfterState.get("actualPhase"),"index":ifnull(dualAfterState.get("actualIndex"),0),"validated":ifnull(dualAfterState.get("actualValidated"),0),"received":ifnull(dualAfterRun.Rows_Received,0),"processed":ifnull(dualAfterRun.Rows_Processed,0),"created":ifnull(dualAfterRun.Rows_Created,0),"updated":ifnull(dualAfterRun.Rows_Updated,0),"skipped":ifnull(dualAfterRun.Rows_Skipped,0),"tick":dualAfterState.get("tick"),"checkpointAt":dualAfterState.get("checkpointAt"),"resumeAt":dualAfterRun.Resume_At,"stage":dualAfterRun.Stage,"message":dualAfterRun.Message});
+				dualResult.put("delta",{"validated":dualValidatedDelta,"processed":dualProcessedDelta,"created":dualCreatedDelta,"updated":dualUpdatedDelta,"mutated":dualMutationDelta});
+				dualResult.put("validation",{"boundsPassed":dualBoundsPassed,"fullPreflightBeforeApply":dualPreflightPassed,"profilePreserved":dualProfilePassed,"passed":dualResultPassed});
+				dualResult.put("elapsedMillis",zoho.currenttime.toLong() - dualStartedAt);
+				dualResults.add(dualResult);
+				dualValidated = dualValidated + dualValidatedDelta;
+				dualProcessed = dualProcessed + dualProcessedDelta;
+				dualMutated = dualMutated + dualMutationDelta;
+				if(!dualResultPassed)
+				{
+					dualPassed = false;
+					break;
+				}
+			}
+			response.put("runs",dualResults);
+			response.put("aggregate",{"validated":dualValidated,"processed":dualProcessed,"mutated":dualMutated,"runsAttempted":dualResults.size()});
+			response.put("evidenceType","Two independent real worker calls in one native execution; no single-slice claim.");
+			response.put("ok",dualPassed);
+			response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+			return response.toString();
+		}
+		if(action == "sourceCounts")
+		{
+			// Read the actual Analytics view, without queueing an importer or writing data.
+			workflow = ifnull(request.get("workflow"),"Budgets_Import_Load_HCSS_").toString();
+			if(!allowedWorkflows.contains(workflow))
+			{
+				throw "Source counts support only the three actual import routes.";
+			}
+			sourceView = "2107789000031077002";
+			sourceSystem = "Great Plains";
+			sourceJobColumn = "WS_Job_Number_Trim";
+			sourceMinorColumn = "Cost_Code_Number_2";
+			if(workflow == "Budgets_Import_Great_Plai1")
+			{
+				sourceView = "2107789000029311186";
+			}
+			else if(workflow == "Budgets_Import_Load_HCSS_")
+			{
+				sourceView = "2107789000023717814";
+				sourceSystem = "HeavyJob";
+				sourceJobColumn = "H.JobCode";
+				sourceMinorColumn = "H.Minor Code";
+			}
+			sourceColumns = List();
+			sourceColumns.add(sourceJobColumn);
+			sourceColumns.add(sourceMinorColumn);
+			sourceConfig = Map();
+			sourceConfig.put("selectedColumns",sourceColumns);
+			sourceRows = thisapp.analyticsExportRows(sourceView,sourceConfig,"",true);
+			sourceCounts = Map();
+			missingJobRows = 0;
+			for each sourceRow in sourceRows
+			{
+				sourceJob = ifnull(sourceRow.get(sourceJobColumn),"").toString().trim();
+				if(sourceJob == "")
+				{
+					missingJobRows = missingJobRows + 1;
+				}
+				else
+				{
+					sourceCounts.put(sourceJob,ifnull(sourceCounts.get(sourceJob),0) + 1);
+				}
+			}
+			sourceJobs = List();
+			sourceCandidates = List();
+			sourceJobKeys = sourceCounts.keys();
+			sourceJobKeys = sourceJobKeys.sort(true);
+			for each sourceJob in sourceJobKeys
+			{
+				sourceMappings = External_System_Mapping[External_System == sourceSystem && External_Code == sourceJob];
+				sourceMappingDetails = List();
+				sourceEligible = false;
+				for each sourceMapping in sourceMappings
+				{
+					mappingDetail = {"id":sourceMapping.ID.toString(),"subdivisionId":"","subdivisionCode":"","budgetCount":0,"subdivisionCodeCount":0};
+					if(sourceMapping.Subdivision1 != null)
+					{
+						mappedCode = ifnull(sourceMapping.Subdivision1.Subdivision_Code,"").toString();
+						mappedBudgets = Add_Budget[Subdivision_Code == mappedCode];
+						mappedSubdivisions = Subdivision[Subdivision_Code == mappedCode];
+						mappingDetail.put("subdivisionId",sourceMapping.Subdivision1.ID.toString());
+						mappingDetail.put("subdivisionCode",mappedCode);
+						mappedBatch = sourceMapping.Subdivision1.ID % 5;
+						mappingDetail.put("batch",mappedBatch);
+						mappingDetail.put("budgetCount",mappedBudgets.count());
+						mappingDetail.put("subdivisionCodeCount",mappedSubdivisions.count());
+						if(sourceMappings.count() == 1 && mappedBudgets.count() > 0 && mappedSubdivisions.count() == 1 && mappedCode != "")
+						{
+							sourceEligible = true;
+						}
+					}
+					sourceMappingDetails.add(mappingDetail);
+				}
+				sourceJobSummary = {"job":sourceJob,"rows":sourceCounts.get(sourceJob),"developmentMappingCount":sourceMappings.count(),"eligibleDevelopmentMapping":sourceEligible,"mappings":sourceMappingDetails};
+				sourceJobs.add(sourceJobSummary);
+				if(sourceCounts.get(sourceJob) >= 100 && sourceCounts.get(sourceJob) <= 400)
+				{
+					sourceCandidates.add(sourceJobSummary);
+				}
+			}
+			response.put("workflow",workflow);
+			response.put("view",sourceView);
+			response.put("sourceRows",sourceRows.size());
+			response.put("missingJobRows",missingJobRows);
+			response.put("jobs",sourceJobs);
+			response.put("candidates100To400",sourceCandidates);
+			response.put("ok",true);
+			response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+			return response.toString();
+		}
+		if(action == "scopes")
+		{
+			// Read every existing route/batch plan without changing Settings or queuing work.
+			probeBudgets = Add_Budget[ID != 0];
+			probeBudgetCodes = probeBudgets.distinct(Subdivision_Code);
+			probeSubdivisions = Subdivision[ID != 0];
+			probeEligibleSubdivisions = Subdivision[Subdivision_Code in probeBudgetCodes];
+			probeHeavyJobMappings = External_System_Mapping[External_System == "HeavyJob"];
+			probeGreatPlainsMappings = External_System_Mapping[External_System == "Great Plains"];
+			response.put("nativeCounts",{"budgets":probeBudgets.count(),"budgetSubdivisionCodes":probeBudgetCodes.size(),"subdivisions":probeSubdivisions.count(),"eligibleSubdivisions":probeEligibleSubdivisions.count(),"heavyJobMappings":probeHeavyJobMappings.count(),"greatPlainsMappings":probeGreatPlainsMappings.count()});
+			scopes = List();
+			for each probeWorkflow in allowedWorkflows
+			{
+				for each probeBatch in {0,1,2,3,4}
+				{
+					probeScope = {"workflow":probeWorkflow,"batch":probeBatch};
+					try
+					{
+						probePlan = thisapp.workflowExportPlan(probeWorkflow,probeBatch);
+						probeScope.put("mappedJobs",probePlan.get("actualScope").keys().size());
+						probeScope.put("jobCodes",probePlan.get("actualScope").keys());
+						probeScope.put("actualScope",probePlan.get("actualScope"));
+						probeScope.put("requests",probePlan.get("requests").size());
+						probeScope.put("ok",true);
+					}
+					catch(probeScopeError)
+					{
+						probeScope.put("ok",false);
+						probeScope.put("error",probeScopeError.toString());
+					}
+					scopes.add(probeScope);
+				}
+			}
+			response.put("scopes",scopes);
+			response.put("ok",true);
+			response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+			return response.toString();
+		}
+		if(action == "enqueue")
+		{
+			workflow = ifnull(request.get("workflow"),"Budgets_Import_Load_HCSS_").toString();
+			if(!allowedWorkflows.contains(workflow))
+			{
+				throw "The probe supports only the three actual import routes.";
+			}
+			if(request.get("batch") == null)
+			{
+				auditId = thisapp.workflowExportEnqueue(workflow);
+			}
+			else
+			{
+				// Use the canonical queue handoff with an explicit captured batch.
+				// Development Settings and its shared batch cursor are never changed.
+				batchText = request.get("batch").toString();
+				if(!batchText.matches("[0-4]"))
+				{
+					throw "An explicit probe batch must be an integer from 0 through 4.";
+				}
+				capturedBatch = batchText.toLong();
+				enqueuedAt = zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a").toDateTime("MM/dd/yyyy hh:mm:ss a");
+				workflowNames = {"Budgets_Import_Load_GP_Co":"Budgets - Import/Load GP Const Costs","Budgets_Import_Great_Plai1":"Budgets - Import Great Plains Development Costs","Budgets_Import_Load_HCSS_":"Budgets - Import/Load HCSS Job Cost Summary"};
+				offsets = {"Budgets_Import_Load_GP_Co":8,"Budgets_Import_Great_Plai1":9,"Budgets_Import_Load_HCSS_":1};
+				thisapp.workflowExportRecover("arm");
+				audit = thisapp.workflowRunLog({"action":"start","workflow":workflowNames.get(workflow),"system":"Zoho Analytics","callbackPolicy":"shared-recovery-30m","queueWorkflow":workflow});
+				auditId = audit.get("id");
+				response.put("auditId",auditId);
+				try
+				{
+					plan = thisapp.workflowExportPlan(workflow,capturedBatch);
+					resumeAt = zoho.currenttime.addMinutes(offsets.get(workflow));
+					state = {"version":1,"callbackPolicy":"shared-recovery-30m","workflow":workflow,"phase":"arming","tick":0,"batch":capturedBatch,"requests":plan.get("requests"),"deadline":resumeAt.addMinutes(15).toLong(),"deadlineAt":resumeAt.addMinutes(15).toString("MM/dd/yyyy hh:mm:ss a")};
+					state.put("actualChunkProfile","scan100-write25-v1");
+					state.put("actualScope",plan.get("actualScope"));
+					state.put("actualDeadline",enqueuedAt.addMinutes(120).toLong());
+					state.put("actualDeadlineAt",enqueuedAt.addMinutes(120).toString("MM/dd/yyyy hh:mm:ss a"));
+					thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Saving export wake-ups","exportState":state.toString(),"clearResume":true,"details":"Development probe explicit batch; original run and selected batch retained. All sources must complete before business writes; 15-minute export deadline after scheduled start."});
+					thisapp.workflowExportWake(auditId,0,resumeAt.toString("MM/dd/yyyy hh:mm:ss a"));
+					if(resumeAt <= zoho.currenttime)
+					{
+						throw "Export wake-up window elapsed before handoff acknowledgement.";
+					}
+					state.put("phase","waiting");
+					thisapp.workflowRunLog({"action":"update","id":auditId,"stage":"Queued for Analytics export","exportState":state.toString(),"resumeAt":resumeAt.toString("MM/dd/yyyy hh:mm:ss a")});
+				}
+				catch(probeEnqueueError)
+				{
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":"Failed","stage":"Preparing Analytics export","message":probeEnqueueError.toString(),"details":"Development probe; source=" + workflow + "; captured batch=" + capturedBatch + ". No business writes started; an unknown wake-up was not replayed.","counts":{"failed":1},"clearResume":true});
+					throw probeEnqueueError;
+				}
+				response.put("capturedBatch",capturedBatch);
+			}
+			response.put("enqueued",true);
+		}
+		if(!auditId.matches("[0-9]+"))
+		{
+			throw "The probe requires the exact numeric Workflow Log ID.";
+		}
+		response.put("auditId",auditId);
+		run = Workflow_Run_Log[ID == auditId.toLong()];
+		if(run.count() != 1 || run.Export_State == null)
+		{
+			throw "The Development audit run is missing or has no queue state.";
+		}
+		beforeState = run.Export_State.toMap();
+		if(!allowedWorkflows.contains(beforeState.get("workflow")) || beforeState.get("version") != 1 || beforeState.get("actualChunkProfile") != "scan100-write25-v1")
+		{
+			throw "The probe requires a new actual run with the exact scan100-write25-v1 profile.";
+		}
+		beforeCreated = ifnull(run.Rows_Created,0).toLong();
+		beforeUpdated = ifnull(run.Rows_Updated,0).toLong();
+		beforeProcessed = ifnull(run.Rows_Processed,0).toLong();
+		beforeValidated = ifnull(beforeState.get("actualValidated"),0).toLong();
+		response.put("workflow",beforeState.get("workflow"));
+		beforeSnapshot = {"status":run.Run_Status,"resumeAt":run.Resume_At,"phase":beforeState.get("phase"),"actualPhase":beforeState.get("actualPhase"),"index":ifnull(beforeState.get("actualIndex"),0),"validated":beforeValidated,"received":ifnull(run.Rows_Received,0),"processed":beforeProcessed,"created":beforeCreated,"updated":beforeUpdated,"skipped":ifnull(run.Rows_Skipped,0),"tick":beforeState.get("tick"),"checkpointAt":beforeState.get("checkpointAt")};
+		response.put("before",beforeSnapshot);
+		stepAttempted = false;
+		stepError = "";
+		stepElapsedMillis = 0;
+		if(action == "step")
+		{
+			if(run.Run_Status != "Running" || beforeState.get("phase") != "waiting" || run.Resume_At == null)
+			{
+				response.put("stepRefused","The run is not running with a waiting, dated continuation.");
+			}
+			else if(run.Resume_At > zoho.currenttime)
+			{
+				response.put("stepRefused","The real continuation is not due. No date was changed.");
+			}
+			else
+			{
+				stepAttempted = true;
+				stepStartedAt = zoho.currenttime.toLong();
+				try
+				{
+					response.put("stepResult",thisapp.workflowExportTick(auditId));
+				}
+				catch(probeStepError)
+				{
+					stepError = probeStepError.toString();
+					response.put("stepError",stepError);
+				}
+				stepElapsedMillis = zoho.currenttime.toLong() - stepStartedAt;
+			}
+		}
+		afterRun = Workflow_Run_Log[ID == auditId.toLong()];
+		if(afterRun.count() != 1 || afterRun.Export_State == null)
+		{
+			throw "The audit run could not be read after the probe.";
+		}
+		afterState = afterRun.Export_State.toMap();
+		afterCreated = ifnull(afterRun.Rows_Created,0).toLong();
+		afterUpdated = ifnull(afterRun.Rows_Updated,0).toLong();
+		afterProcessed = ifnull(afterRun.Rows_Processed,0).toLong();
+		afterValidated = ifnull(afterState.get("actualValidated"),0).toLong();
+		createdDelta = afterCreated - beforeCreated;
+		updatedDelta = afterUpdated - beforeUpdated;
+		processedDelta = afterProcessed - beforeProcessed;
+		validatedDelta = afterValidated - beforeValidated;
+		mutationDelta = createdDelta + updatedDelta;
+		afterSnapshot = {"status":afterRun.Run_Status,"resumeAt":afterRun.Resume_At,"phase":afterState.get("phase"),"actualPhase":afterState.get("actualPhase"),"index":ifnull(afterState.get("actualIndex"),0),"validated":afterValidated,"received":ifnull(afterRun.Rows_Received,0),"processed":afterProcessed,"created":afterCreated,"updated":afterUpdated,"skipped":ifnull(afterRun.Rows_Skipped,0),"failed":ifnull(afterRun.Rows_Failed,0),"tick":afterState.get("tick"),"checkpointAt":afterState.get("checkpointAt"),"readRetries":ifnull(afterState.get("actualReadRetries"),0),"actualWriteAttempted":ifnull(afterState.get("actualWriteAttempted"),false),"actualDeadline":afterState.get("actualDeadline"),"actualDeadlineAt":afterState.get("actualDeadlineAt"),"exportDeadline":afterState.get("deadline"),"exportDeadlineAt":afterState.get("deadlineAt"),"stage":afterRun.Stage,"message":afterRun.Message,"details":afterRun.Details};
+		response.put("after",afterSnapshot);
+		response.put("stepAttempted",stepAttempted);
+		response.put("stepElapsedMillis",stepElapsedMillis);
+		response.put("delta",{"validated":validatedDelta,"processed":processedDelta,"created":createdDelta,"updated":updatedDelta,"mutated":mutationDelta});
+		profilePreserved = afterState.get("actualChunkProfile") == "scan100-write25-v1";
+		validatedBounded = validatedDelta >= 0 && validatedDelta <= 100;
+		processedBounded = processedDelta >= 0 && processedDelta <= 100;
+		mutationsBounded = mutationDelta >= 0 && mutationDelta <= 25;
+		fullPreflightBeforeApply = true;
+		if(afterState.get("actualPhase") == "apply" || mutationDelta > 0)
+		{
+			fullPreflightBeforeApply = afterValidated == ifnull(afterState.get("actualReceived"),0).toLong();
+		}
+		validationPassed = profilePreserved && validatedBounded && processedBounded && mutationsBounded && fullPreflightBeforeApply;
+		response.put("validation",{"profilePreserved":profilePreserved,"validatedAtMost100":validatedBounded,"processedAtMost100":processedBounded,"mutatedAtMost25":mutationsBounded,"fullPreflightBeforeApply":fullPreflightBeforeApply,"passed":validationPassed});
+		jobs = List();
+		for each capturedRequest in afterState.get("requests")
+		{
+			jobs.add({"view":capturedRequest.get("view"),"job":capturedRequest.get("job"),"code":capturedRequest.get("code"),"expiryTime":capturedRequest.get("expiryTime")});
+		}
+		response.put("jobs",jobs);
+		probeSucceeded = validationPassed && stepError == "";
+		if(action == "step" && !stepAttempted)
+		{
+			probeSucceeded = false;
+		}
+		response.put("ok",probeSucceeded);
+		response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+		return response.toString();
+	}
+	catch(probeError)
+	{
+		response.put("ok",false);
+		response.put("error",probeError.toString());
+		response.put("elapsedMillis",zoho.currenttime.toLong() - probeStartedAt);
+		return response.toString();
+	}
+	return response.toString();
+}

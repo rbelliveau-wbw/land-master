@@ -1,0 +1,100 @@
+string workflowStarterFrame(string settingsId, string cycleAt, int capturedBatch)
+                 {
+                 	// One immutable frame freezes the batch before the shared Settings clock advances.
+                 	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+                 	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+                 	allowedEnvironments = {"development","stage","production"};
+                 	if(!allowedEnvironments.contains(runtimeType) || !settingsId.matches("[1-9][0-9]*"))
+                 	{
+                 		throw "A starter frame requires a known environment and exact Settings ID.";
+                 	}
+                 	settings = Settings[ID != 0];
+                 	if(settings.count() != 1)
+                 	{
+                 		throw "The starter frame requires exactly one Settings record.";
+                 	}
+                 	if(settings.ID.toString() != settingsId)
+                 	{
+                 		throw "The starter frame requires its original Settings record.";
+                 	}
+                 	cycleDate = cycleAt.toDateTime("MM/dd/yyyy hh:mm:ss a");
+                 	cycleText = cycleDate.toString("MM/dd/yyyy hh:mm:ss a");
+                 	cycleEpoch = cycleDate.toLong();
+                 	if(cycleDate > zoho.currenttime)
+                 	{
+                 		throw "A future Settings cycle cannot be frozen or dispatched early.";
+                 	}
+                 	expiresDate = cycleDate.addMinutes(120);
+                 	frameKey = "0|starter|" + settingsId + "|" + cycleEpoch;
+                 	routes = {"Update_Budgets_w_Projects1","Sync_Final_Acceptance_Due","Budgets_Check_HCSS_Budget1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1"};
+                 	frame = Workflow_Export_Lock[Claim_Key == frameKey];
+                 	if(frame.count() == 0)
+                 	{
+                 		if(capturedBatch < 0 || capturedBatch > 4)
+                 		{
+                 			throw "A new starter frame requires its captured batch from 0 through 4.";
+                 		}
+                 		// A hard stop after the frame commit still leaves the shared recovery clock armed.
+                 		thisapp.workflowExportRecover("arm");
+                 		frameState = {"version":1,"kind":"starter-cycle","settingsId":settingsId,"cycleAt":cycleText,"cycleEpoch":cycleEpoch,"batch":capturedBatch,"routes":routes,"expiresAt":expiresDate.toLong(),"expiresAtText":expiresDate.toString("MM/dd/yyyy hh:mm:ss a")};
+                 		headers = {"Content-Type":"application/json"};
+                 		if(runtimeType != "production")
+                 		{
+                 			headers.put("environment",runtimeLink);
+                 		}
+                 		skippedWorkflows = List();
+                 		skippedWorkflows.add("schedules");
+                 		payload = {"data":{"Claim_Key":frameKey,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Cycle_State":frameState.toString()},"skip_workflow":skippedWorkflows};
+                 		try 
+                 		{
+                 			frameHttp = invokeurl
+                 			[
+                 				url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 				type :POST
+                 				parameters:payload.toString()
+                 				headers:headers
+                 				detailed:true
+                 				connection:"workflow_audit_admin"
+                 			];
+                 		}		catch (frameCreateError)
+                 		{
+                 			info "Starter frame reply was lost; reconciling its immutable unique key without replay.";
+                 		}
+                 		// Also reconciles a concurrent creator. Never repeat the frame POST.
+                 		frame = Workflow_Export_Lock[Claim_Key == frameKey];
+                 	}
+                 	if(frame.count() != 1 || frame.Cycle_State == null || frame.Claimed_At == null)
+                 	{
+                 		throw "No single durable starter frame was acknowledged; no child route was launched.";
+                 	}
+                 	frozen = frame.Cycle_State.toMap();
+                 	frozenBatch = ifnull(frozen.get("batch"),"").toString();
+                 	if(frozen.get("version") != 1 || frozen.get("kind") != "starter-cycle" || frozen.get("settingsId") != settingsId || frozen.get("cycleEpoch") != cycleEpoch || frozen.get("cycleAt") != cycleText || !frozenBatch.matches("[0-4]"))
+                 	{
+                 		throw "The unique starter frame has inconsistent immutable cycle metadata.";
+                 	}
+                 	if(frozen.get("expiresAt") != expiresDate.toLong() || frozen.get("expiresAtText") != expiresDate.toString("MM/dd/yyyy hh:mm:ss a"))
+                 	{
+                 		throw "The starter frame has a different bounded first-launch window.";
+                 	}
+                 	frozenRoutes = frozen.get("routes");
+                 	if(frozenRoutes == null)
+                 	{
+                 		throw "The starter frame is missing its six original routes.";
+                 	}
+                 	if(frozenRoutes.size() != routes.size())
+                 	{
+                 		throw "The starter frame has a different route count.";
+                 	}
+                 	indices = {0,1,2,3,4,5};
+                 	for each  routeIndex in indices
+                 	{
+                 		if(frozenRoutes.get(routeIndex) != routes.get(routeIndex))
+                 		{
+                 			throw "The starter frame has a different ordered route set.";
+                 		}
+                 	}
+                 	// An existing immutable winner is authoritative if Settings advanced meanwhile.
+                 	// In particular, do not compare its batch to a later live Settings snapshot.
+                 	return frame.ID.toString();
+                 }

@@ -34,6 +34,8 @@ list workflowPreparedExportRows(string viewId, map config, string auditId, bool 
 		throw "Prepared export scope changed or is ambiguous. No source was substituted.";
 	}
 	config.put("_resumeJobId",jobId);
+	// This owned captured request already durably acknowledged completion.
+	config.put("_resumeJobComplete",true);
 	rows = thisapp.analyticsExportRows(viewId,config,auditId,allowEmpty);
 	return rows;
 }

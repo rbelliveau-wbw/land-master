@@ -1,0 +1,41 @@
+list workflowPreparedExportRows(string viewId, map config, string auditId, bool allowEmpty)
+                 {
+                 	if(!auditId.matches("[0-9]+"))
+                 	{
+                 		throw "Prepared export requires its original audit run.";
+                 	}
+                 	run = Workflow_Run_Log[ID == auditId.toLong()];
+                 	if(run.count() != 1 || run.Run_Status != "Running")
+                 	{
+                 		throw "Prepared export run is no longer active.";
+                 	}
+                 	state = run.Export_State.toMap();
+                 	if(state.get("version") != 1 || state.get("phase") != "processing")
+                 	{
+                 		throw "Prepared export is not owned for processing.";
+                 	}
+                 	jobId = "";
+                 	matches = 0;
+                 	for each  request in state.get("requests")
+                 	{
+                 		savedConfig = request.get("config");
+                 		if(request.get("view") == viewId && savedConfig.get("selectedColumns").toString() == config.get("selectedColumns").toString() && ifnull(savedConfig.get("criteria"),"") == ifnull(config.get("criteria"),"") && request.get("allowEmpty") == allowEmpty)
+                 		{
+                 			matches = matches + 1;
+                 			if(request.get("code") != "1004")
+                 			{
+                 				throw "Prepared source is incomplete; no replacement export was created.";
+                 			}
+                 			jobId = ifnull(request.get("job"),"").toString();
+                 		}
+                 	}
+                 	if(matches != 1 || jobId == "")
+                 	{
+                 		throw "Prepared export scope changed or is ambiguous. No source was substituted.";
+                 	}
+                 	config.put("_resumeJobId",jobId);
+                 	// This owned captured request already durably acknowledged completion.
+                 	config.put("_resumeJobComplete",true);
+                 	rows = thisapp.analyticsExportRows(viewId,config,auditId,allowEmpty);
+                 	return rows;
+                 }

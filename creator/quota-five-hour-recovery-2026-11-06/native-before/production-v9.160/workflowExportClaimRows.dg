@@ -1,0 +1,102 @@
+bool workflowExportClaimRows(string auditId, list claimKeys)
+                 {
+                 	// Preflight-only row locks remain independent of the business transaction.
+                 	// A whole validated chunk shares one request; any unknown or partial reply
+                 	// rejects the chunk. Never retry the request or infer ownership from a read.
+                 	if(!auditId.matches("[0-9]+") || claimKeys == null)
+                 	{
+                 		throw "Actual row claims require an audit ID and validated claim keys.";
+                 	}
+                 	if(claimKeys.size() < 1 || claimKeys.size() > 100)
+                 	{
+                 		throw "Actual row claim batches must contain one to one hundred keys.";
+                 	}
+                 	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+                 	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+                 	environments = {"development","stage","production"};
+                 	if(!environments.contains(runtimeType))
+                 	{
+                 		throw "Unknown Creator environment for actual row claims.";
+                 	}
+                 	rows = List();
+                 	requestedKeys = List();
+                 	for each  claimKey in claimKeys
+                 	{
+                 		if(claimKey == null)
+                 		{
+                 			throw "Actual row claim key is missing.";
+                 		}
+                 		key = claimKey.toString();
+                 		if(!key.matches(auditId + "[|]actual-row[|][a-f0-9]{64}"))
+                 		{
+                 			throw "Actual row claim key is outside its audit or validation scope.";
+                 		}
+                 		if(requestedKeys.contains(key))
+                 		{
+                 			return false;
+                 		}
+                 		existing = Workflow_Export_Lock[Claim_Key == key];
+                 		if(existing.count() > 0)
+                 		{
+                 			return false;
+                 		}
+                 		requestedKeys.add(key);
+                 		rows.add({"Claim_Key":key,"Claimed_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a")});
+                 	}
+                 	headers = {"Content-Type":"application/json"};
+                 	if(runtimeType != "production")
+                 	{
+                 		headers.put("environment",runtimeLink);
+                 	}
+                 	claimFields = List();
+                 	claimFields.add("Claim_Key");
+                 	payload = {"data":rows,"result":{"fields":claimFields}};
+                 	try 
+                 	{
+                 		http = invokeurl
+                 		[
+                 			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+                 			type :POST
+                 			parameters:payload.toString()
+                 			headers:headers
+                 			detailed:true
+                 			connection:"workflow_audit_admin"
+                 		];
+                 		if(http.get("responseCode") < 200 || http.get("responseCode") >= 300)
+                 		{
+                 			return false;
+                 		}
+                 		body = http.get("responseText").toString().toMap();
+                 		if(ifnull(body.get("code"),"").toString() != "3000" || body.get("error") != null || body.get("data") != null || body.get("result") == null)
+                 		{
+                 			return false;
+                 		}
+                 		results = body.get("result");
+                 		if(results.size() != requestedKeys.size())
+                 		{
+                 			return false;
+                 		}
+                 		acknowledgedKeys = List();
+                 		acknowledgedIds = List();
+                 		for each  ack in results
+                 		{
+                 			if(ifnull(ack.get("code"),"").toString() != "3000" || ack.get("error") != null || ack.get("data") == null)
+                 			{
+                 				return false;
+                 			}
+                 			ackId = ifnull(ack.get("data").get("ID"),"").toString();
+                 			ackKey = ifnull(ack.get("data").get("Claim_Key"),"").toString();
+                 			if(!ackId.matches("[0-9]+") || !requestedKeys.contains(ackKey) || acknowledgedKeys.contains(ackKey) || acknowledgedIds.contains(ackId))
+                 			{
+                 				return false;
+                 			}
+                 			acknowledgedKeys.add(ackKey);
+                 			acknowledgedIds.add(ackId);
+                 		}
+                 		return acknowledgedKeys.size() == requestedKeys.size();
+                 	}	catch (claimError)
+                 	{
+                 		info "Actual row claims were not acknowledged; no business writes started for run " + auditId;
+                 	}
+                 	return false;
+                 }

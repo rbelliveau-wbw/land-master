@@ -1,0 +1,11 @@
+// Optional field inside the existing Workflow_Export_Lock form, before actions.
+// Preserve Claim_Key, Claimed_At, Wake_At and all existing field identities.
+Cycle_State
+(
+	type = textarea
+	displayname = "Cycle State"
+	height = 150px
+	row = 1
+	column = 1
+	width = large
+)

@@ -10,6 +10,10 @@ string workflowExportDispatch(string wakeupId)
 		return "Inactive wake-up";
 	}
 	key = ifnull(wake.Claim_Key,"").toString();
+	if(key.matches("0[|]recovery[|][0-9]+"))
+	{
+		return thisapp.workflowExportRecover(wakeupId);
+	}
 	if(!key.matches("[0-9]+[|]wake[|][0-9]+[|](0|2|10)"))
 	{
 		return "Not a continuation wake-up";
@@ -23,7 +27,7 @@ string workflowExportDispatch(string wakeupId)
 		return "Inactive run";
 	}
 	state = run.Export_State.toMap();
-	actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_"};
+	actualWorkflows = {"Budgets_Import_Load_GP_Co","Budgets_Import_Great_Plai1","Budgets_Import_Load_HCSS_","Budgets_Import_Load_HCSS_1"};
 	if(parts.get(3) == "10" && actualWorkflows.contains(state.get("workflow")))
 	{
 		ownedTick = state.get("tick") == expectedTick;

@@ -1,0 +1,355 @@
+string workflowRecoveryHold(string action, string identity, string target)
+{
+	// A startup intent is durable before recovery is armed. It closes only after
+	// the exact target exists; native Added_Time distinguishes a late commit.
+	runtimeType = ifnull(thisapp.environment.type,"").toString().toLowerCase();
+	runtimeLink = ifnull(thisapp.environment.linkname,"").toString();
+	environments = {"development","stage","production"};
+	if(!environments.contains(runtimeType))
+	{
+		throw "Unknown Creator environment for startup recovery.";
+	}
+	headers = {"Content-Type":"application/json"};
+	if(runtimeType != "production")
+	{
+		headers.put("environment",runtimeLink);
+	}
+	if(action == "begin")
+	{
+		if((identity != "frame" && identity != "audit") || target == "" || target.length() > 255)
+		{
+			throw "A startup hold requires its exact target kind and identity.";
+		}
+		key = "0|recovery-hold|" + zoho.encryption.sha256(identity + "|" + target);
+		prior = Workflow_Export_Lock[Claim_Key == key];
+		if(prior.count() != 0)
+		{
+			throw "Startup identity already exists; no new target POST is authorized.";
+		}
+		startupAt = zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a").toDateTime("MM/dd/yyyy hh:mm:ss a");
+		expires = startupAt.addMinutes(30);
+		state = {"version":1,"kind":"recovery-startup","status":"open","targetKind":identity,"target":target,"expiresAt":expires.toLong()};
+		payload = {"data":{"Claim_Key":key,"Claimed_At":startupAt.toString("MM/dd/yyyy hh:mm:ss a"),"Wake_At":expires.toString("MM/dd/yyyy hh:mm:ss a"),"Cycle_State":state.toString()},"skip_workflow":{"schedules"}};
+		// A lost hold reply cannot authorize a target POST. Do not reuse/replay it.
+		http = invokeurl
+		[
+			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/form/Workflow_Export_Lock"
+			type :POST
+			parameters:payload.toString()
+			headers:headers
+			detailed:true
+			connection:"workflow_audit_admin"
+		];
+		if(http.get("responseCode") < 200 || http.get("responseCode") >= 300)
+		{
+			throw "Startup hold was not acknowledged; no target POST is authorized.";
+		}
+		body = http.get("responseText").toString().toMap();
+		if(ifnull(body.get("code"),"").toString() != "3000" || body.get("data") == null || body.get("error") != null)
+		{
+			throw "Startup hold response is missing its exact acknowledgement.";
+		}
+		holdId = ifnull(body.get("data").get("ID"),"").toString();
+		if(!holdId.matches("[1-9][0-9]*"))
+		{
+			throw "Startup hold returned no exact record ID.";
+		}
+		hold = Workflow_Export_Lock[ID == holdId.toLong() && Claim_Key == key];
+		if(hold.count() != 1 || hold.Cycle_State != state.toString() || hold.Wake_At == null || hold.Wake_At.toLong() != expires.toLong())
+		{
+			throw "Startup hold acknowledgement identifies a different intent.";
+		}
+		thisapp.workflowExportRecover("arm");
+		if(zoho.currenttime.toLong() >= expires.toLong())
+		{
+			throw "Startup hold expired while arming; no target POST is authorized.";
+		}
+		return holdId;
+	}
+	if(action == "settle")
+	{
+		if(!identity.matches("[1-9][0-9]*"))
+		{
+			throw "Frame settlement requires its exact native ID.";
+		}
+		settleFrame = Workflow_Export_Lock[ID == identity.toLong()];
+		if(settleFrame.count() != 1 || settleFrame.Cycle_State == null || !settleFrame.Claim_Key.contains("0|starter|"))
+		{
+			throw "Frame settlement target is missing or ambiguous.";
+		}
+		settleState = settleFrame.Cycle_State.toMap();
+		if(settleState.get("version") != 1 || settleState.get("kind") != "starter-cycle" || settleState.get("routes") == null || settleState.get("routes").size() != 6)
+		{
+			throw "Frame settlement metadata differs from the six-route contract.";
+		}
+		if(settleFrame.Wake_At == null)
+		{
+			return "Closed";
+		}
+		blocked = false;
+		settleHoldId = ifnull(settleState.get("startupHoldId"),"").toString();
+		if(settleHoldId != "")
+		{
+			if(!settleHoldId.matches("[1-9][0-9]*"))
+			{
+				throw "Frame startup hold identity is invalid.";
+			}
+			settleHold = Workflow_Export_Lock[ID == settleHoldId.toLong()];
+			if(settleHold.count() != 1 || settleHold.Cycle_State == null)
+			{
+				throw "Frame startup hold is missing; recovery must remain active.";
+			}
+			settleHoldState = settleHold.Cycle_State.toMap();
+			if(settleHoldState.get("kind") != "recovery-startup" || settleHoldState.get("targetKind") != "frame" || settleHoldState.get("target") != settleFrame.Claim_Key)
+			{
+				throw "Frame settlement startup hold belongs to another target.";
+			}
+			blocked = settleHoldState.get("status") == "failed";
+		}
+		if(!blocked)
+		{
+			children = Map();
+			notices = Map();
+			linkedCount = 0;
+			for each linked in Workflow_Run_Log[Export_State.contains("starterFrameId") && Export_State.contains(identity)] range from 0 to 31
+			{
+				linkedCount = linkedCount + 1;
+				linkedState = linked.Export_State.toMap();
+				if(ifnull(linkedState.get("starterFrameId"),"").toString() == identity)
+				{
+					linkedIndex = ifnull(linkedState.get("starterRouteIndex"),-1).toLong();
+					if(linkedIndex < 0 || linkedIndex > 5 || linkedState.get("workflow") != settleState.get("routes").get(linkedIndex))
+					{
+						throw "Frame settlement encountered a different child route identity.";
+					}
+					indexKey = linkedIndex.toString();
+					if(linkedState.get("kind") == "starter-notice")
+					{
+						if(notices.get(indexKey) != null)
+						{
+							throw "Frame settlement found duplicate route notices.";
+						}
+						notices.put(indexKey,linked.Run_Status);
+					}
+					else
+					{
+						if(children.get(indexKey) != null)
+						{
+							throw "Frame settlement found duplicate child acknowledgements.";
+						}
+						children.put(indexKey,linked.ID.toString());
+					}
+				}
+			}
+			if(linkedCount == 32)
+			{
+				throw "Frame settlement reached its bounded scan; recovery must remain active.";
+			}
+			indices = {0,1,2,3,4,5};
+			terminalNotices = {"Failed","Timed Out"};
+			for each routeIndex in indices
+			{
+				indexKey = routeIndex.toString();
+				if(children.get(indexKey) == null && !terminalNotices.contains(notices.get(indexKey)))
+				{
+					return "Open";
+				}
+			}
+		}
+		settleState.put("startupSettled",true);
+		settleState.put("startupFailed",blocked);
+		settlePayload = {"data":{"Cycle_State":settleState.toString(),"Wake_At":null},"skip_workflow":{"schedules"}};
+		try
+		{
+			settleHttp = invokeurl
+			[
+				url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/report/All_Workflow_Export_Locks/" + identity
+				type :PATCH
+				parameters:settlePayload.toString()
+				headers:headers
+				detailed:true
+				connection:"workflow_audit_admin"
+			];
+		}
+		catch(settleError)
+		{
+			info "Frame settlement reply unknown; reconciling its exact ID without replay.";
+		}
+		freshFrame = Workflow_Export_Lock[ID == identity.toLong()];
+		if(freshFrame.count() != 1 || freshFrame.Wake_At != null || freshFrame.Cycle_State != settleState.toString())
+		{
+			throw "Frame settlement was not acknowledged; recovery must remain active.";
+		}
+		return "Closed";
+	}
+	actions = {"check","close","target","resolve"};
+	if(!identity.matches("[1-9][0-9]*") || !actions.contains(action))
+	{
+		throw "Startup recovery requires a known action and exact hold ID.";
+	}
+	hold = Workflow_Export_Lock[ID == identity.toLong()];
+	if(hold.count() != 1 || hold.Cycle_State == null)
+	{
+		throw "Startup hold is missing or ambiguous.";
+	}
+	state = hold.Cycle_State.toMap();
+	statuses = {"open","closed","failed"};
+	if(state.get("version") != 1 || state.get("kind") != "recovery-startup" || state.get("expiresAt") == null || hold.Claimed_At == null || !statuses.contains(state.get("status")) || hold.Claim_Key != "0|recovery-hold|" + zoho.encryption.sha256(state.get("targetKind") + "|" + state.get("target")))
+	{
+		throw "Startup hold has inconsistent immutable identity.";
+	}
+	if(state.get("expiresAt").toLong() != hold.Claimed_At.addMinutes(30).toLong())
+	{
+		throw "Startup hold differs from its original thirty-minute window.";
+	}
+	if(action == "check")
+	{
+		if(state.get("status") != "open" || zoho.currenttime.toLong() >= state.get("expiresAt").toLong())
+		{
+			throw "Startup window expired or closed; no target POST or handoff is authorized.";
+		}
+		return identity;
+	}
+	if(state.get("status") == "failed")
+	{
+		if(action == "resolve")
+		{
+			return "Closed";
+		}
+		throw "Startup intent failed; no late target may launch work.";
+	}
+	targetId = "";
+	targetAddedAt = 0;
+	if(state.get("targetKind") == "frame")
+	{
+		frameKey = state.get("target").toString();
+		frame = Workflow_Export_Lock[Claim_Key == frameKey];
+		if(frame.count() == 1 && frame.Cycle_State != null)
+		{
+			frameState = frame.Cycle_State.toMap();
+			if(ifnull(frameState.get("startupHoldId"),"").toString() == identity && frame.Added_Time != null)
+			{
+				targetId = frame.ID.toString();
+				targetAddedAt = frame.Added_Time.toLong();
+			}
+		}
+	}
+	else if(state.get("targetKind") == "audit")
+	{
+		candidateCount = 0;
+		for each candidate in Workflow_Run_Log[Export_State.contains("startupHoldId") && Export_State.contains(identity)] range from 0 to 7
+		{
+			candidateCount = candidateCount + 1;
+			candidateState = candidate.Export_State.toMap();
+			if(ifnull(candidateState.get("startupHoldId"),"").toString() == identity && candidateState.get("startupHoldTarget") == state.get("target"))
+			{
+				if(targetId != "")
+				{
+					throw "More than one audit owns a startup intent; no replay.";
+				}
+				if(candidate.Added_Time != null)
+				{
+					targetId = candidate.ID.toString();
+					targetAddedAt = candidate.Added_Time.toLong();
+				}
+			}
+		}
+		if(candidateCount == 8)
+		{
+			throw "Startup audit reconciliation reached its bounded scan; recovery must remain active.";
+		}
+	}
+	else
+	{
+		throw "Unknown startup target kind.";
+	}
+	timely = targetId != "" && targetAddedAt <= state.get("expiresAt").toLong();
+	if(state.get("status") == "closed" && state.get("targetId") != targetId)
+	{
+		throw "Closed startup hold identifies a different native target.";
+	}
+	if(action == "close" || action == "target")
+	{
+		if(!timely || targetId != target)
+		{
+			throw "No exact target committed inside its startup window; no late work is authorized.";
+		}
+		if(action == "target")
+		{
+			return identity;
+		}
+		if(zoho.currenttime.toLong() >= state.get("expiresAt").toLong())
+		{
+			throw "Startup acknowledgement arrived after its original window; no caller handoff is authorized.";
+		}
+		if(state.get("status") == "closed" && state.get("targetId") == targetId && hold.Wake_At == null)
+		{
+			// Recovery may have reconciled this exact target before the creator
+			// received its POST reply. That race must not invalidate the startup.
+			return "Closed";
+		}
+	}
+	else if(action == "resolve")
+	{
+		if(state.get("status") == "closed")
+		{
+			return "Closed";
+		}
+		if(!timely && zoho.currenttime.toLong() < state.get("expiresAt").toLong())
+		{
+			return "Open";
+		}
+	}
+	if(timely)
+	{
+		state.put("status","closed");
+		state.put("targetId",targetId);
+	}
+	else
+	{
+		// Own one diagnostic before any audit POST. Unknown acknowledgements are
+		// never replayed; the closed hold also retains the durable failure detail.
+		thisapp.workflowExportRecover("arm");
+		state.put("status","failed");
+		state.put("message","No timely target acknowledgement inside the thirty-minute startup window. No work was replayed.");
+		if(thisapp.workflowExportClaim(identity + "|process"))
+		{
+			noticeState = {"version":1,"callbackPolicy":"shared-recovery-30m","kind":"recovery-startup-notice","workflow":"startup-recovery","phase":"preparing","tick":0,"startupNoticeHoldId":identity};
+			try
+			{
+				notice = thisapp.workflowRunLog({"action":"start","workflow":"Queue Startup - Missing Acknowledgement","system":"Zoho Analytics","callbackPolicy":"shared-recovery-30m","queueWorkflow":"startup-recovery","exportState":noticeState.toString()});
+				noticeId = notice.get("id").toString();
+				state.put("noticeId",noticeId);
+				thisapp.workflowRunLog({"action":"finish","id":noticeId,"status":"Failed","stage":"Startup acknowledgement missing","message":state.get("message"),"details":"Hold=" + identity + "; kind=" + state.get("targetKind") + "; target=" + state.get("target") + "; deadline=" + state.get("expiresAt") + ". Late targets cannot launch work. Inspect this exact startup attempt before a manual retry.","counts":{"failed":1},"clearResume":true});
+			}
+			catch(noticeError)
+			{
+				state.put("noticeError",noticeError.toString());
+				info "Startup failure notice acknowledgement unknown for hold " + identity + "; no audit POST was replayed.";
+			}
+		}
+	}
+	payload = {"data":{"Cycle_State":state.toString(),"Wake_At":null},"skip_workflow":{"schedules"}};
+	try
+	{
+		closeHttp = invokeurl
+		[
+			url :"https://www.zohoapis.com/creator/v2.1/data/wbdevelopment/land-master/report/All_Workflow_Export_Locks/" + identity
+			type :PATCH
+			parameters:payload.toString()
+			headers:headers
+			detailed:true
+			connection:"workflow_audit_admin"
+		];
+	}
+	catch(closeError)
+	{
+		info "Startup close reply unknown; reconciling exact hold without replay.";
+	}
+	freshHold = Workflow_Export_Lock[ID == identity.toLong()];
+	if(freshHold.count() != 1 || freshHold.Cycle_State != state.toString() || freshHold.Wake_At != null)
+	{
+		throw "Startup hold closure was not acknowledged; recovery must remain active.";
+	}
+	return "Closed";
+}

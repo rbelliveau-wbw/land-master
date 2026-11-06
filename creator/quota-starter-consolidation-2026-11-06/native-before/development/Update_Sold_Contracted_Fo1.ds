@@ -1,0 +1,44 @@
+			Update_Sold_Contracted_Fo1 as "Update Sold/Contracted - Forecast Year"
+			{
+				type =  schedule
+				form = Settings
+				start = Next_Workflow_Run
+				frequency = daily
+				time zone = "America/Chicago"
+				on start
+				{
+					actions 
+					{
+					on load
+					(
+						for each  forecastYear in Forecast_Year[Status = "Builder"]
+										{
+											fcyearTonum = forecastYear.Forecast_Year.toNumber();
+											fcYearpone = "01/31/" + (fcyearTonum + 1);
+											lotsSold = Lots[Subdivision == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1 && Status == "Sold" && Close_Date >= "02/01/" + forecastYear.Forecast_Year && Close_Date <= fcYearpone].count();
+											if(forecastYear.Builder1.Builder_Name != "Placeholder")
+											{
+												contractedCount = Lots[Subdivision == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1 && Status == "Contracted"].count();
+												scheduledCount = Lots[Subdivision == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1 && Status == "Scheduled"].count();
+												lotsContracted = contractedCount + scheduledCount;
+											}
+											else
+											{
+												lotsContracted = Lots[Subdivision == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1].count();
+											}
+											fcActual = Forecast[Subdivision1 == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1 && Forecast_Year == forecastYear.Forecast_Year && Forecast_Start_Date <= zoho.currentdate.subMonth(1)].sum(Actual_Lots);
+											fcForecasted = Forecast[Subdivision1 == forecastYear.Subdivision1 && Builder1 == forecastYear.Builder1 && Forecast_Year == forecastYear.Forecast_Year && Forecast_Start_Date > zoho.currentdate.subMonth(1)].sum(Forecasted_Lots);
+											totalLotobligation = Takedown_Schedule[Builder1 == forecastYear.Builder1 && Subdivisions == forecastYear.Subdivision1].Total_Lot_Obligation;
+											fcPlusactual = fcActual.toLong() + fcForecasted.toLong();
+											forecastYear.Contracted_Lot_Amount=totalLotobligation;
+											forecastYear.Running_Forecast_Balance=fcForecasted;
+											forecastYear.Total_Sold_Forecasted=fcPlusactual;
+											forecastYear.Total_Sold_Lots=lotsSold;
+											forecastYear.Total_Contracted_Lots=lotsContracted;
+											subdivCode = Subdivision[ID == forecastYear.Subdivision1].Subdivision_Code;
+											forecastYear.Subdivision_Code=subdivCode;
+										}
+					)
+					}
+				}
+			}
