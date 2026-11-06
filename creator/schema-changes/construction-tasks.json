@@ -197,9 +197,12 @@
   },
   "review": {
     "submission_parent_status": "Proposed",
-    "seed_actions_at_submission": false,
+    "seed_actions_at_submission": true,
+    "submission_seed_workflow": "Refresh_on_Submit_New_Con / Contract on add on success",
+    "submission_action_status": "Proposed",
     "accept_permission": "Edit_All_Construction_Requests",
     "seed_actions_at_acceptance": true,
+    "acceptance_seed_scope": "legacy requests with zero child actions",
     "template_scope": "Construction + matching Budget Type",
     "legal_approval_seed": false
   },

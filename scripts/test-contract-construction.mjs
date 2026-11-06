@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {ready,harness,drain,deferred,ID,ACTION,SUB,ACCESS,NEW} from './test-contract-sdk-v2-foundation.mjs';
+import {constructionSubmissionRuntime} from './lib/construction-submission-test-runtime.mjs';
 
 const PROJECT=(BigInt(NEW)+20n).toString(),LEGAL=(BigInt(NEW)+21n).toString(),TEMPLATE=(BigInt(NEW)+22n).toString(),FILE=(BigInt(NEW)+23n).toString();
 const submit={ctEdit:false,ctPropose:false,ctApprove:false,ctTemplates:false,ctDeleteArchive:false,constructionSubmit:true,constructionEditAll:false};
@@ -128,6 +129,11 @@ function fixture(h,{pending=false,children=true}={}){
  h.c.renderAll();return values;
 }
 function draft(h){h.c.newContract();h.c.constructionPick('sub',SUB);h.c.constructionPick('type','Internal');h.c.constructionPick('plans','First Round');h.c.constructionPick('mud','No');h.c.constructionPick('priority','High');Object.assign(h.c.S.nc,{needed:'2026-10-30',description:'Prepare the Phase grading budget.'});return h.c.S.nc;}
+function nativeSubmission(h,{receipt,failInsert=0}={}){
+ const runtime=constructionSubmissionRuntime({Contract_Actions:h.reports.All_Contract_Actions},{failInsert}),add=h.api.addRecords;
+ h.api.addRecords=async config=>{const result=await add(config);if(config.form_name===h.c.CFG.forms.contract){const parent=h.reports.All_Contracts1.find(row=>row.ID===result.result[0].data.ID);runtime.run(parent);return receipt===undefined?result:receipt;}return result;};
+ return runtime;
+}
 function files(h){const base=h.api.invokeCustomApi;let creates=0,uploads=0;h.api.invokeCustomApi=async config=>{if(config.api_name!==h.c.CFG.customApis.createAttachment)return base(config);creates++;h.reports.All_Attachments.push({ID:FILE,Contract1:{ID:config.payload.contractId},Email_Attachment:false,File_field1:{},Added_User:'actual-actor'});return {code:3000,details:{output:JSON.stringify({ok:true,attachmentId:FILE})}};};h.c.ZOHO.CREATOR.FILE={uploadFile:async config=>{uploads++;const row=h.reports.All_Attachments.find(row=>row.ID===config.id);row.File_field1={filepath:'native_'+config.file.name};return {code:3000};}};return {creates:()=>creates,uploads:()=>uploads};}
 
 {
@@ -215,6 +221,34 @@ for(const options of [{},{accessFailure:true}]){
  await h.c.createRecord(h.c.CFG.forms.comment,{Contract1:NEW,Comment:'Submission discussion',User:'actual-actor'});assert.equal(h.reports.Comment_Log_Report.length,1,'submitters can add comments');
  const f=files(h);h.c.showAttachmentsModal(NEW);assert.match(h.node('overlays').textContent,/Choose Files/);assert.equal(h.c.canAddContractAttachments(NEW),true);assert.equal(h.c.S.busy,false);assert.equal(h.c.S.contractWorkflow,null);const uploaded=await h.c.addVersionFiles(NEW,[{name:'construction-plans.pdf',size:12}]);assert.equal(uploaded.error,null);assert.equal(f.creates(),1);assert.equal(f.uploads(),1);assert.equal(h.c.S.versions[0].Contract1.ID,NEW);
  assert.doesNotMatch(h.c.attachmentModalRows(NEW,h.c.S.versions),/deleteVersion|toggleEmailAttach/);assert.equal(await h.c.doDeleteVersion(FILE,NEW),false);assert.equal(writes(h).length,2,'only header and comment used ordinary CRUD');
+}
+for(const receipt of [undefined,{code:3000}]){
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h);const backend=nativeSubmission(h,{receipt});draft(h);
+ const result=await h.c.constructionSubmitForm();assert.equal(result.error,null);assert.equal(writes(h).length,1,'submitter performs only the permitted parent write');
+ const child=h.reports.All_Contract_Actions.find(row=>row.Contract1===NEW);assert.ok(child,'the actual native success body seeds the submitted request');assert.equal(child.Status,'Proposed');assert.equal(child.Template_Action,false);assert.equal(child.Type_field,'Internal');assert.equal(child.Work_Module,'Construction');assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'Proposed');
+ assert.equal(h.c.ContractSetupUI.close(),true);await drain();assert.ok(h.c.findContract(NEW));assert.equal(h.c.findAction(child.ID).Contract_Action,'Prepare construction budget','optional display refresh includes server-owned task rows, even without a returned parent ID');
+ await assert.rejects(h.c.updateRecord(child.ID,{Contract_Action:'Submitter cannot edit'},h.c.CFG.reports.actions));assert.equal(writes(h).length,1,'server-owned seeds do not widen direct action access');
+ Object.assign(h.flags,{constructionEditAll:true,constructionSubmit:false});h.c.ncApplyAccess(h.flags);
+ const accepted=await h.c.constructionReviewRun(NEW,true);assert.equal(accepted.error,null);assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'New');assert.equal(child.Status,'New','acceptance promotes the existing Proposed task');assert.equal(h.reports.All_Contract_Actions.filter(row=>row.Contract1===NEW).length,1,'acceptance never duplicates a server-seeded checklist');assert.equal(backend.writes.length,1);
+}
+{
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h);nativeSubmission(h);draft(h);const result=await h.c.constructionSubmitForm();assert.equal(result.error,null);
+ const count=h.api.getRecordCount;h.api.getRecordCount=async config=>{if(config.report_name===h.c.CFG.reports.actions)throw Error('Display unavailable');return count(config);};
+ assert.equal(h.c.ContractSetupUI.close(),true);await drain();assert.equal(result.error,null);assert.equal(h.c.S.contractWorkflow,null);assert.equal(writes(h).length,1,'an optional child refresh failure cannot replay or invalidate a saved submission');assert.equal(h.reports.All_Contract_Actions.filter(row=>row.Contract1===NEW).length,1);
+}
+for(const change of ['mutation','navigation']){
+ const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h);nativeSubmission(h);draft(h);assert.equal((await h.c.constructionSubmitForm()).error,null);
+ const hold=deferred(),captured=deferred(),records=h.api.getRecords;let delayed=false;
+ h.api.getRecords=async config=>{const snapshot=await records(config);if(!delayed&&config.report_name===h.c.CFG.reports.actions&&!config.criteria){delayed=true;captured.resolve();await hold.promise;}return snapshot;};
+ assert.equal(h.c.ContractSetupUI.close(),true);await captured.promise;
+ if(change==='mutation'){const saved=await h.c.updateRecord(ACTION,{Contract_Action:'A newer saved task'},h.c.CFG.reports.actions);Object.assign(h.c.findAction(ACTION),saved.verifiedRow);}
+ else{h.c.closeOverlays();h.c.findAction(ACTION).Contract_Action='A retained task draft';}
+ hold.resolve();await drain();assert.equal(h.c.findAction(ACTION).Contract_Action,change==='mutation'?'A newer saved task':'A retained task draft','a delayed display snapshot cannot overwrite a later save or changed navigation');
+}
+{
+ const h=await ready({accessFlags:submit,pageParams:{workMode:'construction'},realDOM:true});fixture(h);h.reports.All_Contract_Actions.push({...h.reports.All_Contract_Actions.find(row=>row.ID===TEMPLATE),ID:(BigInt(TEMPLATE)+50n).toString(),Contract_Action:'Second task',Sort_Order:2});nativeSubmission(h,{failInsert:2});draft(h);
+ const failed=await h.c.constructionSubmitForm();assert.ok(failed.error);assert.equal(h.reports.All_Contracts1.find(row=>row.ID===NEW).Status,'Proposed');assert.equal(h.reports.All_Contract_Actions.filter(row=>row.Contract1===NEW).length,1);assert.equal(h.c.S.contractWorkflow.finished,true,'the captured failed workflow stays available for review');
+ assert.equal(await h.c.constructionSubmitForm(),false);assert.equal(writes(h).length,1,'a partial native template failure cannot blindly resubmit the parent or seed twice');
 }
 {
  const h=await ready({accessFlags:editor,pageParams:{workMode:'construction'},realDOM:true});fixture(h,{pending:true,children:false});assert.equal(h.c.canEdit(),true);assert.equal(h.c.canTemplates(),true);assert.equal(h.c.canApprove(),true);assert.equal(h.c.canDeleteArchive(ID),true);assert.equal(h.c.canArchive(ID),true);

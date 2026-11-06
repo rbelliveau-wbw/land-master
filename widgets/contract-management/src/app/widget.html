@@ -1978,16 +1978,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.52"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.52">
-<script src="interaction-motion.js?v=1.62.52"></script>
-<script src="interaction-surfaces.js?v=1.62.52"></script>
-<script src="number-edit-commit.js?v=1.62.52"></script>
-<script src="number-transitions.js?v=1.62.52"></script>
-<script src="number-surfaces.js?v=1.62.52"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.52">
-<link rel="stylesheet" href="report-layout.css?v=1.62.52">
-<link rel="stylesheet" href="construction-board.css?v=1.62.52">
+<script src="success-feedback.js?v=1.62.53"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.53">
+<script src="interaction-motion.js?v=1.62.53"></script>
+<script src="interaction-surfaces.js?v=1.62.53"></script>
+<script src="number-edit-commit.js?v=1.62.53"></script>
+<script src="number-transitions.js?v=1.62.53"></script>
+<script src="number-surfaces.js?v=1.62.53"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.53">
+<link rel="stylesheet" href="report-layout.css?v=1.62.53">
+<link rel="stylesheet" href="construction-board.css?v=1.62.53">
 </head>
 <body>
 
@@ -2036,7 +2036,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.52", pageSize: 200, maxPages: 25,
+  version: "1.62.53", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2804,7 +2804,7 @@ function contractWorkflowClose(id){
   if(run.kind==='create'){var history=S.contractWorkflowHistory||(S.contractWorkflowHistory=[]);if(history.indexOf(run)<0){history.unshift(run);history.splice(10);}if(!run.cid&&!contractHasReviews()){
     if(run.error){ncOpen();return true;}
     if(run.draft===S.nc)S.nc=null;closeOverlays();renderAll();banner('ok','Construction request submitted for review.');
-    var scope=run.scope,generation=run.generation;sdkGetAll(CFG.reports.contracts,'',{fresh:true}).then(function(rows){if(scope!==contractMutationScope()||generation!==S.contractDataGeneration)return;S.contracts=rows;if(S.view==='home'&&!S.busy&&!S.nc)renderAll();},function(){});return true;
+    constructionRefreshSubmitted(run);return true;
   }}
   if(run.routine&&run.button)run.button.textContent=run.buttonText;
   if(run.routine&&(!contractWorkflowCurrent(run)||run.error&&run.kind==='pricing'))return true;
@@ -2813,7 +2813,9 @@ function contractWorkflowClose(id){
   if(!contractHasReviews()&&run.cid){
     if(run.kind==='pricing'){if(run.clp===S.clp&&S.clp)clpEnd();closeOverlays();renderAll();}
     else{if(run.draft===S.nc)S.nc=null;if(run.clp===S.clp&&S.clp)clpEnd();closeOverlays();openContract(run.cid);if(run.kind==='create'){if(!run.error&&run.entries.every(function(entry){return entry.state==='verified';}))contractCreatedBanner(run.cid);else banner('err','Contract created. Setup needs review.');}}
-  }return true;
+  }
+  if(run.kind==='create'&&!run.error&&workModule(run.captured.data)==='construction')constructionRefreshSubmitted(run);
+  return true;
 }
 var ContractSetupUI=LMContractUIPreparation.create({snapshot:function(){return {interactionBlocked:!S.coreReady||S.coreRefreshing||S.busy||contractWorkflowNativePending(),referenceState:S.coreReady?'ready':'error',scopeState:'ready'};},pending:contractWorkflowNativePending,recheckPending:contractWorkflowNativePending,
   close:contractWorkflowClose,label:function(report,key){var run=S.contractWorkflow;return run&&run.kind==='create'?contractWorkflowAuditLabel(key):key;},
@@ -3170,7 +3172,7 @@ function contractNativeMutation(kind,target,id,fieldData,reviewDecision){
   var parent=fieldData&&(fieldData.Contract1||fieldData.Budget)||'',key=kind+':'+target+':'+(id||String(parent)),store=contractMutationStore();
   if(store[key])return Promise.reject(store[key].error||new Error('This operation is still being checked.'));
   var payload=contractDeepFreeze(JSON.parse(JSON.stringify(fieldData||{}))),attempt={key:key,kind:kind,target:target,id:id||'',payload:payload,scope:contractMutationScope(),reportName:kind==='add'?contractReportForForm(target):target,status:'pending'};
-  store[key]=attempt;contractControls();
+  store[key]=attempt;S.contractMutationRevision=(S.contractMutationRevision||0)+1;contractControls();
   var prepare=contractMutationDeadline(attempt,contractWritePreflight(attempt,reviewDecision===true).then(function(parent){var run=S.contractWorkflow,createdParent=run&&run.kind==='create'&&!run.finished&&run.cid===id?parent:null;return kind==='delete'?contractDeletePreflight(attempt):kind==='update'&&target===CFG.reports.contracts&&contractOwn(payload,'Status')?contractStatusPreflight(id,payload,reviewDecision,createdParent):null;}),'verification');
   var native=prepare.then(function(){return LMData.request('contracts:'+kind+':'+target,function(){
     if(attempt.scope!==contractMutationScope())throw new Error('The Creator session changed before the write.');
@@ -6239,6 +6241,15 @@ function constructionPayload(v,editing){
 function constructionFormError(error){var message=errText(error),host=$('construction_form_error');if(host)host.textContent=message;else banner('err',message);}
 function constructionCancelNew(){if(contractInteractionHeld()||S.busy)return false;S.nc=null;closeOverlays();return true;}
 function constructionConfirm(){var v=S.nc,data;try{data=constructionPayload(v,false);}catch(error){constructionFormError(error);return false;}confirmDialog({kicker:'New Construction Task',title:data.Contract_Name,items:[subNameFor(v.sub[0]),data.Contract_Type+' · '+data.Construction_Plans,data.Priority+' · Needed '+fmtDate(data.Date_Needed)],okLabel:'Submit',onConfirm:constructionSubmitForm,onDismiss:ncOpen});return true;}
+function constructionRefreshSubmitted(run){
+  // The native on-success workflow owns template inserts. This is display-only:
+  // an unavailable refresh must never replay the submission or change its result.
+  var navigation=S.contractNavigationGeneration||0,mutation=S.contractMutationRevision||0,view=S.view,selected=S.selId;
+  return Promise.all([sdkGetAll(CFG.reports.contracts,'',{fresh:true}),sdkGetAll(CFG.reports.actions,'',{fresh:true})]).then(function(rows){
+    if(run.scope!==contractMutationScope()||run.generation!==S.contractDataGeneration||navigation!==(S.contractNavigationGeneration||0)||mutation!==(S.contractMutationRevision||0)||view!==S.view||selected!==S.selId||S.busy||S.contractWorkflow||S.nc||contractHasFieldDrafts()||overlayOpen())return false;
+    S.contracts=rows[0];S.actions=rows[1];if(S.view==='home')renderAll();else if(S.view==='detail'&&S.selId===run.cid)refreshDetailPanel();return true;
+  },function(){return false;});
+}
 function constructionSubmitForm(){
   if(S.busy||S.contractWorkflow||!S.nc||S.nc.workMode!=='construction'||!workCreateAccess('construction'))return Promise.resolve(false);
   var draft=S.nc,scope=contractMutationScope(),generation=S.contractDataGeneration;

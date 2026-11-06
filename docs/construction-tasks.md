@@ -87,10 +87,14 @@ Templates are selected by **mode + type**. New Construction requests must not
 copy Legal approvals or Legal action templates. Changing a template affects
 future requests and does not rewrite existing request checklists.
 
-Construction submission creates a **Proposed** parent with no seeded actions.
-An editor accepts that request through Review, which initializes only the
-matching Construction templates. This separates the requestor's submission
-from the editor's task checklist setup and reuses the Legal Review interaction.
+Construction submission creates a **Proposed** parent and copies its matching
+Construction template actions as **Proposed** children. The existing native
+`Refresh_on_Submit_New_Con` add-success workflow creates the checklist from
+checked, parentless templates of the same budget type; submitters retain
+read-only action access. Acceptance changes the request and its Proposed
+actions to **New**, with no duplicate checklist. Older requests without actions
+retain the acceptance-time template fallback. See the
+[November 6 change and deployment notes](construction-submission-actions-2026-11-06.md).
 Construction status choices are Proposed (shown as **Pending Review**), New,
 Rejected, Feasibility, Awaiting Purchasing, Awaiting Development, Awaiting Other,
 Approved, Complete, and Cancelled. Existing Legal choices remain unchanged.

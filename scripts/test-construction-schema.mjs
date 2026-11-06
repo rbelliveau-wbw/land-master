@@ -33,8 +33,11 @@ assert.equal(schema.classification.backfill, 'none');
 assert.equal(schema.subdivision_context.construction_selection_count, 1);
 assert.deepEqual(schema.subdivision_context.independent_user_context_inputs, []);
 assert.equal(schema.review.submission_parent_status, 'Proposed');
-assert.equal(schema.review.seed_actions_at_submission, false, 'Submit-only creates a request without mutating template actions.');
+assert.equal(schema.review.seed_actions_at_submission, true, 'The native success workflow copies trusted template actions during submission.');
+assert.equal(schema.review.submission_seed_workflow, 'Refresh_on_Submit_New_Con / Contract on add on success');
+assert.equal(schema.review.submission_action_status, 'Proposed');
 assert.equal(schema.review.seed_actions_at_acceptance, true);
+assert.equal(schema.review.acceptance_seed_scope, 'legacy requests with zero child actions');
 assert.equal(schema.review.legal_approval_seed, false);
 assert.deepEqual(schema.user_access_response_keys, ['constructionEditAll', 'constructionSubmit']);
 
@@ -117,4 +120,4 @@ for (const name of names) {
   }
   assert.equal(access(name,{Edit_All_Construction_Requests:true},true,'__failure').constructionEditAll,true,'Profile lookup failure preserves an existing explicit grant');
 }
-console.log('PASS Construction schema: nine optional native fields, unchecked access defaults, preserved Legal choices, one inferred Subdivision context, Proposed submission without seeds, acceptance-only Construction checklist setup; all four real permission bodies keep submit/editor/Legal grants independent.');
+console.log('PASS Construction schema: nine optional native fields, unchecked access defaults, preserved Legal choices, one inferred Subdivision context, Proposed submission with server-owned template actions and legacy acceptance fallback; all four real permission bodies keep submit/editor/Legal grants independent.');

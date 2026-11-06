@@ -1,0 +1,40 @@
+// Contract / on add / on success. Preserve the existing parent refresh.
+// The server copies trusted templates so submitters keep read-only task access.
+constructionSeedTypes = {"Internal","Offsite","Amenity","MUD Bid"};
+if(input.ID != null && ifnull(input.Work_Module,"") == "Construction" && constructionSeedTypes.contains(input.Contract_Type))
+{
+	constructionExistingCount = Contract_Actions[Contract1 == input.ID].count();
+	// Never append a second checklist or replay a partially saved one.
+	if(constructionExistingCount == 0)
+	{
+		constructionTemplates = Contract_Actions[(Contract1 == null) && (Template_Action == true) && (Work_Module == "Construction") && (Type_field == input.Contract_Type)] sort by Sort_Order;
+		constructionSeedCount = 0;
+		for each constructionTemplate in constructionTemplates
+		{
+			constructionActionTitle = ifnull(constructionTemplate.Contract_Action,"").trim();
+			if(constructionActionTitle != "")
+			{
+				constructionSeedCount = constructionSeedCount + 1;
+				constructionFirstAction = false;
+				if(constructionSeedCount == 1)
+				{
+					constructionFirstAction = true;
+				}
+				insert into Contract_Actions
+				[
+					Contract1=input.ID
+					Work_Module="Construction"
+					Type_field=input.Contract_Type
+					Template_Action=false
+					Contract_Action=constructionActionTitle
+					Sort_Order=constructionSeedCount
+					Status="Proposed"
+					Complete=false
+					Current_Action=constructionFirstAction
+					Added_User=zoho.loginuser
+				]
+			}
+		}
+	}
+}
+openUrl("#Script:page.parent.refresh ","parent window");

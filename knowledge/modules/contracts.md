@@ -480,6 +480,22 @@ fallback. See [scope, verification and rollback](../../docs/owner-full-names.md)
 
 # Contracts Module
 
+## Construction actions on submission — November 6, 2026
+
+Construction requests receive matching template action lines on submission
+while the request stays Proposed (Pending Review). The existing native
+`Refresh_on_Submit_New_Con` Contract add-success workflow copies checked,
+parentless Construction templates matching `Contract_Type` into Proposed
+children. Submitters still cannot directly create or edit actions; Review
+acceptance promotes the existing children to New. Existing checklists are
+preserved, and older empty requests keep the acceptance-time fallback.
+
+This requires a Creator workflow update; hosted PMP does not publish Creator.
+No field, Custom API or permission change is required. The two Production
+requests identified in this investigation were filled with 11 current template
+actions each and remain Pending Review. See the
+[diagnosis, deployment status, regressions and rollback](../../docs/construction-submission-actions-2026-11-06.md).
+
 ## Legal and Construction tasks — October 13, 2026
 
 The shared workspace adds a Construction mode selected initially by `workMode`
@@ -497,8 +513,9 @@ optional Contract fields are `Construction_Plans`, `MUD` (checkbox, default fals
 these request inputs. Selecting one `Subdivision1` infers Project, Territory,
 phase, and company context. No independent Project/Territory entry is needed.
 
-Construction submission creates a Proposed request without checklist seeds;
-acceptance seeds the matching Construction templates. Both modes retain Legal's
+Construction submission now seeds Proposed actions through the native
+add-success workflow described above; acceptance promotes them to New and keeps
+the empty-request fallback. Both modes retain Legal's
 expansion, submission/editing, file, and comment patterns. The template tab is
 Manage Task Templates; creation buttons are New Legal Task and New Construction
 Task. No new Custom API registration is required: full/lean access functions

@@ -29,6 +29,13 @@ infers Project/Territory/context. See the
 [Construction contract and deployment checklist](../../docs/construction-tasks.md)
 and [verified schema state](../../creator/schema-changes/construction-tasks.json).
 
+Construction template actions are now created on submission by the native
+`Refresh_on_Submit_New_Con` workflow. Request and actions stay Proposed until
+Review acceptance; submit-only users retain read-only checklist access.
+Existing checklists are preserved. This timing change requires Creator
+publication separately from PMP. See the
+[November 6 deployment and rollback notes](../../docs/construction-submission-actions-2026-11-06.md).
+
 Release `1.61.45` uses the shared `Attachment` form and `All_Attachments` report.
 The `Contract1`, `File_field1`, `Email_Attachment` and
 `Contract.Contract_Versions` field names stay unchanged. Creator Development
