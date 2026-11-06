@@ -1,0 +1,13 @@
+.number-push.number-push,.number-push>.number-push-value{font:inherit;color:inherit;letter-spacing:inherit;margin:0;padding:0}
+.number-push.number-push{display:inline-grid;position:relative;vertical-align:baseline;clip-path:inset(0);overflow:clip;text-align:inherit;font-variant-numeric:tabular-nums}
+.number-push>.number-push-value{display:inline-block;grid-area:1/1;white-space:pre}
+.number-push::before{grid-area:1/1;content:attr(data-from) / "";position:absolute;inset:0;white-space:pre;visibility:hidden;pointer-events:none}
+.number-push.is-changing::before{color:var(--number-from-color,inherit);position:relative;visibility:visible;animation:number-push-out 420ms cubic-bezier(.22,.7,.25,1) both}
+.number-push.is-changing>.number-push-value{animation:number-push-in 420ms cubic-bezier(.22,.7,.25,1) both}
+@keyframes number-push-out{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-16px)}}
+@keyframes number-push-in{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.number-push.is-changing::before{color:var(--number-from-color,inherit);display:none}.number-push.is-changing>.number-push-value{animation:none}}
+
+/* Old text alone sizes held displays; both actual texts size a committed transition. */
+.number-push.number-edit-pending::before{color:var(--number-edit-color,inherit);content:attr(data-number-edit-from) / "";position:relative;visibility:visible;animation:none}
+.number-push.number-edit-pending>.number-push-value{position:absolute;inset:0;opacity:0;animation:none}

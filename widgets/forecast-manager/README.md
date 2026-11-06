@@ -40,3 +40,8 @@ environment-specific API when Creator returns error 9350. In Development this is
 New proposed API bindings: `Forecast_Manager_Widget_DEV`, `Forecast_Manager_Widget_STAGE`, `Forecast_Manager_Widget`. POST, OAuth2, Standard response, `application/json`, Key and Value body containing `payload:string`, mapped to `forecastManagerWidget(string payload)`. Scope access to the existing Forecast Manager audience; verify that audience live before enabling the API. Never configure anonymous/public access.
 
 Permanent Widget Manager URL: `https://rbelliveau-wbw.github.io/land-master/prod/forecast-manager/`. Development and production mappings publish 1.2.1 with the stable bootstrap. Frontend and API selection follow the authenticated Creator environment, including when this same URL is embedded in development; unknown context fails closed. Stage remains unmapped until its installation is requested. Promotion changes mappings, not the registration URL.
+
+Version 1.9.0 implements the approved Contract Review cards, fixed 2026–2028
+legacy page, 2018–2045 year options and centered Budget-style topbar navigation.
+Archived contracts remain visible without an archive-only review issue.
+[Current data contract, verification and rollback](../../docs/forecast-contract-review-layout-2026-11-06.md).

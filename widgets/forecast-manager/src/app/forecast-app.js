@@ -85,15 +85,15 @@
     if(S.catalog&&!S.catalog.subdivisions.some(row=>Object.hasOwn(row,'territory')))$('territoryPicker').title='Territory choices require the updated Forecast Manager function.';
     $('builderText').textContent=S.builders?S.builders.length+' builder'+(S.builders.length===1?'':'s'):'All for subdivision';
     $('yearText').textContent=S.years.length?S.years.map(year=>'WFY '+year).join(' · '):'All Years with Forecasts';
-    if(S.page==='review')$('refresh').disabled=!S.ready||!S.catalog||ForecastContractReview.busy();
+    if(S.page!=='forecasts')$('refresh').disabled=!S.ready||!S.catalog||ForecastContractReview.busy();
   }
   function setPage(page) {
-    if(!['forecasts','review'].includes(page)||busy()||creationReview())return;
+    if(!['forecasts','review','legacy'].includes(page)||busy()||creationReview())return;
     if(changed()){notice('Check or discard local changes before changing tabs.',true);return;}
     closePicker();S.page=page;
-    $('forecastsPanel').hidden=page!=='forecasts';$('contractReviewPanel').hidden=page!=='review';
+    $('forecastsPanel').hidden=page!=='forecasts';$('contractReviewPanel').hidden=page==='forecasts';
     document.querySelectorAll('[data-forecast-page]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.forecastPage===page)));
-    if(page==='review')ForecastContractReview.open();
+    if(page!=='forecasts')ForecastContractReview.open(page);
     controls();
   }
   // Zero suppression is presentation-only; stored values and exports stay explicit.
@@ -381,8 +381,8 @@
   $('matrix').addEventListener('focusout',event=>{const input=event.target,entry=S.entries.get(input.dataset.forecast);if(S.view==='outlook'&&input.dataset.forecast&&input.value==='0'&&(!entry||entry.phase==='saved'))input.value='';});
   $('matrix').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('matrix').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...document.querySelectorAll('[data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
-  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{if(S.page==='review')return ForecastContractReview.refresh();const before=S.snapshot,catalog=S.catalog,sub=S.sub,refresh=()=>load(true);return window.LMMotion?LMMotion.refresh($('workspace'),refresh,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before||S.catalog!==catalog}):refresh();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
-  $('forecastPages').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!event.target.matches('[data-forecast-page]'))return;event.preventDefault();const page=event.key==='Home'?'forecasts':event.key==='End'?'review':S.page==='forecasts'?'review':'forecasts';setPage(page);document.querySelector('[data-forecast-page="'+S.page+'"]').focus();});
+  $('add').addEventListener('click',()=>addDialog());$('refresh').addEventListener('click',()=>{if(S.page!=='forecasts')return ForecastContractReview.refresh();const before=S.snapshot,catalog=S.catalog,sub=S.sub,refresh=()=>load(true);return window.LMMotion?LMMotion.refresh($('workspace'),refresh,{allowed:()=>!!S.ready&&S.sub===sub,completed:()=>S.snapshot!==before||S.catalog!==catalog}):refresh();});$('check').addEventListener('click',checkStatus);$('discard').addEventListener('click',()=>discardDialog());$('export').addEventListener('click',exportCsv);
+  $('forecastPages').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!event.target.matches('[data-forecast-page]'))return;event.preventDefault();const pages=['forecasts','review','legacy'],index=pages.indexOf(S.page),page=pages[event.key==='Home'?0:event.key==='End'?2:(index+(event.key==='ArrowRight'?1:2))%3];setPage(page);document.querySelector('[data-forecast-page="'+S.page+'"]').focus();});
   $('dialogClose').addEventListener('click',closeDialog);$('dialogCancel').addEventListener('click',closeDialog);$('dialogAction').addEventListener('click',()=>{if(S.dialog&&S.dialog.action&&!$('dialogAction').disabled)S.dialog.action();});
   document.addEventListener('keydown',event=>{
     if(event.key==='Escape'){if(S.picker){const anchor=S.picker.anchor;closePicker();anchor.focus();}else if(S.dialog){event.preventDefault();closeDialog();}return;}
