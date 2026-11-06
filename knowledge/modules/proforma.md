@@ -931,7 +931,7 @@ default already used by Legal contract creation. No second template chooser is
 introduced.
 
 PSA Writer template: **Purchase Agreement PSA Merge Template**, document ID
-`8x9kt066d3af9c4704e63a694c6d6aafd54fd`.
+`n8qj0f32dcce200394c9cb0c6cfad8f7c9dc6`.
 
 `PF_Build_LOI_Document` remains the shared helper called by
 `Create_LOI_Contract` and the DOCX branch of `Get_Proforma_Approval_PDF`. It
@@ -956,9 +956,38 @@ the sample Exhibit A map was removed and its heading/blank exhibit area retained
 for Legal. Fixed title-company, buyer-notice and counsel text remain supplied
 template content. Those details must be maintained in Writer when they change.
 
-Deployment requires saving/compiling **only `PF_Build_LOI_Document`** in Creator
-Development, then publishing that function through Stage to Production. No new
-form, field, Custom API or widget release is required. GitHub alone cannot deploy
+Writer's import dropped the visible signature lines that depended on underlined
+tab characters. The corrected template uses eight explicit right-aligned
+underline tab leaders at the original stops: six at 3,600 twips, one at 8,640
+twips and one at 7,920 twips. A native Writer DOCX export retained all eight
+leaders and all 31 merge values. The user-authorized title-company correction
+changes `Centra` to `Central`; other fixed legal text remains unchanged.
+
+Creator Stage and Production 9.150 publish the corrected template ID. Creator
+required the existing `workflowRunLog` dependency alongside the merge helper;
+the publication contained two components and excluded the other pending work.
+This template correction does not change immutable Proforma Manager 1.80.142
+assets or the environment mappings.
+
+The final Development browser test used Pro Forma `4410926000005816316`
+(`PSA Final Signature QA - 2026-11-05`). Approval with a note completed without
+the former refresh error. Submit to Legal created Contract `4410926000005816546`
+and Attachment `4410926000005816548`. The downloaded Word attachment passes ZIP
+integrity, contains all eight signature leaders and the Central correction, and
+has no unresolved fields. All 313 body paragraphs, including blanks, match the
+previous corrected export after the three expected synthetic-party replacements.
+Reimporting the actual Contract attachment into Writer visually confirmed the
+six Buyer/Seller lines and both corporate approval lines. A final Microsoft Word
+desktop recheck was not completed; the local LibreOffice renderer is unavailable.
+Development reports `No matching ACQ template rows found` for its pre-existing
+missing checklist configuration; document generation and attachment succeeded.
+The temporary Development policy was removed and the administrator's original
+`Submit to Legal Module = false` permission restored after testing.
+
+Deployment requires saving/compiling **`PF_Build_LOI_Document`** in Creator
+Development, then publishing that function and Creator-required dependencies
+through Stage to Production. No new form, field, Custom API or widget release is
+required. GitHub alone cannot deploy
 the native function. Rollback restores this helper's preceding template-routing
 source and republishes the function; preserve the shared `zoho_writer_admin`
 connection and the existing LOI template.
