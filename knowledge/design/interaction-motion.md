@@ -26,6 +26,11 @@ finish an animation. Native editable values, precision and carets remain intact.
 Keep animation overflow inside its component; no temporary horizontal scrollbar,
 right-side strip, moving table border or hidden incoming value that changes layout.
 
+For tabs inside a modal, fade only the content pane. Keep the overlay host,
+backdrop and modal header outside the pane animation: fading an unpositioned
+overlay host creates a temporary stacking context beneath sticky report headers.
+Legal's Approvers/Attachments tabs target `#overlays .modal-body`.
+
 Pointer-driven milestone resizing follows the actual cursor without easing,
 including under reduced motion. Update the mounted source bar and its draft
 overlap geometry; a nearby date card carries pending/confirmed/error feedback.

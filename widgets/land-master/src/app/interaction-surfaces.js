@@ -54,7 +54,7 @@
       
     }else if(module==='contract-management'){
       tab('.mode-seg:not(#aprTabs)','button','#view');
-      tab('#aprTabs','button','#overlays');
+      tab('#aprTabs','button','#overlays .modal-body');
       // Legal owns its existing FLIP and drag/drop; do not apply a second transform.
       panels.push({selector:'#view'});
       list('.ctable',':scope>tbody>tr',row=>row.dataset.sectionKey?'section:'+row.dataset.sectionKey:row.dataset.contractId?'contract:'+row.dataset.contractId:row.classList.contains('drillrow')?'details:'+row.previousElementSibling?.dataset.contractId:null,()=>state().workMode,{visibility:true,highlight:false});

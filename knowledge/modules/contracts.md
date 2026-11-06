@@ -1,3 +1,17 @@
+## Approval Modal Layering — 1.62.54, November 6, 2026
+
+Approvers/Attachments switches fade only the mounted modal body. The former
+whole-overlay fade created a temporary stacking context below sticky main-report
+headers, making those headers appear over the dialog during the transition.
+The modal frame, backdrop, tab controls and existing send/file behavior remain
+mounted. The shared registry copies are synchronized; only Contract Management's
+registry branch changes behavior.
+
+Frontend only: no Creator form, field, function, Custom API or workflow changes;
+no Creator publication is required. Verify both switch directions, repeated and
+rapid switches, retained modal/report state and reduced motion. Run repository
+validation and the Pages build. Rollback Production to `1.62.53`.
+
 ## Fresh Contract Approval Recipients — 1.62.52, November 3, 2026
 
 Opening Internal Approvals reads the exact Contract and its Contract_Approvals

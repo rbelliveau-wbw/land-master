@@ -3,6 +3,10 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.54` keeps sticky report headers behind the Internal Approvals modal
+when switching Approvers/Attachments. Only the modal body fades. Frontend only;
+no Creator publication is required. Rollback: `1.62.53`.
+
 Release `1.62.52` refreshes only the opened contract and its approval rows before
 showing recipients, and refreshes again before the existing Send confirmation.
 Native-created extra VP rows appear immediately. Pending or failed reads keep

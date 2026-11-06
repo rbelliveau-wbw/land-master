@@ -21,6 +21,8 @@ presentation increment; live upload/delete coverage is recorded separately.
 
 ## Appearance
 
+- Switching Legal's Approvers/Attachments tabs fades only the modal body. Keep
+  the backdrop and header opaque and above the underlying sticky report headers.
 - Pair the paperclip action with the comment action. Use the pale-blue compact
   control: `#f4f8ff` surface, `#cbd9eb` border, `#285b97` icon, square rounded
   corners and a count badge at the lower-right edge. Compact row size is
