@@ -22,9 +22,12 @@ column. Existing subdivision codes/project scope and project names/territory
 were verified in their report headers. The picker Quick View is restricted;
 record clicks do nothing and all record-detail/action entry points were removed.
 Its default Detail View remains. Contract Mgmt's new picker View grant was saved
-and reopened, with picker Edit unchecked. CFO's additive View grant was saved;
-its reopen/field visibility confirmation and the Dev/Land Acq picker View grant
-are the remaining feature-required native checks/installations. Existing full
+and reopened, with picker Edit unchecked. CFO's View grant was reopened checked
+and Edit unchecked; Contract has no custom field restrictions, and Name,
+Territory and LOI Contract visibility were checked and unchanged. The Dev/Land
+Acq View grant was saved after the earlier publication and reopened checked,
+with Edit unchecked and no custom Contract field restrictions. All required
+Development installation/checks are complete. Existing full
 Pro Forma report access and Modify All were already present and unchanged; no
 new financial/token access was granted. The native `All_Contracts_v2` Board
 remains unchanged. Its extra Pro Forma field is an optional native-report
@@ -32,13 +35,15 @@ convenience; this widget does not read the Board.
 Full repository validation and the Pages build passed for widget candidate
 `1.62.56`; no live Send to Legal or business-record write was executed.
 
-Creator entered maintenance mode during a publishing process from another
-session, locking Settings before the remaining profile checks. This agent did
-not initiate that publication, and its destination/components are unknown.
-The required profile work must resume after that lock clears; this is not
-evidence of this change's publication. Creator Production publication was
-neither initiated nor verified by this agent. The last observed Environments
-values were Stage `9.154` and Production `9.154`.
+Creator's external publication lock cleared, and the user reported promoting
+everything in Creator. Live Production Legal showed the new header and the
+Pro Forma picker successfully queried the dedicated report with 93 options;
+the agent only opened, searched and closed it. No business-record write or
+Send to Legal was executed. The final Dev/Land profile View grant was saved
+after that publication, so only its user promotion remains pending. Do not
+treat that last grant as published until further evidence. The agent initiated
+no Creator publication. Hosted Production `1.62.56` has successful CI/site
+deployment and a verified public artifact.
 
 Install the components in `change.json` order. Add only the listed report fields
 from [reports.json](reports.json); preserve each report's existing criteria,
@@ -69,6 +74,8 @@ lot/subdivision mismatch protection. A real Send to Legal creates a document and
 may notify Legal; do not trigger one just to check report visibility. An offline
 regression is not a native compiler or live submission test.
 
-Creator publication remains the user's step. The hosted release can be promoted
-separately, but new links and the dedicated picker require these Creator
-components to be published. Rollback instructions are in `change.json`.
+The user reported publishing the initial Creator components; Production
+field/report reads are verified. The final Dev/Land profile grant still needs
+the user's separate promotion. The function compiled/reopened in Development,
+but no actual Production Send to Legal was executed. Rollback instructions are
+in `change.json`.

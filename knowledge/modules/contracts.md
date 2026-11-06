@@ -26,17 +26,23 @@ and its per-component status. The Development lookup is installed/reopened;
 source query and reverse-ownership guard confirmed. `All_Contracts1` and
 `All_Contracts` expose Pro Forma; the picker Quick View is restricted and all
 record-detail/action navigation is disabled. Contract Mgmt's additive picker
-View grant was saved/reopened with Edit unchecked; CFO View was saved with
-reopen/field visibility confirmation pending. The remaining feature-required
-native work is that CFO confirmation and the Dev/Land Acq picker View grant,
-blocked by Creator maintenance during another session's publication. New native
+View grant was saved/reopened with Edit unchecked. CFO View was reopened checked
+and Edit unchecked; Contract has no custom field restrictions and Name/Territory/
+LOI Contract visibility is checked. After the earlier user-reported publication,
+Dev/Land Acq's picker View grant was saved and reopened checked, with Edit
+unchecked and no custom Contract field restrictions. All required Development
+installation/checks are complete. Only user promotion of that final Dev/Land
+profile grant remains pending. New native
 Proforma validation/visibility actions are optional defense-in-depth/convenience
 candidates; existing lot/subdivision validation remains unchanged. The optional
 `All_Contracts_v2` Board field is not read by this widget. Existing full Pro Forma report/Modify All permissions
 were unchanged. Generated metadata remains the historical export.
-Creator Production publication was not initiated or verified by this agent;
-the last observed Stage and Production environments were `9.154`. Publication remains the user's step;
-Pages promotion does not publish the lookup, report or function. No Proforma
+The user reported promoting the earlier Creator components after the external
+maintenance lock cleared. Production Legal's new header and dedicated Pro Forma
+picker were verified, including 93 options returned; only open/search/close was
+performed. The later Dev/Land grant is not yet confirmed published. Hosted
+Production `1.62.56` has successful CI/site deployment and a verified public
+artifact. No Creator publication was initiated by this agent. No Proforma
 widget or new Custom API is needed.
 
 Regression: `scripts/test-contract-location-column.mjs` covers native lookup
@@ -46,8 +52,8 @@ reports, read-only/completed access, invalid lot scope and duplicate sends.
 reuse, subtype separation, conflicting historic links and limited report scope.
 Run the existing Pro Forma Legal access and Contract scope tests, repository
 validation and Pages build, both passed for `1.62.56`. Native compilation is
-separately verified above; remaining non-admin profile checks and a real Send
-to Legal were not completed. Hosted rollback is `1.62.54`;
+separately verified above; required native profile configuration checks are
+complete, while an actual Send to Legal was not executed. Hosted rollback is `1.62.54`;
 restore the previous function separately if needed and keep additive lookup
 data intact.
 
