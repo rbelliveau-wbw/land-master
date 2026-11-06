@@ -630,12 +630,18 @@
         "Contract",
         "Forecast",
         "Forecast_Year",
+        "Lots",
+        "Project",
         "Subdivision",
         "Takedown_Schedule"
       ],
       "reports_referenced": [
-        "All_Forecast_Years",
         "All_Contracts1",
+        "All_Forecast_Years",
+        "All_Forecasts",
+        "All_Lots_All_Fields",
+        "All_Projects",
+        "All_Subdivisions",
         "All_Takedown_Schedules"
       ],
       "sdk_calls": [

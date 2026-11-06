@@ -436,3 +436,28 @@ is known; a cell with no known contributors stays unknown. Monthly, group,
 footer, annual and CSV totals must agree with the Manager for the same phase,
 builders, years and view. Native-shaped sparse-year and partial-blank regression
 cases enforce this; do not return to fixtures that give every builder every year.
+
+## Contract Review Layout — November 6, 2026, 1.9.0
+
+The approved revision supersedes the original Contract Review layout above.
+Center the three page tabs (Builder Forecasts, Contract Review, Legacy Cards)
+in the module topbar using Budget Manager's rounded pill chassis and shared
+selection rail. Keep Forecast's editor selection and write guards intact.
+
+Contract Review defaults to 2026–2028; the staged searchable year picker retains
+2018–2045. Legacy has its own tab and a fixed no-forecast-in-2026–2028 definition,
+independent of year filters. Archive is visible but does not require review.
+Center Territory / Project / Builder grouping between the title and Export CSV.
+Keep counts, search and All Forecasts / Needs Review inside that navy card;
+do not retain a separate white toolbar. Every grouping retains subdivision
+section headings and builder sorting, without a repeated subdivision subtitle.
+
+Expanded lines show distinct native-style takedown and contract cards. Reuse
+the existing card palette, paired closing terms and recent-sales arrangement.
+Read stored whole-schedule values; shared schedules list actual subdivisions.
+Current-month pace follows the existing native summary's Builder/Subdivision
+Forecast sum and Sold Close_Date count in the Creator server month. Contract
+cards show saved lots, status, archive, closing tiers, completion and financial
+totals; unavailable optional values are not zeroes. No explanatory footnotes.
+CSV follows the current filtered tab. Use shared motion and numeric transitions.
+[Implementation and evidence](../../docs/forecast-contract-review-layout-2026-11-06.md).

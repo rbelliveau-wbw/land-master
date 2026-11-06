@@ -480,3 +480,25 @@ its existing selected subdivision, years, pending edits and mutation guards.
 
 No explanatory captions or scope footnotes appear in the new page, per the
 user's explicit direction. See [delivery, verification and rollback](../../docs/forecast-contract-review-2026-11-06.md).
+
+## Contract Review Layout — 1.9.0, November 6, 2026
+
+The approved revision replaces the 1.8.2 layout and fixed two-year picker.
+Builder Forecasts, Contract Review and Legacy Cards are centered in the topbar
+using Budget Manager's pill chassis and shared slider. Contract Review defaults
+to WFY 2026–2028 and offers every year 2018–2045. Legacy is a separate page,
+explicitly defined by the absence of an exact Builder/Subdivision forecast in
+the fixed 2026–2028 window, independent of selected fiscal years.
+
+Archived is informational and never a review reason by itself. Territory,
+Project and Builder grouping use native identities; each group contains
+subdivision sections with builders sorted beneath. The navy title card holds
+counts, search, scope switch and centered grouping. Expanded lines show saved
+schedule and contract cards, with native summary-style monthly pace and
+recent sales. CSV exports the current tab's filtered rows.
+
+Additional native reads reuse the existing Insights report/lookup contracts
+for Subdivision.Project, Project names, the server-month Forecast sum and Sold
+Lots Close_Date count. No Creator backend, schema, API or permission changes.
+Existing editor mutations and guards remain unchanged.
+See [data, release checks and rollback](../../docs/forecast-contract-review-layout-2026-11-06.md).

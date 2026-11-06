@@ -682,3 +682,12 @@ parcel-year creation adopts this pattern; do not claim other forms have adopted
 live checking merely because they display native validation details.
 
 Property Subtype is dependent on Land Type. Keep Other, Residential, and Commercial group headings and all values visible; grey out unavailable choices and omit them from keyboard selection. Disable the whole control until Land Type is selected and for LOI. Shared values remain available in each relevant category. Clear an incompatible draft when Land Type changes and enforce the pair before a native write.
+
+## Forecast Manager Navigation — November 6, 2026
+
+Forecast Manager's topbar centers Builder Forecasts, Contract Review and Legacy
+Cards. Reuse Budget Manager's pill chassis: rounded 999px container, 4px padding,
+3px gap, pale gradient, fine blue border and inset white highlight; 29px controls
+with 11.5px semibold labels and the navy gradient active fill. The shared motion
+rail owns the selection movement. Keep branding left and session/refresh right;
+preserve all pending and uncertain-write navigation guards.
