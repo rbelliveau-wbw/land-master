@@ -1,5 +1,32 @@
 # Forecast matrices
 
+## Contract Review — November 6, 2026
+
+Forecast Manager has Builder Forecasts and Contract Review page tabs. Contract
+Review is a read-only register, initially scoped to WFY 2026 and 2027, with one
+row per exact Builder + Subdivision identity. It has independent searchable
+multi-select filters. Blank/zero Builder forecast parents and duplicate-year
+issues remain visible. Multiple matching contracts and each schedule retain
+their individual IDs in the expanded details and CSV.
+
+Keep Legacy Cards separate: schedules whose exact Builder + Subdivision has no
+Builder forecast parent in either 2026 or 2027. Choosing just one of those years
+does not move the other year's records into Legacy. Shared schedule terms stay
+on the saved schedule, with its actual Subdivisions listed; never divide its
+obligation or cadence across phases.
+
+User direction November 6: omit the explanatory captions and footnotes from
+Contract Review, including the contract-matching explanation and shared-schedule
+scope sentence. Use concise headings, fields, statuses and actions. Preserve
+their underlying data meaning without adding visible instructional prose.
+
+Read all required native report pages through the canonical Creator data adapter,
+with exact count/ID checks and actor/environment cancellation. Denied/incomplete
+reads must not become empty-match results. Keep a complete same-actor report
+mounted during an authorized refresh; clear it on a permission or actor change.
+Register page tabs and keyed disclosure/filter rows with shared interaction
+motion, and counts/quantities with ForecastNumbers. No writes accompany review.
+
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
 ## Input-driven number changes — v1.6.4
