@@ -1985,16 +1985,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.58"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.58">
-<script src="interaction-motion.js?v=1.62.58"></script>
-<script src="interaction-surfaces.js?v=1.62.58"></script>
-<script src="number-edit-commit.js?v=1.62.58"></script>
-<script src="number-transitions.js?v=1.62.58"></script>
-<script src="number-surfaces.js?v=1.62.58"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.58">
-<link rel="stylesheet" href="report-layout.css?v=1.62.58">
-<link rel="stylesheet" href="construction-board.css?v=1.62.58">
+<script src="success-feedback.js?v=1.62.59"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.59">
+<script src="interaction-motion.js?v=1.62.59"></script>
+<script src="interaction-surfaces.js?v=1.62.59"></script>
+<script src="number-edit-commit.js?v=1.62.59"></script>
+<script src="number-transitions.js?v=1.62.59"></script>
+<script src="number-surfaces.js?v=1.62.59"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.59">
+<link rel="stylesheet" href="report-layout.css?v=1.62.59">
+<link rel="stylesheet" href="construction-board.css?v=1.62.59">
 </head>
 <body>
 
@@ -2043,7 +2043,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.58", pageSize: 200, maxPages: 25,
+  version: "1.62.59", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -6459,7 +6459,7 @@ function constructionRejectView(cid){
 }
 function constructionRejectShow(p,action){
   if(contractInteractionHeld()||S.busy||p.scope!==contractMutationScope()||p.generation!==S.contractDataGeneration||!constructionAccess())return Promise.resolve(false);
-  p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.visual=null;contractApprovalProgress=p;S.busy=true;constructionRejectInert(p,true);contractControls();
+  p.action=action;p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.visual=null;contractApprovalProgress=p;S.busy=true;constructionRejectInert(p,true);contractControls();
   $('contractApprovalProgressSteps').textContent='';$('contractApprovalProgress').hidden=false;constructionRejectRender(p);$('contractApprovalProgress').querySelector('.approval-progress-dialog').focus();
   return constructionRejectPerform(p,action);
 }
@@ -6508,12 +6508,12 @@ function constructionRejectFinish(p,kind,message){
 }
 function constructionRejectRender(p){
   if(!contractApprovalCurrent(p)||!constructionAccess()){constructionRejectCancelContext(p);return;}
-  var labels=['Recording Rejection','Saving Rejection Reason','Notifying Submitter'],steps=$('contractApprovalProgressSteps');
+  var checking=p.action==='check',labels=checking?['Checking Decision','Loading Rejection Reason','Checking Notification']:p.action==='retry-email'?['Checking Saved Rejection','Checking Saved Reason','Notifying Submitter']:['Recording Rejection','Saving Rejection Reason','Notifying Submitter'],steps=$('contractApprovalProgressSteps');
   if(!steps.children.length)labels.forEach(function(label){var row=document.createElement('li');row.innerHTML='<span class="approval-progress-icon" aria-hidden="true"></span><span class="approval-progress-main"><span class="approval-progress-name"></span><span class="approval-progress-detail"></span></span><span class="approval-progress-chip"></span>';row.querySelector('.approval-progress-name').textContent=label;steps.appendChild(row);});
-  labels.forEach(function(label,index){var row=steps.children[index],state=p.terminal==='success'?'done':p.terminal?(index<p.target?'done':index===Math.min(p.target,2)?p.terminal==='warning'?'warning':'failed':'pending'):index<p.step?'done':index===p.step?'run':'pending';row.className='approval-progress-step '+state;
+  labels.forEach(function(label,index){var row=steps.children[index];row.querySelector('.approval-progress-name').textContent=label;var state=p.terminal==='success'?'done':p.terminal?(index<p.target?'done':index===Math.min(p.target,2)?p.terminal==='warning'?'warning':'failed':'pending'):index<p.step?'done':index===p.step?'run':'pending';row.className='approval-progress-step '+state;
     row.querySelector('.approval-progress-icon').innerHTML=state==='run'?'<span class="approval-progress-spin"></span>':state==='done'?'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8l3 3 7-7"/></svg>':state==='failed'?'<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>':state==='warning'?'!':String(index+1);
     row.querySelector('.approval-progress-chip').textContent=state==='done'?'Done':state==='run'?'Running':state==='warning'?(p.canRetryEmail?'Needs Retry':'Unconfirmed'):state==='failed'?'Needs Review':'Up Next';row.querySelector('.approval-progress-detail').textContent='';});
-  $('contractApprovalProgressTitle').textContent=p.terminal==='success'?'Request Rejected':p.terminal==='warning'?'Notification Needs Attention':p.terminal==='error'?'Rejection Needs Attention':'Rejecting Request';
+  $('contractApprovalProgressTitle').textContent=p.terminal==='success'?(checking?'Rejection Details':'Request Rejected'):p.terminal==='warning'?'Notification Needs Attention':p.terminal==='error'?'Rejection Needs Attention':checking?'Checking Rejection':p.action==='retry-email'?'Sending Notification':'Rejecting Request';
   $('contractApprovalProgress').querySelector('.approval-progress-kicker').textContent='Construction Review';$('contractApprovalProgressSub').textContent=p.name;
   var bar=$('contractApprovalProgressBar');bar.className='approval-progress-bar'+(p.terminal?' '+p.terminal:'');bar.setAttribute('data-lm-motion','meter');bar.querySelector('i').style.width=(p.terminal?Math.round(p.target*100/3):Math.round(p.step*100/3))+'%';
   var status=$('contractApprovalProgressStatus');status.className='approval-progress-status'+(p.terminal?' '+p.terminal:'');status.setAttribute('data-lm-motion','feedback');status.setAttribute('data-state',p.terminal||'pending');status.textContent=p.terminal?p.message:labels[Math.min(p.step,2)]+' — leave this open until it finishes.';
@@ -6523,10 +6523,10 @@ function constructionRejectRender(p){
 }
 function constructionRejectRetry(p){
   if(!contractApprovalCurrent(p)||!p.terminal||p.nativeAttempt&&(p.nativeAttempt.nativePending||p.nativeAttempt.verificationPending)||!constructionAccess())return Promise.resolve(false);
-  var retryEmail=p.canRetryEmail&&constructionEditAccess();p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.canRetryEmail=false;constructionRejectRender(p);
+  var retryEmail=p.canRetryEmail&&constructionEditAccess();p.action='check';p.terminal='';p.message='';p.terminalFocused=false;p.step=0;p.target=0;p.pendingResult=null;p.canRetryEmail=false;constructionRejectRender(p);
   return constructionRejectRequest(p,'check').then(function(out){
     if(!contractApprovalCurrent(p)){constructionRejectCancelContext(p);return false;}
-    if(retryEmail&&out.rejectionRecorded===true&&out.commentRecorded===true&&out.canRetryEmail===true&&['failed','not-started','missing-recipient'].indexOf(String(out.emailState))>=0&&constructionEditAccess())return constructionRejectPerform(p,'retry-email');
+    if(retryEmail&&out.rejectionRecorded===true&&out.commentRecorded===true&&out.canRetryEmail===true&&['failed','not-started','missing-recipient'].indexOf(String(out.emailState))>=0&&constructionEditAccess()){p.action='retry-email';constructionRejectRender(p);return constructionRejectPerform(p,'retry-email');}
     constructionRejectInspect(p,out);return out;
   }).catch(function(error){constructionRejectFinish(p,'error',errText(error));return false;});
 }

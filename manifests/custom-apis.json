@@ -735,7 +735,7 @@
       "environment": "Development",
       "enabled": true,
       "application_id": "4410926000000011391",
-      "native_verification": "Saved/reopened Enabled, Land Master DEVELOPMENT, Default.manageConstructionReview, OAuth2 POST All users, application/json Key and Value payload:String, Standard response. Helper negative Check executed safely; no live rejection/email. See creator/schema-changes/construction-rejection-2026-11-06/native-install-progress.json."
+      "native_verification": "Enabled DEVELOPMENT OAuth2 POST payload:String binding. Live Dev/Land Acq submission and Construction rejection passed with saved reason, one sent attempt and user-confirmed inbox screenshot. Native owner-only Development preview adapter compiled/reopened. See native-install-progress.json."
     },
     {
       "name": "Manage_Construction_Review_STAGE",

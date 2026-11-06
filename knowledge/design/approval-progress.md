@@ -201,3 +201,8 @@ resend. Preserve acknowledged-save policy, pending duplicate locks, focus,
 reduced motion and targeted lost-reply recovery. See [the feature
 contract](../../docs/construction-rejection-2026-11-06.md) for native guards,
 profile checks, environment API suffixes and deployment evidence.
+
+Construction **View Rejection** and read-only **Check Status** use checking/loading
+stage labels and **Rejection Details** on success. They must not present a saved
+decision read as a new rejection or a new notification send. Patch the mounted
+stage labels when a guarded email retry changes the action.

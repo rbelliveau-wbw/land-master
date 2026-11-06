@@ -1,6 +1,6 @@
 {
   "change": "construction-rejection-2026-11-06",
-  "status": "development-preview-fix-awaiting-native-install",
+  "status": "development-positive-profile-and-delivered-email-verified",
   "source_authority": "Current committed schema/contracts plus authenticated native Development source, API, field and requested-profile readback on 2026-11-06; detailed limits in native-install-progress.json",
   "generated_metadata_refreshed": false,
   "new_form": "Construction_Review_Log",
@@ -175,7 +175,7 @@
     "Development": {
       "installed": true,
       "verified": true,
-      "verification_scope": "Native schema, compiled/reopened helpers, validation actions, API binding and requested profile metadata; safe negative executions only. No live notification sent.",
+      "verification_scope": "Native schema, five compiled/reopened functions, guards, API and profile configuration; Dev/Land Acq submission, Construction rejection, sent email receipt and user-provided inbox screenshot verified.",
       "evidence": "native-install-progress.json"
     },
     "Stage": {
@@ -191,7 +191,7 @@
   "rejection_reason_limit": 5000,
   "retention": "Preserve the original decision snapshot independently of editable or deleted Comment_Log entries. Do not backfill historical Rejected requests or resend old decisions.",
   "rollback": "Restore previous widget mapping; disable only the three new Custom API bindings. Preserve log rows and optional parent field. Keep the native bypass/immutability guards until a reviewed alternate rejection path exists. Do not erase prior decisions or mail evidence.",
-  "widget_candidate": "1.62.58",
+  "widget_candidate": "1.62.59",
   "rollback_widget_version": "1.62.56",
   "development_actor_boundary": "Reuse existing Purchase Order native owner + Development-only View-as behavior. A selected exact User Access ID must resolve to one row and one unique user. Stage/Production and ordinary callers retain native identity; existing permission helper applies to the resolved actor."
 }

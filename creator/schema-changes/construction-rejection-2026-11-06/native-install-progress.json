@@ -1,16 +1,16 @@
 {
-  "status": "development-schema-functions-guards-api-and-requested-profile-configuration-verified",
+  "status": "development-profile-submission-rejection-and-delivered-email-verified",
   "release_request": {
     "pmp_authorized": true,
     "creator_publication_by_user": true,
     "live_development_test": "requested; submit as Dev/Land Acq, reject as Construction Budgeting",
     "test_recipient": "rbelliveau@wbdevelopment.com",
-    "live_test_result": "pending"
+    "live_test_result": "Passed: Dev/Land Acq submission, Construction rejection, immutable reason, native sent stamp, submitter read-only recovery and user-provided inbox screenshot."
   },
   "observed_date": "2026-11-06",
   "production_published": false,
-  "widget_deployed": false,
-  "widget_candidate": "1.62.58",
+  "widget_deployed": true,
+  "widget_candidate": "1.62.59",
   "audit_form": {
     "name": "Construction_Review_Log",
     "id": "4410926000005833341",
@@ -38,7 +38,8 @@
       "compiled": true,
       "reopened": true,
       "source_matches": true,
-      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved.",
+      "preview_fix_compiled_reopened": true
     },
     "buildConstructionRejectionNotification": {
       "id": "4410926000005833450",
@@ -52,14 +53,22 @@
       "compiled": true,
       "reopened": true,
       "source_matches": true,
-      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved.",
+      "preview_fix_compiled_reopened": true
     },
     "manageConstructionReview": {
       "id": "4410926000005833464",
       "compiled": true,
       "reopened": true,
       "source_matches": true,
-      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved."
+      "comparison": "Whitespace/comments and Creator formatting of redundant atomic criteria parentheses normalized; string contents preserved.",
+      "preview_fix_compiled_reopened": true
+    },
+    "constructionReviewActor": {
+      "compiled": true,
+      "reopened": true,
+      "source_matches": true,
+      "comparison": "Copied complete saved source through the native editor; tokens match intended source after comments, whitespace and Creator query parentheses normalization."
     }
   },
   "workflows": {
@@ -160,9 +169,8 @@
     }
   ],
   "verification_limits": [
-    "No live rejection or email was sent. Positive native mail delivery and authenticated end-user sessions for each profile have not been exercised.",
-    "Stage and Production functions/fields/guards/profile changes require user-controlled Creator promotion, then their respective API bindings must be enabled.",
-    "The immutable frontend release and Development mapping are local; no Git push or hosted promotion was requested."
+    "Creator Stage/Production promotion remains user-controlled; register matching environment APIs after the five functions/schema/guards/profile restrictions are promoted.",
+    "CFO native field/profile restrictions were reopened and offline permissions tested; the requested positive live test exercised Dev/Land Acq and Construction."
   ],
   "checks": {
     "focused_backend": "passed",
@@ -170,17 +178,19 @@
     "focused_schema_and_profiles": "passed",
     "full_npm_validate": "passed with bundled Python on process PATH",
     "npm_build_pages": "passed",
-    "desktop_ui": "actual-source reason, progress, success, definite-failure and ambiguous-result UI inspected"
+    "desktop_ui": "actual-source reason, progress, success, definite-failure and ambiguous-result UI inspected",
+    "final_release": "1.62.59: full npm run validate and npm run build:pages passed"
   },
   "screenshots": {
     "development_api": "C:/Users/R/Desktop/claude/outputs/construction-rejection/creator-development-api.jpg",
-    "unconfirmed_ui": "C:/Users/R/Desktop/claude/outputs/construction-rejection/unconfirmed-notification.jpg"
+    "unconfirmed_ui": "C:/Users/R/Desktop/claude/outputs/construction-rejection/unconfirmed-notification.jpg",
+    "development_sent": "construction-rejection-evidence/development-rejection-email-sent.jpg",
+    "submitter_saved_reason": "construction-rejection-evidence/submitter-saved-rejection.jpg",
+    "user_inbox": "User attachment codex-clipboard-bff60bdd-3ed0-408f-8fdb-6bbd2e93b8c0.png"
   },
   "remaining_for_production": [
-    "User-controlled Creator Development to Stage and Production promotion of the matching schema, all four functions, three validation workflows and three profile field restrictions",
-    "Register/enable Manage_Construction_Review_STAGE and Manage_Construction_Review against the matching promoted functions",
-    "Promote matching immutable hosted widget release through the repository release process",
-    "Authorized positive end-to-end native notification verification"
+    "User-controlled promotion of matching Creator schema, five functions, validation workflows and profile restrictions",
+    "Register/enable Manage_Construction_Review_STAGE and Manage_Construction_Review against their matching promoted functions"
   ],
   "development_profile_test": {
     "contract_id": "4410926000005844058",
@@ -190,7 +200,28 @@
     "reviewer_profile": "Construction Budgeting",
     "recipient": "rbelliveau@wbdevelopment.com",
     "initial_result": "1.62.57 rejection denied before writes; native API runs as owner in Development View-as",
-    "preview_fix": "Actor adapter and three updated native helpers compiled in Development; hosted 1.62.58 and positive test pending",
-    "temporary_email_restore_pending": true
+    "preview_fix": "Installed, compiled and reopened; 1.62.58 hosted test passed",
+    "temporary_email_restore_pending": false,
+    "result": "passed",
+    "operation_id": "cr-mw5cgy2m-kl8yyrm2wwq-9fkfmpwh37b",
+    "decision_id": "4410926000005844062",
+    "comment_id": "4410926000005844064",
+    "status": "Rejected",
+    "reviewer_display": "Demo Construction",
+    "email_state": "sent",
+    "email_sent_at": "Nov 6, 2026 \u00b7 1:05 PM",
+    "email_attempt_no": 1,
+    "native_read_only_check": "ok:true; rejectionRecorded:true; commentRecorded:true; emailSent:true; canRetryEmail:false; writeState:acknowledged",
+    "submitter_view_rejection": "passed; same reason, no review or resend controls",
+    "inbox_delivery": "User supplied screenshot of received email with matching request, reviewer and reason",
+    "hosted_test_version": "1.62.58",
+    "final_copy_only_version": "1.62.59",
+    "temporary_email_restored": "Confirmed demouser_1 User Access report row returned to its original Approver_Email after the sent receipt and inbox screenshot."
+  },
+  "hosted_release": {
+    "version": "1.62.59",
+    "development_and_production_promotion": "Mapped to 1.62.59 in the PMP commit; deployment outcome is verified in GitHub Actions.",
+    "rollback": "1.62.56",
+    "previous_verified_candidate_commit": "2fe2d8c8a55cb293e4a785866b1a9c11b644c96c"
   }
 }

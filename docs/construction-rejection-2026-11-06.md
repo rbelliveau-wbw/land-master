@@ -106,24 +106,27 @@ and rejection-bypass guards until an alternate path is reviewed.
 
 ## Verified Development State — November 6, 2026
 
-Candidate `1.62.57` passed the full repository validation and Pages build. The
-new form, parent field, native guards and all four helpers are installed in
-Development; all helper bodies were reopened and compared with the intended
-source after Creator formatting. `Manage_Construction_Review_DEV` is enabled
-with the matching native String payload binding. CFO, Dev/Land Acq and
-Construction Budgeting each have the new parent field visible/read-only, saved
-and reopened; their existing routes and lack of direct log grants were checked.
-The native permission helper retains its current profile defaults and overrides.
+The new form, parent field, native guards and five functions are installed in
+Development. Updated functions compiled and their complete saved editor source
+was copied and compared after Creator formatting. The OAuth2
+`Manage_Construction_Review_DEV` payload binding is enabled. All three requested
+profiles have the new parent pointer visible/read-only and no direct audit log
+access; their existing grants and native helper defaults remain unchanged.
+No new report projection is required; Check resolves the saved native pointer.
 
-No additional report field is necessary: View Rejection appears for rejected
-Construction requests and Check resolves the server-owned pointer even when
-SDK projections omit it. Existing report fields and criteria are preserved.
+Request `4410926000005844058` was submitted as `demouser_1` (Dev/Land Acq) and
+rejected as `demouser_4` (Construction Budgeting) using hosted 1.62.58. Native
+Check confirmed Rejected, decision `4410926000005844062`, comment
+`4410926000005844064`, email attempt 1 sent at November 6, 2026, 1:05 PM, and
+recipient `rbelliveau@wbdevelopment.com`. The user supplied an inbox screenshot
+with the matching request, Demo Construction reviewer and full reason.
+The submitter reopened View Rejection successfully with no review/resend grant.
+Read-only Check did not repeat the decision, comment or email.
 
-Safe native Check executions returned the structured access-denied result. No
-live request was rejected or notification sent; positive authenticated profile
-sessions and end-to-end delivery remain unverified. Stage/Production publication
-and their API bindings, as well as repository/hosted promotion, remain separate
-user-controlled release work. See the [observed installation evidence](../creator/schema-changes/construction-rejection-2026-11-06/native-install-progress.json).
+Final 1.62.59 changes only the read-only progress wording to **Checking
+Rejection** / **Rejection Details**, with checking/loading stages instead of
+write verbs. Backend and email behavior match the live-tested 1.62.58 release.
+See the [installation and test evidence](../creator/schema-changes/construction-rejection-2026-11-06/native-install-progress.json).
 
 ## PMP and Live Development Test
 
@@ -155,6 +158,29 @@ Contract's native Added_User and its User Access email, independent of owners.
 
 The demo submitter's Development-only Approver_Email was temporarily changed
 from its original address to `rbelliveau@wbdevelopment.com` for this authorized
-test. Restore that configuration after sending. The native actor adapter, snapshot, sender and entry point compiled in
-Development after the publication lock cleared. The positive test is pending
-the hosted Development 1.62.58 deployment.
+test. The original Development demo email was restored and its report row
+was reread after sending. The native actor adapter, snapshot, sender and entry point compiled and were
+reopened in Development after the publication lock cleared. The positive
+profile/email test passed on hosted 1.62.58.
+
+
+## Release, Regression and Rollback
+
+Full `npm run validate` and `npm run build:pages` passed again for final 1.62.59. Hosted Development
+and Production target 1.62.59; Stage remains 1.62.3. Creator publication remains
+with the user, followed by matching Stage/Production API registration.
+Rollback hosted Contract Management to 1.62.56. Preserve all saved decision/email
+receipts and native history guards; never replay the delivered test notification.
+
+Changed implementation files: Contract Management widget source/config and
+immutable releases; the five Construction review/notification functions; native
+form/field/workflow/profile installation fragments and evidence; Custom API and
+widget manifests; environment mapping; focused rejection regression checks;
+this module guide and the shared approval progress guide. Forms/fields and
+native API installation contracts are enumerated above and in change.json.
+
+Regression covers native profile defaults and explicit overrides, exact ID
+strings, owner-only Development preview and denied impersonation elsewhere,
+concurrent review/send claims, lost replies, one original-submitter notification,
+HTML escaping, immutable reason, native bypass guards, saved-reason read access,
+retained drafts/focus, and ordinary Legal/Accept behavior.
