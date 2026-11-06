@@ -33,6 +33,7 @@ const inert=node=>!!node&&(node.inert||inert(node.parentNode));
   assert.deepEqual(actions(h),['reject'],'an acknowledged decision does not trigger automatic post-save field comparisons');
   assert.match(h.sent[0].body.operationId,/^[A-Za-z0-9-]{20,80}$/);
   assert.equal(h.sent[0].body.reason,'Update the paving quantities.');
+  assert.equal(h.sent[0].body.userAccessId,String(h.c.S.myAccessId),'Selected native User Access identity accompanies the review.');
   assert.equal(h.c.contractApprovalProgress.terminal,'success');assert.match(h.node('contractApprovalProgressStatus').textContent,/Email sent to submitter@example.test/);
   assert.match(h.node('constructionRejectSaved').textContent,/Update the paving quantities/);
   assert.equal(h.c.findContract(ID).Status,'Rejected');assert.equal(h.c.contractProgressClose(),true);assert.equal(h.node('view').inert,false);

@@ -6,7 +6,7 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // Execute the checked-in Deluge bodies against native-shaped fixtures. This is
 // offline behavioral coverage, not a substitute for Creator compilation/UI QA.
 const CID='90071992547419991', OP='construction-review-operation-0001', OTHER='construction-review-operation-0002';
-const names=['hasConstructionPermission','PF_Packet_Escape','constructionReviewSnapshot','buildConstructionRejectionNotification','sendConstructionRejectionNotification','manageConstructionReview'];
+const names=['hasConstructionPermission','PF_Packet_Escape','constructionReviewActor','constructionReviewSnapshot','buildConstructionRejectionNotification','sendConstructionRejectionNotification','manageConstructionReview'];
 const sources=Object.fromEntries(names.map(name=>[name,fs.readFileSync('creator/functions/'+name+'.dg','utf8')]));
 function runtime(options={}){
  const fixtures={
@@ -22,7 +22,7 @@ function runtime(options={}){
  Array.prototype.add=function(v){this.push(v);};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.size=Array.prototype.count=function(){return this.length;};Array.prototype.get=function(i){return this[i]??null;};
  String.prototype.toMap=function(){return JSON.parse(this);};String.prototype.toLong=function(){return this.toString();};String.prototype.len=function(){return this.length;};String.prototype.matches=function(pattern){return new RegExp(pattern).test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};Number.prototype.toLong=function(){return Math.trunc(this);};
  function stamp(epoch=1234567890){return {toLong(){return epoch;},toString(){return 'Nov 6, 2026 · 10:30 AM';}};}
- var zoho={loginuser:'samuel_wbw',adminuser:'wbdevelopment',currenttime:stamp()},thisapp={environment:{type:options.environment??'Production'},permissions:{profileForUser(){return options.profile??'Construction Budgeting';}}};
+ var zoho={loginuser:options.nativeActor??'samuel_wbw',adminuser:'wbdevelopment',currenttime:stamp()},thisapp={environment:{type:options.environment??'Production'},permissions:{profileForUser(){return options.profile??'Construction Budgeting';}}};
  tables.Contract[0].Modified_Time=options.noModified?null:stamp();
  function record(row){return new Proxy(row,{get(o,k){return o[k]??null;},set(o,k,v){if(options.failStatus&&k==='Status')throw Error('Status failure');o[k]=v;if(k==='Construction_Rejection_Operation'){o.Modified_Time=stamp(1234567891);if(hook)hook('marker',o);}return true;}});}
  function query(form,predicate,sort){let rows=Array.from(tables[form]??[],record).filter(predicate);if(sort)rows.sort((a,b)=>a[sort]-b[sort]);return new Proxy(rows,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;},set(a,k,v){if(k in a||!a.length){a[k]=v;return true;}a[0][k]=v;return true;}});}
@@ -37,7 +37,7 @@ function runtime(options={}){
   try{vm.runInContext(code+';thisapp.'+name+'='+name+';',c);}catch(error){throw Error(name+': '+error.message+'\n'+code,{cause:error});}
  }
  const call=p=>JSON.parse(vm.runInContext('manageConstructionReview('+JSON.stringify(JSON.stringify(p))+')',c));
- const run=(action='reject',extra={})=>call({contractId:CID,operationId:OP,action,reason:'Please revise <plans> & confirm timing.\nUse the final set.',...extra});
+ const run=(action='reject',extra={})=>call({contractId:CID,operationId:OP,action,userAccessId:'4410926000003608012',reason:'Please revise <plans> & confirm timing.\nUse the final set.',...extra});
  return {c,call,run,eval:code=>vm.runInContext(code,c),get tables(){return c.tables;},get mails(){return c.mails;}};
 }
 
@@ -92,23 +92,41 @@ for(const option of ['failComment','failStatus']){
 {
  // Interleave another reviewer after the pointer write has changed Modified_Time
  // but before Status=Rejected. A fresh-version claim must still be blocked.
- const h=runtime();h.eval(`hook=function(kind){if(kind==='marker'){hook=null;var nested=JSON.parse(manageConstructionReview(JSON.stringify({contractId:'${CID}',operationId:'${OTHER}',action:'reject',reason:'Concurrent second reason'})));if(nested.ok!==false)throw Error('Concurrent pointer-gap reject was accepted');}}`);
+ const h=runtime();h.eval(`hook=function(kind){if(kind==='marker'){hook=null;var nested=JSON.parse(manageConstructionReview(JSON.stringify({contractId:'${CID}',operationId:'${OTHER}',action:'reject',userAccessId:'4410926000003608012',reason:'Concurrent second reason'})));if(nested.ok!==false)throw Error('Concurrent pointer-gap reject was accepted');}}`);
  assert.equal(h.run().emailState,'sent');assert.equal(h.tables.Construction_Review_Log.filter(r=>r.Kind==='Decision').length,1);assert.equal(h.tables.Comment_Log.length,1);assert.equal(h.mails.length,1);
 }
 {
  // An already eligible retry prepares its message while a competing retry runs
  // to completion. The stale attempt number must collide instead of sending twice.
  const h=runtime({recipient:''});h.run();h.tables.User_Access[1].Approver_Email='corrected@example.test';
- h.eval(`var originalPrepare=thisapp.buildConstructionRejectionNotification;var raced=false;thisapp.buildConstructionRejectionNotification=function(id){var result=originalPrepare(id);if(!raced){raced=true;sendConstructionRejectionNotification(id);}return result;};`);
+ h.eval(`var originalPrepare=thisapp.buildConstructionRejectionNotification;var raced=false;thisapp.buildConstructionRejectionNotification=function(id){var result=originalPrepare(id);if(!raced){raced=true;sendConstructionRejectionNotification(id,'4410926000003608012');}return result;};`);
  assert.equal(h.run('retry-email').emailState,'sent');assert.equal(h.mails.length,1,'stale prepared retry cannot skip ahead to a second send attempt');assert.equal(h.tables.Construction_Review_Log.filter(r=>r.Kind==='Email').length,2);
 }
 {
  // Check/retry during a newly inserted send claim must see a non-retryable state.
- const h=runtime();h.eval(`hook=function(kind,row){if(kind==='insert'&&row.Kind==='Email'){var check=constructionReviewSnapshot('${CID}','${OP}');if(check.canRetryEmail!==false||check.emailState!=='sending')throw Error('In-flight claim exposed retry');sendConstructionRejectionNotification('1000');}}`);
+ const h=runtime();h.eval(`hook=function(kind,row){if(kind==='insert'&&row.Kind==='Email'){var check=constructionReviewSnapshot('${CID}','${OP}','4410926000003608012');if(check.canRetryEmail!==false||check.emailState!=='sending')throw Error('In-flight claim exposed retry');sendConstructionRejectionNotification('1000','4410926000003608012');}}`);
  assert.equal(h.run().emailState,'sent');assert.equal(h.mails.length,1);assert.equal(h.tables.Construction_Review_Log.filter(r=>r.Kind==='Email').length,1);
 }
 {
  const h=runtime();h.run();h.tables.Contract[0].Status='Proposed';h.tables.Contract[0].Modified_Time=h.eval('stamp(1234567999)');const r=h.run('reject',{operationId:OTHER,reason:'A later explicit review cycle'});assert.equal(r.emailState,'sent');assert.equal(h.tables.Construction_Review_Log.filter(r=>r.Kind==='Decision').length,2,'explicit reopened cycle gets a new immutable receipt');assert.equal(h.mails.length,2);
+}
+{
+ const h=runtime({environment:'Development',nativeActor:'wbdevelopment'});
+ assert.equal(h.run().emailState,'sent','Development native owner may preview the existing Construction actor');
+ assert.equal(h.tables.Comment_Log[0].User,'samuel_wbw');
+ const receipt=JSON.parse(h.tables.Construction_Review_Log[0].Snapshot);
+ assert.equal(receipt.actor,'samuel_wbw');assert.equal(receipt.nativeActor,'wbdevelopment');
+}
+for(const environment of ['Stage','Production']){
+ const h=runtime({environment,nativeActor:'ordinary_user',profile:'Read'});
+ assert.equal(h.run().ok,false,'A claimed Construction row cannot impersonate its user outside native owner Development preview');assert.equal(h.mails.length,0);
+}
+for(const extra of [{userAccessId:4410926000003608012},{userAccessId:'999999'},{userAccessId:'1 OR 1'}]){
+ const h=runtime({environment:'Development',nativeActor:'wbdevelopment'});assert.equal(h.run('reject',extra).ok,false);assert.equal(h.tables.Construction_Review_Log.length,0);
+}
+{
+ const h=runtime({environment:'Development',nativeActor:'wbdevelopment'});h.tables.User_Access.push({...h.tables.User_Access[0],ID:'22222'});
+ assert.equal(h.run().ok,false,'Duplicate selected user identity fails closed');assert.equal(h.mails.length,0);
 }
 for(const source of Object.values(sources)){assert.doesNotMatch(source,/\bwhile\s*\(|containsKey\(/);assert.match(source,/\n[ \t]+return [^\n]+;\r?\n[ \t]*}\s*$/,'typed helpers retain an unconditional outer fallback return');}
 assert.doesNotMatch(sources.manageConstructionReview,/thisapp\.postRecordComment\(/,'rejection cannot emit general owner comment mail');

@@ -706,7 +706,7 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses native identity and existing hasConstructionPermission; native owner Development View-as alone may select one unique existing User Access identity, matching the established Purchase Order boundary. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
       "environment": "Production",
       "enabled": false,
       "native_verification": "Prepared registry contract only. Register/enable after user-controlled promotion of the matching function/schema/profile changes; do not bind to Development."
@@ -731,7 +731,7 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses native identity and existing hasConstructionPermission; native owner Development View-as alone may select one unique existing User Access identity, matching the established Purchase Order boundary. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
       "environment": "Development",
       "enabled": true,
       "application_id": "4410926000000011391",
@@ -757,7 +757,7 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses zoho.loginuser and existing hasConstructionPermission. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
+      "notes": "New guarded Construction-only rejection/check/email retry action. Server uses native identity and existing hasConstructionPermission; native owner Development View-as alone may select one unique existing User Access identity, matching the established Purchase Order boundary. Internal log form/report access is not granted. Required unique audit Claim_Key, optional parent pointer and native bypass guards are installed separately. Consult native-install-progress.json for actual installation; no Stage or Production publication is claimed.",
       "environment": "Stage",
       "enabled": false,
       "native_verification": "Prepared registry contract only. Register/enable after user-controlled promotion of the matching function/schema/profile changes; do not bind to Development."

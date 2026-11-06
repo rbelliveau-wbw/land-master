@@ -133,3 +133,28 @@ to `rbelliveau@wbdevelopment.com`. Publish the candidate to Development first,
 record the native test result, then promote the matching hosted release to
 Production. Creator publication remains with the user under PMP. Production
 Custom API registration must follow promotion of the matching native helpers.
+
+
+## Development Profile Test — Preview Boundary
+
+The live test created request `4410926000005844058` as `demouser_1`
+(Dev/Land Acq - Proforma & Budgets), then attempted rejection as `demouser_4`
+(Construction Budgeting). The submitter had no review controls. The initial
+1.62.57 API correctly denied the native app-owner identity before any rejection
+or email: Creator Custom APIs execute as the owner during Development View-as.
+
+The 1.62.58 correction reuses the proven Purchase Order preview boundary in a
+small Construction-specific actor adapter. Only an authenticated native owner
+in Development may select an exact existing User Access row; duplicate user
+rows fail closed. Stage/Production and ordinary callers always retain their
+native identity. Existing Construction permissions apply after resolution.
+Both the selected reviewer and native caller remain in the audit snapshot.
+Separate code is required because PO helpers expose PO-specific receipt hints,
+not a shared actor resolver. The original submitter still comes from the
+Contract's native Added_User and its User Access email, independent of owners.
+
+The demo submitter's Development-only Approver_Email was temporarily changed
+from its original address to `rbelliveau@wbdevelopment.com` for this authorized
+test. Restore that configuration after sending. The native actor adapter, snapshot, sender and entry point compiled in
+Development after the publication lock cleared. The positive test is pending
+the hosted Development 1.62.58 deployment.

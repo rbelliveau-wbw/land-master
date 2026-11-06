@@ -1,0 +1,26 @@
+map constructionReviewActor(string userAccessId)
+{
+	result = Map(); result.put("ok",false); result.put("user",zoho.loginuser.toString());
+	try
+	{
+		// Reuse the Purchase Order Development View-as boundary. Custom APIs run
+		// as the owner in preview; only that native owner may select a demo row.
+		// Every Stage/Production or ordinary caller keeps its native identity.
+		actor = zoho.loginuser;
+		if(thisapp.environment.type == "Development" && zoho.loginuser == zoho.adminuser && ifnull(userAccessId,"") != "")
+		{
+			if(!userAccessId.matches("^[1-9][0-9]*$")) { return result; }
+			preview = User_Access[ID == userAccessId.toLong()];
+			if(preview.count() != 1 || ifnull(preview.User,"").toString().trim() == "") { return result; }
+			actor = preview.User;
+			access = User_Access[User == actor];
+			if(access.count() != 1 || access.ID.toString() != userAccessId) { return result; }
+		}
+		result.put("user",actor.toString()); result.put("ok",true);
+	}
+	catch(actorError)
+	{
+		result.put("ok",false);
+	}
+	return result;
+}

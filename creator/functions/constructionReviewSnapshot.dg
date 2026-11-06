@@ -1,4 +1,4 @@
-map constructionReviewSnapshot(string contractId, string operationId)
+map constructionReviewSnapshot(string contractId, string operationId, string userAccessId)
 {
 	result = Map();
 	result.put("ok",false); result.put("contract","construction-review-v1");
@@ -9,7 +9,8 @@ map constructionReviewSnapshot(string contractId, string operationId)
 	try
 	{
 		cid = ifnull(contractId,"").trim(); op = ifnull(operationId,"").trim();
-		if(!cid.matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(zoho.loginuser,false) != true)
+		identity = thisapp.constructionReviewActor(userAccessId); actor = identity.get("user");
+		if(identity.get("ok") != true || !cid.matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(actor,false) != true)
 		{
 			result.put("message","Construction request access is required."); return result;
 		}
@@ -72,7 +73,7 @@ map constructionReviewSnapshot(string contractId, string operationId)
 		complete = decision.State == "recorded" && rejected && commentRecorded;
 		result.put("writeState",if(complete,"acknowledged",if(decision.State == "conflict","not-started","unknown")));
 		retryStates = {"not-started","failed","missing-recipient"};
-		canRetry = complete && thisapp.hasConstructionPermission(zoho.loginuser,true) == true && retryStates.contains(state);
+		canRetry = complete && thisapp.hasConstructionPermission(actor,true) == true && retryStates.contains(state);
 		result.put("canRetryEmail",canRetry);
 		message = "The rejection outcome needs review. Check the request before taking another action.";
 		if(decision.State == "conflict") { message = "The request changed before rejection. Refresh before reviewing it."; }

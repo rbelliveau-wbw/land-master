@@ -1,17 +1,18 @@
-map sendConstructionRejectionNotification(string decisionId)
+map sendConstructionRejectionNotification(string decisionId, string userAccessId)
 {
 	result = Map(); result.put("ok",false); result.put("contract","construction-review-v1"); result.put("writeState","not-started");
 	cid = ""; op = ""; attemptId = 0;
 	try
 	{
-		if(!ifnull(decisionId,"").matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(zoho.loginuser,true) != true)
+		identity = thisapp.constructionReviewActor(userAccessId); actor = identity.get("user");
+		if(identity.get("ok") != true || !ifnull(decisionId,"").matches("^[1-9][0-9]*$") || thisapp.hasConstructionPermission(actor,true) != true)
 		{
 			result.put("message","Construction review access is required."); return result;
 		}
 		decision = Construction_Review_Log[(ID == decisionId.toLong()) && (Kind == "Decision")];
 		if(decision.count() != 1) { result.put("message","The rejection record is unavailable."); return result; }
 		cid = decision.Contract1.toString(); op = decision.Operation_ID;
-		before = thisapp.constructionReviewSnapshot(cid,op);
+		before = thisapp.constructionReviewSnapshot(cid,op,userAccessId);
 		if(before.get("canRetryEmail") != true) { return before; }
 		// Preparation is read-only. No address/body failure can have sent email.
 		notification = thisapp.buildConstructionRejectionNotification(decisionId);
@@ -21,7 +22,7 @@ map sendConstructionRejectionNotification(string decisionId)
 		nextAttempt = ifnull(before.get("attemptNo"),0) + 1;
 		claimKey = "email|" + decisionId + "|" + nextAttempt.toString();
 		mailSnapshot = Map(); mailSnapshot.put("recipient",ifnull(notification.get("to"),""));
-		mailSnapshot.put("decisionId",decisionId); mailSnapshot.put("actor",zoho.loginuser.toString());
+		mailSnapshot.put("decisionId",decisionId); mailSnapshot.put("actor",actor.toString()); mailSnapshot.put("nativeActor",zoho.loginuser.toString());
 		// Claim_Key MUST be native No Duplicate Values. Only the successful insert
 		// owns this attempt; concurrent retries cannot both cross the send boundary.
 		attemptId = insert into Construction_Review_Log
@@ -41,14 +42,14 @@ map sendConstructionRejectionNotification(string decisionId)
 		{
 			attempt.State=ifnull(notification.get("state"),"failed");
 			attempt.Last_Error=ifnull(notification.get("reason"),"The notification could not be prepared.");
-			return thisapp.constructionReviewSnapshot(cid,op);
+			return thisapp.constructionReviewSnapshot(cid,op,userAccessId);
 		}
 		// Recheck the targeted decision after acquiring the unique send claim.
 		parent = Contract[ID == decision.Contract1];
 		if(parent.count() != 1 || parent.Status != "Rejected" || ifnull(parent.Work_Module,"") != "Construction" || ifnull(parent.Construction_Rejection_Operation,"") != op || decision.State != "recorded")
 		{
 			attempt.State="failed"; attempt.Last_Error="The request changed before notification.";
-			return thisapp.constructionReviewSnapshot(cid,op);
+			return thisapp.constructionReviewSnapshot(cid,op,userAccessId);
 		}
 		attempt.State="sending";
 		try
@@ -72,14 +73,14 @@ map sendConstructionRejectionNotification(string decisionId)
 			attempt.State="unknown";
 			attempt.Last_Error="Email delivery could not be confirmed. Check delivery before any resend.";
 		}
-		return thisapp.constructionReviewSnapshot(cid,op);
+		return thisapp.constructionReviewSnapshot(cid,op,userAccessId);
 	}
 	catch(sendError)
 	{
 		if(cid != "" && op != "")
 		{
 			// A failed/unknown claim is never ownership. Read its current state only.
-			return thisapp.constructionReviewSnapshot(cid,op);
+			return thisapp.constructionReviewSnapshot(cid,op,userAccessId);
 		}
 		result.put("writeState","unknown"); result.put("message","The notification outcome could not be checked.");
 	}

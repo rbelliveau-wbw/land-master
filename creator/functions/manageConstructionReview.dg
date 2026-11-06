@@ -1,7 +1,7 @@
 string manageConstructionReview(string payload)
 {
 	result = Map(); result.put("ok",false); result.put("contract","construction-review-v1"); result.put("writeState","not-started");
-	cid = ""; op = ""; decisionId = 0;
+	cid = ""; op = ""; decisionId = 0; userAccessId = "";
 	try
 	{
 		if(ifnull(payload,"").len() > 60000) { result.put("message","The review request is too large."); return result.toString(); }
@@ -16,8 +16,17 @@ string manageConstructionReview(string payload)
 		}
 		cid = p.get("contractId"); op = ifnull(p.get("operationId"),"").toString().trim();
 		result.put("contractId",cid); result.put("operationId",op);
-		if(action == "check") { return thisapp.constructionReviewSnapshot(cid,op).toString(); }
-		if(thisapp.hasConstructionPermission(zoho.loginuser,true) != true)
+		userAccessId = ifnull(p.get("userAccessId"),"").toString();
+		typedActor = Map(); typedActor.put("value",p.get("userAccessId"));
+		if(p.get("userAccessId") != null && userAccessId != "" && !typedActor.toString().matches("^[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[1-9][0-9]*\"[ ]*[}][ ]*$"))
+		{
+			result.put("message","The User Access identity must be an exact ID string."); return result.toString();
+		}
+		identity = thisapp.constructionReviewActor(userAccessId);
+		if(identity.get("ok") != true) { result.put("message","An unambiguous Construction profile identity is required."); return result.toString(); }
+		actor = identity.get("user");
+		if(action == "check") { return thisapp.constructionReviewSnapshot(cid,op,userAccessId).toString(); }
+		if(thisapp.hasConstructionPermission(actor,true) != true)
 		{
 			result.put("message","Edit All Construction Requests access is required to review this request."); return result.toString();
 		}
@@ -31,7 +40,7 @@ string manageConstructionReview(string payload)
 		if(action == "retry-email")
 		{
 			if(existing.count() != 1) { result.put("message","The saved rejection operation is unavailable."); return result.toString(); }
-			return thisapp.sendConstructionRejectionNotification(existing.ID.toString()).toString();
+			return thisapp.sendConstructionRejectionNotification(existing.ID.toString(),userAccessId).toString();
 		}
 		reason = ifnull(p.get("reason"),"").toString().trim();
 		if(reason == "" || reason.len() > 5000) { result.put("message","Enter a rejection reason of at most 5,000 characters."); return result.toString(); }
@@ -39,7 +48,7 @@ string manageConstructionReview(string payload)
 		{
 			// Repeated Reject only returns its receipt. Sending is a separate,
 			// explicit guarded retry, so an uncertain first response cannot replay it.
-			return thisapp.constructionReviewSnapshot(cid,op).toString();
+			return thisapp.constructionReviewSnapshot(cid,op,userAccessId).toString();
 		}
 		activeDecisions = Construction_Review_Log[(Contract1 == parent.ID) && (Kind == "Decision") && (State == "recording")];
 		if(activeDecisions.count() > 0)
@@ -54,7 +63,7 @@ string manageConstructionReview(string payload)
 		}
 		version = parent.Modified_Time.toLong().toString();
 		claimKey = "decision|" + cid + "|" + version;
-		actor = zoho.loginuser; reviewer = actor.toString(); access = User_Access[User == actor];
+		reviewer = actor.toString(); access = User_Access[User == actor];
 		if(access.count() == 1 && ifnull(access.Full_Name,"").trim() != "") { reviewer = access.Full_Name.trim(); }
 		context = "";
 		if(parent.Project != null)
@@ -73,7 +82,7 @@ string manageConstructionReview(string payload)
 				}
 			}
 		}
-		snapshot = Map(); snapshot.put("reason",reason); snapshot.put("actor",actor.toString()); snapshot.put("reviewer",reviewer);
+		snapshot = Map(); snapshot.put("reason",reason); snapshot.put("actor",actor.toString()); snapshot.put("nativeActor",zoho.loginuser.toString()); snapshot.put("reviewer",reviewer);
 		snapshot.put("reviewedAt",zoho.currenttime.toString("MMM d, yyyy · h:mm a"));
 		snapshot.put("submitter",ifnull(parent.Added_User,"").toString());
 		snapshot.put("requestName",ifnull(parent.Contract_Name,"Construction Request")); snapshot.put("context",context); snapshot.put("version",version);
@@ -119,7 +128,7 @@ string manageConstructionReview(string payload)
 		decision.State="recorded";
 		// Do not invoke postRecordComment: its ordinary owner notification has
 		// different recipients and would create an extra, misleading email.
-		return thisapp.sendConstructionRejectionNotification(decisionId.toString()).toString();
+		return thisapp.sendConstructionRejectionNotification(decisionId.toString(),userAccessId).toString();
 	}
 	catch(reviewError)
 	{
@@ -127,7 +136,7 @@ string manageConstructionReview(string payload)
 		{
 			// Retain a recording receipt after partial/unknown writes. Do not repeat
 			// the parent mutation, comment insertion, or notification on Check.
-			return thisapp.constructionReviewSnapshot(cid,op).toString();
+			return thisapp.constructionReviewSnapshot(cid,op,userAccessId).toString();
 		}
 		result.put("message","The review could not start. Another reviewer may already be processing this request; check its status.");
 	}

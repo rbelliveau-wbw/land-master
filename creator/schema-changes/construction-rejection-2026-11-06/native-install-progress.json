@@ -10,7 +10,7 @@
   "observed_date": "2026-11-06",
   "production_published": false,
   "widget_deployed": false,
-  "widget_candidate": "1.62.57",
+  "widget_candidate": "1.62.58",
   "audit_form": {
     "name": "Construction_Review_Log",
     "id": "4410926000005833341",
@@ -181,5 +181,16 @@
     "Register/enable Manage_Construction_Review_STAGE and Manage_Construction_Review against the matching promoted functions",
     "Promote matching immutable hosted widget release through the repository release process",
     "Authorized positive end-to-end native notification verification"
-  ]
+  ],
+  "development_profile_test": {
+    "contract_id": "4410926000005844058",
+    "submitter": "demouser_1",
+    "submitter_profile": "Dev/Land Acq - Proforma & Budgets",
+    "reviewer": "demouser_4",
+    "reviewer_profile": "Construction Budgeting",
+    "recipient": "rbelliveau@wbdevelopment.com",
+    "initial_result": "1.62.57 rejection denied before writes; native API runs as owner in Development View-as",
+    "preview_fix": "Actor adapter and three updated native helpers compiled in Development; hosted 1.62.58 and positive test pending",
+    "temporary_email_restore_pending": true
+  }
 }
