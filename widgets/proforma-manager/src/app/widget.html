@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.141"></script>
-<script src="pf-save-audit.js?v=1.80.141"></script>
-<script src="pf-input-rules.js?v=1.80.141"></script>
-<script src="pf-input-validation.js?v=1.80.141"></script>
-<script src="pf-progress.js?v=1.80.141"></script>
+<script src="pf-save-verification.js?v=1.80.142"></script>
+<script src="pf-save-audit.js?v=1.80.142"></script>
+<script src="pf-input-rules.js?v=1.80.142"></script>
+<script src="pf-input-validation.js?v=1.80.142"></script>
+<script src="pf-progress.js?v=1.80.142"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.141">
-<script src="interaction-motion.js?v=1.80.141"></script>
-<script src="interaction-surfaces.js?v=1.80.141"></script>
-<script src="number-edit-commit.js?v=1.80.141"></script>
-<script src="number-transitions.js?v=1.80.141"></script>
-<script src="number-views.js?v=1.80.141"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.141">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.142">
+<script src="interaction-motion.js?v=1.80.142"></script>
+<script src="interaction-surfaces.js?v=1.80.142"></script>
+<script src="number-edit-commit.js?v=1.80.142"></script>
+<script src="number-transitions.js?v=1.80.142"></script>
+<script src="number-views.js?v=1.80.142"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.142">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.141"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.141">
-<script src="comments.js?v=1.80.141"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.141">
+<script src="budget-transfer-ui.js?v=1.80.142"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.142">
+<script src="comments.js?v=1.80.142"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.142">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1840,7 +1840,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.141"></script>
+<script src="success-feedback.js?v=1.80.142"></script>
 </head>
 <body>
 
@@ -2255,7 +2255,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.141";
+var PFW_VERSION="1.80.142";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -4331,18 +4331,35 @@ function refreshApprovalBadge(){
   var pending=(S.approvals||[]).filter(function(a){return approvalStatus(a).toLowerCase()==="pending"&&(p.apprAll||(p.apprOwned&&userOwnsProformaApproval(a)));}).length;
   var el=document.getElementById("pfApprCount");if(el)el.textContent=String(pending);
 }
+function proformaApprovalScope(){
+  return JSON.stringify([String(S.currentUser||""),String(S.myAccessId||""),S.liveSDK&&typeof LMRuntime!=="undefined"?LMRuntime.current():null]);
+}
 function refreshProformaApprovalState(pfId){
-  var id=String(pfId||"");
-  return Promise.all([loadProformas(),loadApprovals()]).then(function(){
-    var fresh=(S.proformas||[]).find(function(p){return String(p.ID)===id;});
-    if(fresh&&S.ed&&S.ed.model&&String(S.ed.model.ID)===id){
-      S.ed.model.Lock_Inputs=String(fresh.Lock_Inputs==null?S.ed.model.Lock_Inputs:fresh.Lock_Inputs);
-      S.ed.model.Status=String(fresh.Status==null?S.ed.model.Status:fresh.Status);
+  var id=String(pfId||""),scope=proformaApprovalScope(),navigation=S.navigationGeneration;
+  var generations=S.approvalStateGenerations||(S.approvalStateGenerations={}),generation=(generations[id]||0)+1;
+  generations[id]=generation;
+  var editor=S.ed;
+  function cancelled(){return scope!==proformaApprovalScope()||navigation!==S.navigationGeneration||generations[id]!==generation;}
+  var headerRead=S.liveSDK?sdkGetAll(CFG.reports.proformas,'(ID == '+id+')',{isCancelled:cancelled}):Promise.resolve((S.proformas||[]).filter(function(row){return String(row.ID)===id;}));
+  var approvalRead=S.liveSDK?sdkGetAll(CFG.reports.approvals,'Proforma == '+id,{isCancelled:cancelled}):Promise.resolve(approvalRowsForPf(id));
+  return Promise.all([headerRead,approvalRead]).then(function(results){
+    if(cancelled())throw Object.assign(new Error('Approval display refresh was superseded.'),{cancelled:true});
+    var headers=results[0],rows=results[1];
+    if(headers.length!==1||String(headers[0].ID)!==id||rows.some(function(row){return approvalPfId(row)!==id;}))throw new Error('The targeted approval display could not be refreshed.');
+    var fresh=headers[0],rec=(S.proformas||[]).find(function(row){return String(row.ID)===id;});
+    // Approval refreshes own only system status fields. Financial and Offer drafts stay intact.
+    [rec,editor===S.ed&&editor&&editor.model&&String(editor.model.ID)===id?editor.model:null].forEach(function(target){
+      if(!target)return;
+      ["Lock_Inputs","Status"].forEach(function(key){if(fresh[key]!=null)target[key]=fresh[key];});
+    });
+    S.approvals=(S.approvals||[]).filter(function(row){return approvalPfId(row)!==id;}).concat(rows);
+    refreshApprovalBadge();
+    if(editor===S.ed&&editor&&editor.model&&String(editor.model.ID)===id){
       applyEditGating();
     }
     if(S.view==="vApprovals")renderApprovalQueue();
     if(S.view==="vList")renderList();
-    if(S.ed&&S.ed.pane==="approvals")renderApprovalPane();
+    if(editor===S.ed&&editor&&String(editor.id)===id&&editor.pane==="approvals")renderApprovalPane();
     return fresh;
   });
 }
@@ -4583,16 +4600,27 @@ function runStartProformaApproval(pfId){
 
 function runProformaApprovalAction(pfId,approvalId,action,note){
   var id=String(pfId||""),aid=String(approvalId||"");if(!id||!aid)return;
+  if(S.approvalBusy||pfApprovalProgress)return;
   var approvalRow=(S.approvals||[]).find(function(row){return String(row.ID)===aid;});
+  if(!approvalRow||approvalPfId(approvalRow)!==id||approvalStatus(approvalRow).toLowerCase()!=="pending"){toast("This approval is no longer pending. Refresh its status before acting.","err");return;}
   if(!canEditProformaApprovalRow(approvalRow)){toast("You do not have permission to edit this approval.","err");return;}
   if(action==="Rejected")return executeRejectProformaApproval(id,aid,note||"",document.activeElement);
+  var run={scope:proformaApprovalScope(),navigation:S.navigationGeneration,committed:false};S.approvalActionRun=run;
+  function current(){return S.approvalActionRun===run&&run.scope===proformaApprovalScope()&&run.navigation===S.navigationGeneration;}
   setApprovalBusy(true);toast(action==="Approved"?"Approving…":action==="Rejected"?"Rejecting…":"Saving note…");
-  invokeProformaApprovalApi("handleProformaApproval",{proformaId:id,approvalId:aid,approvalAction:action,approvalNote:note||""})
-    .then(function(){return loadApprovals();})
-    .then(function(){return refreshProformaApprovalState(id);})
-    .then(function(){toast(action==="Approved"?"Approved and routed.":action==="Rejected"?"Rejected — approvals restarted from step 1.":"Note saved.","ok");})
-    .catch(function(err){auditLog("error","Pro Forma approval action failed",{proformaId:id,approvalId:aid,action:action,error:errMeta(err)});toast("Approval action failed: "+((err&&err.message)||"unknown error"),"err");})
-    .then(function(){setApprovalBusy(false);renderApprovalPane();});
+  return invokeProformaApprovalApi("handleProformaApproval",{proformaId:id,approvalId:aid,approvalAction:action,approvalNote:note||""})
+    .then(function(response){
+      run.committed=true;if(!current())return;
+      var row=(S.approvals||[]).find(function(value){return String(value.ID)===aid&&approvalPfId(value)===id;});
+      if(row){row.Approval_Notes=note||"";if(action==="Approved")row.Status="Approved";}
+      if(S.approvalNoteDrafts&&S.approvalNoteDrafts[aid]===String(note||""))delete S.approvalNoteDrafts[aid];
+      return refreshProformaApprovalState(id).then(function(){if(current())toast(action==="Approved"?(response.message||"Approved."):"Note saved.","ok");});
+    })
+    .catch(function(err){
+      if(run.committed){auditLog("warn","Pro Forma approval saved; display refresh unavailable",{proformaId:id,approvalId:aid,action:action,error:errMeta(err)});if(current())toast((action==="Approved"?"Approval saved.":"Note saved.")+" Refresh the approval display to see the latest status.","ok");}
+      else{auditLog("error","Pro Forma approval action failed",{proformaId:id,approvalId:aid,action:action,error:errMeta(err)});if(current())toast("Approval action failed: "+((err&&err.message)||"unknown error"),"err");}
+    })
+    .then(function(){if(S.approvalActionRun===run){var sameContext=current();S.approvalActionRun=null;setApprovalBusy(false);if(sameContext)renderApprovalPane();}});
 }
 function runResendProformaApproval(pfId,approvalId){
   var id=String(pfId||""),aid=String(approvalId||"");if(!id||!aid)return;
@@ -4694,6 +4722,7 @@ function renderApprovalPane(){
     var recipient='<span class="ro">'+(r.Full_Name?esc(r.Full_Name)+' · ':'')+esc(approvalEmail(r)||"Not assigned")+'</span>';
     var meta=savedRoute?'Sent: '+esc(approvalDate(r.Sent_Date))+(r.Responded_Date?' · Responded: '+esc(approvalDate(r.Responded_Date)):''):'';
     var note=approvalNote(r),noteHtml='';
+    if(canAct&&S.approvalNoteDrafts&&Object.prototype.hasOwnProperty.call(S.approvalNoteDrafts,String(r.ID)))note=S.approvalNoteDrafts[String(r.ID)];
     var resendHtml=isPending&&(canSendProformaApprovalsFor(pf)||canEditProformaApprovalRow(r))
       ? '<button type="button" class="btn resend" data-pf-appr-resend="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Resend</button>' : '';
     if(canAct){
@@ -6313,23 +6342,23 @@ function submitLOIToLegal(pfId){
      reported every worksheet-only field blank on a fully filled-in LOI. */
   loiModelForCompleteness(rec).then(function(loiModel){
     if(S.loiSubmitting[key]) return;
-    confirmAndSubmitLOI(key,rec,loiCompleteness(rec,loiModel));
+    confirmAndSubmitLOI(key,rec,loiCompleteness(rec,loiModel),loiModel);
   });
 }
-function confirmAndSubmitLOI(key,rec,check){
+function confirmAndSubmitLOI(key,rec,check,loiModel){
   if(!canSubmitPfToLegal(rec)||S.loiSubmitting[key]) return;
   /* Incomplete LOIs are no longer blocked — the user is warned about exactly what is
      missing and decides. Legal can still receive a partial LOI to mark up. */
-  var mfPre=loiMergeContext(key);
+  var mfPre=loiMergeContext(key),agreementType=loiAgreementType(loiModel&&loiModel.Agreement_Type);
   var steps=[
-    "An ACQ (PSA) or ACQ (LOI) Contract record will be created or the existing matching Contract will be reused.",
+    "An ACQ ("+agreementType+") Contract record will be created or the existing matching Contract will be reused.",
     (mfPre.autoMerge
-      ? "The LOI will be generated as a Microsoft Word document from 1 Seller and 1 Property, then attached to the Contract."
-      : "The Contract will be created, but the LOI document must be prepared by hand ("+mfPre.sellerCount+" Seller"+(mfPre.sellerCount===1?"":"s")+", "+mfPre.propertyCount+" Propert"+(mfPre.propertyCount===1?"y":"ies")+")."),
+      ? "The "+agreementType+" will be generated as a Microsoft Word document from 1 Seller and 1 Property, then attached to the Contract."
+      : "The Contract will be created, but the "+agreementType+" document must be prepared by hand ("+mfPre.sellerCount+" Seller"+(mfPre.sellerCount===1?"":"s")+", "+mfPre.propertyCount+" Propert"+(mfPre.propertyCount===1?"y":"ies")+")."),
     "Legal will be notified that the new Contract record is ready for review."
   ];
   var warnLines=[];
-  if(!check.ready) warnLines.push(check.missing.length+" LOI field"+(check.missing.length===1?"":"s")+" still blank: "+check.missing.join(", "));
+  if(!check.ready) warnLines.push(check.missing.length+" "+agreementType+" field"+(check.missing.length===1?"":"s")+" still blank: "+check.missing.join(", "));
   /* When exactly one Seller + one Property resolved, surface any blank Seller/Property
      fields too — the server now sources these from the subform records, so the user
      should see the same gaps here before choosing to submit anyway. */
@@ -6342,21 +6371,21 @@ function confirmAndSubmitLOI(key,rec,check){
   }
   if(subMissing.length) warnLines.push(subMissing.length+" Seller/Property field"+(subMissing.length===1?"":"s")+" still blank: "+subMissing.join(", "));
   if(!mfPre.autoMerge) warnLines.push("Document merge unavailable — "+mfPre.reason+".");
-  if(S.ed&&String(S.ed.id)===key&&S.ed.loiDirty) warnLines.push("The LOI tab has unsaved changes — save the Pro Forma first so they are included.");
+  if(S.ed&&String(S.ed.id)===key&&S.ed.loiDirty) warnLines.push("The Offer tab has unsaved changes — save the Pro Forma first so they are included.");
   if(warnLines.length){
     auditLog("warn","LOI submit proceeding with warnings",{proformaId:key,name:rec.Name,
       missing:check.missing,sellerPropertyMissing:subMissing,autoMerge:mfPre.autoMerge,mergeReason:mfPre.reason,warnings:warnLines});
   }
   uiConfirm({
     tone:warnLines.length?"danger":"legal",
-    kicker:warnLines.length?"Incomplete LOI":"Legal submission",
-    title:warnLines.length?"Submit this LOI anyway?":"Submit this LOI to Legal?",
-    message:'You are about to submit the LOI for "'+String(rec.Name||"this Pro Forma")+'".',
+    kicker:warnLines.length?"Incomplete "+agreementType:"Legal submission",
+    title:warnLines.length?"Submit this "+agreementType+" anyway?":"Submit this "+agreementType+" to Legal?",
+    message:'You are about to submit the '+agreementType+' for "'+String(rec.Name||"this Pro Forma")+'".',
     steps:steps,
     list:warnLines,
     note:warnLines.length
-      ? "Legal will receive the Contract with these gaps. You can cancel, complete the LOI tab, save, and submit again."
-      : "This creates records and a document in the Contract Module. Review the Pro Forma and LOI terms before continuing.",
+      ? "Legal will receive the Contract with these gaps. You can cancel, complete the Offer tab, save, and submit again."
+      : "This creates records and a document in the Contract Module. Review the Pro Forma and "+agreementType+" terms before continuing.",
     okLabel:warnLines.length?"Submit anyway":"Create Contract & Submit",
     cancelLabel:"Cancel"
   }).then(function(ok){
@@ -6366,7 +6395,7 @@ function confirmAndSubmitLOI(key,rec,check){
     }
     if(!canSubmitPfToLegal(rec)||S.loiSubmitting[key]){ toast("Legal submission is no longer available.","err"); return; }
     S.loiSubmitting[key]=true; renderList(); syncSubmitLegalButton();
-    overlay(true,"Submitting LOI to Legal","Calling the secure Creator function…",20);
+    overlay(true,"Submitting "+agreementType+" to Legal","Calling the secure Creator function…",20);
     auditLog("info","LOI submit started",{proformaId:key,name:rec.Name,api:CFG.customApis.createLOI,requiredFieldCount:LOI_FIELD_DEFS.filter(function(f){return f.required!==false;}).length});
     /* Merge-field source: when the new LOI flow produced exactly ONE Seller and ONE
        Property, pass those record IDs (and their merge values) so the DOCX can be
@@ -6385,9 +6414,9 @@ function confirmAndSubmitLOI(key,rec,check){
       sellerId:mf.sellerId||null,propertyId:mf.propertyId||null,
       reason:mf.reason,mergeFieldKeys:mf.autoMerge?Object.keys(mf.mergeFields):[]});
     if(!mf.autoMerge){
-      toast("Submitting with "+mf.sellerCount+" Seller"+(mf.sellerCount===1?"":"s")+" and "+mf.propertyCount+" Propert"+(mf.propertyCount===1?"y":"ies")+" — the LOI document will need to be prepared by hand.","warn");
+      toast("Submitting with "+mf.sellerCount+" Seller"+(mf.sellerCount===1?"":"s")+" and "+mf.propertyCount+" Propert"+(mf.propertyCount===1?"y":"ies")+" — the "+agreementType+" document will need to be prepared by hand.","warn");
     }
-    loiRunStart(rec,mf);
+    loiRunStart(rec,mf,agreementType);
     loiRunSet("merge","run","Zoho Writer merging…");
     sdkInvoke({api_name:CFG.customApis.createLOI,http_method:"POST",content_type:"application/json",payload:payload})
     .then(function(resp){
@@ -6436,15 +6465,15 @@ var LOIRUN_STEPS=[
 /* One phase change per tick. The work itself goes as fast as Creator answers - this
    paces only what is shown, so six phases cannot blow past in a single frame. */
 var LOIRUN_TICK=560;
-function loiRunStart(rec,mf){
+function loiRunStart(rec,mf,agreementType){
   var steps={};
   LOIRUN_STEPS.forEach(function(st){ steps[st.key]={state:"pending",detail:""}; });
   steps.resolve.detail=mf.sellerCount+" Seller"+(mf.sellerCount===1?"":"s")+", "+mf.propertyCount+" Propert"+(mf.propertyCount===1?"y":"ies");
-  S.loiRun={id:String(rec.ID),name:rec.Name||("Pro Forma "+rec.ID),steps:steps,
+  S.loiRun={id:String(rec.ID),name:rec.Name||("Pro Forma "+rec.ID),agreementType:loiAgreementType(agreementType),steps:steps,
     running:true,failed:false,message:"",contractId:"",q:[],timer:0,at:"",built:false};
   document.getElementById("lrSub").textContent=S.loiRun.name;
   document.getElementById("loiRun").classList.add("show");
-  loiRunSet("resolve","run","Reading the LOI Worksheet…");
+  loiRunSet("resolve","run","Reading the Offer Worksheet…");
 }
 /* Queued rather than applied on the spot. Updates landing in the same tick would
    otherwise flash past unread. Repeated updates to the same phase collapse into the
@@ -6552,7 +6581,7 @@ function renderLoiRun(){
       var v=R.steps[st.key];
       return '<div class="lr-step '+v.state+(i===nextIdx?" next":"")+'" id="lr_s_'+st.key+'">'
         +'<span class="lr-ico">'+loiRunIco(v.state,i)+'</span>'
-        +'<span class="lr-main"><span class="lr-name">'+esc(st.label)+'</span>'
+        +'<span class="lr-main"><span class="lr-name">'+esc(st.key==="merge"?R.agreementType+" document merged":st.label)+'</span>'
         +'<span class="lr-det">'+esc(v.detail||"")+'</span></span>'
         +'<span class="lr-chip">'+loiRunChip(v.state,i===nextIdx)+'</span></div>';
     }).join("");
@@ -6574,7 +6603,7 @@ function renderLoiRun(){
   var bar=document.getElementById("lrBar");
   bar.className="lr-bar"+(R.running?"":(R.failed?" bad":" ok"));
   bar.querySelector("i").style.width=(R.running?pct:100)+"%";
-  document.getElementById("lrTitle").textContent=R.running?"Sending to Legal":(R.failed?"Sent with problems":"Sent to Legal");
+  document.getElementById("lrTitle").textContent=R.running?"Sending "+R.agreementType+" to Legal":(R.failed?"Sent with problems":"Sent "+R.agreementType+" to Legal");
   var note=document.getElementById("lrNote");
   note.className="lr-note "+((R.running||R.failed)?"warn":"ok");
   note.textContent=R.running?"Working — leave this open until it finishes."
@@ -10734,8 +10763,11 @@ function commitAddlNote(value){
 function wireEditInputs(){
   var host=document.getElementById("edPanes");
   host.oninput=function(e){
-    if(!pfPublicReady())return false;PFTransport.noteDraft();
-    var t=e.target, m=S.ed.model;
+    if(!pfPublicReady())return false;
+    var t=e.target, m=S.ed.model,noteId=t.getAttribute&&t.getAttribute("data-pf-appr-note");
+    // Approval notes save through their own action; they are not financial drafts.
+    if(noteId){(S.approvalNoteDrafts||(S.approvalNoteDrafts={}))[String(noteId)]=String(t.value||"");return;}
+    PFTransport.noteDraft();
     /* The shared slider commits only after its change confirmation succeeds. */
     if(t.getAttribute&&t.getAttribute("data-ps-shared"))return;
     var phaseKey=t.getAttribute&&t.getAttribute("data-ps-k");
@@ -10910,7 +10942,9 @@ function wireEditInputs(){
     recalcLive();
   };
   host.onchange=function(e){
-    if(!pfPublicReady())return false;PFTransport.noteDraft();
+    if(!pfPublicReady())return false;
+    if(e.target.hasAttribute&&e.target.hasAttribute("data-pf-appr-note"))return;
+    PFTransport.noteDraft();
     var t=e.target,m=S.ed&&S.ed.model;
     if(t&&t.getAttribute&&t.getAttribute("data-ps-k")){
       if(!canSavePf(m)||isInputLocked(m))return;
@@ -11047,7 +11081,9 @@ function wireEditInputs(){
     }
   });
   host.onclick=function(e){
-    if(!pfPublicReady())return false;PFTransport.noteDraft();
+    if(!pfPublicReady())return false;
+    if(e.target.closest&&(e.target.closest("[data-pf-appr-note]")||e.target.closest("[data-pf-appr-action]")))return;
+    PFTransport.noteDraft();
     var m=S.ed.model;
     var agreement=e.target.closest&&e.target.closest("button[data-loi-agreement]");
     if(agreement){setLOIAgreement(agreement.getAttribute("data-loi-agreement"));return;}

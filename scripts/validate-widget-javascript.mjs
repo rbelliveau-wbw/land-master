@@ -333,7 +333,7 @@ for (const required of [
 }
 for (const required of [
   'if(state.started&&perms().apprAll)top+=',
-  'S.ed.model.Status=String(fresh.Status==null?S.ed.model.Status:fresh.Status);',
+  '["Lock_Inputs","Status"].forEach(function(key){if(fresh[key]!=null)target[key]=fresh[key];});',
   'r.Approval_Notes="";',
   'kp.Status="Draft";'
 ]) {

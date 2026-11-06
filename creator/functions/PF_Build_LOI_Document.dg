@@ -480,11 +480,20 @@
         mergeEntry.put("meta",{"mergeFieldCount":mergeRow.size(),"missingFlagged":missing,"termsSource":if(loiRec != null,"loi_worksheet","blank"),"sellerSource":if(sellerRec != null,"subform","blank"),"propertySource":if(propRec != null,"subform","blank")});
         trace.add(mergeEntry);
         stage = "writer_merge";
+        agreementType = "PSA";
+        if(loiRec != null && loiRec.Agreement_Type == "LOI")
+        {
+            agreementType = "LOI";
+        }
         writerDocumentId = "6kuqna9b27e6fe95b4f75a3920de1ff048543";
+        if(agreementType == "PSA")
+        {
+            writerDocumentId = "8x9kt066d3af9c4704e63a694c6d6aafd54fd";
+        }
         if(writerDocumentId == null || writerDocumentId.trim() == "")
         {
             result.put("success",false);
-            result.put("message","The Writer document ID is blank in Create_LOI_Contract.");
+            result.put("message","Configure the " + agreementType + " Writer merge template in PF_Build_LOI_Document.");
             result.put("stage",stage);
             result.put("audit",trace);
             if(auditId == "" && result.get("success") != true)
@@ -528,7 +537,40 @@
             }
             return result;
         }
-        fileBaseName = ifnull(pf.Name,"Proforma").replaceAll("[^A-Za-z0-9 _-]","").trim().replaceAll(" +","_") + "_LOI_" + zoho.currentdate.toString("yyyyMMdd");
+        // The PSA template owns the literal "Dollars" after each written amount.
+        // Preserve cents for PSA while retaining the existing LOI written values.
+        if(agreementType == "PSA")
+        {
+            psaMoneyValues = Map();
+            psaMoneyValues.put("Amount_per_Acre_Written",vAmtAcre);
+            psaMoneyValues.put("Land_Cost_Written",vLandCost);
+            psaMoneyValues.put("Earnest_Money_Written",vEarnest);
+            psaMoneyValues.put("Amount_per_Extension_Written",vAmtExt);
+            for each  psaMoneyField in psaMoneyValues.keys()
+            {
+                psaMoneyValue = psaMoneyValues.get(psaMoneyField);
+                psaMoneyWritten = "";
+                if(psaMoneyValue != null)
+                {
+                    psaMoneyCents = (psaMoneyValue * 100).round(0);
+                    psaMoneySign = "";
+                    if(psaMoneyCents < 0)
+                    {
+                        psaMoneyCents = psaMoneyCents * -1;
+                        psaMoneySign = "negative ";
+                    }
+                    psaMoneyDollars = (psaMoneyCents / 100).floor().toLong();
+                    psaMoneyCentsText = (psaMoneyCents - psaMoneyDollars * 100).toLong().toString();
+                    if(psaMoneyCentsText.length() == 1)
+                    {
+                        psaMoneyCentsText = "0" + psaMoneyCentsText;
+                    }
+                    psaMoneyWritten = psaMoneySign + psaMoneyDollars.toWords("en-us") + " and " + psaMoneyCentsText + "/100";
+                }
+                mergeRow.put(psaMoneyField,psaMoneyWritten);
+            }
+        }
+        fileBaseName = ifnull(pf.Name,"Proforma").replaceAll("[^A-Za-z0-9 _-]","").trim().replaceAll(" +","_") + "_" + agreementType + "_" + zoho.currentdate.toString("yyyyMMdd");
         writerFieldIds = List();
         writerFieldCheckSucceeded = false;
         try
@@ -593,6 +635,10 @@
         expectedWriterFields.add("Land_Cost");
         expectedWriterFields.add("Land_Cost_Written");
         expectedWriterFields.add("Amount_per_Acre");
+        if(agreementType == "PSA")
+        {
+            expectedWriterFields.add("Amount_per_Acre_Written");
+        }
         expectedWriterFields.add("Earnest_Money");
         expectedWriterFields.add("Earnest_Money_Written");
         expectedWriterFields.add("Special_Provisions");
@@ -608,7 +654,10 @@
         expectedWriterFields.add("Closing_Days_Feas_Written");
         expectedWriterFields.add("Broker_Buyer");
         expectedWriterFields.add("Broker_Seller");
-        expectedWriterFields.add("Response_Date");
+        if(agreementType == "LOI")
+        {
+            expectedWriterFields.add("Response_Date");
+        }
         expectedWriterFields.add("Acquisition_Email");
         if(writerFieldCheckSucceeded == true)
         {
@@ -690,7 +739,7 @@
         writerEntry.put("level","info");
         writerEntry.put("stage",stage);
         writerEntry.put("message","Calling Zoho Writer merge API");
-        writerEntry.put("meta",{"writerDocumentId":writerDocumentId,"connection":"zoho_writer_admin","fileBaseName":fileBaseName,"testMode":false});
+        writerEntry.put("meta",{"agreementType":agreementType,"writerDocumentId":writerDocumentId,"connection":"zoho_writer_admin","fileBaseName":fileBaseName,"testMode":false});
         trace.add(writerEntry);
         if(auditId == "")
         {

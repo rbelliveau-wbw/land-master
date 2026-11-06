@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {ready,harness,ID,OTHER,header,held,drain,clone} from './fixtures/proforma-sdk-v2-harness.mjs';
+import './test-proforma-approval-action-refresh.mjs';
 {
  let gate=null;const h=await ready({read:config=>gate&&config.report_name==='All_Pro_Formas_All_Fields'?gate.promise:undefined});await h.widget.openEdit(ID);await drain();const host=h.document.getElementById('edPanes'),input=h.document.querySelector('input[data-k="Name"]');assert.ok(input);const old=h.widget.S.ed.model,oldName=old.Name;gate=held();const refresh=h.widget.loadProformas();await drain();assert.equal(h.widget.openEdit(null),false);assert.equal(h.widget.changeStageFromList(ID,'High'),false);assert.equal(h.widget.saveProforma(),false);assert.equal(h.widget.PFTransport.snapshot().blocked,true);await h.dispatch('input',input);assert.equal(h.widget.S.ed.model.Name,oldName);assert.equal(h.document.querySelector('input[data-k="Name"]'),input);assert.equal(h.writes.length,0);gate.resolve({code:3000,data:[header()]});await refresh;assert.equal(h.widget.S.ed.model,old);assert.equal(h.document.querySelector('input[data-k="Name"]'),input);
 }

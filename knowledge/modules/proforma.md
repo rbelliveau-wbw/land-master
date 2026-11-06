@@ -922,6 +922,47 @@ Current known LOI Writer merge template ID:
 
 Connection name: `zoho_writer_admin` (shared administrator authorization).
 
+### PSA And LOI Template Selection — November 5, 2026
+
+The Offer tab's saved `LOI_Worksheet.Agreement_Type` selects the Writer template
+for both **Send to Legal** and **Export → LOI/Contract**. Explicit `LOI` uses the
+existing template above. `PSA`, blank, and an absent worksheet use the PSA
+default already used by Legal contract creation. No second template chooser is
+introduced.
+
+PSA Writer template: **Purchase Agreement PSA Merge Template**, document ID
+`8x9kt066d3af9c4704e63a694c6d6aafd54fd`.
+
+`PF_Build_LOI_Document` remains the shared helper called by
+`Create_LOI_Contract` and the DOCX branch of `Get_Proforma_Approval_PDF`. It
+reuses the existing worksheet, seller, property and buying-entity inputs;
+filenames now contain `_PSA_` or `_LOI_`. The export path still downloads only:
+it does not create a Legal record, attachment, submission or email. Existing
+permission, approval, lock, seller-count and parcel-count guards are unchanged.
+
+The purchase-agreement template has 31 native fields. It uses the existing LOI
+field IDs except `Response_Date`, and adds `Amount_per_Acre_Written`, derived
+from the existing price-per-acre input. PSA written prices, earnest money and
+extension deposits retain cents; the LOI wording expressions are unchanged.
+Writer formats the four numeric money fields as `$#,##0.00;($#,##0.00)`, acres
+as `0.00`, and day/extension counts as `0`. The literal `Dollars` remains outside
+the four written money fields.
+
+The supplied purchase agreement controls the layout and legal wording. Its Word
+fields were mapped into native Writer fields, including the footer; seller
+phone, special provisions and seller signer use existing Pro Forma inputs.
+The obsolete Word data-source connection was removed. At the user's direction,
+the sample Exhibit A map was removed and its heading/blank exhibit area retained
+for Legal. Fixed title-company, buyer-notice and counsel text remain supplied
+template content. Those details must be maintained in Writer when they change.
+
+Deployment requires saving/compiling **only `PF_Build_LOI_Document`** in Creator
+Development, then publishing that function through Stage to Production. No new
+form, field, Custom API or widget release is required. GitHub alone cannot deploy
+the native function. Rollback restores this helper's preceding template-routing
+source and republishes the function; preserve the shared `zoho_writer_admin`
+connection and the existing LOI template.
+
 ### Writer Connection Failure — November 5, 2026
 
 Production Submit to Legal failed for a different signed-in user with
