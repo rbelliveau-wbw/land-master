@@ -1,0 +1,16 @@
+{
+  "status": "development-partially-installed; production-not-published",
+  "generated_metadata_refreshed": false,
+  "preserve": ["criteria", "existing columns", "sort", "grouping", "actions", "existing edit/delete grants"],
+  "updates": [
+    {"report": "All_Contracts1", "source_form": "Contract", "add_fields": ["Proforma"], "required_existing_fields": ["ID", "Contract_Type", "Work_Module", "Project", "Subdivision1", "Parent_Contract", "Builder", "Lots1", "Territory"], "development_status": "Pro Forma column saved and independently reopened"},
+    {"report": "All_Contracts", "source_form": "Contract", "add_fields": ["Proforma"], "required_existing_fields": ["ID", "Project", "Subdivision1", "Contract_Type"], "development_status": "Pro Forma column saved and independently reopened"},
+    {"report": "All_Contracts_v2", "source_form": "Contract", "add_fields": ["Proforma"], "required_existing_fields": ["ID", "Project", "Subdivision1", "Contract_Type"], "development_status": "Board unchanged; addition remains a candidate"},
+    {"report": "All_Subdivisions", "source_form": "Subdivision", "add_fields_if_omitted": ["Subdivision_Code", "Project", "Territory"], "required_existing_fields": ["ID", "Subdivision_Name"], "development_status": "Existing Subdivision_Code, Subdivision_Name, Project and Territory verified through Development report headers"},
+    {"report": "All_Projects", "source_form": "Project", "add_fields_if_omitted": ["Territory"], "required_existing_fields": ["ID", "Project_Name"], "development_status": "Existing Project_Name and Territory verified through Development report headers"},
+    {"report": "All_Pro_Formas_All_Fields", "source_form": "Add_Pro_Forma", "add_fields_if_omitted": ["LOI_Contract"], "existing_restricted_review_grants_unchanged": true}
+  ],
+  "create": [{"report": "Contract_Proforma_Choices", "source_form": "Add_Pro_Forma", "display_name": "Contract Pro Forma Choices", "fields": ["ID", "Name", "Territory", "LOI_Contract"], "criteria": null, "actions": [], "read_only": true, "detail_view": "Development default Detail View layout remains; report navigation disabled instead: On Click of Record=Do Nothing, right-click View Record removed, all single/right/multiple record actions removed. No profile grants yet. Candidate source also supplies a minimized Detail View.", "development_status": "created; Quick View only LOI Contract/Name/Territory, ID implicit; record-detail navigation and record actions removed", "source": "Contract_Proforma_Choices.report.ds"}],
+  "construction": {"report": "Construction_Requests", "existing_fields": ["Project", "Subdivision1"], "proforma_choices_access_required": false},
+  "embedding": "Embedded report consumers inherit the changed report layouts; do not replace page markup or change unrelated columns."
+}

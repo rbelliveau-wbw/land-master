@@ -1,0 +1,21 @@
+// Append as a Contract / Created or Edited / Validations on form submission
+// action after the existing Field_Validations_Contrac action. Preserve that
+// action's Construction, Parent Contract, lot and city validation unchanged.
+// Leave legacy blank links valid; this field is optional in native Creator.
+if(input.Proforma != null)
+{
+    proformaContractType = ifnull(input.Contract_Type,"");
+    proformaContractModule = ifnull(input.Work_Module,"");
+    isAcquisitionContract = proformaContractType == "Acquisition" || proformaContractType == "ACQ (PSA)" || proformaContractType == "ACQ (LOI)";
+    if(!isAcquisitionContract || (proformaContractModule != "" && proformaContractModule != "Legal"))
+    {
+        alert "A Pro Forma can only be linked to a Legal acquisition contract.";
+        cancel submit;
+    }
+    linkedProforma = Add_Pro_Forma[ID == input.Proforma];
+    if(linkedProforma.count() == 0)
+    {
+        alert "The selected Pro Forma is unavailable. Choose an existing Pro Forma.";
+        cancel submit;
+    }
+}

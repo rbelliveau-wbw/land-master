@@ -1,0 +1,13 @@
+// Append to the existing Contract on-load and Contract_Type on-user-input
+// actions. Visibility does not replace native profile/field permissions.
+proformaContractType = ifnull(input.Contract_Type,"");
+proformaContractModule = ifnull(input.Work_Module,"");
+isAcquisitionContract = proformaContractType == "Acquisition" || proformaContractType == "ACQ (PSA)" || proformaContractType == "ACQ (LOI)";
+if(isAcquisitionContract && (proformaContractModule == "" || proformaContractModule == "Legal"))
+{
+    show Proforma;
+}
+else
+{
+    hide Proforma;
+}

@@ -1,0 +1,11 @@
+// Add this optional single-record lookup inside the existing Contract form.
+// Additive Development installation fragment; not a full form replacement.
+Proforma
+(
+    type = picklist
+    displayname = "Pro Forma"
+    values = Add_Pro_Forma.ID
+    displayformat = [Name]
+    sortorder = ascending
+    width = medium
+)

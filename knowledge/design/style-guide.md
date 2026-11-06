@@ -295,6 +295,14 @@ Block/Lot rows when the lot code supplies their identity, and omit repeated
 contract warnings or resolution paragraphs. Preserve optional price, address,
 notes, missing-code identity, and all existing association/selection locks.
 
+Contract reports use **Pro Forma / Project** for the shared identity column.
+Acquisition rows select a Pro Forma; other rows select a Project through the
+existing searchable inline picker. Lot rows append selected subdivision-record
+codes after the Project, separated by an em dash and commas. Keep the mounted
+cell during save, retain full identity in its title, and show scope or permission
+errors beside that cell. Display-only reverse links must remain distinguishable
+from a saved Contract lookup. See [Contracts](../modules/contracts.md).
+
 Contract detail headers align Back, record identity, view tabs and summary fields in one horizontal row. Scroll the row on narrow screens instead of splitting controls above the summary. Keep Open in Creator out of that header; its three-dot menu entry is personal to Robby.
 
 Lot contract reports use compact branch rows: pale blue on a Master with visible Amendments, a lighter tint on its children, and a shared blue rail and branch connector. Make connectors visibly bold with rounded elbows and a stronger blue rail. Keep status colors independent. Keep matching child records visible beneath their parent, without a family-collapse button (user direction October 21, 2026). Retain counted child-type badges, branch connectors and the separate action/details expansion. Omit repeated parent names on nested children and retain them when filters leave a child on its own.

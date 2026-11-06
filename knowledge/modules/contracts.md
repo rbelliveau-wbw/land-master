@@ -1,3 +1,45 @@
+## Pro Forma / Project Column — November 6, 2026
+
+The main report replaces Subdivision with **Pro Forma / Project**. Acquisition
+PSA/LOI contracts show their linked Pro Forma; other contracts show Project.
+Both use the existing searchable inline picker and retain the mounted row after
+saving. Lot contracts, Lot Masters and Lot Amendments append the selected
+Subdivision records' `Subdivision_Code` values, including a single subdivision.
+Search and column sorting use the same displayed identity. Full names and
+subdivision context remain available in the title.
+
+Inline writes reuse existing general/owned edit permissions, native save
+handling, completion locks and pending-write protection. Fresh preflight reads
+check the contract and chosen lookup; lot changes retain project/subdivision,
+exact selected-lot and amendment-to-master consistency. An incompatible project
+does not silently remove subdivisions or lots. Resolve that scope in Change Lots
+& Pricing. Missing report fields or denied choices remain visible errors;
+persisted lookup labels are retained. Exact reverse Pro Forma links may supply
+a display-only legacy label, without pretending `Contract.Proforma` was saved.
+
+Native changes add the optional single `Contract.Proforma` lookup and limited
+`Contract_Proforma_Choices` report, update Contract report field exposure and
+reuse `Create_LOI_Contract(proformaId)` for PSA/LOI creation and reuse. See the
+[Creator installation handoff](../../creator/schema-changes/contract-proforma-project-2026-11-06/README.md)
+and its per-component status. The Development lookup, picker Quick View and
+`All_Contracts1`/`All_Contracts` additions have been worked on; final reopen,
+Detail View, profile, validation and function checks must be recorded there
+before calling native installation complete. Generated metadata remains the
+historical export. Creator production publication remains the user's step;
+Pages promotion does not publish the lookup, report or function. No Proforma
+widget or new Custom API is needed.
+
+Regression: `scripts/test-contract-location-column.mjs` covers native lookup
+shapes, both acquisition types, record codes, inline persistence, unavailable
+reports, read-only/completed access, invalid lot scope and duplicate sends.
+`scripts/test-contract-proforma-backend.mjs` covers source identity, creation and
+reuse, subtype separation, conflicting historic links and limited report scope.
+Run the existing Pro Forma Legal access and Contract scope tests, repository
+validation and Pages build. These offline checks do not prove native compilation,
+non-admin profile access or a real Send to Legal. Hosted rollback is `1.62.54`;
+restore the previous function separately if needed and keep additive lookup
+data intact.
+
 ## Approval Modal Layering — 1.62.54, November 6, 2026
 
 Approvers/Attachments switches fade only the mounted modal body. The former

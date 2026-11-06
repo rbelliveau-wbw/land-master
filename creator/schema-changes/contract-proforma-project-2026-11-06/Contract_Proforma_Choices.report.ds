@@ -1,0 +1,41 @@
+list Contract_Proforma_Choices
+{
+    displayName = "Contract Pro Forma Choices"
+    show all rows from Add_Pro_Forma
+    (
+        Name as "Pro Forma"
+        Territory
+        LOI_Contract as "LOI Contract"
+    )
+    quickview
+    (
+        layout
+        (
+            displaylayout = "classic"
+            datablock1
+            (
+                fields
+                (
+                    Name as "Pro Forma"
+                    Territory
+                    LOI_Contract as "LOI Contract"
+                )
+            )
+        )
+    )
+    detailview
+    (
+        layout
+        (
+            datablock1
+            (
+                fields
+                (
+                    Name as "Pro Forma"
+                    Territory
+                    LOI_Contract as "LOI Contract"
+                )
+            )
+        )
+    )
+}

@@ -3,6 +3,14 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.56` replaces the Subdivision list column with **Pro Forma / Project**.
+Acquisition rows edit their Pro Forma inline; other rows edit Project, and Lot
+rows append the selected subdivision record codes. Existing scope, ownership,
+completion and native save safeguards remain. The accompanying Creator field,
+function, report and permission work is tracked in the
+[native handoff](../../creator/schema-changes/contract-proforma-project-2026-11-06/README.md).
+Creator Production promotion remains user-owned. Hosted rollback: `1.62.54`.
+
 Release `1.62.54` keeps sticky report headers behind the Internal Approvals modal
 when switching Approvers/Attachments. Only the modal body fades. Frontend only;
 no Creator publication is required. Rollback: `1.62.53`.

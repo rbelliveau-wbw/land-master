@@ -77,26 +77,55 @@ string Create_LOI_Contract(string proformaId)
         contractType = "ACQ (" + agreementType + ")";
         contractName = contractType + " - " + ifnull(pf.Name,"Pro Forma");
         priorContractName = "Acquisition - " + ifnull(pf.Name,"Pro Forma");
-		/* Contracts created before this rename are named "<Pro Forma> - LOI", and reuse is
-		   matched on the name alone - so without the legacy lookup a resubmit would miss the
-		   existing record and insert a duplicate. Matching subtype records are renamed
-		   to the selected agreement scheme when reused. */
+		/* Pro Forma identity is stable when either record is renamed. Keep legacy-name
+		   recovery for unlinked records only; another Pro Forma's Contract is never reused. */
 		legacyContractName = ifnull(pf.Name,"Pro Forma") + " - LOI";
 		contractId = null;
-		existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
-		if(existingContract.ID == null)
+		existingContract = Contract[(Proforma == pf.ID) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		if(existingContract.ID == null && loiRec.Contract != null)
 		{
-			existingContract = Contract[(Contract_Name == priorContractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+			existingContract = Contract[(ID == loiRec.Contract) && (Contract_Type == contractType) && (Proforma == null || Proforma == pf.ID) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		}
+		if(existingContract.ID == null && pf.LOI_Contract != null)
+		{
+			existingContract = Contract[(ID == pf.LOI_Contract) && (Contract_Type == contractType) && (Proforma == null || Proforma == pf.ID) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
 		}
 		if(existingContract.ID == null)
 		{
-			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == contractType) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+			existingContract = Contract[(Contract_Name == contractName) && (Contract_Type == contractType) && (Proforma == null || Proforma == pf.ID) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		}
+		if(existingContract.ID == null)
+		{
+			existingContract = Contract[(Contract_Name == priorContractName) && (Contract_Type == contractType) && (Proforma == null || Proforma == pf.ID) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		}
+		if(existingContract.ID == null)
+		{
+			existingContract = Contract[(Contract_Name == legacyContractName) && (Contract_Type == contractType) && (Proforma == null || Proforma == pf.ID) && (Work_Module == null || Work_Module == "" || Work_Module == "Legal")];
+		}
+		if(existingContract.count() > 1)
+		{
+			result.put("success",false);
+			result.put("message","More than one matching Acquisition Contract exists. Resolve the duplicate links before sending to Legal.");
+			result.put("proformaId",pf.ID.toString());
+			return result.toString();
 		}
 		if(existingContract.ID != null)
 		{
+			// Legacy name matches may still be owned through an older reverse link.
+			// Check every reused candidate before changing any Contract fields.
+			conflictingProformas = Add_Pro_Forma[(LOI_Contract == existingContract.ID) && (ID != pf.ID)];
+			conflictingWorksheets = LOI_Worksheet[(Contract == existingContract.ID) && (Proforma != null) && (Proforma != pf.ID)];
+			if(conflictingProformas.count() > 0 || conflictingWorksheets.count() > 0)
+			{
+				result.put("success",false);
+				result.put("message","The matching Acquisition Contract is already referenced by another Pro Forma. Resolve its source links before sending to Legal.");
+				result.put("proformaId",pf.ID.toString());
+				return result.toString();
+			}
 			contractId = existingContract.ID;
 			existingContract.Contract_Type=contractType;
 			existingContract.Contract_Name=contractName;
+			existingContract.Proforma=pf.ID;
 			existingContract.Work_Module="Legal";
 			existingContract.Territory=contractTerritory;
 			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
@@ -117,6 +146,7 @@ string Create_LOI_Contract(string proformaId)
 				Added_User=zoho.loginuser
 				Contract_Name=contractName
 				Contract_Type=contractType
+				Proforma=pf.ID
 				Work_Module="Legal"
 				Territory=contractTerritory
 				WBW_Point_Person=wbwPointPerson

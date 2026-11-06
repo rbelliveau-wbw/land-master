@@ -1485,6 +1485,12 @@ select.apr-in{cursor:pointer}
 .cbo-chev{width:11px;height:11px;flex:none;opacity:.5}
 .cbo.saved-ok{box-shadow:0 0 0 3px rgba(4,120,87,.22)}
 .cbo.save-err{box-shadow:0 0 0 3px rgba(220,38,38,.24)}
+.contract-location-cell{min-width:145px}
+.cbo.contract-location{height:auto;min-height:29px;padding:4px 7px;background:transparent;font-size:12px;font-weight:600}
+.cbo.contract-location:hover,.cbo.contract-location.open{background:#eef4ff;border-color:#c8d8ed}
+.contract-location .cbo-txt,.contract-location-value{white-space:normal;overflow-wrap:anywhere;line-height:1.45}
+.contract-location-message{display:block;color:var(--red);font-size:11px;line-height:1.4;margin:3px 7px 0}
+.contract-location-message:empty{display:none}
 #cboPop{position:fixed;z-index:110;display:none;flex-direction:column;overflow:hidden;min-width:180px;max-width:340px;
   background:#fff;border:1px solid var(--line-strong);border-radius:11px;
   box-shadow:0 14px 40px rgba(15,39,68,.2),0 2px 8px rgba(15,39,68,.08);animation:popIn .13s ease}
@@ -1498,10 +1504,10 @@ select.apr-in{cursor:pointer}
   font-weight:650;color:var(--text);cursor:pointer;white-space:nowrap}
 #cboPop .cbo-opt:hover,#cboPop .cbo-opt.act{background:var(--ptint);color:var(--primary)}
 #cboPop .cbo-opt.on{font-weight:800;color:var(--navy)}
-#cboPop .cbo-opt.on::after{content:"\2713";margin-left:auto;color:var(--primary-2);font-weight:900}
+#cboPop .cbo-opt.on::after{content:none}
 #cboPop .cbo-dot{width:9px;height:9px;border-radius:50%;flex:none}
 #cboPop .construction-status-opt.on::after{content:none}
-#cboPop .construction-status-check{display:block;flex:none;margin-left:auto;color:var(--primary-2)}
+#cboPop .construction-status-check,#cboPop .cbo-check{display:block;flex:none;margin-left:auto;color:var(--primary-2)}
 #cboPop .cbo-none{padding:10px;text-align:center;font-size:11.5px;color:var(--faint)}
 .msel-pop{position:fixed;z-index:85;width:288px;background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 14px 40px rgba(15,39,68,.2),0 2px 8px rgba(15,39,68,.08);display:flex;flex-direction:column;overflow:hidden;animation:popIn .14s ease}
 .msel-search{padding:9px 10px;border-bottom:1px solid var(--line)}
@@ -1978,16 +1984,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.54"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.54">
-<script src="interaction-motion.js?v=1.62.54"></script>
-<script src="interaction-surfaces.js?v=1.62.54"></script>
-<script src="number-edit-commit.js?v=1.62.54"></script>
-<script src="number-transitions.js?v=1.62.54"></script>
-<script src="number-surfaces.js?v=1.62.54"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.54">
-<link rel="stylesheet" href="report-layout.css?v=1.62.54">
-<link rel="stylesheet" href="construction-board.css?v=1.62.54">
+<script src="success-feedback.js?v=1.62.56"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.56">
+<script src="interaction-motion.js?v=1.62.56"></script>
+<script src="interaction-surfaces.js?v=1.62.56"></script>
+<script src="number-edit-commit.js?v=1.62.56"></script>
+<script src="number-transitions.js?v=1.62.56"></script>
+<script src="number-surfaces.js?v=1.62.56"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.56">
+<link rel="stylesheet" href="report-layout.css?v=1.62.56">
+<link rel="stylesheet" href="construction-board.css?v=1.62.56">
 </head>
 <body>
 
@@ -2036,7 +2042,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.54", pageSize: 200, maxPages: 25,
+  version: "1.62.56", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -2046,6 +2052,7 @@ var CFG = {
     actions: "All_Contract_Actions",
     versions: "All_Attachments",
     proformas: "All_Pro_Formas_All_Fields",
+    proformaChoices: "Contract_Proforma_Choices",
     approvals: "All_Contract_Approvals",
     subdivisions: "All_Subdivisions",
     projects: "All_Projects",
@@ -2174,6 +2181,7 @@ var S = {
   loiSelId:null, loiToken:"", deepLink:null,
   fSubs:[], fBuilders:[], fTerritories:[],
   nc:null, nb:null, subdivisions:[], subdivisionsAll:[], projects:[], projectsLoaded:false, projectsLoading:null, projectsError:"", builders:[], optionsLoaded:false,
+  locationReferenceScope:"", contractProformas:[], contractProformasLoaded:false, contractProformasLoading:null, contractProformasError:"",
   lots:[], lotsLoaded:false, lpSub:"", lpDrag:{active:false},
   users:[], myAccessId:"", currentUser:"", usersLoaded:false,
   acc:{edit:true,propose:true,approve:true,templates:false,known:false,degraded:false},
@@ -2883,7 +2891,7 @@ function contractApprovalCurrent(p){return contractApprovalProgress===p&&p.scope
 
 /* ---------------- SDK layer (envelope machinery, proven in v7 widget) ---------------- */
 var contractFieldKinds={"All_Contracts1":{"Subdivision1":"multi","Builder":"lookup","Earnest_Money_Per_Lot":"number","Number_of_Lots":"number","Initial_Takedown":"number","Initial_Takedown_Days":"number","Second_Closing_Lots":"number","Second_Closing_Days":"number","Subsequent_Takedown_Lots":"number","Subsequent_Takedown_Days":"number","Lots1":"multi","Takedown_Schedule1":"lookup","Company_Entity":"lookup","Project":"lookup","Completion_Date":"date","Earnest_Money":"number","Total_Contract_Price":"number","Pricing":"lookup","Contract_Actions":"lookup","Approvals1":"lookup","Redlines":"lookup","Contract_Versions":"lookup"},"All_Contract_Actions":{"Start_Date":"date","Due_Date":"date","Complete_Date":"date","Contract1":"lookup"},"All_Contract_Approvals":{"Approval_Sequence":"number","Contract1":"lookup","Reminder_Interval_Days":"number","Last_Reminder_Date":"date","Next_Reminder_Date":"date","Approval_Date":"date"},"All_Attachments":{"Contract1":"lookup","Budget":"lookup","Pro_Forma":"lookup","Date_field1":"date","File_field1":"fileupload","Email_Attachment":"bool"},"Contract_Pricing_Report":{"Contract1":"lookup","Base_Price":"number"},"All_Active_Lots_Contracts_View":{"Purchase_Price":"number","Purchase_Date":"date","Proforma":"lookup","Seller":"lookup","Company1":"lookup","Projects":"multi","Subdivisions":"multi","Acres":"number","Original_Acres":"number","Construction_Acres":"number","cost_per_acre_FT":"number"}};
-contractFieldKinds.All_Contracts1.Date_Needed='date';contractFieldKinds.All_Contracts1.MUD='bool';
+contractFieldKinds.All_Contracts1.Date_Needed='date';contractFieldKinds.All_Contracts1.MUD='bool';contractFieldKinds.All_Contracts1.Proforma='lookup';
 /* Private native SDK2 transport. Generated only into the ignored preparation app. */
 function contractReleaseBusy(){S.busy=false;contractControls();}
 function contractOwn(value,key){return !!value&&Object.prototype.hasOwnProperty.call(value,key);}
@@ -3532,7 +3540,7 @@ function contractParentSummary(c){
   var n=contractChildren(c.ID).length,name=contractParentName(c),editable=mayEdit(c.ID)&&!n;
   return '<div class="dfact contract-parent-fact"><span>Parent Contract</span><span>'+(n&&!name?'<span class="contract-master-note">Master · '+n+' child'+(n===1?'':'ren')+'</span>':editable?'<button class="contract-parent-link" type="button" onclick="event.stopPropagation();contractParentOpen(\''+attr(c.ID)+'\')" title="Assign or change Parent Contract">'+esc(name||'Assign parent')+'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M10 3l3 3M3 10l7.5-7.5a1.8 1.8 0 0 1 2.5 2.5L5.5 12.5 2 14z"/></svg></button>':esc(name||'None'))+'</span></div>';
 }
-function ncInheritedParent(v){return v&&v.parent&&!S.clp&&!isLotAmendment(v.type)?findContract(v.parent):null;}
+function ncInheritedParent(v,rows){return v&&v.parent&&!S.clp&&!isLotAmendment(v.type)?(rows||S.contracts).find(function(row){return String(row.ID)===String(v.parent);})||null:null;}
 function ncParentContextError(v,rows){
   if(v.workMode==='construction')return '';
   if(!v.parent||isLotAmendment(v.type))return '';
@@ -3605,7 +3613,7 @@ function lotParentOptions(builder,cid,project){
   return (S.contracts||[]).filter(function(c){return lotTypeLabel(c.Contract_Type)==="Lot (Master)"&&!lookupId(c.Parent_Contract)&&String(c.ID)!==String(cid||"")&&builder&&lookupId(c.Builder)===String(builder)&&project&&lotContractProject(c)===String(project);})
     .map(function(c){return {v:String(c.ID),label:String(c.Contract_Name||c.ID)};}).sort(function(a,b){return a.label.localeCompare(b.label);});
 }
-function lotParentValid(v,cid){ return !contractParentError(v,cid); }
+function lotParentValid(v,cid,rows){ return !contractParentError(v,cid,rows); }
 function ncSyncContext(){
   var v=S.nc; if(!v||!isLotType(v.type)) return;
   var ctx=lotSubdivisionContext(v.sub),p=ncProjectRecord(v.project);
@@ -3617,7 +3625,7 @@ function ncSyncContext(){
   if(!opts.some(function(o){return o.v===String(v.parent||"");})) v.parent="";
   if(opts.length===1) v.parent=opts[0].v;
 }
-function ncContextError(v){
+function ncContextError(v,parents){
   if(!isLotType(v.type)) return "";
   var ctx=lotSubdivisionContext(v.sub),pid=lotDraftProject(v),p=ncProjectRecord(pid);
   if(isLotAmendment(v.type)&&!v.sub.length) return "Choose a subdivision.";
@@ -3626,7 +3634,8 @@ function ncContextError(v){
   if(v.sub.length&&ctx.missing) return "Project or Territory is unavailable for the selected subdivision.";
   if(v.sub.length&&!isLotAmendment(v.type)&&ctx.project!==pid) return "Choose subdivisions in the selected Project.";
   if(!isLotAmendment(v.type)&&(!p||!String(p.Territory||"").trim())) return "Territory is unavailable for the selected Project.";
-  if(ncInheritedParent(v)&&String(p.Territory||'').trim()!==v.territory)return "Choose a Project in the parent's Territory, or clear Parent.";
+  var inherited=ncInheritedParent(v,parents);
+  if(inherited&&String(p.Territory||'').trim()!==String(parents?inherited.Territory:v.territory||'').trim())return "Choose a Project in the parent's Territory, or clear Parent.";
   return "";
 }
 function lotParentField(){
@@ -3667,12 +3676,15 @@ function ncSetProject(id){
   ncScopeChanged();
 }
 function ncLoadProjects(){
+  var scope=contractMutationScope();
+  if(S.projectsScope&&S.projectsScope!==scope){S.projects=[];S.projectsLoaded=false;S.projectsLoading=null;S.projectsError='';}
+  S.projectsScope=scope;
   if(S.demo||S.projectsLoaded) return Promise.resolve();
   if(S.projectsLoading) return S.projectsLoading;
   S.projectsError="";
-  S.projectsLoading=sdkGetAll(CFG.reports.projects).then(function(rows){S.projects=rows||[];S.projectsLoaded=true;},function(e){S.projectsError=errText(e)||"Projects unavailable";})
-    .then(function(){S.projectsLoading=null;ncSyncContext();ncRepaintForm();});
-  return S.projectsLoading;
+  var request=sdkGetAll(CFG.reports.projects,'',{isCancelled:function(){return scope!==contractMutationScope();}}).then(function(rows){if(scope===contractMutationScope()&&S.projectsLoading===request){S.projects=rows||[];S.projectsLoaded=true;}},function(e){if(scope===contractMutationScope()&&S.projectsLoading===request)S.projectsError=errText(e)||"Projects unavailable";})
+    .then(function(){if(scope===contractMutationScope()&&S.projectsLoading===request){S.projectsLoading=null;ncSyncContext();ncRepaintForm();}});
+  S.projectsLoading=request;return request;
 }
 function lotHierarchyLabel(c,branch){
   if(!isLotContract(c)) return branch&&branch.kind==='child'?'<span class="lot-type-badge" style="background:'+typeColor(c.Contract_Type)[0]+';color:'+typeColor(c.Contract_Type)[1]+'">'+esc(c.Contract_Type)+'</span>':lookupId(c.Parent_Contract)?'<span class="lot-parent-label" title="Parent Contract">↳ '+esc(contractParentName(c))+'</span>':'';
@@ -4409,11 +4421,12 @@ function cbo(o){
     +(o.af?' data-af="'+attr(o.af)+'"':'')+(o.aid?' data-aid="'+attr(o.aid)+'"':'')
     +(o.field?' data-f="'+attr(o.field)+'"':'')+(o.rid?' data-id="'+attr(o.rid)+'"':'')
     +(o.blank?' data-blank="1"':'')+(o.dots?' data-dots="1"':'')
+    +(o.search?' data-search="1"':'')
     +(o.style?' style="'+attr(o.style)+'"':'')
     +(o.title?' title="'+attr(o.title)+'"':'')
     +(o.onpick?' data-onpick="'+attr(o.onpick)+'"':'')
     +" data-opts='"+attr(JSON.stringify(norm))+"'"
-    +' onclick="cboOpen(event,this)">'
+    +' onclick="'+attr(o.onopen||'cboOpen(event,this)')+'">'
     +'<span class="cbo-txt'+(cur?"":" ph")+'">'+esc(label)+'</span>'
     +'<svg class="cbo-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'
     +'</button>';
@@ -4471,7 +4484,7 @@ function cboRender(q){
   list.innerHTML=rows.map(function(o,i){
     var dot=dots?'<span class="cbo-dot" style="background:'+statusDotColor(o.v)+'"></span>':'';
     return '<div class="cbo-opt'+(construction?' construction-status-opt':'')+(o.v===cur?" on":"")+(i===CBO.act?" act":"")+'" data-i="'+i+'" onmousedown="event.preventDefault();cboPick('+i+')">'
-      +dot+'<span>'+esc(o.label||"\u2014")+'</span>'+(construction&&o.v===cur?'<svg class="construction-status-check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l3 3 7-6"/></svg>':'')+'</div>';
+      +dot+'<span>'+esc(o.label||"\u2014")+'</span>'+(o.v===cur?'<svg class="'+(construction?'construction-status-check':'cbo-check')+'" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l3 3 7-6"/></svg>':'')+'</div>';
   }).join("");
 }
 function cboPick(i){
@@ -4517,12 +4530,13 @@ function cboOpen(ev,btn){
   btn.classList.add("open");
   var p=cboPop();
   /* search only earns its space on a long list */
-  p.querySelector(".cbo-search").style.display=opts.length>8?"":"none";
+  var searchable=opts.length>8||btn.getAttribute('data-search')==='1';
+  p.querySelector(".cbo-search").style.display=searchable?"":"none";
   var si=p.querySelector("#cboSearch"); si.value="";
   cboRender("");
   p.classList.add("show");
   cboPosition();
-  if(opts.length>8) si.focus();
+  if(searchable) si.focus();
   var act=p.querySelector(".cbo-opt.on"); if(act&&act.scrollIntoView) act.scrollIntoView({block:"nearest"});
 }
 document.addEventListener("mousedown",function(e){
@@ -4699,6 +4713,139 @@ function contractSubText(c){
   }).filter(Boolean).join(", ");
 }
 function contractSubTitle(c){ return listDisplay(c&&c.Subdivision1); }
+/* The report column edits the native lookup only. Phase suffixes come from
+   selected Subdivision records; reverse LOI links are display-only until the
+   Contract.Proforma field is installed/backfilled. Never infer links by name. */
+function contractLocationField(c){return isAcqType(c&&c.Contract_Type)||String(c&&c.Contract_Type)==='Acquisition'?'Proforma':'Project';}
+function contractLocationReferences(){
+  var scope=contractMutationScope();
+  if(S.locationReferenceScope!==scope){S.locationReferenceScope=scope;S.contractProformas=[];S.contractProformasLoaded=false;S.contractProformasLoading=null;S.contractProformasError='';}
+  return S.contractProformas;
+}
+function contractLocationRef(c){
+  var field=contractLocationField(c),id=lookupId(c&&c[field]),rows=field==='Proforma'?contractLocationReferences():S.projects||[];
+  var derived=field==='Project'&&!id&&isLotContract(c);if(derived)id=lotContractProject(c);
+  var row=id&&rows.find(function(r){return String(r.ID)===id;}),fallback=false;
+  if(field==='Proforma'&&!id&&!contractOwn(c,field)){
+    var linked=rows.concat(S.loiDataScope===contractMutationScope()?S.loiReviews||[]:[]).filter(function(p){return lookupId(p.LOI_Contract)===String(c.ID);}),unique={};
+    linked.forEach(function(p){unique[String(p.ID)]=p;});
+    if(Object.keys(unique).length===1){row=unique[Object.keys(unique)[0]];id=String(row.ID);fallback=true;}
+  }
+  var label=row?String(row[field==='Proforma'?'Name':'Project_Name']||''):'';
+  if(!label&&lookupId(c&&c[field])===id){label=displayValue(c[field]);if(label===id)label='';}
+  if(!label&&id&&derived)label=ncProjectLabel(id);
+  if(!label&&id)label=field==='Proforma'?'Pro Forma Set':'Project Set';
+  return {field:field,id:id,label:label,fallback:fallback,derived:derived&&!!id};
+}
+function contractLocationCodes(c){
+  if(!isLotContract(c))return '';
+  return contractLookupIds(c.Subdivision1).map(subCodeFor).filter(function(code,i,codes){return code&&codes.indexOf(code)===i;}).join(', ');
+}
+function contractLocationText(c){var ref=contractLocationRef(c),codes=contractLocationCodes(c);return (ref.label||'—')+(codes?' — '+codes:'');}
+function contractLocationTitle(c){
+  var ref=contractLocationRef(c),parts=[contractLocationText(c)];
+  if(isLotContract(c)&&contractSubTitle(c))parts.push(contractSubTitle(c));
+  if(ref.fallback)parts.push('Linked From Pro Forma; Contract Lookup Pending');
+  if(ref.derived)parts.push('Project From Selected Subdivisions');
+  return parts.join('\n');
+}
+function contractLocationOptions(c){
+  var ref=contractLocationRef(c),rows=ref.field==='Proforma'?contractLocationReferences():S.projects||[];
+  var options=rows.map(function(row){return {v:String(row.ID),label:String(row[ref.field==='Proforma'?'Name':'Project_Name']||'')};}).filter(function(o){return o.label;});
+  if(ref.id&&!options.some(function(o){return o.v===ref.id;}))options.push({v:ref.id,label:ref.label});
+  return options.sort(function(a,b){return a.label.localeCompare(b.label);});
+}
+function contractLocationCell(c){
+  var ref=contractLocationRef(c),editable=mayEdit(c.ID),title=contractLocationTitle(c),label=contractLocationText(c);
+  var control=editable?cbo({id:'contract_location_'+c.ID,cls:'contract-location',value:ref.id,opts:contractLocationOptions(c),blank:true,search:true,title:title,
+    onopen:"contractLocationOpen(event,this,'"+String(c.ID)+"')",onpick:"contractLocationSave(el,'"+String(c.ID)+"',value)"}):'<span class="contract-location-value" title="'+attr(title)+'">'+esc(label)+'</span>';
+  if(editable)control=control.replace(/(<span class="cbo-txt[^>]*>)[\s\S]*?(<\/span>)/,'$1'+esc(label).replace(/\$/g,'$$$$')+'$2');
+  return '<td class="contract-location-cell" onclick="event.stopPropagation()"><div data-contract-location="'+attr(c.ID)+'">'+control+'<span class="contract-location-message" role="status" aria-live="polite"></span></div></td>';
+}
+function contractLocationPaint(cid,state,message){
+  var c=findContract(cid);if(!c)return;
+  var el=$('contract_location_'+cid),host=el&&el.parentNode||document.querySelector('[data-contract-location="'+cid+'"]');if(!host)return;
+  var label=host.querySelector('.cbo-txt,.contract-location-value');if(label)label.textContent=contractLocationText(c);
+  if(el){el.value=contractLocationRef(c).id;el.title=contractLocationTitle(c);el.setAttribute('data-opts',JSON.stringify(contractLocationOptions(c)));el.setAttribute('aria-label',(contractLocationField(c)==='Proforma'?'Pro Forma':'Project')+': '+contractLocationText(c));if(state){el.setAttribute('data-state',state);el.setAttribute('aria-busy',state==='pending'?'true':'false');el.classList.toggle('saving',state==='pending');el.classList.toggle('save-err',state==='error'||state==='unknown');}}
+  var note=host.querySelector('.contract-location-message');if(note&&message!==undefined)note.textContent=message;
+}
+function ensureContractProformas(){
+  contractLocationReferences();
+  if(S.contractProformasLoaded)return Promise.resolve(S.contractProformas);
+  if(S.contractProformasLoading)return S.contractProformasLoading;
+  var scope=contractMutationScope(),request;S.contractProformasError='';
+  request=sdkGetAll(CFG.reports.proformaChoices,'',{fields:['ID','Name','Territory','LOI_Contract'],isCancelled:function(){return scope!==contractMutationScope();}}).then(function(rows){
+    if(scope!==contractMutationScope())throw new Error('The Creator session changed.');
+    if(rows.some(function(row){return !contractId(row.ID)||!contractOwn(row,'Name');}))throw new Error('Pro Forma choices are unavailable. Check the Contract Proforma Choices report fields and permissions.');
+    S.contractProformas=rows;S.contractProformasLoaded=true;return rows;
+  }).catch(function(error){if(scope===contractMutationScope())S.contractProformasError='Could not load Pro Formas. Check the Contract Proforma Choices report and permissions. '+errText(error);throw error;}).finally(function(){if(S.contractProformasLoading===request)S.contractProformasLoading=null;});
+  S.contractProformasLoading=request;return request;
+}
+function contractLocationOpen(ev,el,cid){
+  ev.stopPropagation();ev.preventDefault();var c=findContract(cid);
+  if(!c||!mayEdit(cid)||S.busy||contractInteractionHeld()||el.disabled)return Promise.resolve(false);
+  var token=S.contractLocationOpenSequence=(S.contractLocationOpenSequence||0)+1;
+  if(CBO.btn===el){cboClose();return Promise.resolve(true);}
+  cboClose();el._contractLocationOpen=token;
+  var scope=contractMutationScope(),generation=S.contractDataGeneration,navigation=S.contractNavigationGeneration||0,field=contractLocationField(c);el.disabled=true;contractLocationPaint(cid,'pending','');
+  var load=field==='Proforma'?ensureContractProformas():ncLoadProjects().then(function(){if(!S.projectsLoaded)throw new Error(S.projectsError||'Projects are unavailable.');});
+  return load.then(function(){
+    if(scope!==contractMutationScope()||generation!==S.contractDataGeneration||navigation!==(S.contractNavigationGeneration||0)||el.isConnected===false||!mayEdit(cid)||token!==S.contractLocationOpenSequence){if(scope===contractMutationScope()&&el.isConnected!==false&&el._contractLocationOpen===token)contractLocationPaint(cid,'ready','');return false;}
+    contractLocationPaint(cid,'ready','');el.disabled=false;cboOpen(ev,el);return true;
+  }).catch(function(error){if(scope===contractMutationScope()&&el.isConnected!==false&&el._contractLocationOpen===token)contractLocationPaint(cid,token===S.contractLocationOpenSequence?'error':'ready',token===S.contractLocationOpenSequence?(field==='Proforma'?S.contractProformasError||errText(error):'Could not load Projects. '+errText(error)):'');return false;}).finally(function(){if(scope===contractMutationScope()&&el.isConnected!==false&&el._contractLocationOpen===token){el.disabled=!mayEdit(cid)||S.busy||contractInteractionHeld();el.classList.remove('saving');el.setAttribute('aria-busy','false');}});
+}
+function contractLocationProjectPayload(c,value,contracts){
+  if(!isLotContract(c))return {Project:value||null};
+  var v={type:lotTypeLabel(c.Contract_Type),project:value,sub:contractLookupIds(c.Subdivision1),parent:lookupId(c.Parent_Contract),builder:lookupId(c.Builder),territory:String(c.Territory||'')};
+  if(isLotAmendment(v.type)&&value!==lotDraftProject(v))throw new Error('The selected subdivisions belong to another Project. Change Lots & Pricing to update the scope.');
+  var error=ncContextError(v,contracts)||contractParentError(v,String(c.ID),contracts);if(error)throw new Error(error+' Use Change Lots & Pricing to update the scope.');
+  var changed=Object.assign({},c,{Project:value||null}),rows=contracts.map(function(row){return String(row.ID)===String(c.ID)?changed:row;});
+  contractChildren(c.ID,rows).filter(function(child){return isLotAmendment(child.Contract_Type);}).forEach(function(child){var draft={type:child.Contract_Type,sub:contractLookupIds(child.Subdivision1),project:lotContractProject(child),parent:String(c.ID),builder:lookupId(child.Builder)};if(contractParentError(draft,String(child.ID),rows))throw new Error('A linked Lot Amendment must keep the same Project as its Master. Update its scope first.');});
+  return Object.assign({Project:value||null},clpScopeChanges(c,v,contracts));
+}
+function contractLocationPreflight(c,value,scope,generation){
+  var field=contractLocationField(c),lot=isLotContract(c),options=contractReadOptions(generation,scope);
+  return sdkGetAll(CFG.reports.contracts,lot?'':'(ID == '+c.ID+')',options).then(function(contracts){
+    var fresh=contracts.find(function(row){return String(row.ID)===String(c.ID);});
+    if(options.isCancelled()||!fresh||!contractEditAccess(fresh)||contractLocked(fresh)||!workVisible(fresh))throw new Error('This contract changed or is read-only. Refresh before editing.');
+    if(contractLocationField(fresh)!==field)throw new Error('The contract type changed. Refresh before editing.');
+    if(!contractOwn(fresh,field))throw new Error(field==='Proforma'?'The Contract Pro Forma lookup is unavailable. Install the lookup and expose it in this report with the required permissions.':'Project is unavailable. Check this report’s fields and permissions.');
+    if(lot&&['Subdivision1','Lots1','Parent_Contract','Builder'].some(function(key){return !contractOwn(fresh,key);}))throw new Error('The complete Lot contract scope is unavailable. Check report fields and permissions.');
+    if(lookupId(fresh[field])!==lookupId(c[field]))throw new Error('This selection changed. Refresh before editing.');
+    var choice=value?sdkGetAll(field==='Proforma'?CFG.reports.proformaChoices:CFG.reports.projects,'(ID == '+value+')',Object.assign({},options,field==='Proforma'?{fields:['ID','Name','Territory','LOI_Contract']}:{})):Promise.resolve([]);
+    var subs=lot?contractLookupIds(fresh.Subdivision1):[];
+    var subdivisions=subs.length?sdkGetAll(CFG.reports.subdivisions,'('+subs.map(function(id){return '(ID == '+id+')';}).join(' || ')+')',options):Promise.resolve([]);
+    return Promise.all([choice,subdivisions]).then(function(results){
+      if(options.isCancelled())throw new Error('The Creator session changed.');
+      var row=results[0][0],name=field==='Proforma'?'Name':'Project_Name';if(value&&(!row||String(row.ID)!==value||!String(row[name]||'').trim()))throw new Error('The selected '+(field==='Proforma'?'Pro Forma':'Project')+' is unavailable. Refresh the choices.');
+      if(field==='Proforma')return {payload:{Proforma:value||null},label:row?String(row.Name):'',fresh:fresh};
+      if(row){var index=S.projects.findIndex(function(p){return String(p.ID)===value;});if(index<0)S.projects.push(row);else S.projects[index]=row;}
+      if(lot){if(results[1].length!==subs.length||subs.some(function(id){return !results[1].some(function(sub){return String(sub.ID)===id&&contractOwn(sub,'Project');});}))throw new Error('The selected subdivisions are unavailable. Check report fields and permissions.');results[1].forEach(function(sub){var index=S.subdivisionsAll.findIndex(function(r){return String(r.ID)===String(sub.ID);});if(index<0)S.subdivisionsAll.push(sub);else S.subdivisionsAll[index]=sub;var visible=S.subdivisions.findIndex(function(r){return String(r.ID)===String(sub.ID);});if(visible>=0)S.subdivisions[visible]=sub;});}
+      var payload=contractLocationProjectPayload(fresh,value,contracts),ids=lot?contractLookupIds(fresh.Lots1):[];
+      return lotTransferReadRows({ids:ids,scope:scope,generation:generation}).then(function(lots){
+        ids.forEach(function(id){if(!lots[id]||!contractOwn(lots[id],'Subdivision')||contractLookupIds(lots[id].Subdivision).length!==1||subs.indexOf(lookupId(lots[id].Subdivision))<0)throw new Error('A selected lot does not belong to the selected subdivisions. Use Change Lots & Pricing to resolve the mismatch.');});
+        return {payload:payload,label:row?String(row.Project_Name):'',fresh:fresh};
+      });
+    });
+  });
+}
+function contractLocationSave(el,cid,value){
+  var c=findContract(cid);value=String(value||'');
+  if(!c||!mayEdit(cid)||S.busy||contractInteractionHeld()){if(c&&!S.busy&&!contractInteractionHeld())contractLocationPaint(cid,'ready','');return Promise.resolve(false);}
+  if(value&&!contractId(value)){contractLocationPaint(cid,'error','Choose an available '+(contractLocationField(c)==='Proforma'?'Pro Forma':'Project')+'.');return Promise.resolve(false);}
+  var field=contractLocationField(c);if(value===lookupId(c[field])){contractLocationPaint(cid,'ready','');return Promise.resolve(true);}
+  var scope=contractMutationScope(),generation=S.contractDataGeneration,navigation=S.contractNavigationGeneration||0,key='contract-location:'+cid;
+  if(window.LMSuccess)LMSuccess.begin(key);S.busy=true;contractLocationPaint(cid,'pending','');contractControls();
+  return contractLocationPreflight(c,value,scope,generation).then(function(plan){
+    if(scope!==contractMutationScope()||generation!==S.contractDataGeneration)throw new Error('The Creator session changed.');
+    return updateRecord(String(cid),plan.payload,CFG.reports.contracts).then(function(response){
+      if(scope!==contractMutationScope()||generation!==S.contractDataGeneration)return false;
+      Object.assign(c,plan.payload,response&&response.verifiedRow||{});c[field]=value?{ID:value,display_value:plan.label}:null;
+      if(navigation===(S.contractNavigationGeneration||0)){contractLocationPaint(cid,'saved','');if(el.isConnected!==false)flashSaved(el);if(window.LMSuccess)LMSuccess.inline(key,(field==='Proforma'?'Pro Forma':'Project')+' saved.','contract changes',function(){return scope===contractMutationScope()&&navigation===(S.contractNavigationGeneration||0);});}
+      return true;
+    });
+  }).catch(function(error){if(scope===contractMutationScope()&&navigation===(S.contractNavigationGeneration||0))contractLocationPaint(cid,contractHasReviews()?'unknown':'error',errText(error));return false;}).finally(function(){contractReleaseBusy();contractControls();});
+}
 /* Best available name for a subdivision id: the subdivision list (open or not),
    then any lot or contract already carrying the lookup's display value. A
    subdivision with no lots yet still has its name on the contract that chose it. */
@@ -5897,12 +6044,12 @@ function clpOpenType(cid,type){
     var label=btn.querySelector(".cbo-txt"); if(label) label.textContent=btn.value;
   }
 }
-function clpScopeChanges(c,v){
+function clpScopeChanges(c,v,parents){
   if(["Lot (Master)","Lot (Amendment)"].indexOf(v.type)<0) throw new Error("Choose a Lot contract type.");
   if(isLotAmendment(v.type)&&!v.sub.length) throw new Error("Choose at least one subdivision.");
   var contextChanged=v.type!==lotTypeLabel(c.Contract_Type)||v.sub.join(",")!==asList(c.Subdivision1).map(clpLookupOne).filter(Boolean).join(",")||String(v.project||"")!==lotContractProject(c);
-  if(contextChanged){var contextError=ncContextError(v);if(contextError)throw new Error(contextError);}
-  if(!lotParentValid(v,c.ID)) throw new Error("Choose a Master with the same Project and builder / counterparty, or clear the optional parent.");
+  if(contextChanged){var contextError=ncContextError(v,parents);if(contextError)throw new Error(contextError);}
+  if(!lotParentValid(v,c.ID,parents)) throw new Error("Choose a Master with the same Project and builder / counterparty, or clear the optional parent.");
   var scope={};
   if(v.type!==lotTypeLabel(c.Contract_Type)) scope.Contract_Type=v.type;
   if(v.sub.join(",")!==asList(c.Subdivision1).map(clpLookupOne).filter(Boolean).join(",")) scope.Subdivision1=v.sub.map(String);
@@ -6639,7 +6786,7 @@ function filteredContracts(){
     if(S.fBuilders.length && S.fBuilders.indexOf(lookupId(c.Builder))<0) return false;
     if(S.fTerritories.length && S.fTerritories.indexOf(String(c.Territory||"").trim())<0) return false;
     if(q){
-      var hay=(String(c.Contract_Name||"")+" "+displayValue(c.Subdivision1)+" "+displayValue(c.Builder)+" "+String(c.Contract_Type||"")+" "+currentActionText(c.ID)).toLowerCase();
+      var hay=(String(c.Contract_Name||"")+" "+displayValue(c.Subdivision1)+" "+displayValue(c.Builder)+" "+contractLocationText(c)+" "+String(c.Contract_Type||"")+" "+currentActionText(c.ID)).toLowerCase();
       if(hay.indexOf(q)<0) return false;
     }
     return true;
@@ -6649,7 +6796,8 @@ function sortContracts(list){
   var k=S.sortKey,d=S.sortDir;
   return list.slice().sort(function(a,b){
     var va,vb;
-    if(k==="Subdivision1"){ va=displayValue(a.Subdivision1); vb=displayValue(b.Subdivision1); }
+    if(k==="Location"){va=contractLocationText(a);vb=contractLocationText(b);}
+    else if(k==="Subdivision1"){ va=displayValue(a.Subdivision1); vb=displayValue(b.Subdivision1); }
     else if(k==="Builder"){ va=displayValue(a.Builder); vb=displayValue(b.Builder); }
     else if(k==="pct"){ va=statsFor(a.ID).pct; vb=statsFor(b.ID).pct; return (va-vb)*d; }
     else { va=String(a[k]||""); vb=String(b[k]||""); }
@@ -9838,7 +9986,7 @@ function contractRow(c,branch){
     +'</span></div></td>'
     +ownerCell(c)
     +'<td class="contract-summary-status" onclick="event.stopPropagation()">'+statusCell(c)+'</td>'
-    +'<td class="subtle" title="'+attr(contractSubTitle(c))+'">'+esc(contractSubText(c)||"—")+'</td>'
+    +contractLocationCell(c)
     +currentActionSummaryCells(c)
     +'</tr>';
   if(open) r+=drillRow(c);
@@ -9885,7 +10033,7 @@ function renderTable(list){
     +'<thead><tr>'
     +'<th style="cursor:default"></th>'
     +th("Contract Name","Contract_Name")+'<th style="cursor:default">Owner</th>'+th("Status","Status")
-    +th("Subdivision","Subdivision1")+"<th>Current Action</th>"
+    +th("Pro Forma / Project","Location")+"<th>Current Action</th>"
     +'<th style="cursor:default">Current Action Status</th>'
     +'</tr></thead>'+body+'</table></div></div>';
 }
@@ -10869,6 +11017,7 @@ function loadData(){
   if(S.coreRefreshing)return S.contractDataPromise;
   if(contractHasReviews()||contractHasFieldDrafts()||S.contractFieldQueued||S.busy||S.nc||S.clp||S.maDraft||document.querySelector('.dirty,.saving'))return Promise.resolve(false);
   var generation=S.contractDataGeneration=(S.contractDataGeneration||0)+1,scope=contractMutationScope(),options=contractReadOptions(generation,scope);
+  contractLocationReferences();S.contractProformasLoaded=false;S.projectsLoaded=false;
   S.commentSummaryLoaded=false;S.commentSummaryStatus='loading';S.commentRowsByContract={};S.contractCommentEpochs={};S.commentSummaryLoading=null;
   S.coreRefreshing=true;S.coreReady=false;S.locked=false;S.lockedReport='';contractControls();setStatus('warn','Loading…');
   S.loiDataRequest++;S.loiDataPromise=null;S.loiDataStatus='idle';S.loiDataError='';S.loiReviews=[];
@@ -10880,6 +11029,7 @@ function loadData(){
     auditLog('success','Complete Contracts snapshot loaded',{contracts:S.contracts.length,actions:S.actions.length,versions:S.versions.length,approvals:S.approvals.length});
     loadContractCommentSummaries();
     ensureLOIReviews();
+    if(!constructionMode()&&S.contracts.some(function(c){return contractLocationField(c)==='Proforma';})){ensureContractProformas().then(function(){S.contracts.filter(function(c){return contractLocationField(c)==='Proforma';}).forEach(function(c){contractLocationPaint(c.ID);});}).catch(function(){S.contracts.filter(function(c){return contractLocationField(c)==='Proforma';}).forEach(function(c){contractLocationPaint(c.ID,'error',S.contractProformasError);});});}
     return repairSingleCurrent().then(function(){if(options.isCancelled())return false;var params=S.deepLink||readPageParams();S.deepLink=params;if(params.loiReviewId&&!constructionMode())return openLOIReview(params.loiReviewId,params.token||params.tokenId||'').then(function(){return true;});if(params.contractId)return openContractDeepLink(params).then(function(){return true;});if(S.homeSection==='loi')return ensureLOIReviews().then(function(){return true;});return true;});
   }).catch(function(error){
     if(generation===S.contractDataGeneration){S.coreReady=false;S.coreRefreshing=false;if(isPermissionError(error)){S.locked=true;S.lockedReport=String(error.__report||'');}setStatus('err','Load failed');banner('err','Could not load complete Contracts data: '+errText(error));contractControls();}

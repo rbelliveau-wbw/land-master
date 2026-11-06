@@ -1,0 +1,19 @@
+{
+  "status": "development-permission-installation-candidate",
+  "production_published": false,
+  "new_user_access_flags": [],
+  "existing_widget_authorization": "Reuse existing Legal module access and mayEdit for inline writes. ctEdit can edit all open contracts; the existing ctPropose / Propose_Contract_Changes flag is now labelled Edit Owned Contracts and Actions and can edit open contracts owned by the current User Access ID. Completed contracts remain read-only. No new edit grant is introduced.",
+  "native_contract_field": {"form": "Contract", "field": "Proforma", "visibility": "Everyone", "admin_only": false, "write_grant": "Only existing native Contract edit/report grants; do not grant new edit, Modify All or Delete access."},
+  "profiles_to_check": ["Contract Mgmt", "CFO", "Dev/Land Acq - Proforma & Budgets"],
+  "profile_selection_rule": "Apply the additive read grant only to existing profiles already authorized to view Legal contracts, including any additional existing Legal profile confirmed in the current app. Preserve their current record scope.",
+  "additive_report_grant": {"form": "Add_Pro_Forma", "report": "Contract_Proforma_Choices", "view": true, "view_all": true, "fields": ["ID", "Name", "Territory", "LOI_Contract"], "add": false, "edit": false, "modify_all": false, "delete": false, "export": false},
+  "pregrant_report_guard": "Minimize both Quick View and Detail View to the four allowed fields, or disable record-detail navigation. Check related-list, edit, export and custom-action exposure before granting access; the report must not expose the default full Pro Forma record.",
+  "existing_report_fields": {
+    "All_Contracts1": ["Proforma", "Project", "Subdivision1", "Contract_Type", "Work_Module", "Parent_Contract", "Lots1", "Builder", "Territory"],
+    "All_Subdivisions": ["ID", "Subdivision_Code", "Subdivision_Name", "Project", "Territory"],
+    "All_Projects": ["ID", "Project_Name", "Territory"]
+  },
+  "do_not_expand": ["All_Pro_Formas_All_Fields access", "LOI approval-token visibility", "financial field visibility", "Pro Forma form editing", "Construction Budgeting access to Legal contracts or the Pro Forma picker"],
+  "function": {"name": "Create_LOI_Contract", "permission": "Submit_to_Legal_Module", "existing_approval_lock_archive_preconditions": "unchanged"},
+  "verification": ["Legal general editor can read choices and edit Contract.Proforma on open contracts", "Legal owned editor can edit the lookup only on an open owned contract", "Legal viewer and a non-owner without edit-all access cannot edit the lookup", "Completed contracts remain read-only", "Construction Budgeting cannot query Legal contracts or Contract_Proforma_Choices", "non-admin Legal user receives Subdivision_Code, Project and Proforma through the same SDK reports"]
+}

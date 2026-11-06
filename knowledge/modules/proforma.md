@@ -1,3 +1,31 @@
+## Acquisition Contract Source Lookup — November 6, 2026
+
+Send to Legal already passes the exact Pro Forma ID to
+`Create_LOI_Contract(proformaId)` for PSA and LOI. The function now saves it in
+the optional single `Contract.Proforma` lookup on new and reused acquisition
+contracts. Source identity and agreement subtype take precedence over legacy
+name recovery; ambiguous or conflicting historical links must be resolved
+before reuse. Existing approval/lock/archive and Submit to Legal Module gates,
+Writer generation, action templates, attachment handling and token-based review
+retain their existing behavior. No Proforma widget release or new Custom API is
+required.
+
+Contract Management's inline choices use a separate limited report containing
+ID, Name, Territory and LOI Contract. Existing Legal profiles receive only the
+needed read access; the full financial/token report and Pro Forma editing are
+not widened. Install and verify the components in the
+[Creator handoff](../../creator/schema-changes/contract-proforma-project-2026-11-06/README.md),
+including its live Development status, before user-controlled Creator production
+publication. A repository/Pages release does not publish Creator components.
+No automatic historical backfill or test email is performed.
+
+Focused checks are `scripts/test-contract-proforma-backend.mjs` and the existing
+`scripts/test-proforma-legal-access.mjs`; run repository validation and the Pages
+build as well. Native compilation, profile checks and real Send to Legal remain
+separate verification steps recorded in the handoff. Rollback restores the
+prior `Create_LOI_Contract` function while retaining the additive lookup and
+existing source-link data.
+
 ## Completion Email Owners At Top — November 5, 2026
 
 The fully approved / Ready for Legal Module email starts with a highlighted

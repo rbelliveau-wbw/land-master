@@ -458,7 +458,8 @@
         "All_Subdivisions",
         "All_Takedown_Schedules",
         "Comment_Log_Report",
-        "Contract_Pricing_Report"
+        "Contract_Pricing_Report",
+        "Contract_Proforma_Choices"
       ],
       "sdk_calls": [
         "ZOHO.CREATOR.API.readFile",
