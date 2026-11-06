@@ -1,10 +1,17 @@
 {
-  "status": "development-permission-installation-candidate",
+  "status": "development-partially-installed; creator-maintenance-lock-prevents-remaining-checks",
   "production_published": false,
   "new_user_access_flags": [],
   "existing_widget_authorization": "Reuse existing Legal module access and mayEdit for inline writes. ctEdit can edit all open contracts; the existing ctPropose / Propose_Contract_Changes flag is now labelled Edit Owned Contracts and Actions and can edit open contracts owned by the current User Access ID. Completed contracts remain read-only. No new edit grant is introduced.",
   "native_contract_field": {"form": "Contract", "field": "Proforma", "visibility": "Everyone", "admin_only": false, "write_grant": "Only existing native Contract edit/report grants; do not grant new edit, Modify All or Delete access."},
   "profiles_to_check": ["Contract Mgmt", "CFO", "Dev/Land Acq - Proforma & Budgets"],
+  "development_evidence": {
+    "Contract Mgmt": {"picker_view": "saved-and-reopened-checked", "picker_edit": "reopened-and-unchecked", "existing_all_proforma_fields_and_modify_all": "already existed; unchanged"},
+    "CFO": {"picker_view": "saved; returned to profile list; reopen and field visibility confirmation pending", "existing_all_proforma_fields_and_modify_all": "already existed; unchanged"},
+    "Dev/Land Acq - Proforma & Budgets": {"picker_view": "pending; profile could not be opened after Creator entered maintenance mode"},
+    "maintenance": "Settings locked by a publishing process from another session. This agent did not initiate publication. No new financial/token grant was added; existing All_Pro_Formas_All_Fields access was preserved."
+  },
+  "remaining_feature_required": ["Dev/Land Acq - Proforma & Budgets picker View grant", "CFO picker View grant reopen and field visibility confirmation"],
   "profile_selection_rule": "Apply the additive read grant only to existing profiles already authorized to view Legal contracts, including any additional existing Legal profile confirmed in the current app. Preserve their current record scope.",
   "additive_report_grant": {"form": "Add_Pro_Forma", "report": "Contract_Proforma_Choices", "view": true, "view_all": true, "fields": ["ID", "Name", "Territory", "LOI_Contract"], "add": false, "edit": false, "modify_all": false, "delete": false, "export": false},
   "pregrant_report_guard": "Minimize both Quick View and Detail View to the four allowed fields, or disable record-detail navigation. Check related-list, edit, export and custom-action exposure before granting access; the report must not expose the default full Pro Forma record.",

@@ -21,10 +21,24 @@ Development `All_Contracts1` and `All_Contracts` expose the saved Pro Forma
 column. Existing subdivision codes/project scope and project names/territory
 were verified in their report headers. The picker Quick View is restricted;
 record clicks do nothing and all record-detail/action entry points were removed.
-Its default Detail View remains, with no profile grants assigned yet. The native
-`All_Contracts_v2` Board remains unchanged and is still listed as a candidate.
+Its default Detail View remains. Contract Mgmt's new picker View grant was saved
+and reopened, with picker Edit unchecked. CFO's additive View grant was saved;
+its reopen/field visibility confirmation and the Dev/Land Acq picker View grant
+are the remaining feature-required native checks/installations. Existing full
+Pro Forma report access and Modify All were already present and unchanged; no
+new financial/token access was granted. The native `All_Contracts_v2` Board
+remains unchanged. Its extra Pro Forma field is an optional native-report
+convenience; this widget does not read the Board.
 Full repository validation and the Pages build passed for widget candidate
-`1.62.55`; no live Send to Legal or business-record write was executed.
+`1.62.56`; no live Send to Legal or business-record write was executed.
+
+Creator entered maintenance mode during a publishing process from another
+session, locking Settings before the remaining profile checks. This agent did
+not initiate that publication, and its destination/components are unknown.
+The required profile work must resume after that lock clears; this is not
+evidence of this change's publication. Creator Production publication was
+neither initiated nor verified by this agent. The last observed Environments
+values were Stage `9.154` and Production `9.154`.
 
 Install the components in `change.json` order. Add only the listed report fields
 from [reports.json](reports.json); preserve each report's existing criteria,
@@ -38,12 +52,15 @@ Detail View to those same fields, or disable record-detail navigation, before
 granting access. A minimized Quick View does not limit default Detail View.
 Remove default edit, export, related-list and custom-action exposure as needed.
 
-Append the validation fragment as a Contract Created or Edited / Validations on
+The validation and visibility fragments are optional defense-in-depth/native-form
+convenience candidates. The requested lot/subdivision validation was retained
+unchanged, and the widget does not require these new native-form actions.
+If adopting them, append the validation fragment as a Contract Created or Edited / Validations on
 form submission action after the existing validation. Append the visibility
 fragment to existing on-load and Contract Type on-user-input actions. Preserve
 all existing Construction, city, parent-master and lot validation actions.
-Compile and reopen `creator/functions/Create_LOI_Contract.dg` only after the
-lookup exists. Its existing Custom API name and argument stay unchanged.
+`creator/functions/Create_LOI_Contract.dg` is already compiled and reopened in
+Development. Its existing Custom API name and argument stay unchanged.
 
 Before user promotion, check Development SDK reads for `Proforma` and
 `Subdivision_Code`, edit permission separation, source identity reuse after a

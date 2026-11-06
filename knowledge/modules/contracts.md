@@ -21,11 +21,21 @@ Native changes add the optional single `Contract.Proforma` lookup and limited
 `Contract_Proforma_Choices` report, update Contract report field exposure and
 reuse `Create_LOI_Contract(proformaId)` for PSA/LOI creation and reuse. See the
 [Creator installation handoff](../../creator/schema-changes/contract-proforma-project-2026-11-06/README.md)
-and its per-component status. The Development lookup, picker Quick View and
-`All_Contracts1`/`All_Contracts` additions have been worked on; final reopen,
-Detail View, profile, validation and function checks must be recorded there
-before calling native installation complete. Generated metadata remains the
-historical export. Creator production publication remains the user's step;
+and its per-component status. The Development lookup is installed/reopened;
+`Create_LOI_Contract` compiled, saved and reopened with the lookup assignments,
+source query and reverse-ownership guard confirmed. `All_Contracts1` and
+`All_Contracts` expose Pro Forma; the picker Quick View is restricted and all
+record-detail/action navigation is disabled. Contract Mgmt's additive picker
+View grant was saved/reopened with Edit unchecked; CFO View was saved with
+reopen/field visibility confirmation pending. The remaining feature-required
+native work is that CFO confirmation and the Dev/Land Acq picker View grant,
+blocked by Creator maintenance during another session's publication. New native
+Proforma validation/visibility actions are optional defense-in-depth/convenience
+candidates; existing lot/subdivision validation remains unchanged. The optional
+`All_Contracts_v2` Board field is not read by this widget. Existing full Pro Forma report/Modify All permissions
+were unchanged. Generated metadata remains the historical export.
+Creator Production publication was not initiated or verified by this agent;
+the last observed Stage and Production environments were `9.154`. Publication remains the user's step;
 Pages promotion does not publish the lookup, report or function. No Proforma
 widget or new Custom API is needed.
 
@@ -35,8 +45,9 @@ reports, read-only/completed access, invalid lot scope and duplicate sends.
 `scripts/test-contract-proforma-backend.mjs` covers source identity, creation and
 reuse, subtype separation, conflicting historic links and limited report scope.
 Run the existing Pro Forma Legal access and Contract scope tests, repository
-validation and Pages build. These offline checks do not prove native compilation,
-non-admin profile access or a real Send to Legal. Hosted rollback is `1.62.54`;
+validation and Pages build, both passed for `1.62.56`. Native compilation is
+separately verified above; remaining non-admin profile checks and a real Send
+to Legal were not completed. Hosted rollback is `1.62.54`;
 restore the previous function separately if needed and keep additive lookup
 data intact.
 
