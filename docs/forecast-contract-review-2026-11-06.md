@@ -54,8 +54,9 @@ optional lookup cannot block the register or be treated as a known blank link.
 Builder/Subdivision matches and schedule membership use their separately
 verified identities. When the optional link is available, it supports link
 review issues; CSV explicitly records whether it was available.
-No Creator publication is required. Production mapping stays at 1.7.24 until
-explicitly promoted.
+No Creator publication is required. After the user's explicit approval of main,
+Development and Production and native Development verification, the Production mapping
+targets immutable 1.8.2. Permanent Creator widget URLs remain unchanged.
 
 ## Verification
 
@@ -68,13 +69,22 @@ The browser fixture uses the actual widget, shared paginated reader and native
 SDK-shaped count/page responses. Fixtures remain outside deployable source.
 Desktop checks cover navigation, retained editor state, filters, disclosure,
 pagination, CSV, failure/permission states and refresh. Required repository
-  validation and Pages build are run before delivery.
+validation and Pages build passed locally and in CI.
 
-Read-only signed-in Production inspection confirmed the existing Takedown
-Schedule report exposes Initial/Second/Subsequent Closing terms, start/end and
-last-takedown fields. This is metadata/UI evidence, not a claim that the new
-widget's native SDK reads were exercised in Creator. That final integration
-check remains for the candidate Development deployment.
+Read-only signed-in native Development verification of 1.8.2 confirmed complete
+SDK report reads: 12 Builder/Subdivision records, six distinct schedule cards,
+and eight legacy cards. Expanded details displayed actual saved contract status,
+initial closing, subsequent cadence, dates, last takedown, sold and expected lots.
+WFY 2026 narrowed the main register to three records/two schedule cards while
+retaining all eight legacy cards. Restoring both years and Refresh returned the
+same complete counts without an error; Export CSV remained enabled. The existing
+editor also loaded a selected subdivision without an error. No records were
+created or changed. Both rejected explanatory captions were absent.
+
+The first native check exposed the report's omitted optional contract lookup;
+1.8.2 handles that native shape without inventing an unlinked/mismatched state.
+Its regression fixture preserves required identity-field failures and distinguishes
+an unavailable optional link from an explicitly blank one in the CSV.
 
 ## Regression and Rollback
 
