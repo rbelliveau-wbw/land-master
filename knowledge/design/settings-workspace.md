@@ -41,10 +41,13 @@ User direction October 23, 2026: place the existing `Current_Batch` field in
 Automation beside `Next_Workflow_Run`, and omit it from Additional Fields.
 Accept whole numbers 0–4 only; retain rejected drafts and the existing native
 save/access protections. **Next Workflow Run/Next Batch** owns both the cursor
-rotation and the three-hour next run date. HCSS captures the cursor once and
+rotation and the five-hour next run date. HCSS captures the cursor once and
 never writes it. Do not silently change an
 existing out-of-range value while displaying Settings. Keep the affected-job
-disclosure accurate when native schedules change.
+disclosure accurate when native schedules change. The current shared clock has
+seven active schedule definitions. Its timer also starts the six combined imports;
+the five retired starter wrappers remain disabled. Current Batch rotates 0–4
+every five hours, so a complete source-batch rotation takes 25 hours.
 
 Curve dropdowns use searchable single-value pickers. The hidden original
 select owns the exact value and original change handler; preserve unresolved

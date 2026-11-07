@@ -10,9 +10,9 @@
 <script src="settings-controller.js"></script>
 <script src="workflow-log.js"></script>
 <link rel="stylesheet" href="workflow-log.css">
-<script src="approval-policy-domain.js?v=1.6.7"></script>
-<script src="approval-admin.js?v=1.6.7"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.6.7">
+<script src="approval-policy-domain.js?v=1.6.8"></script>
+<script src="approval-admin.js?v=1.6.8"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.6.8">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -250,17 +250,17 @@ td input,td select{padding:5px 8px}
 .settings-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-dialog h2{font-size:16px;margin:0}.settings-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
-<script src="success-feedback.js?v=1.6.7"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.6.7">
-<script src="interaction-motion.js?v=1.6.7"></script>
-<script src="interaction-surfaces.js?v=1.6.7"></script>
-<script src="number-edit-commit.js?v=1.6.7"></script>
-<script src="number-transitions.js?v=1.6.7"></script>
-<script src="number-surfaces.js?v=1.6.7"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.6.7">
-<link rel="stylesheet" href="settings-workspace.css?v=1.6.7">
-<link rel="stylesheet" href="settings-pickers.css?v=1.6.7">
-<script src="settings-pickers.js?v=1.6.7"></script>
+<script src="success-feedback.js?v=1.6.8"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.6.8">
+<script src="interaction-motion.js?v=1.6.8"></script>
+<script src="interaction-surfaces.js?v=1.6.8"></script>
+<script src="number-edit-commit.js?v=1.6.8"></script>
+<script src="number-transitions.js?v=1.6.8"></script>
+<script src="number-surfaces.js?v=1.6.8"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.6.8">
+<link rel="stylesheet" href="settings-workspace.css?v=1.6.8">
+<link rel="stylesheet" href="settings-pickers.css?v=1.6.8">
+<script src="settings-pickers.js?v=1.6.8"></script>
 </head>
 <body>
 
@@ -300,7 +300,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.6.7";
+var SMW_VERSION = "1.6.8";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -356,12 +356,7 @@ var CFG = {
     "Update Actual Lots - Forecast",
     "Check for Stuck Budget Approvals",
     "Update Budgets w/ Projects Info - Budget",
-    "Recalc Budget Modification Final - Budgets",
-    "Zoho Projects - Sync Subdivision Schedule Dates",
-    "Budgets - Check HCSS Budget Lines - 5 Batches",
-    "Budgets - HCSS Actuals - Batches",
-    "Budgets - GP Construction Actuals - Batches",
-    "Budgets - GP Development Actuals - Batches"
+    "Recalc Budget Modification Final - Budgets"
   ]
 };
 
@@ -376,9 +371,9 @@ var GROUPS = [
       { n:"Workflow_Log_Failure_Recipients", l:"Workflow Log Failure Recipients", t:"multi", src:"users",
         hint:"Notify these people about failed or incomplete workflow runs." },
       { n:"Next_Workflow_Run", l:"Next Workflow Run", t:"datetime", jobs:true,
-        hint:"Shared three-hour workflow schedule · America/Chicago." },
+        hint:"Shared five-hour workflow schedule · America/Chicago." },
       { n:"Current_Batch", l:"Current Batch", t:"int", min:0, max:4, integer:true,
-        hint:"Budget source batch 0–4; rotates every three hours." },
+        hint:"Budget source batch 0–4; rotates every five hours." },
       { n:"Approval_Reminder_Interval_Days", l:"Approval Reminder Interval", t:"int", suffix:"days",
         hint:"Days between reminder emails; blank or 0 uses 3 days." },
       { n:"Next_Approval_Reminder_Date", l:"Next Approval Reminder Date", t:"date",

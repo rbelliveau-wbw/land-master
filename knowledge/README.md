@@ -13,5 +13,6 @@ This directory is the durable context used by engineers, ChatGPT, and Codex.
 - `knowledge/design/approval-progress.md` is the required interaction and verification pattern for approvals in existing and new modules.
 - `knowledge/migration/` supports moving from the personal ChatGPT account to the work workspace.
 - `knowledge/architecture/critical-error-reporting.md` documents the shared LLM-friendly critical-error email contract.
+- [Shared workflow cadence](architecture/shared-workflow-cadence.md) defines the approved five-hour Settings group, batch ownership, recovery separation, savings calculations and rollback.
 
 Update documentation in the same pull request as the corresponding behavior change.

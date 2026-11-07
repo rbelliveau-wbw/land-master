@@ -287,6 +287,24 @@ for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
  h.api.updateRecordById=async cfg=>{writes++;assert.equal(cfg.id,ID);assert.equal(cfg.payload.data[field],field==='Engineering_Markup'?1e-7:'0.0000001');h.records[0][field]=1e-7;return{code:3000,data:{ID}};};
  assert.equal(h.widget.queue(field,1e-7),true);await h.widget.flush();assert.equal(h.widget.state.uncertain,null);assert.equal(h.widget.state.rec[field],1e-7);assert.equal(writes,1,'Finite Number exponent readback verifies without accepting exponent text input');
 }
+// The disclosure must describe active native Settings timers, not retired wrappers.
+{
+  const baseline='creator/quota-five-hour-recovery-2026-11-06/native-before/production-v9.160';
+  const manifest=JSON.parse(fs.readFileSync(baseline+'/manifest.json','utf8'));
+  const nativeJobs=manifest.components.filter(row=>row.kind==='workflow').map(row=>fs.readFileSync(baseline+'/'+row.file,'utf8'))
+    .filter(body=>/form\s*=\s*Settings\b/.test(body)&&/start\s*=\s*Next_Workflow_Run\b/.test(body)&&!/status\s*=\s*inactive\b/.test(body))
+    .map(body=>body.match(/^\s*\w+\s+as\s+"([^"]+)"/)[1]);
+  const jobs=JSON.parse('['+inline.match(/jobs: \[([\s\S]*?)\r?\n  \]/)[1]+']');
+  assert.equal(nativeJobs.length,7,'Verified native group retains seven active Settings timers');
+  assert.deepEqual(jobs.slice().sort(),nativeJobs.sort(),'Disabled starter wrappers do not inflate the active schedule disclosure');
+  const h=await ready();h.widget.render();
+  const rendered=h.node('wrap').innerHTML;
+  assert.match(rendered,/Reschedules 7 workflows/,'The counted disclosure renders the real active schedule count');
+  assert.match(rendered,/Shared five-hour workflow schedule/);
+  assert.match(rendered,/rotates every five hours/);
+  assert.equal(h.calls.filter(call=>['update','add','delete'].includes(call.method)).length,0,'Showing the cadence and disclosure makes no native writes');
+}
+
 // The native batch cursor belongs in Automation and cannot save outside 0-4.
 {
   const h=await ready();h.records[0].Current_Batch='6';await h.widget.load();

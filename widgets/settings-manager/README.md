@@ -1,5 +1,22 @@
 # Settings Manager
 
+## 1.6.8 — Five-Hour Shared Cycle
+
+Automation now describes the shared five-hour schedule and batch rotation. Its
+counted disclosure lists the seven active schedules; the five disabled starter
+wrappers no longer appear as separately scheduled jobs. The shared timer still
+launches all six combined imports and captures the existing Current Batch value.
+The cursor remains 0–4, with a complete rotation every 25 hours.
+
+The native timer change requires Creator promotion. This widget release updates
+labels and disclosure only; Settings saves, Workflow Log reads and recovery
+intervals retain their existing behavior. The six imports and seven schedules run
+40% less often than the former three-hour cycle; account-wide usage depends on
+other work. See the [shared workflow cadence guide](../../knowledge/architecture/shared-workflow-cadence.md)
+for the backend contract.
+Frontend rollback: **1.6.7** through the permanent environment mapping. Coordinate
+rollback with the native timer so displayed cadence stays accurate.
+
 ## 1.6.6 — Actuals Batch Scheduling
 
 Automation's schedule impact list includes HCSS actuals, GP Construction actuals

@@ -91,22 +91,39 @@ for(const extra of [{routes:[...STARTER_ROUTES].reverse()},{version:2},{expiresA
 for(const name of ['workflowStarterFrame','workflowStarterDispatch','workflowStarterStart']){
   const text=read(name);assert.doesNotMatch(text,/while\s*\(|insert into|delete from/);assert.doesNotMatch(text,/\.Current_Batch\s*=(?!=)|\.Next_Workflow_Run\s*=(?!=)/,'helpers do not change the shared clock or cursor');assert.match(text,/\breturn [^;]+;\s*}\s*$/,'outer fallback return stays compile-safe');
 }
-const anchorBody=fs.readFileSync('creator/quota-starter-consolidation-2026-11-06/workflows/Next_Workflow_Run_Next_Ba.action-1.dg','utf8');
-function runAnchor(h){
+const anchorCases=[
+  {hours:3,file:'creator/quota-starter-consolidation-2026-11-06/workflows/Next_Workflow_Run_Next_Ba.action-1.dg'},
+  {hours:5,file:'creator/quota-five-hour-recovery-2026-11-06/workflows/Next_Workflow_Run_Next_Ba.action-1.dg'}
+].map(item=>({...item,body:fs.readFileSync(item.file,'utf8')}));
+function runAnchor(h,{body:anchorBody,hours}){
   h.exec('function fixtureUpdateClock(values){Object.assign(tables.Settings[0],values);return true;}');
-  const translated=anchorBody.replace(/update settings\s*\[\s*Current_Batch=nextBatch\s*Next_Workflow_Run=cycleDate\.addHour\(3\)\s*\];/,'fixtureUpdateClock({Current_Batch:nextBatch,Next_Workflow_Run:cycleDate.addHour(3)});');
+  const update=new RegExp('update settings\\s*\\[\\s*Current_Batch=nextBatch\\s*Next_Workflow_Run=cycleDate\\.addHour\\('+hours+'\\)\\s*\\];');
+  const translated=anchorBody.replace(update,'fixtureUpdateClock({Current_Batch:nextBatch,Next_Workflow_Run:cycleDate.addHour('+hours+')});');
   assert.notEqual(translated,anchorBody,'translate only the exact existing atomic Settings update');
   h.exec(compileOwned('string starterAnchorProbe()\n{\n'+translated+'\nreturn "Done";\n}'));
   return h.exec('starterAnchorProbe()');
 }
-for(const cursor of [null,-1,0,2,4,5])for(const failure of ['none','arm','create']){
+for(const anchor of anchorCases)for(const cursor of [null,-1,0,1,2,3,4,5])for(const failure of ['none','arm','create']){
   const h=harness({frame:null,settings:[{ID:SETTINGS_ID,Current_Batch:cursor}],recoveryFailure:failure==='arm'});h.exec('tables.Settings[0].Next_Workflow_Run=new Date('+NOW+');');
   if(failure==='create')h.exec('fixtureHttp=function(request){requests.push(request);return {responseCode:500,responseText:"{}"};};');
-  assert.equal(runAnchor(h),'Done');assert.equal(h.json('tables.Settings[0].Current_Batch'),cursor!=null&&cursor>=0&&cursor<4?cursor+1:0);assert.equal(h.exec('tables.Settings[0].Next_Workflow_Run.toLong()'),NOW+180*60000,'even failed frame arming/creation cannot stop or double the original three-hour clock');
+  assert.equal(runAnchor(h,anchor),'Done');assert.equal(h.json('tables.Settings[0].Current_Batch'),cursor!=null&&cursor>=0&&cursor<4?cursor+1:0);assert.equal(h.exec('tables.Settings[0].Next_Workflow_Run.toLong()'),NOW+anchor.hours*3600000,'even failed frame arming/creation cannot stop or double the captured clock');
   if(failure!=='none'){assert.equal(h.json('tables.Workflow_Export_Lock.length'),0);assert.equal(h.json('messages.length'),1);}
+  else{const frame=h.json('tables.Workflow_Export_Lock.find(row=>row.Cycle_State&&JSON.parse(row.Cycle_State).kind==="starter-cycle")');assert.equal(JSON.parse(frame.Cycle_State).batch,cursor!=null&&cursor>=0&&cursor<=4?cursor:0,'freeze the pre-advance batch once');}
+  assert.equal(h.json('wakes.length'),0,'anchor freezes metadata but never queues or executes child import work');
+  assert.equal(h.json('calls.filter(call=>call.type==="plan").length'),0);
+}
+for(const anchor of anchorCases){
+  const h=harness({frame:null,settings:[{ID:SETTINGS_ID,Current_Batch:2}]});h.exec('tables.Settings[0].Next_Workflow_Run=new Date('+NOW+');thisapp.workflowStarterFrame=function(){tables.Settings[0].Current_Batch=3;tables.Settings[0].Next_Workflow_Run=tables.Settings[0].Next_Workflow_Run.addHour('+anchor.hours+');return "another-anchor-frame";};');
+  runAnchor(h,anchor);assert.equal(h.json('tables.Settings[0].Current_Batch'),3);assert.equal(h.exec('tables.Settings[0].Next_Workflow_Run.toLong()'),NOW+anchor.hours*3600000,'a concurrent advance while the API call runs cannot double the captured interval');
 }
 {
-  const h=harness({frame:null,settings:[{ID:SETTINGS_ID,Current_Batch:2}]});h.exec('tables.Settings[0].Next_Workflow_Run=new Date('+NOW+');thisapp.workflowStarterFrame=function(){tables.Settings[0].Current_Batch=3;tables.Settings[0].Next_Workflow_Run=tables.Settings[0].Next_Workflow_Run.addHour(3);return "another-anchor-frame";};');
-  runAnchor(h);assert.equal(h.json('tables.Settings[0].Current_Batch'),3);assert.equal(h.exec('tables.Settings[0].Next_Workflow_Run.toLong()'),NOW+180*60000,'a concurrent advance while the API call runs cannot make this snapshot advance six hours');
+  const anchor=anchorCases.find(item=>item.hours===5),h=harness({frame:null,settings:[{ID:SETTINGS_ID,Current_Batch:0}]});
+  h.exec('tables.Settings[0].Next_Workflow_Run=new Date('+NOW+');');
+  for(let step=0;step<5;step++){h.exec('clock=new Date(tables.Settings[0].Next_Workflow_Run.toLong());');runAnchor(h,anchor);}
+  const batches=h.json('tables.Workflow_Export_Lock.filter(row=>row.Cycle_State&&JSON.parse(row.Cycle_State).kind==="starter-cycle").map(row=>JSON.parse(row.Cycle_State).batch)');
+  assert.equal(JSON.stringify(batches),'[0,1,2,3,4]','five-hour cycles preserve all five batches without skips');
+  assert.equal(h.json('tables.Settings[0].Current_Batch'),0,'the five-batch sweep wraps once');
+  assert.equal(h.exec('tables.Settings[0].Next_Workflow_Run.toLong()'),NOW+25*3600000,'a full five-batch sweep now covers exactly25 nominal hours');
+  assert.equal(h.json('wakes.length'),0);
 }
-console.log('PASS: immutable frame creation/lost-ack reconciliation and winner batch; both anchor/start interleavings; six independent canonical enqueues; duplicate/partial/hard-stop/no-replay recovery; fresh-claim grace; bounded visible expiry/unknown notices; unchanged clock ownership. Native compilation and combined capacity still require verification.');
+console.log('PASS: immutable frame capture, six independent canonical enqueues and failure/no-replay recovery; historical3h/current5h anchor matrices, all0–4 batch captures, no business work in anchor, concurrent-clock isolation, and exact25h five-batch sweep. Native compilation/capacity remain separate gates.');
