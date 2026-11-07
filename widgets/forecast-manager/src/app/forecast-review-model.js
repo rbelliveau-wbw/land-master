@@ -120,7 +120,7 @@
     return {active:active.sort(sort),legacy:legacy.sort(sort)};
   }
   function filter(rows,filters,attention=false,legacy=false){
-    return rows.filter(row=>['territory','subdivision','builder'].every(field=>filters[field]===null||filters[field].includes(field==='subdivision'?row.subdivisionId:field==='builder'?row.builderId:row.territory))
+    return rows.filter(row=>!/placeholder/i.test(row.builder)&&['territory','subdivision','builder'].every(field=>filters[field]===null||filters[field].includes(field==='subdivision'?row.subdivisionId:field==='builder'?row.builderId:row.territory))
       &&(legacy||row.years.some(year=>filters.years===null||filters.years.includes(year)))
       &&(!attention||row.issues.length));
   }

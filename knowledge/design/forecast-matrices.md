@@ -461,3 +461,15 @@ cards show saved lots, status, archive, closing tiers, completion and financial
 totals; unavailable optional values are not zeroes. No explanatory footnotes.
 CSV follows the current filtered tab. Use shared motion and numeric transitions.
 [Implementation and evidence](../../docs/forecast-contract-review-layout-2026-11-06.md).
+
+## Contract Review Refinement — November 7, 2026
+
+Use a 320px maximum for both schedule and contract cards, matching Builder
+Forecasts; wrap cards without stretching a single card across the report.
+Clicking a record row toggles its disclosure once; retain the keyboard-accessible
+chevron button and shared keyed motion. Remove Legacy Cards navigation for now.
+Exclude builder names containing placeholder, case-insensitively, from review
+rows, counts, groups and CSV; retain the existing Builder Forecasts rules.
+The Takedown Schedule column shows Found / Not Found. Group bands use the
+stronger blue section gradient, heavier labels and a left rail to distinguish
+Project/Territory/Builder headings from subdivision bands and record rows.

@@ -84,3 +84,5 @@ assert.equal(/updateRecord|addRecords|deleteRecord|invokeCustomApi/.test(ui),fal
 for(const unwanted of ['Contract Found Includes All Matching','Shared Schedule Terms Are Whole-Contract','No Phase Allocation Implied'])assert.ok(!ui.includes(unwanted),'omit requested explanatory text');
 assert.equal(fs.readFileSync('widgets/forecast-manager/src/app/creator-data.js','utf8'),fs.readFileSync('shared/creator-data.js','utf8'));
 console.log('PASS: Contract Review native lookups, distinct identities, all lot contracts, shared/legacy schedules, sparse years, zero/blank, duplicates, completeness and scoped CSV.');
+
+for(const name of ["Placeholder","Placeholder1","Placeholder2","Placeholder3","Placeholder4","Future PLACEHOLDER 99"]){const scoped=M.build(data,{...catalog,builders:catalog.builders.map(row=>row.id===b1?{...row,name}:row)});assert.ok(!M.filter(scoped.active,{...filters,years:null}).some(row=>row.builderId===b1),"exclude any placeholder substring from review");}

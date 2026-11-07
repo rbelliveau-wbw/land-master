@@ -27,10 +27,10 @@
   const date=value=>esc(value==null||value===''?'—':value);
   const savedDate=(raw,field)=>Object.hasOwn(raw,field)?date(raw[field]):'<span class="review-muted">Unavailable</span>';
   const countSchedules=rows=>new Set(rows.flatMap(row=>row.schedules.map(s=>s.id))).size;
-  const title=()=>page==='legacy'?'Legacy Cards':'Contract Review';
-  const bodyId=()=>page==='legacy'?'reviewLegacyRows':'reviewActive';
+  const title=()=>'Contract Review';
+  const bodyId=()=>'reviewActive';
   function picker(field,label){return '<div class="filter"'+(field==='years'?' id="reviewYearFilter"':'')+'><label id="review-'+field+'-label">'+label+'</label><button class="picker" id="review-'+field+'-picker" data-picker="review-'+field+'" aria-haspopup="dialog" aria-expanded="false" aria-labelledby="review-'+field+'-label review-'+field+'-value"><span id="review-'+field+'-value"></span>'+chevron+'</button></div>';}
-  function table(id){return '<div class="review-table-scroll" id="'+id+'Scroll"><table class="review-table" aria-label="'+(id==='reviewActive'?'Forecast Contract Review':'Legacy Schedule Cards')+'"><colgroup><col style="width:23%"><col style="width:11%"><col style="width:13%"><col style="width:15%"><col style="width:17%"><col style="width:16%"><col style="width:48px"></colgroup><thead><tr><th scope="col">Builder</th><th scope="col">Forecast Years</th><th scope="col">Contract Found</th><th scope="col">Contract Status</th><th scope="col">Takedown Cards</th><th scope="col">Review</th><th scope="col"><span class="sr-only">Details</span></th></tr></thead><tbody id="'+id+'"></tbody></table></div>';}
+  function table(id){return '<div class="review-table-scroll" id="'+id+'Scroll"><table class="review-table" aria-label="'+(id==='reviewActive'?'Forecast Contract Review':'Legacy Schedule Cards')+'"><colgroup><col style="width:23%"><col style="width:11%"><col style="width:13%"><col style="width:15%"><col style="width:17%"><col style="width:16%"><col style="width:48px"></colgroup><thead><tr><th scope="col">Builder</th><th scope="col">Forecast Years</th><th scope="col">Contract Found</th><th scope="col">Contract Status</th><th scope="col">Takedown Schedule</th><th scope="col">Review</th><th scope="col"><span class="sr-only">Details</span></th></tr></thead><tbody id="'+id+'"></tbody></table></div>';}
   function connect(options){
     bridge=options;host=$('contractReviewPanel');
     host.innerHTML='<section class="toolbar review-toolbar" aria-label="Contract Review Filters">'+picker('territory','Territory')+picker('subdivision','Subdivision')+picker('builder','Builders')+picker('years','Fiscal Years')+'</section>'+
@@ -38,7 +38,7 @@
       '<div class="review-header-bottom"><label class="review-search"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5"/><path d="m13 13 4 4"/></svg><span class="sr-only">Search Contract Review</span><input id="reviewSearch" type="search" placeholder="Search Builder, Contract, or Schedule" aria-label="Search Contract Review"></label><div class="review-scope" id="reviewScope" role="group" aria-label="Review Scope"><button id="reviewAll" aria-pressed="true">All Forecasts</button><button id="reviewAttention" aria-pressed="false">Needs Review <span id="reviewAttentionCount"></span></button></div></div></div>'+
       '<div id="reviewError" class="notice error" role="alert" hidden></div><button id="reviewRetry" class="btn" hidden>Retry</button>'+
       '<div id="reviewLoading" class="review-loading" role="status" hidden><div class="review-loading-card"><span class="review-loading-emblem" aria-hidden="true"><span class="review-loading-ring"></span></span><span>Loading Contract Review…</span></div></div>'+
-      '<div id="reviewReport" hidden><section class="review-register" id="reviewRegister" role="tabpanel" aria-labelledby="review-group-project">'+table('reviewActive')+table('reviewLegacyRows')+'</section></div>';
+      '<div id="reviewReport" hidden><section class="review-register" id="reviewRegister" role="tabpanel" aria-labelledby="review-group-project">'+table('reviewActive')+'</section></div>';
     $('reviewAll').addEventListener('click',()=>{attention=false;render();});
     $('reviewAttention').addEventListener('click',()=>{attention=true;render();});
     $('reviewSearch').addEventListener('input',event=>{search=event.target.value.trim().toLowerCase();render();});
@@ -48,8 +48,9 @@
       if(group){groupBy=group.dataset.reviewGroup;render();return;}
       const collapse=event.target.closest('[data-review-collapse]');
       if(collapse){const key=collapse.dataset.reviewCollapse;closedGroups.has(key)?closedGroups.delete(key):closedGroups.add(key);render();return;}
-      const button=event.target.closest('[data-review-toggle]');if(!button)return;
-      const key=button.dataset.reviewToggle;openRows.has(key)?openRows.delete(key):openRows.add(key);render();
+      if(event.target.closest('a,input,textarea,select'))return;
+      const button=event.target.closest('[data-review-toggle]'),row=event.target.closest('.review-row[data-review-key]');if(!button&&!row)return;
+      const key=button?button.dataset.reviewToggle:row.dataset.reviewKey;openRows.has(key)?openRows.delete(key):openRows.add(key);render();
     });
     $('reviewGrouping').addEventListener('keydown',event=>{
       if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
@@ -69,7 +70,7 @@
     if(rejected)throw rejected.reason;
     return {...Object.fromEntries(results.map(result=>result.value)),period};
   }
-  function clear(){model=null;nodes.clear();openRows.clear();closedGroups.clear();$('reviewActive').replaceChildren();$('reviewLegacyRows').replaceChildren();$('reviewCount').textContent='';$('reviewAttentionCount').textContent='';$('legacyCardsCount').hidden=true;}
+  function clear(){model=null;nodes.clear();openRows.clear();closedGroups.clear();$('reviewActive').replaceChildren();$('reviewCount').textContent='';$('reviewAttentionCount').textContent='';}
   async function load(freshCatalog=false){
     if(loading||!current())return;
     const captured=identity(),run=++generation;
@@ -84,17 +85,17 @@
     }catch(failure){if(run!==generation)return;error=failure.message||'Contract Review could not be loaded.';clear();}
     finally{if(run===generation){loading=false;updateControls();bridge.controls();}}
   }
-  function open(nextPage='review'){page=nextPage==='legacy'?'legacy':'review';host.setAttribute('aria-labelledby',page==='legacy'?'legacyCardsTab':'contractReviewTab');if(scope!==identity()||!model)return load();render();}
+  function open(){page='review';host.setAttribute('aria-labelledby','contractReviewTab');if(scope!==identity()||!model)return load();render();}
   function refresh(){const before=model,captured=identity(),action=()=>load(true);return root.LMMotion?root.LMMotion.refresh(host,action,{allowed:()=>identity()===captured&&current(),completed:()=>model!==before&&!error}):action();}
   function updateControls(){
     if(!host)return;
     host.setAttribute('aria-busy',String(loading));$('reviewTitle').textContent=title();
     $('reviewLoading').hidden=!loading||!!model;$('reviewReport').hidden=!model;
-    $('reviewYearFilter').hidden=page==='legacy';$('reviewActiveScroll').hidden=page!=='review';$('reviewLegacyRowsScroll').hidden=page!=='legacy';
+    $('reviewYearFilter').hidden=false;
     $('reviewError').textContent=error;$('reviewError').hidden=!error;$('reviewRetry').hidden=!error;$('reviewRetry').disabled=loading||!current();
     $('reviewExport').disabled=loading||!model||!!error||scope!==identity();
     host.querySelectorAll('[data-picker]').forEach(button=>{button.disabled=!current()||loading;});
-    $('reviewAll').textContent=page==='legacy'?'All Legacy Cards':'All Forecasts';
+    $('reviewAll').textContent='All Forecasts';
     for(const field of Object.keys(filters)){
       const selected=filters[field],names=selected?.map(value=>options(field).find(option=>option.id===value)?.label||value);
       const label=selected===null?{territory:'All Territories',subdivision:'All Subdivisions',builder:'All Builders',years:'All Years'}[field]:names.length?names.join(' · '):'0 Selected';
@@ -134,11 +135,11 @@
   function detailCards(row){return '<div class="review-detail-cards">'+scheduleCards(row)+contractCards(row)+'</div>'+(!row.schedules.length?'<div class="review-empty-detail">No Schedule Card</div>':'')+(!row.contracts.length?'<div class="review-empty-detail">No Matching Contract</div>':'');}
   function rowMarkup(row,index,key){
     const found=row.contracts.length>0,statuses=[...new Set(row.contracts.map(c=>c.status))].filter(Boolean);
-    return '<tr class="review-row" data-review-row="'+esc(key)+'" data-review-key="'+esc(key)+'"><td><strong>'+esc(row.builder)+'</strong></td><td>'+row.years.map(year=>'<span class="review-year" data-review-year="'+year+'">'+year+'</span>').join('')+(row.years.length?'':'<span class="review-muted">—</span>')+'</td><td><span class="review-found '+(found?'yes':'no')+'">'+(found?check:'')+(found?'Found':'Not Found')+'</span><small>'+num(row.contracts.length,key+'|contracts')+' '+(row.contracts.length===1?'Match':'Matches')+'</small></td><td>'+statuses.map(esc).join('<br>')+(statuses.length?'':'—')+(row.contracts.some(c=>c.archived)?'<small><span class="review-archived">Archived</span></small>':'')+'</td><td>'+num(row.schedules.length,key+'|schedules')+' '+(row.schedules.length===1?'Schedule Card':'Schedule Cards')+'</td><td class="review-issues">'+(row.issues.length?row.issues.map(esc).join('<br>'):'<span class="review-muted">—</span>')+'</td><td><button class="review-toggle" data-review-toggle="'+esc(key)+'" aria-label="Details: '+esc(row.builder+' · '+row.subdivision)+'" aria-expanded="false" aria-controls="review-detail-'+index+'">'+chevron+'</button></td></tr><tr class="review-detail-row" data-review-row="detail:'+esc(key)+'" id="review-detail-'+index+'" hidden><td colspan="7"></td></tr>';
+    return '<tr class="review-row" data-review-row="'+esc(key)+'" data-review-key="'+esc(key)+'"><td><strong>'+esc(row.builder)+'</strong></td><td>'+row.years.map(year=>'<span class="review-year" data-review-year="'+year+'">'+year+'</span>').join('')+(row.years.length?'':'<span class="review-muted">—</span>')+'</td><td><span class="review-found '+(found?'yes':'no')+'">'+(found?check:'')+(found?'Found':'Not Found')+'</span><small>'+num(row.contracts.length,key+'|contracts')+' '+(row.contracts.length===1?'Match':'Matches')+'</small></td><td>'+statuses.map(esc).join('<br>')+(statuses.length?'':'—')+(row.contracts.some(c=>c.archived)?'<small><span class="review-archived">Archived</span></small>':'')+'</td><td><span class="review-found '+(row.schedules.length?'yes':'no')+'">'+(row.schedules.length?check:'')+(row.schedules.length?'Found':'Not Found')+'</span></td><td class="review-issues">'+(row.issues.length?row.issues.map(esc).join('<br>'):'<span class="review-muted">—</span>')+'</td><td><button class="review-toggle" data-review-toggle="'+esc(key)+'" aria-label="Details: '+esc(row.builder+' · '+row.subdivision)+'" aria-expanded="false" aria-controls="review-detail-'+index+'">'+chevron+'</button></td></tr><tr class="review-detail-row" data-review-row="detail:'+esc(key)+'" id="review-detail-'+index+'" hidden><td colspan="7"></td></tr>';
   }
   function mountRows(){
     const previous=root.ForecastNumbers.capture(host);nodes.clear();let index=0;
-    for(const [id,rows] of [['reviewActive',model.active],['reviewLegacyRows',model.legacy]]){
+    for(const [id,rows] of [['reviewActive',model.active]]){
       $(id).innerHTML=rows.map(row=>rowMarkup(row,index++,id+'|'+row.key)).join('');
       for(const row of $(id).querySelectorAll('[data-review-key]'))nodes.set(row.dataset.reviewKey,{row,detail:row.nextElementSibling,ready:false});
     }
@@ -175,24 +176,23 @@
     updateControls();if(!model)return;
     const focused=document.activeElement,previous=root.ForecastNumbers.capture(host),meters=root.LMMotion?.captureMeters(host);
     const searched=row=>!search||[row.builder,row.subdivision,row.code,row.project,row.territory,...row.parents.flatMap(p=>[p.id,p.name]),...row.contracts.flatMap(c=>[c.id,c.name,c.status]),...row.schedules.flatMap(s=>[s.id,s.code,s.contractId])].join(' ').toLowerCase().includes(search);
-    const active=M.filter(model.active,filters).filter(searched),legacy=M.filter(model.legacy,filters,false,true).filter(searched),scoped=page==='legacy'?legacy:active;
-    visible={active:attention?active.filter(row=>row.issues.length):active,legacy:attention?legacy.filter(row=>row.issues.length):legacy};
-    const rows=page==='legacy'?visible.legacy:visible.active;
+    const active=M.filter(model.active,filters).filter(searched),scoped=active;
+    visible={active:attention?active.filter(row=>row.issues.length):active,legacy:[]};
+    const rows=visible.active;
     renderGroups(rows,bodyId());
     $('reviewGrouping').querySelectorAll('[data-review-group]').forEach(button=>button.setAttribute('aria-selected',String(button.dataset.reviewGroup===groupBy)));
     $('reviewRegister').setAttribute('aria-labelledby','review-group-'+groupBy);
     const scheduleCount=countSchedules(rows);
     root.ForecastNumbers.text($('reviewCount'),rows.length+' '+(rows.length===1?'Record':'Records')+' · '+scheduleCount+' '+(scheduleCount===1?'Schedule Card':'Schedule Cards'),'review|'+scope+'|'+page+'|count');
     root.ForecastNumbers.text($('reviewAttentionCount'),'('+scoped.filter(row=>row.issues.length).length+')','review|'+scope+'|'+page+'|attention');
-    root.ForecastNumbers.text($('legacyCardsCount'),String(countSchedules(model.legacy)),'review|'+scope+'|legacy-count');
-    $('legacyCardsCount').hidden=false;$('reviewAll').setAttribute('aria-pressed',String(!attention));$('reviewAttention').setAttribute('aria-pressed',String(attention));
+    $('reviewAll').setAttribute('aria-pressed',String(!attention));$('reviewAttention').setAttribute('aria-pressed',String(attention));
     root.ForecastNumbers.apply(host,previous);if(meters)root.LMMotion.applyMeters(host,meters);
     if(focused?.isConnected&&document.activeElement!==focused&&focused.getClientRects().length)focused.focus({preventScroll:true});
   }
   function exportCsv(){
     if(loading||!model||error||scope!==identity()||!current())return;
-    const csv=M.csv(page==='review'?visible.active:[],page==='legacy'?visible.legacy:[],page==='legacy'?null:filters.years),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');
-    link.href=url;link.download=page==='legacy'?'Forecast-Legacy-Cards.csv':'Forecast-Contract-Review.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);if(root.LMSuccess)root.LMSuccess.show(title()+' CSV ready.');
+    const csv=M.csv(visible.active,[],filters.years),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');
+    link.href=url;link.download='Forecast-Contract-Review.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);if(root.LMSuccess)root.LMSuccess.show(title()+' CSV ready.');
   }
   root.ForecastContractReview=Object.freeze({connect,open,refresh,options,applyFilter,selection:field=>filters[field],busy:()=>loading,reports,fields,criteria});
 })(window);
