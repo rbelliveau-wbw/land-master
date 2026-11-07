@@ -20,7 +20,7 @@ const disabled=new Set(['Sync_Final_Acceptance_Due','Budgets_Check_HCSS_Budget1'
 function closing(text,start){let depth=0,quote=null,line=false,block=false;for(let i=start;i<text.length;i++){const char=text[i],pair=text.slice(i,i+2);if(line){if(char==='\n')line=false;continue;}if(block){if(pair==='*/'){block=false;i++;}continue;}if(quote){if(char==='\\')i++;else if(char===quote)quote=null;continue;}if(pair==='//'){line=true;i++;continue;}if(pair==='/*'){block=true;i++;continue;}if(char==='"'||char==="'"){quote=char;continue;}if(char==='(')depth++;else if(char===')'&&--depth===0)return i;}throw Error('Unclosed schedule action.');}
 function actionRange(body){const matches=[...body.matchAll(/\bon load\s*\(/g)];if(matches.length!==1)throw Error('Expected exactly one schedule action.');const start=body.indexOf('(',matches[0].index)+1,end=closing(body,start-1);return {start,end,body:body.slice(start,end)};}
 function compare(actual,expected){const a=normalizeNative(actual),b=normalizeNative(expected);let first=0;while(first<Math.min(a.length,b.length)&&a[first]===b[first])first++;return {match:a===b,normalized_sha256:sha(a),expected_sha256:sha(expected),expected_normalized_sha256:sha(b),...(a===b?{}:{first_normalized_difference:first,actual_normalized_length:a.length,expected_normalized_length:b.length})};}
-export function verifyFiveHourRecoveryNative({source,environment,snapshotName}){
+export function verifyFiveHourRecoveryNative({source,environment,snapshotName,workflowOverrides={}}){
   if(!source||!['development','stage','production'].includes(environment))throw Error('Provide source.ds development|stage|production snapshot-name.');
   if(!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(snapshotName??'')||snapshotName==='.'||snapshotName==='..')throw Error('Snapshot name must be one safe directory name.');
   const output=path.resolve(root,task,'native-after',snapshotName),allowed=path.resolve(root,task,'native-after');
@@ -41,6 +41,7 @@ export function verifyFiveHourRecoveryNative({source,environment,snapshotName}){
       const candidate=task+'/workflows/Next_Workflow_Run_Next_Ba.action-1.dg';
       if(fs.existsSync(path.join(root,candidate))){const range=actionRange(before),action=fs.readFileSync(path.join(root,candidate),'utf8');expected=before.slice(0,range.start)+action+before.slice(range.end);actionFile=candidate;}
     }
+    if(workflowOverrides[name])expected=fs.readFileSync(path.resolve(root,workflowOverrides[name]),'utf8');
     const active=!/^[ \t]*status\s*=\s*inactive\s*$/m.test(actual.body),expectedActive=group.includes(name)?!disabled.has(name):!/^[ \t]*status\s*=\s*inactive\s*$/m.test(before),comparison=compare(actual.body,expected);
     return {...actual,baseline_file:baselineFile,expected_action_file:actionFile,active,expected_active:expectedActive,state_match:active===expectedActive,...comparison,match:comparison.match&&active===expectedActive};
   });

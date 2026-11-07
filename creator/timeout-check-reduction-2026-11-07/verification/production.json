@@ -1,0 +1,291 @@
+{
+  "environment": "production",
+  "verified_at_utc": "2026-11-07T16:53:40.676Z",
+  "source_sha256": "8f2ec529d1b4b899326cf1b3b346c904984f16bbc69bb36d34cfedf6dd46357b",
+  "status": "passed",
+  "matched": 41,
+  "total": 41,
+  "checks": [
+    {
+      "name": "analyticsExportRows",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "9bf5ac2dc518d9e3d1931f6285ec979eb75b9c8a4722b124b9787ec1755f70b5",
+      "expected_normalized_sha256": "9bf5ac2dc518d9e3d1931f6285ec979eb75b9c8a4722b124b9787ec1755f70b5"
+    },
+    {
+      "name": "budgetActualImportRun",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "865692b8eddd3ca0e458550642de4528c940e6b1deb854a4a21d3dbf8240912e",
+      "expected_normalized_sha256": "865692b8eddd3ca0e458550642de4528c940e6b1deb854a4a21d3dbf8240912e"
+    },
+    {
+      "name": "budgetPlanImportRun",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "7ee8072118e008b617dd69291e88b7b6ca71004abbc5fc829e1743dc8a86dbf5",
+      "expected_normalized_sha256": "7ee8072118e008b617dd69291e88b7b6ca71004abbc5fc829e1743dc8a86dbf5"
+    },
+    {
+      "name": "workflowExportClaim",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "7473506205cce9726bf9a15adbcb3b4c2f811bf8fa8c3c2147e033324e16b972",
+      "expected_normalized_sha256": "7473506205cce9726bf9a15adbcb3b4c2f811bf8fa8c3c2147e033324e16b972"
+    },
+    {
+      "name": "workflowExportClaimRows",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "5cc47f9855f696efd4ae4aa01d428f8a972ef5e770b660b56139557ad52ae812",
+      "expected_normalized_sha256": "5cc47f9855f696efd4ae4aa01d428f8a972ef5e770b660b56139557ad52ae812"
+    },
+    {
+      "name": "workflowExportDispatch",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "67fa7f2131a9431b3701ab9c26346bd0783e53eb69f0073ea730363a1a1507be",
+      "expected_normalized_sha256": "67fa7f2131a9431b3701ab9c26346bd0783e53eb69f0073ea730363a1a1507be"
+    },
+    {
+      "name": "workflowExportEnqueue",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "6e7a7356134f3892080868369645e2911f4c55d323034db896d1a98f810b89f6",
+      "expected_normalized_sha256": "6e7a7356134f3892080868369645e2911f4c55d323034db896d1a98f810b89f6"
+    },
+    {
+      "name": "workflowExportEnqueueCaptured",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "d207498d5886d33dd2c0fe1168e6b5fb3d2cc4e620f7016836bce7827e075034",
+      "expected_normalized_sha256": "d207498d5886d33dd2c0fe1168e6b5fb3d2cc4e620f7016836bce7827e075034"
+    },
+    {
+      "name": "workflowExportPlan",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "d59be349a038c2e311a08838eb3992d5288fd15fe2c0508cfa6403f164fade1a",
+      "expected_normalized_sha256": "d59be349a038c2e311a08838eb3992d5288fd15fe2c0508cfa6403f164fade1a"
+    },
+    {
+      "name": "workflowExportRecover",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "03345682b8b23c088b2fd6ad96532dd55f2bca8f85689adbe49a662d7de1cc03",
+      "expected_normalized_sha256": "03345682b8b23c088b2fd6ad96532dd55f2bca8f85689adbe49a662d7de1cc03"
+    },
+    {
+      "name": "workflowExportRun",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "9279c3c06d3b90368a479315b070d7f65dc67c666038bfbb5314114acb4bd05e",
+      "expected_normalized_sha256": "9279c3c06d3b90368a479315b070d7f65dc67c666038bfbb5314114acb4bd05e"
+    },
+    {
+      "name": "workflowExportTick",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "4600c5f14bfe3d72ab18d89d8075b9dd13259319707b332bcf46d1ba96cc6d6c",
+      "expected_normalized_sha256": "4600c5f14bfe3d72ab18d89d8075b9dd13259319707b332bcf46d1ba96cc6d6c"
+    },
+    {
+      "name": "workflowExportWake",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "e2bdc30af6b817b1c2729906624d118d1e49285a9baf7e64af418bdf96da2b43",
+      "expected_normalized_sha256": "e2bdc30af6b817b1c2729906624d118d1e49285a9baf7e64af418bdf96da2b43"
+    },
+    {
+      "name": "workflowPreparedExportRows",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "44ef6d5d3f0daea6b817a5830509d4aee1dc61913359ea5858bc5237d19b762a",
+      "expected_normalized_sha256": "44ef6d5d3f0daea6b817a5830509d4aee1dc61913359ea5858bc5237d19b762a"
+    },
+    {
+      "name": "workflowRunLog",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "8bcfab6eabb4565d1e775d8c343e5f6c4f4f5dfed966fb8a730baee1d41c94fb",
+      "expected_normalized_sha256": "8bcfab6eabb4565d1e775d8c343e5f6c4f4f5dfed966fb8a730baee1d41c94fb"
+    },
+    {
+      "name": "workflowStarterDispatch",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "3f5581576e29811cb25afe3dd6685cf975b8b17041e0581e5dd2836bab524b13",
+      "expected_normalized_sha256": "3f5581576e29811cb25afe3dd6685cf975b8b17041e0581e5dd2836bab524b13"
+    },
+    {
+      "name": "workflowStarterFrame",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "db653725e402bd6191bd8ea7da8dbbe75d97c5feebf0820c4ca79136e36be0f7",
+      "expected_normalized_sha256": "db653725e402bd6191bd8ea7da8dbbe75d97c5feebf0820c4ca79136e36be0f7"
+    },
+    {
+      "name": "workflowStarterStart",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "cb77e14ca6a9c4d24bb2891e1b82d724eff324a6636f1ef25d4caf22aa9deb8b",
+      "expected_normalized_sha256": "cb77e14ca6a9c4d24bb2891e1b82d724eff324a6636f1ef25d4caf22aa9deb8b"
+    },
+    {
+      "name": "workflowRecoveryHold",
+      "kind": "function",
+      "match": true,
+      "normalized_sha256": "6af596d8e33523e8d2c403be3020fea76763f8bf7223cb5f42c332f5a68e211b",
+      "expected_normalized_sha256": "6af596d8e33523e8d2c403be3020fea76763f8bf7223cb5f42c332f5a68e211b"
+    },
+    {
+      "name": "Budgets_Check_HCSS_Budget1",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "f8b15424d95bdc670ddd03962f70dce8681886fddcdb9fc8fdb0cbd65687f497",
+      "expected_normalized_sha256": "f8b15424d95bdc670ddd03962f70dce8681886fddcdb9fc8fdb0cbd65687f497"
+    },
+    {
+      "name": "Budgets_GP_Construction_A",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "bc07aa9e634e33d346e228f3048d3fe1ed79b50c854e7665b5b3eaddf9570833",
+      "expected_normalized_sha256": "bc07aa9e634e33d346e228f3048d3fe1ed79b50c854e7665b5b3eaddf9570833"
+    },
+    {
+      "name": "Budgets_GP_Development_Ac",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "32a507c2fa1e13720121641c86e454929d2abe64c6b097e242ad1278aa3dfabb",
+      "expected_normalized_sha256": "32a507c2fa1e13720121641c86e454929d2abe64c6b097e242ad1278aa3dfabb"
+    },
+    {
+      "name": "Budgets_HCSS_Actuals_Batc",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "6da2ed630361b45b0434348f80510b918b2522c7c80caecae83512f5a1545d5b",
+      "expected_normalized_sha256": "6da2ed630361b45b0434348f80510b918b2522c7c80caecae83512f5a1545d5b"
+    },
+    {
+      "name": "Check_for_Stuck_Budget_Ap",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "fee85825979c25795bbd994e9830195abc74f8119ed717962bd07dd13c347696",
+      "expected_normalized_sha256": "fee85825979c25795bbd994e9830195abc74f8119ed717962bd07dd13c347696"
+    },
+    {
+      "name": "Finalize_Workflow_Run_Log",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "b6e7a826cb3b02b78c96fa5060094a3fab16c7f208edb1aa98ce4491655af876",
+      "expected_normalized_sha256": "b6e7a826cb3b02b78c96fa5060094a3fab16c7f208edb1aa98ce4491655af876"
+    },
+    {
+      "name": "Next_Workflow_Run_Next_Ba",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "9419e7d06478c6d6d11c50848a73dccfb4161d7cb7187b82792aeb27d3b91058",
+      "expected_normalized_sha256": "9419e7d06478c6d6d11c50848a73dccfb4161d7cb7187b82792aeb27d3b91058"
+    },
+    {
+      "name": "Recalc_Budget_Modificatio",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "7199688f55a834f7c768fdcc39841e7b1d5a91055f2d21b5b350aa8a6a5259d8",
+      "expected_normalized_sha256": "7199688f55a834f7c768fdcc39841e7b1d5a91055f2d21b5b350aa8a6a5259d8"
+    },
+    {
+      "name": "Set_Close_Date_Lots1",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "ff71410580f06f0ce6e440c9c26ac2a0a8f39956eef113f15a93248a582127a4",
+      "expected_normalized_sha256": "ff71410580f06f0ce6e440c9c26ac2a0a8f39956eef113f15a93248a582127a4"
+    },
+    {
+      "name": "Sync_Final_Acceptance_Due",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "a3f132ce1606919617ecbd41a89da9a2098421cf8f57840a8bca808fbb79808e",
+      "expected_normalized_sha256": "a3f132ce1606919617ecbd41a89da9a2098421cf8f57840a8bca808fbb79808e"
+    },
+    {
+      "name": "Update_Actual_Lots_Foreca1",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "57dfa31c398b93ac7f1e15846c9a689051487b806b9bbe697964903160170649",
+      "expected_normalized_sha256": "57dfa31c398b93ac7f1e15846c9a689051487b806b9bbe697964903160170649"
+    },
+    {
+      "name": "Update_Budgets_w_Projects1",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "de5292cada18d1f8b331df02bf30652c7c74ec1fc6d3792cf9e6d72d882d7e52",
+      "expected_normalized_sha256": "de5292cada18d1f8b331df02bf30652c7c74ec1fc6d3792cf9e6d72d882d7e52"
+    },
+    {
+      "name": "Update_Sold_Contracted_Fo1",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "57459c2b09ae7026fdf94e6d229e96f45b6f8b6d4be2d743211082364df8c577",
+      "expected_normalized_sha256": "57459c2b09ae7026fdf94e6d229e96f45b6f8b6d4be2d743211082364df8c577"
+    },
+    {
+      "name": "Workflow_Export_Continue",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "60fd76abac377064a75a65f25f27b036ba9b85007efe43203b5463ecec38ab1e",
+      "expected_normalized_sha256": "60fd76abac377064a75a65f25f27b036ba9b85007efe43203b5463ecec38ab1e"
+    },
+    {
+      "name": "Workflow_Export_Wake",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "d88cc27ecff798fdb0a1e88065cf4e7b1b9bdc61600af0c82f1b1a54a718434a",
+      "expected_normalized_sha256": "d88cc27ecff798fdb0a1e88065cf4e7b1b9bdc61600af0c82f1b1a54a718434a"
+    },
+    {
+      "name": "Workflow_Log_Timeout",
+      "kind": "workflow",
+      "match": true,
+      "normalized_sha256": "939ae6d2c2d98313776b65a67dc95fd09e6d3c178e2ad32cab6b8168c89f71d5",
+      "expected_normalized_sha256": "939ae6d2c2d98313776b65a67dc95fd09e6d3c178e2ad32cab6b8168c89f71d5"
+    },
+    {
+      "name": "Settings",
+      "kind": "form",
+      "match": true,
+      "normalized_sha256": "5def90af67108d28584a5a2c8451492262a5fe3c131dd0284f12eed3194b8040",
+      "expected_normalized_sha256": "5def90af67108d28584a5a2c8451492262a5fe3c131dd0284f12eed3194b8040"
+    },
+    {
+      "name": "Workflow_Export_Lock",
+      "kind": "form",
+      "match": true,
+      "normalized_sha256": "877b243583d7f64801626c28d4a822e44d56f0f3a9d79f1b6ddfb65f17921316",
+      "expected_normalized_sha256": "877b243583d7f64801626c28d4a822e44d56f0f3a9d79f1b6ddfb65f17921316"
+    },
+    {
+      "name": "Workflow_Run_Log",
+      "kind": "form",
+      "match": true,
+      "normalized_sha256": "e343a648e04bd361210c13da0cb5f88c1c0bef29d8c0669d8e74e8df1967c80f",
+      "expected_normalized_sha256": "e343a648e04bd361210c13da0cb5f88c1c0bef29d8c0669d8e74e8df1967c80f"
+    },
+    {
+      "name": "Settings shared schedule group",
+      "kind": "schedule_group",
+      "match": true
+    },
+    {
+      "name": "workflowStarterProbe",
+      "kind": "probe_absent",
+      "match": true
+    },
+    {
+      "name": "workflowQuotaChunkProbe",
+      "kind": "probe_absent",
+      "match": true
+    }
+  ]
+}

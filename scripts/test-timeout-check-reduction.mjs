@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {assertTimeoutEligibility} from './verify-timeout-check-reduction-native.mjs';
+const before=fs.readFileSync('creator/quota-five-hour-recovery-2026-11-06/native-before/production-v9.160/Workflow_Log_Timeout.ds','utf8');
+const candidate=fs.readFileSync('creator/timeout-check-reduction-2026-11-07/workflows/Workflow_Log_Timeout.ds','utf8');
+assert.equal(assertTimeoutEligibility(candidate,before),true);
+assert.throws(()=>assertTimeoutEligibility(before,before));
+assert.throws(()=>assertTimeoutEligibility(candidate.replace('after 30 minutes','after 60 minutes'),before));
+assert.throws(()=>assertTimeoutEligibility(candidate.replace('Run_Status == "Running"','Run_Status != "Running"'),before));
+assert.throws(()=>assertTimeoutEligibility(candidate.replace('thisapp.workflowExportRecover("arm")','thisapp.workflowExportRecover("cancel")'),before));
+console.log('Timeout eligibility: candidate accepted; unconditional, inverted, delayed, and altered-recovery variants rejected.');

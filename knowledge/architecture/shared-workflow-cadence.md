@@ -30,6 +30,12 @@ For planning, define `C` as measured schedules per shared cycle, `F` as other da
 
 Measure whole cycles and comparable complete days. Retain the observation times and distinguish daily counters from monthly counters; inspect reset boundaries before subtracting daily readings. Confirm successful job completion alongside lower consumption. A billing delta covering one batch plus background work is an account interval, not an exact per-batch cost.
 
+## Terminal Timeout Eligibility
+
+The existing `Workflow_Log_Timeout` form schedule must select only `Workflow_Run_Log[Run_Status == "Running"]`. Checking that status solely inside the action still permits useless timer deliveries for completed records. The workflow-level predicate excludes terminal records while preserving the existing thirty-minute offset and the complete action, including its live-record guard, shared recovery deferral and bounded legacy watchdog handling. Keep both guards: the native eligibility rule avoids redundant work, and the action guard handles a completion race.
+
+This is separate from idle recovery parking and five-hour cycle savings. Count terminal-before-timeout records, distinguish observed native events from billing units, and adjust cycle-dependent estimates to 4.8 cycles/day. Do not remove Running-job recovery, continuation work, fixed deadlines or failure reporting to improve a quota number. See [the timeout eligibility release](../../creator/timeout-check-reduction-2026-11-07/release-notes.md).
+
 ## Regression and Rollback
 
 Verify anchor advance, every batch transition, frozen source/batch identity, route ownership, unchanged active/disabled definitions, deadline handling and current Settings copy. Native source parity is required in each promoted environment; separately observe timer delivery and completed work after publication.
