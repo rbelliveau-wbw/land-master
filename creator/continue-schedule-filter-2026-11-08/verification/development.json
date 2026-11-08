@@ -1,0 +1,73 @@
+{
+  "environment": "development",
+  "verified_at_utc": "2026-11-08T21:35:37.350Z",
+  "scope": "13 component copies from the native IDE; no business records or billing data",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "workflowRunLog",
+      "match": true,
+      "normalized_sha256": "8bcfab6eabb4565d1e775d8c343e5f6c4f4f5dfed966fb8a730baee1d41c94fb"
+    },
+    {
+      "name": "workflowExportEnqueue",
+      "match": true,
+      "normalized_sha256": "6e7a7356134f3892080868369645e2911f4c55d323034db896d1a98f810b89f6"
+    },
+    {
+      "name": "workflowExportEnqueueCaptured",
+      "match": true,
+      "normalized_sha256": "d207498d5886d33dd2c0fe1168e6b5fb3d2cc4e620f7016836bce7827e075034"
+    },
+    {
+      "name": "workflowExportPlan",
+      "match": true,
+      "normalized_sha256": "d59be349a038c2e311a08838eb3992d5288fd15fe2c0508cfa6403f164fade1a"
+    },
+    {
+      "name": "workflowExportWake",
+      "match": true,
+      "normalized_sha256": "e2bdc30af6b817b1c2729906624d118d1e49285a9baf7e64af418bdf96da2b43"
+    },
+    {
+      "name": "workflowExportDispatch",
+      "match": true,
+      "normalized_sha256": "67fa7f2131a9431b3701ab9c26346bd0783e53eb69f0073ea730363a1a1507be"
+    },
+    {
+      "name": "workflowExportTick",
+      "match": true,
+      "normalized_sha256": "4600c5f14bfe3d72ab18d89d8075b9dd13259319707b332bcf46d1ba96cc6d6c"
+    },
+    {
+      "name": "workflowExportRecover",
+      "match": true,
+      "normalized_sha256": "03345682b8b23c088b2fd6ad96532dd55f2bca8f85689adbe49a662d7de1cc03"
+    },
+    {
+      "name": "workflowRecoveryHold",
+      "match": true,
+      "normalized_sha256": "6af596d8e33523e8d2c403be3020fea76763f8bf7223cb5f42c332f5a68e211b"
+    },
+    {
+      "name": "workflowExportRun",
+      "match": true,
+      "normalized_sha256": "9279c3c06d3b90368a479315b070d7f65dc67c666038bfbb5314114acb4bd05e"
+    },
+    {
+      "name": "budgetActualImportRun",
+      "match": true,
+      "normalized_sha256": "865692b8eddd3ca0e458550642de4528c940e6b1deb854a4a21d3dbf8240912e"
+    },
+    {
+      "name": "budgetPlanImportRun",
+      "match": true,
+      "normalized_sha256": "7ee8072118e008b617dd69291e88b7b6ca71004abbc5fc829e1743dc8a86dbf5"
+    },
+    {
+      "name": "Workflow_Export_Continue",
+      "match": true,
+      "normalized_sha256": "4e5588f4f6e510a71fea5f5495086775211c6aab7a8639847a0f64c8cd45f0a0"
+    }
+  ]
+}

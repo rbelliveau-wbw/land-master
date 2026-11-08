@@ -1,0 +1,19 @@
+Workflow_Export_Continue as "Workflow Export Continue"
+{
+	type =  schedule
+	form = Workflow_Run_Log[Run_Status == "Running" && !Export_State.contains("shared-recovery-30m")]
+	start = Resume_At
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			thisapp.workflowExportTick(input.ID.toString());
+		)
+		}
+	}
+}
+
