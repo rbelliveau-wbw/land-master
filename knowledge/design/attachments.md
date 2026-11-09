@@ -21,6 +21,10 @@ presentation increment; live upload/delete coverage is recorded separately.
 
 ## Appearance
 
+- Request tab strips may include an optional sibling pane. PO uses this for
+  Approvers and its scoped count, retaining the same selection pill, exclusive
+  panel visibility, Arrow/Home/End navigation and file lifecycle. Switching or
+  refreshing a sibling pane must preserve queued files and request identity.
 - Switching Legal's Approvers/Attachments tabs fades only the modal body. Keep
   the backdrop and header opaque and above the underlying sticky report headers.
 - Pair the paperclip action with the comment action. Use the pale-blue compact

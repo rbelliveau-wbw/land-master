@@ -55,6 +55,7 @@
         each('.po-overlay',overlay=>{
           const scope=id('po',api.identity(overlay));
           each('[data-po-total],[data-po-summary-total],[data-po-summary-count],[data-po-context] strong', (node,i)=>api.text(node,[scope,'summary',i]),overlay);
+          each('[data-ra-extra-count="approvers"]',node=>api.text(node,[scope,'approvers','count']),overlay);
           each('[data-line]',row=>{
             const line=row.dataset.line;
             each('input[readonly][data-po-field="finalAmount"]',input=>api.readonly(input,[scope,line,'amount']),row);

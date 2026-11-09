@@ -1,3 +1,37 @@
+## PO Summary And Approvers Workspace — 122.29.105, November 9, 2026
+
+The PO Summary fills the main desktop editor's height and pins its Total below
+an independent scroller. Approvers moves beside Details and Attachments in the
+existing request tab strip. Its badge counts resolved draft preview steps or
+the saved captured chain; unknown and loading values remain distinct. Saved
+approval details and linked modifications appear once in that tab. The shared
+tab adapter accepts optional sibling panes, preserving two-tab Check/Wire/Mod
+behavior, upload state and keyboard navigation. Shared motion and scoped number
+transitions cover the new tab and count.
+
+All PO dialogs are about 12% taller. The desktop workspace grows from 944 to
+1058 px, capped to the viewport with 12 px gutters. Add Vendor, Delete PO and
+progress/results expand from natural content height without accumulating extra
+height on repeated updates. Their responsive caps and existing body scrolling
+retain reachable actions. PO routing, save/approval/delete predicates, exact
+amounts, permissions, source fields and upload paths are unchanged.
+
+Changed source: `po-ui.js`, `po-progress.js`, `purchase-orders.css`,
+`request-attachments.js`, and the shared numeric count registry/copies; release
+metadata and the focused design guides accompany them. No Creator forms,
+fields, functions or Custom APIs change, and no Creator deployment is required.
+Regression coverage includes draft/captured/unavailable counts, three-way tab
+exclusivity and keyboard navigation, retained inputs and attachment state,
+full-height Summary/totals, compact dialog height caps and existing busy locks.
+Actual-source desktop fixtures verified a 1058 px editor/Summary pair at
+1540 × 1200 and viewport-safe alignment at 1280 × 720, one visible pane,
+retained descriptions, Arrow navigation, captured chains without duplicate
+previews, Vendor/Delete cancellation, and pending/complete progress controls.
+The full repository validation and Pages build passed; fixture decisions are
+local simulations and do not send Creator approvals or messages.
+Rollback: restore Budget Manager Production to **122.29.103** and rebuild Pages,
+keeping the permanent Creator widget URL.
+
 ## Full Export Recovery And Batching — 122.29.102, November 5, 2026
 
 The supplied full-export log reaches 980 of 2,881 items before Creator's minute

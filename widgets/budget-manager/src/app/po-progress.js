@@ -23,6 +23,7 @@
     card.querySelector('.po-body').innerHTML='<ol class="po-progress-steps">'+labels.map(function(label,i){return '<li class="po-progress-step '+(i===0?'done':i===1?'run':'next')+'"><span class="po-progress-icon" aria-hidden="true">'+(i===0?check:i===1?'<span class="po-progress-spin"></span>':'3')+'</span><strong class="po-progress-name">'+esc(label)+'</strong><span class="po-progress-chip">'+(i===0?'Done':i===1?'Running':'Up next')+'</span></li>';}).join('')+'</ol><section class="po-progress-outcome" data-po-outcome hidden><span class="po-progress-outcome-icon" aria-hidden="true"></span><div><h3 data-po-outcome-title></h3><p data-po-outcome-message></p></div></section><div class="po-error" data-po-error role="alert" hidden></div><details class="po-progress-details" hidden><summary>Saved items</summary><div data-po-results></div></details>';
     card.querySelector('footer').innerHTML='<p data-po-status role="status" aria-live="polite" aria-atomic="true">'+(action==='Delete'?'Deleting purchase order…':['Approve','Reject','RetryEmail'].includes(action)?'Updating approval…':'Saving purchase order…')+'</p><div class="po-progress-actions"><button class="mbtn neutral" data-po-check hidden>Check status</button><button class="mbtn neutral" data-po-done hidden>Review PO</button><button class="mbtn primary" data-po-finish disabled>Done</button></div>';
     card.querySelector('[data-po-close]').disabled=true;
+    if(root.LMPOUI)root.LMPOUI.fitDialog(card);
   }
   function update(options){
     var card=options.card,run=options.run,settled=options.settled;
@@ -47,8 +48,9 @@
       card.querySelector('[data-po-outcome-title]').textContent=result.title;card.querySelector('[data-po-outcome-message]').textContent=result.message;
       card.querySelector('[data-po-status]').textContent=result.state==='success'?'Complete':result.warning?'Email needs attention':run.unknown?'Saved status needs review':'Not saved';
     }else card.querySelector('[data-po-status]').textContent=options.stage==='checking'?'Checking saved status…':'Working…';
+    if(root.LMPOUI)root.LMPOUI.fitDialog(card);
     return result;
   }
-  function clear(options){options.overlay.classList.remove('po-progress-mode');var bar=options.card.querySelector('.po-progress-bar');if(bar)bar.remove();}
+  function clear(options){options.card.style.minHeight='';options.overlay.classList.remove('po-progress-mode');var bar=options.card.querySelector('.po-progress-bar');if(bar)bar.remove();}
   root.LMPOProgress={mount:mount,update:update,describe:describe,clear:clear};
 })(typeof globalThis!=='undefined'?globalThis:this);

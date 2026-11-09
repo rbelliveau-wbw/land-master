@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 const source=fs.readFileSync('widgets/budget-manager/src/app/po-ui.js','utf8');
-const ctx=vm.createContext({vendorDialog:null});
+const ctx=vm.createContext({vendorDialog:null,fitDialog(){}});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),ctx);ctx.root=ctx;
 ctx.model={budgetId:'1001',vendorId:'9001',amount:'999.99',requestDate:'2026-10-09',dateNeeded:'2026-10-20',vendors:[{ID:'9001'}],lines:[{key:'one',budgetItemId:'2001',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'two',budgetItemId:'2001',description:'Testing',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'2.02'}]};
 let deleteAllowed=true;ctx.options={userAccessId:()=> '8001',canDelete:()=>deleteAllowed};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
@@ -37,6 +37,7 @@ ctx.model.editable=true;ctx.model.loadState='loaded';ctx.model.id='5001';for(con
 // original PO and never sends Delete. No live records are mutated by this test.
 function surface(){return {classes:new Set(),attrs:{},classList:{toggle(name,on){if(on)this.owner.classes.add(name);else this.owner.classes.delete(name);}},setAttribute(name,value){this.attrs[name]=value;}};}
 Object.assign(ctx.card,surface());ctx.card.classList.owner=ctx.card;
+ctx.card.style={};
 ctx.overlay=surface();ctx.overlay.classList.owner=ctx.overlay;
 const workspace=surface();workspace.classList.owner=workspace;const summary={};ctx.overlay.querySelector=selector=>selector==='.po-workspace'?workspace:summary;
 ctx.generation=1;ctx.deleteReview=false;ctx.progress=false;ctx.visualBusy=false;ctx.popover=null;

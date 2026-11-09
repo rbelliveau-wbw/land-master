@@ -74,6 +74,20 @@ during the bounded phase load, never by a render-triggered request.
 
 The PO title card contains Purchase Order, status, phase, Vendor and Add New
 Vendor. The vendor link opens the existing form in the current Creator environment.
+Details, Attachments and Approvers share one tab strip. Approvers shows the
+number of resolved route steps: the current preview for an eligible draft, or
+the captured chain for a saved PO. Unknown counts show a dash (checking shows
+an ellipsis); never infer zero. Keep Summary visible across all three tabs,
+matching the main desktop card's full height with its Total pinned below its
+own scroller. Preserve entries, file state, selected tab and Summary disclosures
+when the PO refreshes. Use the existing tab motion, keyboard navigation and
+scoped numeric transition for the count.
+
+The desktop PO workspace is 12% taller (1058 px before the viewport cap), with
+12 px screen gutters. Add Vendor, Delete PO and progress/result dialogs also
+receive 12% more natural height, bounded by their existing viewport caps.
+Keep identity, Close and footer actions reachable and scroll long bodies;
+never scale typography, controls or business timing to create the extra room.
 Body fields are Request date, Date needed and optional PO Description (1000
 characters). The viewport-bounded editor height stays stable after row changes,
 with internal scrolling. Keep 9px padding above ledger headers and below the last
@@ -98,7 +112,7 @@ preview with ordered approver pills. Hide this forecast panel when the current
 actor cannot compose the PO, matching the existing preview request gate; a
 foreign read-only Draft or older submitted PO must never wait for an unrequested
 forecast. Saved POs show their captured chain once in the
-bottom Approval chain section, without repeating the upper flow. Group linked
+Approvers tab, without repeating the draft preview. Group linked
 modification rows beneath an Attached budget modifications heading in a pale
 amber panel, keeping their item names, amounts and recorded statuses.
 CFO is required for every PO; a new modification can route VP → CFO → COO.
@@ -213,10 +227,11 @@ record to the options and select it immediately without losing PO inputs.
 Known native rejection retains the input; lost/malformed replies prohibit a
 second create, including after closing and reopening the vendor dialog.
 
-The desktop main card defaults to 944 px height (18% above 800 px), capped to
+The original desktop main card defaulted to 944 px height (18% above 800 px), capped to
 the viewport. Its outer body does not scroll; only the line matrix and lengthy
 captured-chain section scroll internally. Keep delete/result card dimensions
-isolated. Place a second navy/green Approvers card below Summary for drafts.
+isolated. The November 9 layout above supersedes the separate Approvers card
+below Summary and increases the workspace and compact dialog heights.
 The existing debounced context preview determines CFO-only versus added roles
 from actual balance shortfall. Show each resolved person, role, approval email
 and order; present unavailable routing truthfully. Do not repeat the captured
