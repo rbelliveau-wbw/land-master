@@ -23,6 +23,23 @@ and persisted/locked plans. Full validation and Pages build remain release gates
 Rollback: **122.29.112**, which restores the former Add step and remains compatible
 with the signed reallocation records.
 
+## PO Submission Capacity Repair — November 9, 2026
+
+Production `Manage_Purchase_Order` returned 9430 because Creator exceeded its
+executed-statement limit. Submit, notification element details and Excel each
+recalculated every phase Budget Item. The repair shares the existing collector
+through `poBudgetBalancesForItems`: submission uses validated grouped item IDs;
+exports use persisted current-revision item IDs. Full balance/approval readers
+retain `poBudgetBalances` and its existing full scope. Selected accounting and
+phase PO integrity checks remain unchanged. The incident PO touches three of
+227 items and was read back as an intact five-line $167,122.50 Draft.
+
+Backend source only; four functions need Creator installation/native verification
+and user publication. No form, field, API argument, frontend version or mapping
+change. The live response predates the separate reallocation capability, so apply
+this scope change against the actual native collector and preserve concurrent
+work. See [diagnosis, exact source, regressions and rollback](../../docs/po-submit-capacity-2026-11-09.md).
+
 ## Reallocation Footer Copy — 122.29.112, November 9, 2026
 
 Removed the explanatory approval-round sentence beneath the right panel action

@@ -12,7 +12,7 @@ for(const name of ['managePurchaseOrder','budgetElementExportRows','exportBudget
 
 // Execute the actual native planner, snapshots, bundle and balance producer.
 // Policy capture/mail are local adapters; this does not compile/publish Creator.
-const programs=['poCurrencyString','poSnapshot','poBudgetBalances','recalcItemRevisedFinal','recalcBudgetModifiedTotals','managePurchaseOrder'].map(name=>{let source=fs.readFileSync(`creator/functions/${name}.dg`,'utf8');if(name==='poSnapshot')source=source.replace(/\brow\b/g,'storedPOLine');return compileDelugePO(source).replace(/catch\s*\((\w+)\)\s*\{/g,(_,error)=>`catch(${error}) { if(typeof result!=='undefined') result.put('testDiagnostic',${error}.stack);`)+`;thisapp.${name}=${name};`;}).join('\n');
+const programs=['poCurrencyString','poSnapshot','poBudgetBalancesForItems','poBudgetBalances','recalcItemRevisedFinal','recalcBudgetModifiedTotals','managePurchaseOrder'].map(name=>{let source=fs.readFileSync(`creator/functions/${name}.dg`,'utf8');if(name==='poSnapshot')source=source.replace(/\brow\b/g,'storedPOLine');return compileDelugePO(source).replace(/catch\s*\((\w+)\)\s*\{/g,(_,error)=>`catch(${error}) { if(typeof result!=='undefined') result.put('testDiagnostic',${error}.stack);`)+`;thisapp.${name}=${name};`;}).join('\n');
 const fields=['Labor_Budget','Materials_Budget','Equipment_Budget','Subcontractor_Budget','Other_Budget'];
 const components=values=>Object.fromEntries(values.map((value,i)=>[String(i+1),String(value)]));
 function runtime({createOnly=false}={}){
@@ -88,7 +88,7 @@ for(const mutate of [
 
 // Pending positive funding cannot be borrowed for a donor reduction; a debit
 // reserve remains gross even if another pending request would offset it.
-r=runtime();vm.runInContext(`var realBalances=thisapp.poBudgetBalances;thisapp.poBudgetBalances=function(id){var out=realBalances(id);var part=out.get('balances')[0].get('componentBalances')[0];part.put('pendingModificationCents','1000000');part.put('pendingReductionCents','100000');return out;};`,r.c);p=payload();p.expectedComponentPendingModifications['71|1']='1000000';const beforeReserve=r.tables();result=r.call(p);assert.equal(result.success,false);assert.match(result.error,/reduction exceeds/);assertNoBusinessWrites(r,beforeReserve);
+r=runtime();vm.runInContext(`var realBalances=thisapp.poBudgetBalancesForItems;thisapp.poBudgetBalancesForItems=function(id,items){var out=realBalances(id,items);var part=out.get('balances')[0].get('componentBalances')[0];part.put('pendingModificationCents','1000000');part.put('pendingReductionCents','100000');return out;};`,r.c);p=payload();p.expectedComponentPendingModifications['71|1']='1000000';const beforeReserve=r.tables();result=r.call(p);assert.equal(result.success,false);assert.match(result.error,/reduction exceeds/);assertNoBusinessWrites(r,beforeReserve);
 
 // Exact captured marker/type/components are required to read a saved custom mod.
 for(const mutate of [m=>m.Component_Reallocation=false,m=>m.Modification_Type='Increase',m=>m.Subcontractor_Budget=-32999,m=>m.Reason='Changed after submit']){r=runtime();result=r.call(payload());mutate(r.c.tables.Budget_Modification[0]);assert.equal(r.run('poApprovalBundle',result.snapshot.id).success,false);}

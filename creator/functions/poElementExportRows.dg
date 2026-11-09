@@ -4,12 +4,14 @@ list poElementExportRows(string purchaseOrderId)
 	if(!purchaseOrderId.matches("[0-9]+")) { return rows; }
 	po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
 	if(po.count() != 1 || ifnull(po.PO_Revision,"") == "") { return rows; }
-	balances = thisapp.poBudgetBalances(po.Budget.toString());
 	items = List();
 	for each line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
 	{
 		if(line.Budget_Item != null && !items.contains(line.Budget_Item.ID.toString())) { items.add(line.Budget_Item.ID.toString()); }
 	}
+	// Never treat an empty persisted PO selection as a full-budget request.
+	if(items.size() == 0) { return rows; }
+	balances = thisapp.poBudgetBalancesForItems(po.Budget.toString(),items);
 	for each itemId in items
 	{
 		item = Budget_Item[ID == itemId.toLong()];

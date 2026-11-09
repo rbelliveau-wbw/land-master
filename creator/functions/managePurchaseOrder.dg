@@ -1066,7 +1066,10 @@ string managePurchaseOrder(string payload)
 		needsCurrentBalances = action == "Submit" || amendPending;
 		if(needsCurrentBalances && result.get("error") == null)
 		{
-			balances = thisapp.poBudgetBalances(budgetId);
+			// Recheck selected PO items under the phase lock; unrelated baselines
+			// must not exhaust Creator's statement budget during submission.
+			selectedBalanceGroups = validated.get("groupedCents");
+			balances = thisapp.poBudgetBalancesForItems(budgetId,selectedBalanceGroups.keys());
 			if(balances.get("success") != true)
 			{
 				result.put("error",balances.get("error"));

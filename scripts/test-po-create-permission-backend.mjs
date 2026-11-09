@@ -25,7 +25,7 @@ function fixture({user=actor,users,login=user.User,environment='Production',budg
     vm.runInContext(compileDelugePO(source)+`;thisapp.${name}=${name};`,r.c);
   }
   r.c.available=available;
-  vm.runInContext(`String.prototype.subString=String.prototype.substring;thisapp.poBudgetBalances=function(){return map({success:true,balances:[{budgetItemId:'71',availableCents:available,pendingModificationCents:'0'}]});};thisapp.sendPurchaseOrderEmail=function(){mails.push({kind:'approval'});return 'OK: sent';};`,r.c);
+  vm.runInContext(`String.prototype.subString=String.prototype.substring;thisapp.poBudgetBalancesForItems=function(){return map({success:true,balances:[{budgetItemId:'71',availableCents:available,pendingModificationCents:'0'}]});};thisapp.sendPurchaseOrderEmail=function(){mails.push({kind:'approval'});return 'OK: sent';};`,r.c);
   if(afterLock){r.c.afterLock=afterLock;vm.runInContext(`var originalInsert=insertRecord;insertRecord=function(form,data){var id=originalInsert(form,data);if(form==='PO_Operation')afterLock(tables);return id;};`,r.c);}
   return r;
 }
