@@ -5,7 +5,9 @@ request-report read and the shared modification read, without per-phase fallback
 after quota errors. New Request uses the existing Add menu without Budget and
 then the existing budget picker/composer; the blue action has compact spacing.
 Request changes invalidate the index while ordinary reopening uses cache.
-The existing managePurchaseOrder update needs Creator publication. See
+The existing managePurchaseOrder update is published in Creator 9.173. The live
+Production check loaded all 102 phases in 981 ms with 12 requests, two linked
+modifications and no error banners. See
 [contract, verification and rollback](../../docs/budget-requests-api-repair-2026-11-09.md).
 
 ## PO Review Links and Excel Downloads — 122.29.117, November 9, 2026

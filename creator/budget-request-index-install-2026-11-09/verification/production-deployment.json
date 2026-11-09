@@ -1,0 +1,93 @@
+{
+  "contract": "budget-request-index-publication-v1",
+  "recordedOn": "2026-11-09",
+  "authorization": "User explicitly requested Publish it for me after the Requests repair was pushed to main and Production",
+  "repairFunctions": ["managePurchaseOrder"],
+  "customApi": "Manage_Purchase_Order",
+  "customApiRegistrationChanged": false,
+  "frontendVersion": "122.29.120",
+  "frontendCommit": "db7ca437a360753a7d2f291312686a90c36a0c9f",
+  "frontendVersionChangedByNativePublication": false,
+  "developmentInstallation": {
+    "status": "Compiled, saved and independently reopened",
+    "changedScope": "Only the existing List branch was replaced against the captured native function body; all other native source was preserved",
+    "baselineComparison": "Baseline differs from canonical repository source only through Creator parenthesis formatting",
+    "reopenedComparison": "Final native-list guard matches the expected focused patch after observed Creator comment, whitespace and parenthesis formatting and known getAll-to-getall/subList-to-sublist spelling normalization",
+    "byteEqualityClaimed": false,
+    "financialExecutionPerformed": false
+  },
+  "publicationAttempts": [
+    {
+      "version": "9.172",
+      "title": "Requests Bulk Loading Repair",
+      "componentCount": 1,
+      "functions": ["managePurchaseOrder"],
+      "stageStatus": "Completed",
+      "productionStatus": "Completed",
+      "liveRequestsStatus": "Failed: genuine phase list rejected by serialized-list regex",
+      "liveError": "Request phase scope must be a list of exact ID strings.",
+      "correction": "Keep the parsed native collection; use list-only subList without list serialization; preserve existing exact entry, duplicate, anchor and membership guards"
+    }
+  ],
+  "finalPackage": {
+    "version": "9.173",
+    "title": "Requests Native Collection Repair",
+    "description": "Keep request phase IDs as a native list. Verified Development Requests with eight requests across seven phases. Preserve exact ID and scope checks.",
+    "componentCount": 1,
+    "functions": ["managePurchaseOrder"],
+    "stageStatus": "Completed",
+    "productionStatus": "Completed",
+    "lastNativeObservationAtUTC": "2026-11-09T22:56:21Z",
+    "observationTimestampIsExactDeploymentCompletionTime": false,
+    "completionObservation": "Creator Environments showed Stage 9.173, Production 9.173 and No changes available",
+    "evidenceMethod": "Observed corrected native function compile/save/reopen, exact one-function publication package, final native Environments versions and read-only Development/Production Requests loads"
+  },
+  "frontendVerification": {
+    "commit": "db7ca437a360753a7d2f291312686a90c36a0c9f",
+    "ci": {
+      "conclusion": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/42713844950"
+    },
+    "pages": {
+      "conclusion": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/42713845446"
+    }
+  },
+  "postPromotionReadOnlyCheck": {
+    "status": "Passed",
+    "environment": "Production",
+    "action": "ListRequests",
+    "trigger": "Manual Refresh in live Budget Manager",
+    "frontendVersion": "122.29.120",
+    "elapsedMs": 981,
+    "requests": 12,
+    "linkedBudgetModifications": 2,
+    "accessiblePhases": 102,
+    "warnings": [],
+    "loadTimeIsSingleObservedRead": true,
+    "saveOrSubmitPerformed": false
+  },
+  "liveNewRequestPresentation": {
+    "environment": "Production",
+    "choices": ["Bud Mod", "Check Request", "Wire Request", "Purchase Order"],
+    "buttonWidthPx": 128.09375,
+    "labelArrowGapPx": 8,
+    "desktopScreenshotVisuallyVerified": true
+  },
+  "developmentReadOnlyCheck": {
+    "status": "Passed after native-list guard correction",
+    "environment": "Development",
+    "profile": "demo5",
+    "requests": 8,
+    "linkedBudgetModifications": 1,
+    "accessiblePhases": 7,
+    "quotaBannerPresent": false,
+    "readUnavailableBannerPresent": false,
+    "saveOrSubmitPerformed": false
+  },
+  "financialRecordsChangedByVerification": false,
+  "realPurchaseOrderSubmitted": false,
+  "approvalEmailsSent": false,
+  "remainingRequiredVerificationForReadOnlyRepair": [],
+  "verificationLimits": "Financial Save, Submit, approval decisions and actual notification delivery were not exercised; no financial record was changed by verification"
+}

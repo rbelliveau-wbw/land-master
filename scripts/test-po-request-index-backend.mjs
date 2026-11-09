@@ -20,7 +20,7 @@ function fixture({user=actor,environment='Production',login=user.User,tables={}}
     Approval_Route_Snapshot:[{ID:121,Workflow:'Purchase Order',Record_ID:'52',Submission_Revision:'r52',Context_JSON:JSON.stringify(context),Route_JSON:JSON.stringify({route:[{order:1,role:'CFO',email:'cfo@example.com',userAccessId:'12',reason:'Always',poTestCFO:null}]}),Execution_JSON:'["111"]'}],
     ...tables
   }});
-  vm.runInContext('var indexQueries=[]; var originalIndexQuery=query;query=function(form,predicate,sort){indexQueries.push(form);return originalIndexQuery(form,predicate,sort);};',r.c);
+  vm.runInContext('Array.prototype.subList=function(start,end){return this.slice(start,end);};var indexQueries=[]; var originalIndexQuery=query;query=function(form,predicate,sort){indexQueries.push(form);return originalIndexQuery(form,predicate,sort);};',r.c);
   return r;
 }
 const request={action:'ListRequests',budgetId:'61',userAccessId:'19',budgetIds:['61','62','63']};
@@ -46,6 +46,14 @@ assert.equal(reply.rows[1].approvals[0].userAccessId,'12');
 assert.equal(reply.rows[4].approvalBundle,null,'Legacy reserved POs do not acquire an invented route');
 assert.deepEqual(r.tables(),before);assert.equal(r.c.writes,0);assert.equal(r.c.rollups,0);assert.equal(r.c.mails.length,0);
 
+// Creator's native list text format is not a JSON array. The live 102-phase
+// payload must never cross a list-to-text-to-JSON round trip or wrapper regex.
+const manyPhases=Array.from({length:102},(_,i)=>({ID:61+i,Archived:false,Budget_Owner:[]}));
+r=fixture({tables:{Add_Budget:manyPhases,Payment_Request:[]}});
+vm.runInContext('Array.prototype.toString=function(){throw Error("Native list serialization must not be used for type validation");};',r.c);
+const manyIds=manyPhases.map(budget=>String(budget.ID));
+reply=call(r,{...request,budgetIds:manyIds});assert.equal(reply.success,true,JSON.stringify(reply));assert.deepEqual(reply.budgetIds,manyIds);assert.deepEqual(reply.rows,[]);assert.equal(queryCount(r,'Payment_Request'),1);assert.equal(r.c.writes,0);
+
 // Original List remains phase-scoped with its established response shape.
 r=fixture();const single=call(r,{action:'List',budgetId:'61',userAccessId:'19'});
 assert.equal(single.success,true);assert.deepEqual(single.rows.map(row=>row.id),['51','55']);
@@ -54,7 +62,7 @@ for(const row of single.rows)for(const key of ['budgetId','vendorName','descript
 assert.equal(single.rows[0].canEditDraft,true);assert.equal(queryCount(r,'Vendors'),0);
 
 // Validate the entire request before reading/returning any PO or vendor rows.
-for(const patch of [{budgetIds:null},{budgetIds:'["61"]'},{budgetIds:[]},{budgetIds:[61]},{budgetIds:['61','61']},{budgetIds:['061']},{budgetIds:['62']},{budgetIds:['61','999']},{budgetIds:Array.from({length:501},(_,i)=>String(i+1))},{userAccessId:'12'},{userAccessId:19}]){
+for(const patch of [{budgetIds:null},{budgetIds:'["61"]'},{budgetIds:'61'},{budgetIds:{0:'61'}},{budgetIds:{phase:'61'}},{budgetIds:61},{budgetIds:true},{budgetIds:[]},{budgetIds:[61]},{budgetIds:[null]},{budgetIds:[['61']]},{budgetIds:[{ID:'61'}]},{budgetIds:['61','61']},{budgetIds:['061']},{budgetIds:['62']},{budgetIds:['61','999']},{budgetIds:Array.from({length:501},(_,i)=>String(i+1))},{userAccessId:'12'},{userAccessId:19}]){
   r=fixture();before=r.tables();const invalid=call(r,{...request,...patch});assert.equal(invalid.success,false,JSON.stringify(patch));
   assert.equal(invalid.rows,undefined);assert.equal(queryCount(r,'Payment_Request'),0);assert.equal(queryCount(r,'Vendors'),0);
   assert.deepEqual(r.tables(),before);assert.equal(r.c.writes,0);
@@ -68,4 +76,5 @@ r=fixture({user:{...actor,Edit_All_Budgets:true}});reply=call(r);assert.equal(re
 const source=fs.readFileSync('creator/functions/managePurchaseOrder.dg','utf8');
 const index=source.slice(source.indexOf('if(action == "List" || action == "ListRequests")'),source.indexOf('if(action == "Check")'));
 assert.doesNotMatch(index,/insert into|delete from|sendmail|invokeurl|thisapp\.managePurchaseOrder\(|thisapp\.poSnapshot\(/,'The index cannot recurse, replay writes or build full PO line snapshots');
+assert.doesNotMatch(index,/typedBudgetIds|budgetIds[^;]*\.toString\(\)[^;]*\.toJSONList\(/,'Native collections are validated with list operations, never serialized type regexes');
 console.log('PO Requests bulk backend: authenticated exact phase scope, one batch selection/used-vendor read, native approval children, original List capabilities, denial and zero-write invariants passed.');

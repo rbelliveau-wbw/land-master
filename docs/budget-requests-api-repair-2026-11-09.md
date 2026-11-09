@@ -22,11 +22,38 @@ headers gain phase ID, used vendor name, description, commitment state, linked
 modification ID and the existing captured approval bundle. Existing List shape,
 writes and approval behavior remain unchanged.
 
-**Creator compilation/publication and live verification remain required.**
-Publish the function update before expecting the global index to load. The
-frontend shows Requests Update Pending against older functions, without falling
-back to a phase scan. Existing individual-budget Requests and New Request paths
-remain available. The existing Manage_Purchase_Order API registration is reused.
+The user explicitly requested Creator publication. The updated function has
+compiled, saved and been independently reopened in Development. Only the existing
+List branch was replaced against the captured native body; the rest of the native
+function was preserved. The reopened body matches the expected patch after the
+observed Creator formatting and built-in getall/sublist spelling normalization.
+The first package, **9.172 — Requests Bulk Loading Repair**, completed in Stage
+and Production, but the live Requests read rejected a genuine phase list with
+"Request phase scope must be a list of exact ID strings." Its outer serialized-
+list regex depended on a text representation that differs in native Creator.
+
+The corrected guard retains the native collection and uses the existing
+list-only subList operation before the unchanged exact-ID, duplicate, anchor
+and native membership checks. It compiled, saved and was independently reopened.
+A read-only Development Requests load for the demo5 profile then returned
+**8 Requests, 1 Linked Bud Mod and 7 accessible phases**, without quota or
+read-unavailable banners. Corrected single-function publication **9.173 —
+Requests Native Collection Repair** completed in Stage and Production. The
+final native Environments screen showed both at 9.173 with **No changes
+available**. A live Production 122.29.120 manual Refresh completed in **981 ms**
+with **12 Requests, 2 Linked Bud Mods and 102 phases**, and no warnings. These
+are observations of this read, not a guaranteed future load time.
+CI and Pages both succeeded for frontend commit db7ca437 / 122.29.120. See
+[the installation record](../creator/budget-request-index-install-2026-11-09/README.md).
+
+Until the function is available in the current environment, the frontend shows
+Requests Update Pending without falling back to a phase scan. Existing individual-
+budget Requests and New Request paths remain available. The existing
+Manage_Purchase_Order API registration is reused. Live read-only index verification
+passed in Production; no financial Save/Submit was performed. The live New Request
+menu showed exactly Bud Mod, Check Request, Wire Request and Purchase Order.
+Its rendered button was 128.09375 px wide with an eight-pixel label/arrow gap,
+and the desktop screenshot was visually checked.
 
 The complete scope and exact identities are checked before snapshot replacement.
 Embedded children pass existing PO/revision checks and stay outside financial
@@ -50,7 +77,9 @@ Actual-source JavaScript/Deluge regressions cover 102 phases in one API call,
 captured children, original List shape/permissions, used-vendor lookup, unsafe/
 duplicate/foreign IDs, actor change, denied reports, old backend, quota failure
 without fanout, cache reuse, Add menu permissions/keyboard flow and suppressed
-detail fallbacks. Existing PO, Connected Rail, create, reallocation and approval
+detail fallbacks. A native-shaped 102-phase fixture now prohibits list-to-text
+conversion during scope validation and rejects encoded strings, maps, scalars
+and malformed entries before any PO read. Existing PO, Connected Rail, create, reallocation and approval
 checks remain required. Full gates: npm run validate and npm run build:pages.
 Desktop visual verification uses actual assets with a read-only fixture. No
 financial Save/Submit is used for testing.

@@ -672,18 +672,20 @@ string managePurchaseOrder(string payload)
 			{
 				// Keep the complete index read inside one authenticated API call.
 				// Validate the whole captured phase scope before reading any PO rows.
-				typedBudgetIds = {"value":p.get("budgetIds")};
-				if(!typedBudgetIds.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\\[.*\\][ ]*[}]"))
+				requestedBudgetIds = p.get("budgetIds");
+				if(requestedBudgetIds == null)
 				{
 					result.put("error","Request phase scope must be a list of exact ID strings.");
 					return result.toString();
 				}
-				requestedBudgetIds = p.get("budgetIds").toString().toJSONList();
 				if(requestedBudgetIds.size() == 0 || requestedBudgetIds.size() > 500)
 				{
 					result.put("error","Choose between 1 and 500 request phases.");
 					return result.toString();
 				}
+				// subList is list-only: reject text-encoded arrays, maps and scalars.
+				// Keep native JSON collections native; their text format is not JSON.
+				requestedBudgetIds = requestedBudgetIds.subList(0,requestedBudgetIds.size());
 				listBudgetIds = List();
 				listBudgetNumbers = List();
 				for each  requestedBudgetId in requestedBudgetIds
