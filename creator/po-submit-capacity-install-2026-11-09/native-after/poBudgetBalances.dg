@@ -1,0 +1,6 @@
+map poBudgetBalances(string budgetId)
+{
+	// Preserve the full-budget API while PO writes/exports use a bounded scope.
+	allItems = List();
+	return thisapp.poBudgetBalancesForItems(budgetId,allItems);
+}

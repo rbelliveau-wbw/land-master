@@ -34,8 +34,9 @@ retain `poBudgetBalances` and its existing full scope. Selected accounting and
 phase PO integrity checks remain unchanged. The incident PO touches three of
 227 items and was read back as an intact five-line $167,122.50 Draft.
 
-Backend source only; four functions need Creator installation/native verification
-and user publication. No form, field, API argument, frontend version or mapping
+All four functions are compiled, saved and reopened in Creator Development;
+native read-only checks confirm exact three-item parity against a 155-item phase.
+Production publication remains with the user. No form, field, API argument, frontend version or mapping
 change. The live response predates the separate reallocation capability, so apply
 this scope change against the actual native collector and preserve concurrent
 work. See [diagnosis, exact source, regressions and rollback](../../docs/po-submit-capacity-2026-11-09.md).

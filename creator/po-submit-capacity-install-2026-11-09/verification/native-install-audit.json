@@ -1,0 +1,66 @@
+{
+  "contract": "po-submit-capacity-native-install-v1",
+  "verifiedAt": "2026-11-09T20:52:57.402Z",
+  "environment": "Development",
+  "functions": [
+    "poBudgetBalancesForItems",
+    "poBudgetBalances",
+    "poElementExportRows",
+    "managePurchaseOrder"
+  ],
+  "allFourCompiledSavedAndReopened": true,
+  "originalCollectorMatchesRepositoryBaseline": true,
+  "readOnlyVerification": {
+    "budgetId": "4410926000003558988",
+    "fullItemCount": 155,
+    "selectedItemCount": 3,
+    "selectedItemIds": [
+      "4410926000003559008",
+      "4410926000003559010",
+      "4410926000003559012"
+    ],
+    "fullScopedExactParity": true
+  },
+  "preservation": "Export and submission callers were patched surgically against their captured native versions; unchanged bodies were preserved. Helper and wrapper reloaded source tokens match repository code.",
+  "productionPublishedByAgent": false,
+  "realPurchaseOrderSubmitted": false,
+  "approvalEmailsSent": false,
+  "remainingVerification": "A representative 227-item native Submit with actual approval delivery remains untested; local actual-source Submit fixture and CI passed.",
+  "captures": [
+    {
+      "path": "native-before/managePurchaseOrder.dg",
+      "sha256": "f71870804558b81e27fa82399513559968116f271d1bb6ef33eb898c83481233",
+      "bytes": 72381
+    },
+    {
+      "path": "native-before/poBudgetBalances.dg",
+      "sha256": "e92ed578f3e1f246c58e9299995e75ea5889f9831ff4b743390a6db72c18b452",
+      "bytes": 11659
+    },
+    {
+      "path": "native-before/poElementExportRows.dg",
+      "sha256": "1778ccbe10f151216fca941f5f21baa242a86a274d3cf4239247303e609d0074",
+      "bytes": 3428
+    },
+    {
+      "path": "native-after/managePurchaseOrder.dg",
+      "sha256": "349c7e7174b3b0e7a07b2a29e8c62e559db5ca3a120fb44369f7960a1251b613",
+      "bytes": 72544
+    },
+    {
+      "path": "native-after/poBudgetBalances.dg",
+      "sha256": "6061eed484a90cb1ecc228479b4e6db10109f94f2b60dc8e4f8edd93f35f6fe7",
+      "bytes": 201
+    },
+    {
+      "path": "native-after/poBudgetBalancesForItems.dg",
+      "sha256": "a3acc1526492f513af282014f2a77590b5ad79decd6689147dac5cec53bef0fa",
+      "bytes": 12902
+    },
+    {
+      "path": "native-after/poElementExportRows.dg",
+      "sha256": "5094b9754c95aad7571bff26d17b06ad4d731f7a96a84e63f0f2546401798879",
+      "bytes": 3545
+    }
+  ]
+}

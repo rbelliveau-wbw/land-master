@@ -61,8 +61,13 @@ Budget_Modification, Budget_Approvals and Approval_Route_Snapshot. No forms or f
 are added or modified. The existing `Manage_Purchase_Order` / Development API names
 and arguments are unchanged. No frontend release or production mapping changes.
 
-**This is a source patch, not an installed or published Creator update.** Creator
-installation and native verification are required before production publication.
+**All four functions are installed in Creator Development.** Each function
+compiled, saved and was independently reopened for source verification. The
+native full reader returned 155 items for Arroyo Ranch — Phase 05; the scoped
+helper returned exactly three selected items with identical complete balance
+DTOs. Production publication was not performed and remains with the user.
+Original and reloaded bodies plus the verification audit are captured in
+[`creator/po-submit-capacity-install-2026-11-09/`](../creator/po-submit-capacity-install-2026-11-09/README.md).
 Keep the existing permanent widget URL. Main advanced to Budget 122.29.113
 while this repair was being prepared; preserve that frontend mapping.
 
@@ -73,8 +78,12 @@ and inadvertently publish the separate reallocation feature. Compare the actual
 Development sources and publication prerequisites first. When applying to the
 older collector, move its own current accounting body unchanged into the scoped
 helper and apply only the scope guards and caller changes shown by this diff.
-Preserve any concurrent reallocation work. Publish only the intended component
-set, with dependencies resolved. Creator publication remains with the user.
+The actual Development collector matched the original repository collector by
+source tokens. The helper and wrapper reloaded exactly by tokens; the two
+callers were patched surgically against their captured native bodies, preserving
+unrelated reallocation work and Creator's existing formatting. Publish only the
+intended component set, with dependencies resolved. Creator publication remains
+with the user.
 
 ## Regression evidence
 
@@ -113,18 +122,25 @@ claimed as passed. Repository validation also reports a pre-existing Contract
 Management source/manifest warning in baseline `6e2eb2cb`; this patch does not
 change that widget.
 
-Native verification must use a representative Development phase with at least 227
-items and a five-line/three-item PO: compile/save all changed functions, then verify
-one normal submission, its operation receipt/lock release, exact destination line
+After reconciliation with 122.29.113, focused Submit/final-approval checks and the
+Pages build passed again. Repository commit `074dcca2` passed the full GitHub
+[CI workflow](https://github.com/rbelliveau-wbw/land-master/actions/runs/42695506863),
+including the Python checks unavailable locally. The existing 122.29.113 Pages
+deployment is successful; backend-only files do not trigger a new widget release.
+
+Native compilation, persistence and read-only full/scoped parity are verified.
+Remaining native end-to-end verification must use a representative Development
+phase with at least 227 items and a five-line/three-item PO: verify one normal
+submission, its operation receipt/lock release, exact destination line
 count, approval chain and attached Excel. Check duplicate-send and read-only
 reconciliation without blindly replaying the production request. Re-read the exact
 production operation/lock before permitting a new submit if it remains unresolved.
 
 ## Rollback
 
-No production change was performed. If installed, restore the previous caller and
+No production change was performed. If rollback is needed, restore the previous caller and
 wrapper versions together before removing the new helper. Do not remove a helper
 that still has callers. Restore each environment's captured native pre-change
-function versions; repository baseline `6e2eb2cb` is the source rollback reference.
+function versions; repository baseline `3d085d49` is the source rollback reference.
 Do not roll back unrelated reallocation functions or schema. No business-data
 rollback, frontend release rollback or permanent widget URL change is required.
