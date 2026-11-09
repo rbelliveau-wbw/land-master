@@ -1,3 +1,34 @@
+## Requested PO-Linked Reallocation Workflow — November 9, 2026
+
+User direction based on Julie King's clarification: an element overrun requires
+a Budget Modification even when the overall Budget Item has available funds.
+Treat the element budget as a control independently of the item total.
+
+Julie's Windmill example needs an increase to element **4 — Subcontractor**,
+offset by decreases to **Labor, Materials and Equipment**, so the net Budget
+Modification is nearly zero. A requester must be able to review the combined
+adjustment rather than being limited to the automatically calculated increase.
+
+Requested future behavior:
+- Prefill the increases required by the PO's element shortfalls.
+- Allow the requester to edit the automatically populated adjustment lines.
+- Allow additional adjustment lines, including offsetting reductions.
+- Show the increases, reductions and net effect together before requesting
+  approval, and preserve each element's resulting budget and PO commitment.
+
+This is a recorded requirement, not functionality delivered in 122.29.106.
+Current standalone modifications support one item, one element and one
+Increase/Decrease amount; PO-created modification records are not independently
+editable, and the PO bundle accepts Increase-only children with one per item.
+An editable reallocation request needs frontend and native backend contract work.
+
+Before implementing, resolve the permitted scope of added lines (the same
+Budget Item or other items), gross-versus-net approval thresholds, exact zero-net
+requests, and whether edits after approval starts restart or retain decisions.
+Reuse existing Increase/Decrease records where practical; do not silently change
+the meaning of historical component fields or infer that a near-zero net change
+removes the approval requirement.
+
 ## PO Component Submission — 122.29.106, November 9, 2026
 
 PO Submit and pending-PO Save now send the existing native component-balance
