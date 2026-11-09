@@ -45,17 +45,23 @@ function bootstrap(){
  return {ifnull,Map,List,zoho,thisapp,queryRecords,insertRecord,updateRecord,deleteRecords,tables};
 }
 function run(kind,rows,tables={},options={},dryRun=false){
+ if(options.preparedEmployee){tables=structuredClone(tables);tables.Workflow_Run_Log=[{ID:'441092600000000001',Run_Status:options.runStatus||'Running',Export_State:JSON.stringify({version:1,workflow:options.workflow||'Daily_Crew_Employees',phase:options.phase||'processing'})}];}
  if(options.laborMode){tables=structuredClone(tables);tables.Workflow_Run_Log=[{ID:'441092600000000001',Run_Status:'Running',Export_State:JSON.stringify({workflow:'Daily_Crew_Labor',phase:'processing'})}];tables.Crew_Timecards??=rows.map(r=>({ID:r.zzz_TimecardID_Guid,Timecard_ID:r.zzz_TimecardID_Guid,Work_Date:r.Date,Foreman_ID:r.ForemanID,Job_Code:r.JobCode,IsDeleted:r.IsDeleted,Multi_Line:''}));}
  const events=[],deletions=[],c=vm.createContext({rowsJson:JSON.stringify(rows),tablesJson:JSON.stringify(tables),optionsJson:JSON.stringify(options),events,deletions});
  const native=vm.runInContext('('+bootstrap.toString()+')()',c);Object.assign(c,native);
- const body=compile(fs.readFileSync('creator/functions/crewSync'+kind+(kind==='Timecards'?'Run':'')+'.dg','utf8'));vm.runInContext(body.source,c);
- let result,error;try{result=c[body.name](dryRun,options.laborMode?'441092600000000001':'');}catch(e){error=String(e);}
+ const body=compile(fs.readFileSync('creator/functions/crewSync'+kind+'Run.dg','utf8'));vm.runInContext(body.source,c);
+ let result,error;try{result=c[body.name](dryRun,options.laborMode||options.preparedEmployee?'441092600000000001':'');}catch(e){error=String(e);}
  const eventCopy=JSON.parse(JSON.stringify(events));
  return {result:result?JSON.parse(JSON.stringify(result)):null,error,events:eventCopy,deletions,tables:JSON.parse(JSON.stringify(native.tables)),finish:eventCopy.filter(e=>e.action==='finish')};
 }
 const guid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const employee=(n,active=true,extra={})=>({zzz_BUEmployeeID_Guid:guid(n),EmployeeName:'Fixture '+n,EmployeeCode:'00'+n,IsActive:active,IsDeleted:false,...extra});
 const card=(n,extra={})=>({zzz_TimecardID_Guid:guid(n),Date:'2026-10-29',ForemanID:guid(50),ForemanCode:'0050',ForemanName:'Fixture Foreman',JobCode:'JOB',JobDescription:'Fixture job',IsDeleted:false,...extra});
+{
+ const h=run('Employees',[employee(1)],{}, {preparedEmployee:true});assert.equal(h.error,undefined);assert.equal(h.finish[0].status,'Success');assert.equal(h.events.some(e=>e.action==='start'),false,'Prepared employee processing uses the original audit');
+ for(const options of [{workflow:'Daily_Crew_Labor'},{phase:'waiting'},{runStatus:'Success'}]){const blocked=run('Employees',[employee(1)],{}, {preparedEmployee:true,...options});assert.ok(blocked.error);assert.equal(blocked.tables.Employees?.length||0,0,'Mismatched or inactive queued identity never writes');}
+ const dry=run('Employees',[employee(1)],{}, {preparedEmployee:true},true);assert.match(dry.error,/dry run cannot claim/);assert.equal(dry.tables.Employees?.length||0,0);
+}
 {
  const rows=[employee(1),employee(2,false,{EmployeeName:''}),employee(3,false)];
  const existing={ID:'900000000000000002',BU_Employee_ID:guid(2),EmployeeName:'Retained name',IsActive:true,Territory:'Fixture territory',Labor_Type:'Foreman',Crew:'900000000000000050'};

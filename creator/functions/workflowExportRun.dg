@@ -16,7 +16,11 @@ string workflowExportRun(string queuedAuditId)
 	}
 	runKey = state.get("workflow");
 	auditId = queuedAuditId;
-	if(runKey == "Daily_Crew_Timecards" || runKey == "Daily_Crew_Labor")
+	if(runKey == "Daily_Crew_Employees" || runKey == "Budgets_Import_Great_Plai" || runKey == "Equipment_Sync_Create_Equ" || runKey == "Milestone_Bi_Directional_1")
+	{
+		return thisapp.workflowExportDailyRun(auditId);
+	}
+	else if(runKey == "Daily_Crew_Timecards" || runKey == "Daily_Crew_Labor")
 	{
 		crewResult = thisapp.crewSyncTimecardsRun(false,auditId);
 		if(runKey == "Daily_Crew_Timecards")

@@ -2,7 +2,55 @@ map workflowExportPlan(string workflow, int capturedBatch)
 {
 	requests = List();
 	actualScope = Map();
-	if(workflow == "Daily_Crew_Timecards")
+	if(workflow == "Daily_Crew_Employees")
+	{
+config = Map();
+		config.put("selectedColumns",{"zzz_BUEmployeeID_Guid","EmployeeName","EmployeeCode","IsActive","IsDeleted"});
+		requests.add({"view":"2107789000036057124","config":config,"allowEmpty":false});
+	}
+	else 	if(workflow == "Budgets_Import_Great_Plai")
+	{
+config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("GP Job");
+					cols.add("Cost_Code_Description");
+					cols.add("SUM_COST");
+					cols.add("SUM_COST_Rounded");
+					config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000023448031","config":config,"allowEmpty":false});
+	}
+	else 	if(workflow == "Equipment_Sync_Create_Equ")
+	{
+config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("Current_MeterHours");
+					cols.add("Name");
+					cols.add("Description");
+					cols.add("SerialNo");
+					cols.add("EquipmentType");
+					cols.add("Year");
+					cols.add("PurchasePrice");
+					cols.add("PurchaseDate");
+					config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000023926003","config":config,"allowEmpty":false});
+	}
+	else 	if(workflow == "Milestone_Bi_Directional_1")
+	{
+config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("m.Milestone ID");
+					cols.add("m.Milestone Name");
+					cols.add("m.Start Date");
+					cols.add("m.End Date");
+					cols.add("p.Project Code");
+					cols.add("m.Project ID");
+					config.put("selectedColumns",cols);
+		requests.add({"view":"2107789000021880005","config":config,"allowEmpty":true});
+	}
+	else if(workflow == "Daily_Crew_Timecards")
 	{
 		cutoff = zoho.currentdate.subMonth(3);
 		headerConfig = {"selectedColumns":{"zzz_TimecardID_Guid","Date","ForemanID","ForemanCode","ForemanName","JobCode","JobDescription","IsDeleted"}};

@@ -1,0 +1,18 @@
+Budgets_Import_Great_Plai as "Budgets - Import Great Plains Engineering Costs"
+{
+	type =  schedule
+	start = "2025-10-29 06:16:16"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			thisapp.workflowExportEnqueue("Budgets_Import_Great_Plai");
+		)
+		}
+	}
+}
+

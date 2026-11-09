@@ -1605,5 +1605,25 @@
     "reference": "docs/crew-stable-save-layout-2026-10-30.md",
     "scope": "Routine employee, crew, staffing and schedule save/refresh/success announcements removed from page flow. Existing busy controls, accessible announcements, errors and review/progress dialogs retained.",
     "rollback": "Production crew-locations mapping to 1.8.0; retain all native data and audit history."
+  },
+  "resumable_daily_exports_20261109": {
+    "status": "Creator V9.166 promoted to Stage and Production; all four real Development imports succeeded; native parity verified in all three environments",
+    "functions": [
+      "crewSyncEmployees",
+      "crewSyncEmployeesRun",
+      "workflowExportDailyRun"
+    ],
+    "workflows": [
+      "Daily_Crew_Employees",
+      "Milestone_Bi_Directional_1"
+    ],
+    "behavior": "Original daily times, employee staffing/inactive retention and milestone lock/snapshot guards preserved. Scheduled exports use existing primary wake/shared recovery and a fixed fifteen-minute export deadline. Manual employee/dry-run entry remains synchronous.",
+    "rollback": "creator/resumable-daily-exports-2026-11-09/native-before/",
+    "preserve": [
+      "Original Milestones data, page and widget",
+      "Crew and Employees staffing",
+      "Existing connections and permissions",
+      "Historical workflow logs"
+    ]
   }
 }

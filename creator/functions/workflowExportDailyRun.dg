@@ -1,0 +1,578 @@
+string workflowExportDailyRun(string auditId)
+{
+	if(!auditId.matches("[0-9]+")) { throw "Daily export continuation requires a run ID."; }
+	queuedRun = Workflow_Run_Log[ID == auditId.toLong()];
+	if(queuedRun.count() != 1 || queuedRun.Run_Status != "Running") { throw "Daily export run is no longer active."; }
+	state = queuedRun.Export_State.toMap();
+	if(state.get("version") != 1 || state.get("phase") != "processing") { throw "Daily export has no processing claim."; }
+	runKey = state.get("workflow");
+	if(runKey == "Daily_Crew_Employees")
+	{
+		employeeResult = thisapp.crewSyncEmployeesRun(false,auditId);
+		return employeeResult.toString();
+	}
+	else if(runKey == "Budgets_Import_Great_Plai")
+	{
+auditReceived = 0;
+				auditProcessed = 0;
+				auditCreated = 0;
+				auditUpdated = 0;
+				auditUpdatedIds = List();
+				auditSkipped = 0;
+				auditMissingMapping = 0;
+				auditNoBudget = 0;
+				auditNoEligible = false;
+				auditWriteAttempted = false;
+				auditRowChanged = false;
+				auditSourceKeys = Map();
+				auditRecordKey = "";
+				try
+				{
+					// ================================================
+					// Script: Analytics → Budget_Import_Item Upsert
+					// What it does:
+					// - Exports selected columns from a Zoho Analytics view.
+					// - Analytics view should return 2 possible rows per GP Job:
+					//     • Engineering = Cost_Code_Number_1 2101
+					//     • Surveying   = Cost_Code_Number_1 2150
+					// - For each exported row whose GP Job maps to a Land Master Subdivision:
+					//     • If a Budget_Import_Item exists by Code + Data_Source, update Cost + Updated_Date.
+					//     • Else insert a new Budget_Import_Item with mapped fields.
+					// Notes:
+					// - Existing Engineering rows with Code = GP Job + "-2101" will be reduced if the Analytics view
+					//   now only sums Cost_Code_Number_1 = 2101 for Engineering.
+					// - Surveying rows will be created/updated with Code = GP Job + "-2150".
+					// - Requires valid Analytics connection: zoho_analytics_connection.
+					// ================================================
+					portalId = "700737166";
+					orgId = "700732567";
+					workspaceId = "2107789000000003001";
+					viewId = "2107789000023448031";
+					// === 2) Analytics request setup ===
+					headers = Map();
+					headers.put("ZANALYTICS-ORGID",orgId);
+					config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("GP Job");
+					cols.add("Cost_Code_Description");
+					cols.add("SUM_COST");
+					cols.add("SUM_COST_Rounded");
+					config.put("selectedColumns",cols);
+					// === 3) Kick off the async export job ===
+					rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+					auditReceived = rows.size();
+					// === 8) Loop through every analytics row and update/import each item ===
+					budgCodes = Add_Budget[ID != 0].Subdivision_Code.getAll();
+					for each  rec in rows
+					{
+						auditProcessed = auditProcessed + 1;
+						auditRowChanged = false;
+						gpJob = rec.get("GP Job");
+						costGroup = ifnull(rec.get("Cost_Code_Description"),"").trim();
+						sumCostRounded = rec.get("SUM_COST_Rounded");
+						auditRecordKey = ifnull(gpJob,"").toString() + "; cost group=" + costGroup;
+						if(gpJob != null && costGroup != "" && sumCostRounded != null)
+						{
+							subdivCode = External_System_Mapping[External_Code == gpJob && External_System == "Great Plains" && Subdivision1 != null];
+							if(subdivCode.count() == 0)
+							{
+								auditMissingMapping = auditMissingMapping + 1;
+								auditSkipped = auditSkipped + 1;
+								continue;
+							}
+							if(subdivCode.count() != 1 || subdivCode.Subdivision1 == null)
+							{
+								throw "Duplicate or broken external mapping; source row=" + auditProcessed + "; job=" + ifnull(gpJob,"").toString() + "; cost group=" + costGroup + "; matching Great Plains mappings=" + subdivCode.count();
+							}
+							if(!budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+							{
+								auditNoBudget = auditNoBudget + 1;
+								auditSkipped = auditSkipped + 1;
+								continue;
+							}
+							if(budgCodes.contains(subdivCode.Subdivision1.Subdivision_Code))
+							{
+								majorCode = "";
+								minorCode = "";
+								costCodeDescription = "";
+								if(costGroup == "Surveying")
+								{
+									majorCode = "2100";
+									minorCode = "2150";
+									costCodeDescription = "Surveying";
+								}
+								else if(costGroup == "Engineering")
+								{
+									majorCode = "2100";
+									minorCode = "2101";
+									costCodeDescription = "Engineering";
+								}
+								if(minorCode != "")
+								{
+									if(rec.get("SUM_COST_Rounded") == null || rec.get("SUM_COST_Rounded").toString().trim() == "")
+									{
+										throw "Eligible Analytics row has no cost; source row=" + auditProcessed;
+									}
+									validatedCost = rec.get("SUM_COST_Rounded").toDecimal();
+									codeBuild = gpJob + "-GP-" + minorCode;
+									if(auditSourceKeys.get(codeBuild) != null)
+									{
+										throw "Duplicate Analytics source key: " + codeBuild;
+									}
+									auditSourceKeys.put(codeBuild,true);
+									auditRecordKey = codeBuild;
+									budgimpItem = Budget_Import_Item[Code == codeBuild && Data_Source == "Great Plains"];
+									if(budgimpItem.count() > 1)
+									{
+										throw "Duplicate destination records: budgimpItem; source row=" + auditProcessed;
+									}
+									if(budgimpItem.count() == 1)
+									{
+										auditWriteAttempted = true;
+										budgimpItem.Cost=sumCostRounded;
+										auditWriteAttempted = true;
+										budgimpItem.Updated_Date=zoho.currentdate;
+										auditWriteAttempted = true;
+										budgimpItem.Data_Source="Great Plains";
+										auditWriteAttempted = true;
+										budgimpItem.Cost_Code_Description=costCodeDescription;
+										auditWriteAttempted = true;
+										budgimpItem.Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code;
+										auditWriteAttempted = true;
+										budgimpItem.Major_Code=majorCode;
+										auditWriteAttempted = true;
+										budgimpItem.Minor_Code=minorCode;
+										auditDestination = budgimpItem.ID.toString();
+										if(!auditUpdatedIds.contains(auditDestination))
+										{
+											auditUpdatedIds.add(auditDestination);
+											auditUpdated = auditUpdated + 1;
+										}
+										auditRowChanged = true;
+									}
+									if(budgimpItem.count() == 0)
+									{
+										impItem = insert into Budget_Import_Item
+										[
+											Data_Source="Great Plains"
+											Cost=sumCostRounded
+											Cost_Code_Description=costCodeDescription
+											Code=codeBuild
+											Subdivision_Code=subdivCode.Subdivision1.Subdivision_Code
+											Major_Code=majorCode
+											Minor_Code=minorCode
+											Added_User=zoho.loginuser
+											Cost_Code_ID=codeBuild
+											Updated_Date=zoho.currentdate
+										];
+										auditCreated = auditCreated + 1;
+										auditRowChanged = true;
+									}
+								}
+							}
+						}
+						if(!auditRowChanged)
+						{
+							auditSkipped = auditSkipped + 1;
+						}
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+					auditFinalStatus = "Success";
+					if(auditNoEligible)
+					{
+						auditFinalStatus = "Skipped";
+					}
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+				}catch (auditError)
+				{
+					auditStatus = "Failed";
+					if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+					{
+						auditStatus = "Partial";
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+					throw auditError;
+				}
+	}
+	else if(runKey == "Equipment_Sync_Create_Equ")
+	{
+auditReceived = 0;
+				auditProcessed = 0;
+				auditCreated = 0;
+				auditUpdated = 0;
+				auditUpdatedIds = List();
+				auditSkipped = 0;
+				auditMissingMapping = 0;
+				auditNoBudget = 0;
+				auditNoEligible = false;
+				auditWriteAttempted = false;
+				auditRowChanged = false;
+				auditSourceKeys = Map();
+				auditRecordKey = "";
+				try
+				{
+					// ================================================
+					// Script: Analytics → Budget_Import_Item Upsert
+					// What it does:
+					// - Exports selected columns from a Zoho Analytics view.
+					// - Builds a list of Subdivision codes that have Budgets.
+					// - For each exported row whose JobCode is in that list:
+					//     • If a Budget_Import_Item exists (by Cost_Code_ID), update Cost + Updated_Date.
+					//     • Else insert a new Budget_Import_Item with mapped fields.
+					// Notes:
+					// - Ensure TotalActualCost is numeric (normalize if needed).
+					// - Requires valid Analytics connection (zoho_analytics_connection).
+					// ================================================
+					portalId = "700737166";
+					orgId = "700732567";
+					workspaceId = "2107789000000003001";
+					viewId = "2107789000023926003";
+					// === 2) Analytics request setup ===
+					headers = Map();
+					headers.put("ZANALYTICS-ORGID",orgId);
+					config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("Current_MeterHours");
+					cols.add("Name");
+					cols.add("Description");
+					cols.add("SerialNo");
+					cols.add("EquipmentType");
+					cols.add("Year");
+					cols.add("PurchasePrice");
+					cols.add("PurchaseDate");
+					config.put("selectedColumns",cols);
+					// === 3) Kick off the async export job ===
+					rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,false);
+					auditReceived = rows.size();
+					// === 8) Loop through every analytics row and update each project ===
+					//get all Subdiv codes that have a Budget
+					for each  rec in rows
+					{
+						auditProcessed = auditProcessed + 1;
+						auditRowChanged = false;
+						auditRecordKey = ifnull(rec.get("Name"),"").toString();
+						// E360 represents an unknown purchase date as year 0001. Do not write that
+						// placeholder or clear an existing Creator date when no real date is supplied.
+						purchaseDateText = ifnull(rec.get("PurchaseDate"),"").toString().trim();
+						purchaseDateValue = null;
+						if(purchaseDateText != "" && !purchaseDateText.startsWith("01/01/0001"))
+						{
+							purchaseDateValue = purchaseDateText.toDate("dd/MM/yyyy HH:mm:ss");
+						}
+						// Blank source years preserve an existing year; supplied years must be whole numbers.
+						yearText = ifnull(rec.get("Year"),"").toString().trim();
+						yearValue = null;
+						if(yearText != "")
+						{
+							if(!yearText.matches("[0-9]+"))
+							{
+								throw "Invalid equipment Year; code=" + auditRecordKey;
+							}
+							yearValue = yearText.toLong();
+						}
+						equip = Equipment[Equipment_Code = rec.get("Name")];
+						if(equip.count() > 1)
+						{
+							throw "Duplicate destination records: equip; source row=" + auditProcessed;
+						}
+						if(equip.count() == 1)
+						{
+							auditWriteAttempted = true;
+							equip.Equipment_Code=rec.get("Name");
+							auditWriteAttempted = true;
+							equip.Equipment_Accounting_Code="E_" + rec.get("Name");
+							auditWriteAttempted = true;
+							equip.Current_Meter_Hours=rec.get("Current_MeterHours");
+							auditWriteAttempted = true;
+							equip.Description=rec.get("Description");
+							auditWriteAttempted = true;
+							equip.Serial_Number=rec.get("SerialNo");
+							auditWriteAttempted = true;
+							equip.Type1=rec.get("EquipmentType");
+							auditWriteAttempted = true;
+							if(yearValue != null)
+							{
+								equip.Year1=yearValue;
+							}
+							auditWriteAttempted = true;
+							equip.Purchase_Price=rec.get("PurchasePrice");
+							if(purchaseDateValue != null)
+							{
+								auditWriteAttempted = true;
+								equip.Purchase_Date=purchaseDateValue;
+							}
+							auditDestination = equip.ID.toString();
+							if(!auditUpdatedIds.contains(auditDestination))
+							{
+								auditUpdatedIds.add(auditDestination);
+								auditUpdated = auditUpdated + 1;
+							}
+							auditRowChanged = true;
+						}
+						if(equip.count() == 0)
+						{
+							equipIns = insert into Equipment
+							[
+								Added_User=zoho.loginuser
+								Equipment_Code=rec.get("Name")
+								Equipment_Accounting_Code="E_" + rec.get("Name")
+								Current_Meter_Hours=rec.get("Current_MeterHours")
+								Description=rec.get("Description")
+								Serial_Number=rec.get("SerialNo")
+								Type1=rec.get("EquipmentType")
+								Year1=yearValue
+								Purchase_Price=rec.get("PurchasePrice")
+								Purchase_Date=purchaseDateValue
+							];
+							auditCreated = auditCreated + 1;
+							auditRowChanged = true;
+						}
+						if(!auditRowChanged)
+						{
+							auditSkipped = auditSkipped + 1;
+						}
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+					auditFinalStatus = "Success";
+					if(auditNoEligible)
+					{
+						auditFinalStatus = "Skipped";
+					}
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+				}catch (auditError)
+				{
+					auditStatus = "Failed";
+					if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+					{
+						auditStatus = "Partial";
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+					throw auditError;
+				}
+	}
+	else if(runKey == "Milestone_Bi_Directional_1")
+	{
+auditReceived = 0;
+				auditProcessed = 0;
+				auditCreated = 0;
+				auditUpdated = 0;
+				auditUpdatedIds = List();
+				auditSkipped = 0;
+				auditMissingMapping = 0;
+				auditNoBudget = 0;
+				auditNoEligible = false;
+				auditWriteAttempted = false;
+				auditRowChanged = false;
+				auditSourceKeys = Map();
+				auditRecordKey = "";
+				try
+				{
+					// ================================================
+					// Script: Analytics → Creator Milestones Upsert
+					// What it does:
+					// - Exports milestone fields from a Zoho Analytics view.
+					// - For each row:
+					//     • If a Milestone exists (by Milestone_ID), update Name, Start_Date, End_Date.
+					//     • Else, if matching Subdivision (by Project Code) exists, insert a new Milestone linked to it.
+					// Notes:
+					// - Requires Analytics connection (zoho_analytics_connection).
+					// - Ensure date fields parse correctly in Creator.
+					// - Subdivision must exist for new milestone inserts.
+					// ================================================
+					portalId = "700737166";
+					orgId = "700732567";
+					workspaceId = "2107789000000003001";
+					viewId = "2107789000021880005";
+					// === 2) Analytics request setup ===
+					headers = Map();
+					headers.put("ZANALYTICS-ORGID",orgId);
+					config = Map();
+					config.put("responseFormat","json");
+					cols = List();
+					cols.add("m.Milestone ID");
+					cols.add("m.Milestone Name");
+					cols.add("m.Start Date");
+					cols.add("m.End Date");
+					cols.add("p.Project Code");
+					cols.add("m.Project ID");
+					config.put("selectedColumns",cols);
+					// === 3) Kick off the async export job ===
+					rows = thisapp.workflowPreparedExportRows(viewId,config,auditId,true);
+					auditReceived = rows.size();
+					// === 8) Loop through every analytics row and update each Milestone in Land Master ===
+					for each  rec in rows
+					{
+						auditProcessed = auditProcessed + 1;
+						auditRowChanged = false;
+						ms = Milestones[Milestone_ID == rec.get("m.Milestone ID")];
+						if(ms.count() > 1)
+						{
+							throw "Duplicate destination records: ms; source row=" + auditProcessed;
+						}
+						subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+						importPhase = "";
+						if(ms.count() == 1)
+						{
+							importPhase = ms.Subdivision1.toString();
+						}
+						else if(ms.count() == 0 && subdivId.count() == 1)
+						{
+							importPhase = subdivId.ID.toString();
+						}
+						if(importPhase != "")
+						{
+							importOwned = false;
+							importAuditId = null;
+							importFailed = false;
+							importToken = "analytics-" + auditId + "-" + importPhase;
+							try
+							{
+								importLock = insert into Crew_Schedule_Lock
+								[
+									Phase_Key=importPhase
+									Subdivision1=importPhase.toLong()
+									Operation_ID=importToken
+									Actor=zoho.loginuser
+									Acquired_At=zoho.currenttime
+									Added_User=zoho.loginuser
+								];
+								importOwned = true;
+								if(ms.count() == 1 && Crew_Test_Record[Record_Key == "M:" + ms.ID.toString()].count() > 0)
+								{
+									importBeforeStart = null;
+									importBeforeEnd = null;
+									if(ms.Start_Date != null)
+									{
+										importBeforeStart = ms.Start_Date.toString("yyyy-MM-dd");
+									}
+									if(ms.End_Date != null)
+									{
+										importBeforeEnd = ms.End_Date.toString("yyyy-MM-dd");
+									}
+									importFields = {"start":{"before":importBeforeStart,"after":rec.get("m.Start Date")},"end":{"before":importBeforeEnd,"after":rec.get("m.End Date")}};
+									importChange = {"recordId":ms.ID.toString(),"type":"M","stage":ms.Milestone_Name,"expected":{"start":importBeforeStart,"end":importBeforeEnd},"fields":importFields};
+									importRequest = {"subdivisionId":importPhase,"origin":"import","changes":{importChange},"sourceRunId":auditId};
+									importRecordId = ms.ID;
+									importAuditId = insert into Schedule_Change_Log
+									[
+										Operation_ID=importToken + "-" + ms.ID.toString()
+										Operation_Type="controlled_analytics_import"
+										Actor="system:Milestone_Bi_Directional_1"
+										Timestamp=zoho.currenttime
+										Subdivision1=importPhase.toLong()
+										Origin="import"
+										Request_JSON=importRequest.toString()
+										State="importing"
+										Execution_Finished=false
+										Added_User=zoho.loginuser
+									];
+								}
+								if(ms.count() == 1 && ms.Push_Update == FALSE)
+								{
+									auditWriteAttempted = true;
+									ms.Milestone_Name=rec.get("m.Milestone Name");
+									auditWriteAttempted = true;
+									ms.Start_Date=rec.get("m.Start Date");
+									auditWriteAttempted = true;
+									ms.End_Date=rec.get("m.End Date");
+									auditWriteAttempted = true;
+									ms.Project_ID=rec.get("m.Project ID");
+									auditDestination = ms.ID.toString();
+									if(!auditUpdatedIds.contains(auditDestination))
+									{
+										auditUpdatedIds.add(auditDestination);
+										auditUpdated = auditUpdated + 1;
+									}
+									auditRowChanged = true;
+								}
+								if(ms.count() == 0 && subdivId.count() == 1)
+								{
+									subdivId = Subdivision[Subdivision_Code == rec.get("p.Project Code")];
+									milestone = insert into Milestones
+									[
+										Milestone_Name=rec.get("m.Milestone Name")
+										Start_Date=rec.get("m.Start Date")
+										End_Date=rec.get("m.End Date")
+										Milestone_ID=rec.get("m.Milestone ID")
+										Project_ID=rec.get("m.Project ID")
+										Subdivision1=subdivId
+										Added_User=zoho.loginuser
+									];
+									auditCreated = auditCreated + 1;
+									auditRowChanged = true;
+									//CREATE MILESTONE IN CREATOR
+								}
+								if(importAuditId != null)
+								{
+									importedRecord = Milestones[ID == importRecordId];
+									importAfterStart = null;
+									importAfterEnd = null;
+									if(importedRecord.Start_Date != null)
+									{
+										importAfterStart = importedRecord.Start_Date.toString("yyyy-MM-dd");
+									}
+									if(importedRecord.End_Date != null)
+									{
+										importAfterEnd = importedRecord.End_Date.toString("yyyy-MM-dd");
+									}
+									importFields.put("start",{"before":importBeforeStart,"after":importAfterStart});
+									importFields.put("end",{"before":importBeforeEnd,"after":importAfterEnd});
+									importChange.put("fields",importFields);
+									importRequest.put("changes",{importChange});
+									importLog = Schedule_Change_Log[ID == importAuditId.toLong()];
+									importLog.Request_JSON=importRequest.toString();
+									importLog.State="imported";
+									importLog.Execution_Finished=true;
+								}
+							}			catch (importError)
+							{
+								importFailed = importAuditId != null;
+								if(importAuditId != null)
+								{
+									importLog = Schedule_Change_Log[ID == importAuditId.toLong()];
+									importLog.State="unknown";
+									importLog.Error=importError.toString();
+									importLog.Execution_Finished=true;
+								}
+								info "Milestone import deferred/failed for phase " + importPhase + ": " + importError.toString();
+								if(importOwned)
+								{
+									throw importError;
+								}
+							}
+							if(importOwned && !importFailed)
+							{
+								delete from Crew_Schedule_Lock[Phase_Key == importPhase && Operation_ID == importToken];
+							}
+						}
+						if(!auditRowChanged)
+						{
+							auditSkipped = auditSkipped + 1;
+						}
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":0};
+					auditFinalStatus = "Success";
+					if(auditNoEligible)
+					{
+						auditFinalStatus = "Skipped";
+					}
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditFinalStatus,"stage":"Completed","counts":auditCounts,"message":"Completed; exclusions and unchanged rows remain skipped.","details":"Missing external mappings: " + auditMissingMapping + "; no budget: " + auditNoBudget});
+				}catch (auditError)
+				{
+					auditStatus = "Failed";
+					if(auditWriteAttempted || auditCreated > 0 || auditUpdated > 0)
+					{
+						auditStatus = "Partial";
+					}
+					auditCounts = {"received":auditReceived,"processed":auditProcessed,"created":auditCreated,"updated":auditUpdated,"skipped":auditSkipped,"failed":1};
+					thisapp.workflowRunLog({"action":"finish","id":auditId,"status":auditStatus,"counts":auditCounts,"message":auditError.toString(),"details":"Stopped after processing record " + auditProcessed + "; key=" + auditRecordKey + "; missing mappings=" + auditMissingMapping + "; no budget=" + auditNoBudget + ". Counts identify completed native write operations before failure; Creator may roll them back. Check records before retrying. No automatic replay."});
+					throw auditError;
+				}
+	}
+	else { throw "Unknown daily export workflow: " + runKey; }
+	return "Completed";
+}

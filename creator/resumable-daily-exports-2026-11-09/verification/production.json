@@ -1,0 +1,84 @@
+{
+  "environment": "production",
+  "captured_from": "Native Creator Application IDE",
+  "components": [
+    {
+      "name": "workflowExportPlan",
+      "expected_file": "creator/functions/workflowExportPlan.dg",
+      "normalized_sha256": "61682c490fb253d9f2688675a9046bb4ecf858b81714188d56373a33e1f90346",
+      "expected_normalized_sha256": "61682c490fb253d9f2688675a9046bb4ecf858b81714188d56373a33e1f90346",
+      "match": true
+    },
+    {
+      "name": "workflowExportEnqueueCaptured",
+      "expected_file": "creator/functions/workflowExportEnqueueCaptured.dg",
+      "normalized_sha256": "d199366cc9266b19d000f2f7648ae296e1b532c1d1cd70c6e97c93a25f7ceac2",
+      "expected_normalized_sha256": "d199366cc9266b19d000f2f7648ae296e1b532c1d1cd70c6e97c93a25f7ceac2",
+      "match": true
+    },
+    {
+      "name": "workflowExportTick",
+      "expected_file": "creator/functions/workflowExportTick.dg",
+      "normalized_sha256": "370da5b95435f0e2bad9e3701c8cd62e22807d416229ec99306cfcf3ee3b24a0",
+      "expected_normalized_sha256": "370da5b95435f0e2bad9e3701c8cd62e22807d416229ec99306cfcf3ee3b24a0",
+      "match": true
+    },
+    {
+      "name": "workflowExportRun",
+      "expected_file": "creator/functions/workflowExportRun.dg",
+      "normalized_sha256": "2fa1079111d1b92a2bea369c68f524473acfe9ddec7471a9543b829bf1030881",
+      "expected_normalized_sha256": "2fa1079111d1b92a2bea369c68f524473acfe9ddec7471a9543b829bf1030881",
+      "match": true
+    },
+    {
+      "name": "crewSyncEmployees",
+      "expected_file": "creator/functions/crewSyncEmployees.dg",
+      "normalized_sha256": "4946dcd0cce78f6c5778caaef314b7a0d927b664406c104a2c2dbcb80daa7d63",
+      "expected_normalized_sha256": "4946dcd0cce78f6c5778caaef314b7a0d927b664406c104a2c2dbcb80daa7d63",
+      "match": true
+    },
+    {
+      "name": "crewSyncEmployeesRun",
+      "expected_file": "creator/functions/crewSyncEmployeesRun.dg",
+      "normalized_sha256": "2438075d8b334bf1d28edbef0c73df5070b0b8697d150605978f07905b2d8cbb",
+      "expected_normalized_sha256": "2438075d8b334bf1d28edbef0c73df5070b0b8697d150605978f07905b2d8cbb",
+      "match": true
+    },
+    {
+      "name": "workflowExportDailyRun",
+      "expected_file": "creator/functions/workflowExportDailyRun.dg",
+      "normalized_sha256": "f3d936eafac28a4514cfb14af63b8b1a9c6bc1410ce78f03796b75c4b8302265",
+      "expected_normalized_sha256": "f3d936eafac28a4514cfb14af63b8b1a9c6bc1410ce78f03796b75c4b8302265",
+      "match": true
+    },
+    {
+      "name": "Daily_Crew_Employees",
+      "expected_file": "creator/resumable-daily-exports-2026-11-09/workflows/Daily_Crew_Employees.ds",
+      "normalized_sha256": "63435f9a3ff2a9a42c68afa7abbb010d02c52a01aa390f6a97a178f9f42c9e9b",
+      "expected_normalized_sha256": "63435f9a3ff2a9a42c68afa7abbb010d02c52a01aa390f6a97a178f9f42c9e9b",
+      "match": true
+    },
+    {
+      "name": "Budgets_Import_Great_Plai",
+      "expected_file": "creator/resumable-daily-exports-2026-11-09/workflows/Budgets_Import_Great_Plai.ds",
+      "normalized_sha256": "460cf66efb00f7876a50b798b635c16298a903d3915df4e2a2d4163b7dd3b718",
+      "expected_normalized_sha256": "460cf66efb00f7876a50b798b635c16298a903d3915df4e2a2d4163b7dd3b718",
+      "match": true
+    },
+    {
+      "name": "Equipment_Sync_Create_Equ",
+      "expected_file": "creator/resumable-daily-exports-2026-11-09/workflows/Equipment_Sync_Create_Equ.ds",
+      "normalized_sha256": "905d3868633e693521c85c37bcd7fcf26c91a55b1ed6765b07414f00dbecb30d",
+      "expected_normalized_sha256": "905d3868633e693521c85c37bcd7fcf26c91a55b1ed6765b07414f00dbecb30d",
+      "match": true
+    },
+    {
+      "name": "Milestone_Bi_Directional_1",
+      "expected_file": "creator/resumable-daily-exports-2026-11-09/workflows/Milestone_Bi_Directional_1.ds",
+      "normalized_sha256": "69a7677d1d4df11ca1935043fcd4a33642cdd4e26a9b6074313be627f031511a",
+      "expected_normalized_sha256": "69a7677d1d4df11ca1935043fcd4a33642cdd4e26a9b6074313be627f031511a",
+      "match": true
+    }
+  ],
+  "match": true
+}

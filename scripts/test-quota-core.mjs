@@ -7,12 +7,14 @@ import vm from 'node:vm';
 const read=name=>fs.readFileSync('creator/functions/'+name+'.dg','utf8').replace(/\r\n/g,'\n');
 const native=name=>fs.readFileSync('creator/quota-reduction-2026-11-05/native-before/development/'+name+'.dg','utf8').replace(/\r\n/g,'\n').replace(/^ {17}/gm,'');
 const tokens=text=>text.match(/"(?:\\.|[^"\\])*"|\/\/[^\n]*|\/\*[\s\S]*?\*\/|[^\s]/g).filter(token=>!token.startsWith('//')&&!token.startsWith('/*')).join('');
-assert.equal(tokens(read('workflowExportPlan')),tokens(native('workflowExportPlan')),'captured source selection, mappings and financial data meaning are unchanged');
+const originalPlan=read('workflowExportPlan').replace(/if\(workflow == "Daily_Crew_Employees"\)[\s\S]*?else if\(workflow == "Daily_Crew_Timecards"\)/,'if(workflow == "Daily_Crew_Timecards")');
+assert.equal(tokens(originalPlan),tokens(native('workflowExportPlan')),'all eleven existing source selections, mappings and financial data meaning are unchanged');
 // Preserve every business branch against the fresh Production snapshot. Only
 // the successor startup coordination block is substituted; it is executed
 // separately below with hold-order and failed-startup assertions.
 const productionRun=fs.readFileSync('creator/quota-five-hour-recovery-2026-11-06/native-before/production-v9.160/workflowExportRun.dg','utf8');
 let preservedRun=read('workflowExportRun');
+preservedRun=preservedRun.replace(/if\(runKey == "Daily_Crew_Employees"[^\n]*\)\s*\{\s*return thisapp\.workflowExportDailyRun\(auditId\);\s*}\s*else if\(runKey == "Daily_Crew_Timecards"/,'if(runKey == "Daily_Crew_Timecards"');
 const startupBlock=/nextPolicy = ifnull\(state\.get\("callbackPolicy"\),""\)\.toString\(\);[\s\S]*?nextAt = zoho\.currenttime\.addMinutes\(1\);/;
 assert.ok(startupBlock.test(preservedRun)&&startupBlock.test(productionRun),'both versions identify exactly the Budget successor handoff');
 preservedRun=preservedRun.replace(startupBlock,productionRun.match(startupBlock)[0]);
@@ -237,3 +239,4 @@ for(const [pollNumber,delay] of [[0,1],[1,2],[2,4],[5,4]]){
   assert.equal(h.json('tables.Workflow_Run_Log[0].Resume_At.toLong()'),NOW+2*60000,'backoff cannot move a continuation beyond the fixed deadline');
 }
 console.log('PASS: shared immutable clock, successor/slot before work, bounded aged starter-frame recovery with error isolation and arm-only no recursion, unknown-slot no replay, unchanged child recovery/legacy behavior, callback acknowledgements, audit durability and fixed-deadline polling.');
+export {compile,harness,state,run,NOW,ID};

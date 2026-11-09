@@ -1,0 +1,18 @@
+Milestone_Bi_Directional_1 as "Milestone Bi-Directional Sync - Zoho Projects"
+{
+	type =  schedule
+	start = "2025-08-22 05:51:33"
+	frequency = daily
+	time zone = "America/Chicago"
+	on start
+	{
+		actions 
+		{
+		on load
+		(
+			thisapp.workflowExportEnqueue("Milestone_Bi_Directional_1");
+		)
+		}
+	}
+}
+

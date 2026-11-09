@@ -34,9 +34,10 @@ assert.equal(E.label({name:'Dry 1',code:'dry-one'}),'Dry1');assert.equal(E.label
  assert.equal(JSON.stringify(rows),before,'Review grouping never changes native staffing or source order');
  assert.equal(E.crewGroups([sharedMember],[crews[0]]).flatMap(g=>g.members).length,1,'A caller-scoped missing crew never hides an authorized employee');
 }
-for(const [file,source] of [['employee','creator/functions/crewSyncEmployees.dg'],['timecard','creator/functions/crewSyncTimecardsRun.dg']]){
+assert.match(fs.readFileSync('creator/functions/crewSyncEmployees.dg','utf8'),/return thisapp\.crewSyncEmployeesRun\(dryRun,""\);/,'The manual employee entry preserves its synchronous and dry-run contract');
+for(const [file,source] of [['employee','creator/functions/crewSyncEmployeesRun.dg'],['timecard','creator/functions/crewSyncTimecardsRun.dg']]){
  const s=fs.readFileSync(source,'utf8');assert.ok(s.indexOf('normalized.add')<s.indexOf('insert into'));assert.match(s,/thisapp\.analyticsExportRows\(/);assert.match(s,/"counts":\{/);assert.match(s,/return result;\s*}\s*$/);assert.doesNotMatch(s,/containsKey|\bwhile\s*\(/);
- if(file==='employee'){assert.doesNotMatch(s,/delete from Employees|existing\.(Territory|Labor_Type|Crew)\s*=/);assert.match(s,/existing\.IsActive = employee.get\("active"\)/);}
+ if(file==='employee'){assert.doesNotMatch(s,/delete from Employees|existing\.(Territory|Labor_Type|Crew)\s*=/);assert.match(s,/existing\.IsActive\s*=\s*employee.get\("active"\)/);}
  else{assert.match(s,/subMonth\(3\)/);assert.ok(s.indexOf('delete from Crew_Timecards')>s.indexOf('update existing'));assert.match(s,/if\(!dryRun\) \{ if\(expiredCandidates > 0\) \{ attempted = true; \} delete from Crew_Timecards\[Work_Date < cutoff\]; \}/);}
 }
 console.log('PASS: foreman BU identity joins, seven calendar dates, multiple crews/phases, inactive flags, manual/name/code exclusion, unmapped/duplicate guards, native IDs, sync preservation and retention ordering.');

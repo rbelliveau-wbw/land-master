@@ -2171,5 +2171,25 @@
     "reference": "docs/crew-schedule-save-refresh-2026-11-02.md",
     "scope": "Milestones & Tasks holds date/Days edits, drags, arrows and history reversals until explicit Save. Refresh protects drafts; original native prepare/apply/status and permission/audit guards are reused.",
     "rollback": "Production crew-locations mapping to 1.9.1 after pending/unknown review; preserve native data, audits and scoped recovery memory."
+  },
+  "resumable_daily_exports_20261109": {
+    "status": "Creator V9.166 promoted to Stage and Production; all four real Development imports succeeded; native parity verified in all three environments",
+    "functions": [
+      "crewSyncEmployees",
+      "crewSyncEmployeesRun",
+      "workflowExportDailyRun"
+    ],
+    "workflows": [
+      "Daily_Crew_Employees",
+      "Milestone_Bi_Directional_1"
+    ],
+    "behavior": "Original daily times, employee staffing/inactive retention and milestone lock/snapshot guards preserved. Scheduled exports use existing primary wake/shared recovery and a fixed fifteen-minute export deadline. Manual employee/dry-run entry remains synchronous.",
+    "rollback": "creator/resumable-daily-exports-2026-11-09/native-before/",
+    "preserve": [
+      "Original Milestones data, page and widget",
+      "Crew and Employees staffing",
+      "Existing connections and permissions",
+      "Historical workflow logs"
+    ]
   }
 }

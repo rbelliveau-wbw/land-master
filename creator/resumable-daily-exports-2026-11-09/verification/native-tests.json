@@ -1,0 +1,59 @@
+{
+  "environment": "Development",
+  "execution": "Canonical enqueue and dispatch of each original due primary wake; global schedules stayed suspended",
+  "temporary_driver_restored": true,
+  "results": [
+    {
+      "workflow": "Daily_Crew_Employees",
+      "status": "Success",
+      "stage": "Employee roster synchronized",
+      "received": 592,
+      "processed": 592,
+      "created": 0,
+      "updated": 72,
+      "skipped": 520,
+      "failed": 0,
+      "tick": 0,
+      "pollNumber": 0
+    },
+    {
+      "workflow": "Budgets_Import_Great_Plai",
+      "status": "Success",
+      "stage": "Completed",
+      "received": 862,
+      "processed": 862,
+      "created": 0,
+      "updated": 0,
+      "skipped": 862,
+      "failed": 0,
+      "tick": 1,
+      "pollNumber": 1
+    },
+    {
+      "workflow": "Equipment_Sync_Create_Equ",
+      "status": "Success",
+      "stage": "Completed",
+      "received": 378,
+      "processed": 378,
+      "created": 141,
+      "updated": 237,
+      "skipped": 0,
+      "failed": 0,
+      "tick": 1,
+      "pollNumber": 1
+    },
+    {
+      "workflow": "Milestone_Bi_Directional_1",
+      "status": "Success",
+      "stage": "Completed",
+      "received": 19,
+      "processed": 19,
+      "created": 0,
+      "updated": 2,
+      "skipped": 17,
+      "failed": 0,
+      "tick": 1,
+      "pollNumber": 1
+    }
+  ]
+}
