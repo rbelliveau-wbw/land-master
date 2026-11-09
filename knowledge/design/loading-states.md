@@ -53,6 +53,10 @@ locks. Follow [interaction motion](interaction-motion.md) and
 
 ## Budget Exceptions Adoption — November 9, 2026
 
+Budget Manager Requests 122.29.120 uses the same card geometry for its first bulk
+snapshot. Same-scope refresh retains complete rows; failure/cancellation ends
+pending feedback and scope changes clear retained data.
+
 Insights 1.7.0 reuses insights-loading for the complete Budget Exceptions
 snapshot. Direct refresh retains authorized complete rows; permission resets
 clear them immediately. Stale replies cannot hide a newer loader or republish

@@ -1,7 +1,7 @@
 # Request list
 
 Budget Manager also exposes Requests as its second main tab. Load that index
-only after explicit activation; reuse scoped phase readers and the same rail
+only after explicit activation; use a complete bulk snapshot and the same rail
 renderer/actions. Default to newest first with Date groups. Offer Project,
 Territory, Request Type, Status and None through searchable single-select Group
 By, with searchable Type/Status filters. Use the existing pale-blue group bands,
@@ -14,6 +14,9 @@ same-scope rows and disclosures during refresh; surface incomplete reads with
 Retry. Use the phase's current visible action after detail readiness, retaining
 native permissions and a Back route to the index. See the
 [implementation and regression notes](../../docs/budget-all-requests-2026-11-09.md).
+New Request uses the existing Add menu without Budget, followed by its global
+budget picker/composer. Preserve the blue action with intrinsic width and a
+fixed eight-pixel label/chevron gap. See the [API repair](../../docs/budget-requests-api-repair-2026-11-09.md).
 
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 

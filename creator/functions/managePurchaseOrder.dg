@@ -662,11 +662,85 @@ string managePurchaseOrder(string payload)
 			}
 			return thisapp.poActorResponse(result,ifnull(p.get("userAccessId"),"").toString()).toString();
 		}
-		if(action == "List")
+		if(action == "List" || action == "ListRequests")
 		{
-			rows = List();
-			for each  po in Payment_Request[Budget == budget.ID && Request_Type == "Purchase Order" && PO_Revision != null && PO_Revision != ""]
+			listBudgetIds = List();
+			listBudgetIds.add(budgetId);
+			listBudgetNumbers = List();
+			listBudgetNumbers.add(budgetId.toLong());
+			if(action == "ListRequests")
 			{
+				// Keep the complete index read inside one authenticated API call.
+				// Validate the whole captured phase scope before reading any PO rows.
+				typedBudgetIds = {"value":p.get("budgetIds")};
+				if(!typedBudgetIds.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\\[.*\\][ ]*[}]"))
+				{
+					result.put("error","Request phase scope must be a list of exact ID strings.");
+					return result.toString();
+				}
+				requestedBudgetIds = p.get("budgetIds").toString().toJSONList();
+				if(requestedBudgetIds.size() == 0 || requestedBudgetIds.size() > 500)
+				{
+					result.put("error","Choose between 1 and 500 request phases.");
+					return result.toString();
+				}
+				listBudgetIds = List();
+				listBudgetNumbers = List();
+				for each  requestedBudgetId in requestedBudgetIds
+				{
+					typedIdentity = {"value":requestedBudgetId};
+					if(!typedIdentity.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}]") || listBudgetIds.contains(requestedBudgetId))
+					{
+						result.put("error","Request phase identities must be unique exact ID strings.");
+						return result.toString();
+					}
+					if(requestedBudgetId != requestedBudgetId.toLong().toString())
+					{
+						result.put("error","Request phase identities must match native record IDs.");
+						return result.toString();
+					}
+					listBudgetIds.add(requestedBudgetId);
+					listBudgetNumbers.add(requestedBudgetId.toLong());
+				}
+				if(listBudgetIds.get(0) != budgetId)
+				{
+					result.put("error","The request phase anchor does not match its captured scope.");
+					return result.toString();
+				}
+			}
+			listBudgets = Add_Budget[ID in listBudgetNumbers];
+			if(listBudgets.count() != listBudgetIds.size())
+			{
+				result.put("error","A request phase was not found. Refresh the budget list.");
+				return result.toString();
+			}
+			listBudgetPermissions = Map();
+			for each  listBudget in listBudgets
+			{
+				listCanEdit = access.Edit_All_Budgets == true;
+				for each  listOwner in listBudget.Budget_Owner
+				{
+					if(listOwner.ID == access.ID && access.Edit_Owned_Budgets == true)
+					{
+						listCanEdit = true;
+					}
+				}
+				listBudgetPermissions.put(listBudget.ID.toString(),{"canEdit":listCanEdit,"archived":listBudget.Archived == true});
+			}
+			listPOs = Payment_Request[(Budget in listBudgetNumbers) && Request_Type == "Purchase Order" && PO_Revision != null && PO_Revision != ""];
+			listVendorNames = Map();
+			if(action == "ListRequests" && listPOs.count() > 0)
+			{
+				listVendorIds = listPOs.Vendor.getAll();
+				for each  listVendor in Vendors[ID in listVendorIds]
+				{
+					listVendorNames.put(listVendor.ID.toString(),listVendor.Vendor_Name);
+				}
+			}
+			rows = List();
+			for each  po in listPOs
+			{
+				listBudgetPermission = listBudgetPermissions.get(po.Budget.toString());
 				requestDateText = "";
 				neededDateText = "";
 				if(po.Request_Date != null)
@@ -679,12 +753,14 @@ string managePurchaseOrder(string payload)
 				}
 				summaryRows = List();
 				summaryAvailable = true;
+				listApprovalBundle = null;
 				if(ifnull(po.PO_Approval_State,"Not Configured") != "Not Configured")
 				{
 					summaryBundle = thisapp.poApprovalBundle(po.ID.toString());
 					if(summaryBundle.get("success") == true)
 					{
 						summaryRows = summaryBundle.get("bundle").get("rows");
+						listApprovalBundle = summaryBundle.get("bundle");
 					}
 					else
 					{
@@ -692,16 +768,45 @@ string managePurchaseOrder(string payload)
 					}
 				}
 				canEditDraft = false;
-				if(budget.Archived != true && po.PO_Status == "Draft" && po.PO_Commitment_State == "None" && po.PO_Approval_State == "Not Configured")
+				if(listBudgetPermission.get("archived") != true && po.PO_Status == "Draft" && po.PO_Commitment_State == "None" && po.PO_Approval_State == "Not Configured")
 				{
-					canEditDraft = canEdit;
+					canEditDraft = listBudgetPermission.get("canEdit");
 					if(canEditDraft != true && access.Create_Purchase_Orders == true && ifnull(po.PO_Client_Key,"") != "")
 					{
-						listCreation = PO_Operation[Token == po.PO_Client_Key && Purchase_Order == po.ID && Budget == budget.ID && Actor == access.ID && Status == "Complete"];
+						listCreation = PO_Operation[Token == po.PO_Client_Key && Purchase_Order == po.ID && Budget == po.Budget && Actor == access.ID && Status == "Complete"];
 						canEditDraft = listCreation.count() == 1;
 					}
 				}
-				rows.add({"approvals":summaryRows,"approvalSummaryAvailable":summaryAvailable,"canEditDraft":canEditDraft,"canEditInFlight":access.Edit_All_Budgets == true && budget.Archived != true && po.PO_Status == "Submitted" && po.PO_Approval_State == "Pending","id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText});
+				listRow = {"approvals":summaryRows,"approvalSummaryAvailable":summaryAvailable,"canEditDraft":canEditDraft,"canEditInFlight":access.Edit_All_Budgets == true && listBudgetPermission.get("archived") != true && po.PO_Status == "Submitted" && po.PO_Approval_State == "Pending","id":po.ID.toString(),"amount":po.PO_Amount_Exact,"status":po.PO_Status,"approvalState":ifnull(po.PO_Approval_State,"Not Configured"),"revision":po.PO_Revision,"vendorId":po.Vendor.toString(),"requestDate":requestDateText,"dateNeeded":neededDateText};
+				if(action == "ListRequests")
+				{
+					listModificationId = null;
+					if(po.PO_Budget_Modification != null)
+					{
+						listLinkedModification = Budget_Modification[ID == po.PO_Budget_Modification && Budget == po.Budget];
+						if(listLinkedModification.ID == null)
+						{
+							result.put("error","A linked budget modification does not belong to its PO phase.");
+							return result.toString();
+						}
+						listModificationId = listLinkedModification.ID.toString();
+					}
+					listRow.put("budgetId",po.Budget.toString());
+					listRow.put("vendorName",listVendorNames.get(po.Vendor.toString()));
+					listRow.put("description",ifnull(po.PO_Description,""));
+					listRow.put("commitmentState",po.PO_Commitment_State);
+					listRow.put("budgetModificationId",listModificationId);
+					if(po.PO_Status == "Submitted")
+					{
+						listRow.put("approvalBundle",listApprovalBundle);
+					}
+				}
+				rows.add(listRow);
+			}
+			if(action == "ListRequests")
+			{
+				result.put("requestIndexContract","po-request-index-v1");
+				result.put("budgetIds",listBudgetIds);
 			}
 			result.put("rows",rows);
 			result.put("success",true);

@@ -20,21 +20,38 @@ assert.equal(api.bucket([entry('1',0),entry('2',NaN)],'date')[1].label,'Date Una
 assert.equal(api.bucket([entry('1',0),entry('2',0,{projectKey:'102'})],'project').length,2,'Same display names do not merge different projects');
 const deferred=()=>{let resolve,reject;return {promise:new Promise((a,b)=>{resolve=a;reject=b;}),get resolve(){return resolve;},get reject(){return reject;}};};
 const turn=()=>new Promise(r=>setImmediate(r));
-function harness(count=8){
- let scope='actor-one',active=0,maximum=0,reads=0,mods=0,deny='',modFailure=false,phaseGate=null;
- const events={},host={innerHTML:'',replaceChildren(){this.innerHTML='';},querySelector(){return null;},querySelectorAll(){return [];},addEventListener(type,handler){events[type]=handler;}};
+function harness(count=102){
+ let scope='actor-one',reads=0,deny='',modFailure=false,indexFailure=null,indexGate=null,lastOptions=null,lastFresh=null;
+ const events={},newRequests=[],menuItems=[];
+ const newToggle={focus(){c.document.activeElement=this;}};
+ const kinds=[['modification','Bud Mod',true],['check','Check Request',true],['wire','Wire Request',false],['purchase-order','Purchase Order',true]];
+ kinds.filter(row=>row[2]).forEach(row=>menuItems.push({kind:row[0],focus(){c.document.activeElement=this;}}));
+ const host={innerHTML:'',replaceChildren(){this.innerHTML='';},querySelector(selector){return selector==='[data-requests-new-toggle]'?newToggle:selector==='.requests-global-add [role="menuitem"]:not(:disabled)'?menuItems[0]:null;},querySelectorAll(selector){return selector==='.requests-global-add [role="menuitem"]:not(:disabled)'?menuItems:[];},addEventListener(type,handler){events[type]=handler;}};
  const budgets=Array.from({length:count},(_,i)=>({ID:String(9000+i)}));
- const model=api.create({host,scope:()=>scope,budgets:()=>budgets,visible:()=>true,phases:()=>[],reportDenied:()=>false,renderGroup:()=>'<article>Real Request</article>',onError:error=>{throw error;},openPhase(){},openAction(){},
-  entries:ids=>ids.map(id=>entry(id,1)),loadMods:async()=>{mods++;if(modFailure)throw Error('Permission denied');},loadBudget:async id=>{reads++;active++;maximum=Math.max(maximum,active);try{if(phaseGate)await phaseGate.promise;await turn();if(id===deny)throw Error('Denied');}finally{active--;}}});
- return {model,host,events,get reads(){return reads;},get mods(){return mods;},get maximum(){return maximum;},set scope(v){scope=v;},set deny(v){deny=v;},set modFailure(v){modFailure=v;},set gate(v){phaseGate=v;}};
+ const model=api.create({host,scope:()=>scope,budgets:()=>budgets,visible:()=>true,newRequestKinds:()=>kinds,openNewRequest:(kind,trigger)=>newRequests.push({kind,trigger}),renderGroup:()=>'<article>Real Request</article>',onError:error=>{throw error;},openPhase(){},openAction(){},
+  entries:ids=>ids.map(id=>entry(id,1)),loadIndex:async(fresh,options)=>{reads++;lastOptions=options;lastFresh=fresh;if(indexGate)await indexGate.promise;await turn();if(indexFailure)throw indexFailure;return {loaded:budgets.map(row=>row.ID).filter(id=>id!==deny),failed:deny?[deny]:[],mods:!modFailure,error:modFailure?'Permission denied':'',reportDenied:modFailure};}});
+ return {model,host,events,newRequests,newToggle,menuItems,get reads(){return reads;},get options(){return lastOptions;},get fresh(){return lastFresh;},set scope(v){scope=v;},set deny(v){deny=v;},set modFailure(v){modFailure=v;},set failure(v){indexFailure=v;},set gate(v){indexGate=v;}};
 }
-const h=harness();assert.equal(h.reads,0);assert.equal(h.mods,0,'Construction is inert until first explicit open');
+const h=harness();assert.equal(h.reads,0,'Construction is inert until first explicit open');
 const first=h.model.open(),duplicate=h.model.open();await Promise.all([first,duplicate]);
-assert.equal(h.reads,8);assert.equal(h.mods,1);assert.ok(h.maximum<=3,'Global phase fanout is bounded');assert.equal(h.model.state().loaded.length,8);assert.match(h.host.innerHTML,/8<\/strong> Requests/);
-await h.model.open();assert.equal(h.reads,8,'Reopening a ready tab reuses the actor-scoped cache');
-h.model.ui.by='territory';h.model.ui.order='oldest';h.model.render();assert.equal(h.reads,8,'Grouping/sorting are local and read-only');
-h.deny='9003';h.modFailure=true;await h.model.refresh();assert.equal(h.model.state().failed.length,1);assert.equal(h.model.state().loaded.length,7);assert.equal(h.model.state().mods,false);assert.match(h.host.innerHTML,/Bud Mods Unavailable/);assert.match(h.host.innerHTML,/Requests unavailable for 1 phase/);
+assert.equal(h.reads,1,'102 phases use one complete index read rather than per-phase readers');assert.equal(h.model.state().loaded.length,102);assert.match(h.host.innerHTML,/102<\/strong> Requests/);
+await h.model.open();assert.equal(h.reads,1,'Reopening a ready tab reuses the actor-scoped cache');
+h.model.ui.by='territory';h.model.ui.order='oldest';h.model.render();assert.equal(h.reads,1,'Grouping/sorting are local and read-only');
+h.failure=Object.assign(Error('API minute limit reached'),{code:'2955'});await h.model.refresh();assert.equal(h.reads,2);assert.equal(h.model.state().status,'error');assert.equal(h.model.state().loaded.length,102,'A failed same-scope refresh retains the last complete authorized rows');assert.match(h.host.innerHTML,/Could Not Refresh Requests/);assert.match(h.host.innerHTML,/API minute limit reached/);assert.doesNotMatch(h.host.innerHTML,/aria-busy="true"/);await h.model.open();assert.equal(h.reads,2,'Quota failure does not trigger automatic fallback or a retry on tab reopening');
+h.failure=null;h.deny='9003';h.modFailure=true;await h.model.refresh();assert.equal(h.reads,3);assert.equal(h.model.state().failed.length,1);assert.equal(h.model.state().loaded.length,101);assert.equal(h.model.state().mods,false);assert.match(h.host.innerHTML,/Bud Mods Unavailable/);assert.match(h.host.innerHTML,/Requests unavailable for 1 phase/);assert.match(h.host.innerHTML,/Check \/ wire requests unavailable/);assert.equal(h.fresh,true);
+const failed=harness();failed.failure=Error('Bulk reader unavailable');await failed.model.open();assert.equal(failed.reads,1);assert.equal(failed.model.state().loaded.length,0);assert.match(failed.host.innerHTML,/Requests Unavailable/);assert.doesNotMatch(failed.host.innerHTML,/No Requests Available|Loading Requests/);
 const stale=harness(1),gate=deferred();stale.gate=gate;const loading=stale.model.open();await turn();stale.scope='actor-two';stale.model.render();assert.equal(stale.host.innerHTML,'','An actor change clears private rows immediately');gate.resolve();await loading;assert.equal(stale.host.innerHTML,'','Stale completions cannot repopulate the view');stale.gate=null;await stale.model.open();assert.equal(stale.model.state().scope,'actor-two');assert.match(stale.host.innerHTML,/Real Request/);
+assert.equal(stale.fresh,true,'A new actor forces a fresh host snapshot');
+const pending=harness(),cancelGate=deferred();pending.gate=cancelGate;const staleRead=pending.model.open();await turn();assert.equal(pending.options.isCancelled(),false);assert.match(pending.host.innerHTML,/class="requests-loading-card"/);assert.match(pending.host.innerHTML,/class="requests-loading-ring"/);assert.match(pending.host.innerHTML,/aria-busy="true"/);pending.scope='another-actor';assert.equal(pending.options.isCancelled(),true,'The host can stop pending reads as soon as actor scope changes');cancelGate.resolve();await staleRead;
+// The Requests entry point uses the same type-first menu as landing Add, without Budget.
+assert.match(h.host.innerHTML,/class="btn mod-page-add requests-new"/);assert.match(h.host.innerHTML,/New Request<svg/);assert.doesNotMatch(h.host.innerHTML,/data-requests-picker="phase"|data-requests-new-kind="budget"/);
+assert.deepEqual(Array.from(h.host.innerHTML.matchAll(/data-requests-new-kind="([^"]+)"/g),m=>m[1]),['modification','check','wire','purchase-order']);
+function clickTarget(selector,node){return {closest:target=>target===selector?node:null};}
+h.events.click({target:clickTarget('[data-requests-new-toggle]',h.newToggle)});assert.match(h.host.innerHTML,/aria-expanded="true"/);assert.equal(c.document.activeElement,h.menuItems[0]);
+let prevented=false;h.events.keydown({key:'End',target:clickTarget('.requests-global-add',{}),preventDefault(){prevented=true;}});assert.equal(c.document.activeElement,h.menuItems[2]);assert.equal(prevented,true);
+h.events.keydown({key:'Escape',target:{},preventDefault(){},stopPropagation(){}});assert.equal(c.document.activeElement,h.newToggle);assert.doesNotMatch(h.host.innerHTML,/aria-expanded="true"/);
+h.events.click({target:clickTarget('[data-requests-new-kind]',{dataset:{requestsNewKind:'wire'},disabled:true})});assert.equal(h.newRequests.length,0,'Disabled types preserve current permission gates');
+h.events.click({target:clickTarget('[data-requests-new-kind]',{dataset:{requestsNewKind:'check'},disabled:false})});assert.equal(h.newRequests[0].kind,'check');assert.equal(h.newRequests[0].trigger,h.newToggle,'The shared global picker restores focus to this mounted action');assert.equal(h.reads,3,'Menu actions do not load request data');
 // Exercise real native-shaped host grouping, including the exact PO/revision child relationship.
 const bid='90071992547409931',poId='90071992547409932',mid='90071992547409933',b={ID:bid};
 Object.assign(c,{S:{budgets:[b],checkWireRequestScopes:{[bid]:'scope'},checkWireRequestState:{[bid]:'loaded'},checkWireRequestsByBudget:{[bid]:[{ID:poId,Budget:{ID:bid},Request_Type:'Purchase Order',PO_Status:'Submitted',PO_Revision:'r1',Request_Date:'2026-11-09',Vendor:{ID:'90071992547409934',display_value:'A Greater Austin'}}]}},
@@ -48,5 +65,12 @@ let actions=0,opens=0,nav=1,ready=true,focused=false;const phaseButton={disabled
 await c.openAllRequestsPhase(bid,false,action);assert.equal(opens,1);assert.equal(actions,1);ready=false;await c.openAllRequestsPhase(bid,false,action);assert.equal(actions,1,'Failed detail reads never invoke a request action');
 const boot=source('boot');assert.doesNotMatch(boot,/allRequestsWorkspace|openAllRequestsTab|loadCheckWireRequests/,'No request index reads at startup');
 assert.ok(html.indexOf('data-tab="requests"')>html.indexOf('data-tab="budgets"')&&html.indexOf('data-tab="requests"')<html.indexOf('data-tab="approvals"'));
-assert.match(source('openAllRequestsTab'),/attachments:false/,'The index does not fan out attachment or detail reads');
-console.log('All Requests: lazy scoped loading, bounded/deduplicated reads, chronology/grouping/filters, native PO children, denial/stale guards and existing action handoff passed.');
+assert.match(source('openAllRequestsTab'),/loadIndex:loadAllRequestsIndex/,'The index delegates one bulk snapshot to the host');
+assert.doesNotMatch(module,/options\.loadBudget|options\.loadMods|async function worker/,'No per-phase fallback can restart the API flood');
+const css=fs.readFileSync('widgets/budget-manager/src/app/budget-requests-workspace.css','utf8');
+assert.match(css,/\.requests-global-add>\.requests-new\{[^}]*width:auto[^}]*gap:8px[^}]*background:linear-gradient\(145deg,#194a88,#10335f\)[^}]*color:#fff/,'The compact blue action stays independent of open picker overrides');
+assert.match(css,/\.requests-new>svg\{[^}]*margin:0/,'Chevron spacing is fixed instead of consuming extra width');
+assert.match(css,/\.requests-loading-card\{[^}]*gap:15px[^}]*padding:20px 25px[^}]*border-radius:14px/,'First loading uses the Forecasts card tokens');
+assert.match(css,/@media\(prefers-reduced-motion:reduce\)\{[^\n]*\.requests-loading-ring\{animation:none\}/);
+assert.doesNotMatch(module,/requests-loading-dot/);
+console.log('All Requests: one scoped 102-phase snapshot, deduplicated/cache-only reopening, quota failure without fanout, stale cancellation, type-first Add menu, native grouping and action handoff passed.');

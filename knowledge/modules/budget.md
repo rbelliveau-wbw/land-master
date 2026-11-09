@@ -1,3 +1,13 @@
+## Requests API Repair — 122.29.120, November 9, 2026
+
+The global index uses one authenticated ListRequests header call, one complete
+request-report read and the shared modification read, without per-phase fallback
+after quota errors. New Request uses the existing Add menu without Budget and
+then the existing budget picker/composer; the blue action has compact spacing.
+Request changes invalidate the index while ordinary reopening uses cache.
+The existing managePurchaseOrder update needs Creator publication. See
+[contract, verification and rollback](../../docs/budget-requests-api-repair-2026-11-09.md).
+
 ## PO Review Links and Excel Downloads — 122.29.117, November 9, 2026
 
 Saved email and approval-queue links default to read-only review so the assigned

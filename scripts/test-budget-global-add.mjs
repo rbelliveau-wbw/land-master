@@ -55,6 +55,9 @@ loadResolve();await settle();assert.deepEqual(calls.at(-1),['request','Purchase 
 context.openGlobalBudgetAdd('wire');await settle();context.selectGlobalBudgetParent(a);token++;loadResolve();await settle();
 assert.notEqual(calls.at(-1)[0],'request','a stale budget detail reply cannot open the request on another budget');
 context.openGlobalBudgetAdd('budget');context.closeGlobalBudgetAdd();await settle();assert.equal(context.globalBudgetAdd,null,'dismissed picker replies stay dismissed');
+const requestTrigger={isConnected:true,focus(){calls.push(['request-trigger-focus']);}};context.setActiveTab=tab=>calls.push(['tab',tab]);
+context.openGlobalBudgetAdd('check',requestTrigger);await settle();assert.equal(context.globalBudgetAdd.trigger,requestTrigger,'The Requests menu preserves its own return-focus target');
+context.selectGlobalBudgetParent(a);assert.equal(context.S.requestsReturn,true);assert.equal(el('backBtn').title,'Back to Requests');loadResolve();await settle();assert.deepEqual(calls.at(-1),['request','Check'],'Requests enters the same existing global Add composer after type and budget selection');
 const backend=fs.readFileSync('creator/functions/createBudgetFromSubdivision.dg','utf8');
 assert.match(backend,/User_Access\[User == zoho\.loginuser\]/);
 assert.match(backend,/Edit_All_Budgets != true && accessRow\.Edit_Owned_Budgets != true/);

@@ -17,6 +17,9 @@ function recordResultAliases(text){
 assert.deepEqual(recordResultAliases('for each captured in Approval_Route_Snapshot[ID != null] {} captured = thisapp.snapshotApprovalRoute(context);'),['captured']);
 for(const [name,text] of Object.entries(source))assert.deepEqual(recordResultAliases(text),[],`${name}: native record/function-result variable alias`);
 function compile(text){
+	// Native batch criteria and selected-column lists used by read-only indexes.
+	text=text.replace(/\b([A-Z]\w*)\[([^\]]+)\]/g,(_,form,criteria)=>`${form}[${criteria.replace(/\b([A-Za-z_]\w*)\s+in\s+([A-Za-z_]\w*)/g,'$2.contains(row.$1)')}]`);
+	text=text.replace(/\b(\w+)\.(\w+)\.getAll\(\)/g,'fieldValues($1,"$2")');
   text=text.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,body)=>`insertRecord("${form}",recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)=(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}))`);
   text=text.replace(/delete from (\w+)\[([^\]]+)\]/g,(_,form,criteria)=>`removeRecords("${form}",query("${form}",row=>${criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2')},""))`);
   text=text.replace(/sendmail\s*\[([^\]]+)\]/g,(_,body)=>`sendMail(recordValues(${body.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)\s*:(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2].replace(/^\s*file:/,'');}).join(',')}));`);
@@ -38,6 +41,7 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   function map(v){if(!v||typeof v!=='object'||Object.prototype.hasOwnProperty.call(v,'get'))return v;if(Array.isArray(v))return v.map(map);for(var k of Object.keys(v))v[k]=map(v[k]);Object.defineProperties(v,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=map(v);}},remove:{value:function(k){delete this[k];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});return v;}
   function Map(){return map({});}function List(){return [];}function ifnull(v,f){return v==null?f:v;}function choose(c,a,b){return c?a:b;}
   function recordValues(...pairs){var data={};for(var i=0;i<pairs.length;i+=2)data[pairs[i]]=pairs[i+1];return map(data);}
+	function fieldValues(records,field){return records.map(row=>row[field]);}
   Array.prototype.add=function(v){this.push(v);};Array.prototype.get=function(i){return this[i]??null;};Array.prototype.count=Array.prototype.size=function(){return this.length;};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.toString=function(){return JSON.stringify(this);};
   function nativeJSON(v){if(Array.isArray(v))return v.map(nativeJSON);if(v!==null&&typeof v==='object'){var sorted={};for(var key of Object.keys(v).sort())sorted[key]=nativeJSON(v[key]);return sorted;}return v;}
   String.prototype.toLong=String.prototype.toDecimal=function(){return Number(this);};String.prototype.toDate=function(){return this.toString();};String.prototype.toJSONList=function(){return JSON.parse(this).map(item=>item!==null&&typeof item==='object'?JSON.stringify(nativeJSON(item)):item);};String.prototype.toMap=function(){return map(JSON.parse(this));};String.prototype.matches=function(r){return new RegExp('^(?:'+r+')$').test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};Number.prototype.toLong=function(){return Math.trunc(this);};
