@@ -1156,7 +1156,10 @@ string managePurchaseOrder(string payload)
 							if(componentBaselines.get(itemKey) != true) { result.put("error","A verified native component baseline is required for budget reallocation."); continue; }
 							if(componentUnknownAllocations.get(itemKey) == true) { result.put("error","Unallocated historical PO or modification amounts must be reviewed before budget reallocation."); continue; }
 							reviewedItem = Map();
-							for each reviewedCandidate in p.get("reallocation").get("items") { if(reviewedCandidate.get("budgetItemId") == itemKey) { reviewedItem = reviewedCandidate; } }
+							// Creator requires a list variable for a chained map lookup in for-each.
+							reviewedReallocation = p.get("reallocation");
+							reviewedCandidates = reviewedReallocation.get("items");
+							for each reviewedCandidate in reviewedCandidates { if(reviewedCandidate.get("budgetItemId") == itemKey) { reviewedItem = reviewedCandidate; } }
 							reviewedGross = 0; reviewedNet = 0; reviewedParts = Map();
 							for each reviewedElement in {"1","2","3","4","5"}
 							{

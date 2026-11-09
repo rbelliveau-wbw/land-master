@@ -280,11 +280,20 @@ in the native phase-locked write. Owned-budget access alone is insufficient.
 
 Place Reallocation immediately to the right of Summary on wide desktop screens.
 Each selected cost code has five element Amount controls with Increase/Decrease
-buttons, current/revised budgets and one reason. Keep net totals and the action
-in the panel footer while its records scroll. Omit the explanatory approval-round
+buttons, current/revised budgets and one reason. Keep net totals and any Reset
+Changes action in the panel footer while its records scroll. Omit the explanatory approval-round
 footer sentence (user direction November 9, 2026). On narrower desktops, Summary and
 Reallocation remain side by side below the PO. Details/Attachments/Approvers
 changes retain the panel and edits.
+
+Render the five controls directly editable when current capability and complete
+native balances are available. Do not require Add Reallocation to unlock them
+(user direction November 9, 2026). Opening/focusing the pane and recomputing its
+defaults must not add a custom request. Initialize the reviewed plan only on an
+actual amount, direction or reason edit, preserving ordinary automatic submission
+and legacy Pending amendment eligibility when untouched. Show Reset Changes only
+after a custom edit; resetting clears the custom plan and leaves valid defaults
+editable. Keep that reset available if the plan's source later becomes unavailable.
 
 Prefill exact PO-required increases and show safe reduction limits. Invalid
 changes identify the element and block committing controls. Keep editable inputs

@@ -3,6 +3,13 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {poTestRuntime,compileDelugePO} from './test-po-test-cfo-backend.mjs';
 
+// Creator rejects chained get() expressions directly in a for-each source.
+// The JavaScript adapter accepts them, so retain this native syntax regression.
+for(const name of ['managePurchaseOrder','budgetElementExportRows','exportBudgetSnapshot']){
+ const nativeSource=fs.readFileSync(`creator/functions/${name}.dg`,'utf8');
+ assert.doesNotMatch(nativeSource,/\bfor\s+each(?:\s+index)?\s+\w+\s+in\s+[^\r\n{]*\.get\([^\r\n{]*\)\s*\.get\(/,`${name}: assign chained map lookups to a list variable before for-each`);
+}
+
 // Execute the actual native planner, snapshots, bundle and balance producer.
 // Policy capture/mail are local adapters; this does not compile/publish Creator.
 const programs=['poCurrencyString','poSnapshot','poBudgetBalances','recalcItemRevisedFinal','recalcBudgetModifiedTotals','managePurchaseOrder'].map(name=>{let source=fs.readFileSync(`creator/functions/${name}.dg`,'utf8');if(name==='poSnapshot')source=source.replace(/\brow\b/g,'storedPOLine');return compileDelugePO(source).replace(/catch\s*\((\w+)\)\s*\{/g,(_,error)=>`catch(${error}) { if(typeof result!=='undefined') result.put('testDiagnostic',${error}.stack);`)+`;thisapp.${name}=${name};`;}).join('\n');
@@ -25,6 +32,19 @@ function payload({amount='33000.00',deltas=['-5000.00','-9000.00','-20000.00','3
 }
 function balances(r){return r.run('poBudgetBalances','61');}
 function assertNoBusinessWrites(r,before){const after=r.tables();for(const key of ['Payment_Request','PO_Item','Budget_Modification','Budget_Approvals','Approval_Route_Snapshot','Budget_Item','Add_Budget'])assert.deepEqual(after[key],before[key],key);assert.equal(after.PO_Phase_Lock.length,0);}
+
+// Creator's formatter removed a grouped AND/OR condition during native save.
+// Separate nested guards retain the exact gross-change/required-reason rule.
+for(const [deltas,reason,accepted] of [
+  [undefined,'',false],
+  [undefined,'x'.repeat(1000),true],
+  [undefined,'x'.repeat(1001),false],
+  [['0.00','0.00','0.00','0.00','0.00'],'',true],
+  [['0.00','0.00','0.00','0.00','0.00'],'x'.repeat(1001),true]
+]){
+  const checkRuntime=runtime(),checkPayload=payload(deltas?{deltas}:{});checkPayload.reallocation.items[0].reason=reason;
+  const checked=checkRuntime.run('poValidatePayload',JSON.stringify(checkPayload));assert.equal(checked.success,accepted,JSON.stringify({deltas,reasonLength:reason.length,checked}));assert.equal(checkRuntime.c.writes,0,'Reason validation remains read-only');
+}
 
 let r=runtime(),p=payload(),result=r.call(p);assert.equal(result.success,true,JSON.stringify({result,po:r.tables().Payment_Request,lines:r.tables().PO_Item,items:r.tables().Budget_Item}));assert.equal(result.reallocationContract,'po-reallocation-v1');
 assert.equal(result.snapshot.approvalBundle.modifications.length,1,'One modification per selected base cost code');
@@ -72,6 +92,10 @@ r=runtime();vm.runInContext(`var realBalances=thisapp.poBudgetBalances;thisapp.p
 
 // Exact captured marker/type/components are required to read a saved custom mod.
 for(const mutate of [m=>m.Component_Reallocation=false,m=>m.Modification_Type='Increase',m=>m.Subcontractor_Budget=-32999,m=>m.Reason='Changed after submit']){r=runtime();result=r.call(payload());mutate(r.c.tables.Budget_Modification[0]);assert.equal(r.run('poApprovalBundle',result.snapshot.id).success,false);}
+for(const mutate of [intended=>delete intended.components,intended=>delete intended.reason,intended=>intended.reason='Different captured reason']){
+ r=runtime();result=r.call(payload());const context=JSON.parse(r.c.tables.Approval_Route_Snapshot[0].Context_JSON);mutate(context.modifications[0]);r.c.tables.Approval_Route_Snapshot[0].Context_JSON=JSON.stringify(context);
+ const rejectedBundle=r.run('poApprovalBundle',result.snapshot.id);assert.equal(rejectedBundle.success,false);assert.match(rejectedBundle.error,/reason or component contract differs/,'Nested native-safe guard rejects a custom record before reading incomplete component evidence');
+}
 for(const mutate of [c=>c.reallocation.items=[],c=>c.reallocation.items.push(structuredClone(c.reallocation.items[0])),c=>c.reallocation.items[0].components['4']='33001.00',c=>c.reallocation.items[0].reason='Changed reviewed reason',c=>delete c.reallocationContract]){r=runtime();result=r.call(payload());const context=JSON.parse(r.c.tables.Approval_Route_Snapshot[0].Context_JSON);mutate(context);r.c.tables.Approval_Route_Snapshot[0].Context_JSON=JSON.stringify(context);assert.equal(r.run('poApprovalBundle',result.snapshot.id).success,false,'Captured signed plan and exact native records must agree');}
 for(const omitZero of [false,true]){r=runtime();Object.assign(r.c.tables.Budget_Item[0],{Budget_Ttl:34100,Subcontractor_Budget:100});p=payload({amount:'100.00',deltas:['0.00','0.00','0.00','0.00','0.00']});p.expectedBalances['71']='3410000';p.expectedComponentBalances['71|4']='10000';if(omitZero)p.reallocation.items=[];result=r.call(p);assert.equal(result.success,true,JSON.stringify(result));assert.equal(result.snapshot.approvalBundle.modifications.length,0,'Zero-only plan items are omitted from native modification records');assert.equal(result.snapshot.approvalBundle.rows.length,1,'An unchanged plan preserves normal CFO-only routing');}
 

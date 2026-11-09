@@ -223,7 +223,13 @@ map poValidatePayload(string payload)
 					canonicalComponents.put(reallocationElement,deltaText); componentCents.put(reallocationElement,deltaCents);
 				}
 				reallocationReason = ifnull(reallocationItem.get("reason"),"").toString().trim();
-				if(grossCents > 0 && (reallocationReason == "" || reallocationReason.length() > 1000)) { result.put("error","A reason of 1–1000 characters is required for each budget modification."); return result; }
+				// Keep this nested: Creator's native formatter can discard grouped
+				// parentheses when AND and OR appear in the same condition.
+				if(grossCents > 0)
+				{
+					if(reallocationReason == "") { result.put("error","A reason of 1–1000 characters is required for each budget modification."); return result; }
+					if(reallocationReason.length() > 1000) { result.put("error","A reason of 1–1000 characters is required for each budget modification."); return result; }
+				}
 				reallocationItems.add({"budgetItemId":reallocationId,"components":canonicalComponents,"reason":reallocationReason});
 			}
 			p.put("reallocation",{"contract":"po-reallocation-v1","items":reallocationItems});

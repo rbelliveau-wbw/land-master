@@ -48,16 +48,20 @@ map poApprovalBundle(string purchaseOrderId)
 			intended = rawIntended.toString().toMap();
 			modification = Budget_Modification[ID == intended.get("id").toLong() && Budget == po.Budget];
 			customComponents = intended.get("componentReallocation") == true;
+			nativeCustomComponents = modification.Component_Reallocation == true;
 			intendedType = "Increase";
 			if(customComponents) { intendedType = intended.get("modificationType"); }
-			if(modification.ID == null || modification.Budget_Item.toString() != intended.get("budgetItemId") || modification.Modification_Type != intendedType || (intendedType != "Increase" && intendedType != "Decrease") || (modification.Component_Reallocation == true) != customComponents || (customComponents && context.get("reallocationContract") != "po-reallocation-v1") || thisapp.poCurrencyString(modification.Amount.toString()) != intended.get("amount") || modification.Reference_Number != intended.get("reference") || seenItems.contains(intended.get("budgetItemId")))
+			if(modification.ID == null || modification.Budget_Item.toString() != intended.get("budgetItemId") || modification.Modification_Type != intendedType || (intendedType != "Increase" && intendedType != "Decrease") || nativeCustomComponents != customComponents || (customComponents && context.get("reallocationContract") != "po-reallocation-v1") || thisapp.poCurrencyString(modification.Amount.toString()) != intended.get("amount") || modification.Reference_Number != intended.get("reference") || seenItems.contains(intended.get("budgetItemId")))
 			{
 				result.put("error","A linked budget modification differs from this PO approval bundle.");
 				return result;
 			}
 			seenItems.add(intended.get("budgetItemId"));
 			modificationEntry = {"id":modification.ID.toString(),"budgetItemId":modification.Budget_Item.toString(),"amount":intended.get("amount"),"reference":modification.Reference_Number,"status":modification.Status};
-			if(customComponents && (intended.get("components") == null || intended.get("reason") != ifnull(modification.Reason,""))) { result.put("error","A reallocation reason or component contract differs from its approved request."); return result; }
+			if(customComponents)
+			{
+				if(intended.get("components") == null || intended.get("reason") != ifnull(modification.Reason,"")) { result.put("error","A reallocation reason or component contract differs from its approved request."); return result; }
+			}
 			// Legacy approval snapshots have no split and remain unallocated.
 			if(intended.get("components") != null)
 			{
@@ -112,7 +116,10 @@ map poApprovalBundle(string purchaseOrderId)
 					typedReviewed = {"value":reviewedText};
 					if(!typedReviewed.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"-?[0-9]+[.][0-9]{2}\"[ ]*[}][ ]*")) { result.put("error","A captured signed reallocation component is invalid."); return result; }
 					reviewedCents = reviewedText.replaceAll("[.]","").toLong(); if(reviewedCents < 0) { reviewedGross = reviewedGross - reviewedCents; } else { reviewedGross = reviewedGross + reviewedCents; }
-					if(reviewedEntry.get("id") != null && (reviewedEntry.get("componentReallocation") != true || reviewedEntry.get("signedComponents").get(reviewedCode) != reviewedText || reviewedEntry.get("reason") != reviewed.get("reason"))) { result.put("error","A reallocation record differs from the reviewed signed plan."); return result; }
+					if(reviewedEntry.get("id") != null)
+					{
+						if(reviewedEntry.get("componentReallocation") != true || reviewedEntry.get("signedComponents").get(reviewedCode) != reviewedText || reviewedEntry.get("reason") != reviewed.get("reason")) { result.put("error","A reallocation record differs from the reviewed signed plan."); return result; }
+					}
 				}
 				if(reviewedGross > 0) { reviewedCount = reviewedCount + 1; if(reviewedEntry.get("id") == null) { result.put("error","A reviewed reallocation record is missing."); return result; } }
 				else if(reviewedEntry.get("id") != null) { result.put("error","A zero-only reallocation created an unexpected modification."); return result; }

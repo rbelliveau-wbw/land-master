@@ -1,3 +1,28 @@
+## Direct Reallocation Editing — 122.29.113, November 9, 2026
+
+The five element Amount and Increase/Decrease controls are editable immediately
+when the selected cost codes have complete current native balances. There is no
+Add Reallocation step. Opening the pane, focusing a field or updating computed
+defaults leaves ordinary automatic PO submission unchanged. The first actual
+amount, direction or reason edit initializes a reviewed plan from the current
+required increases. A missing required reason then blocks custom submission.
+
+Required increases follow PO line changes and refreshed balances; chosen offsets
+and reasons remain available for review. Reset Changes appears after a custom
+edit and returns to editable automatic defaults. It also clears a custom plan
+when its source becomes unavailable, avoiding a blocked save with no recovery.
+First-edit calculations preserve the mounted input and caret. Pending/read-only
+locks, existing create-only rights, legacy Pending admin amendments and the
+combined approval contract are unchanged.
+
+Frontend-only change: no additional native field, function, API or permission
+change. The existing reallocation feature retains its Creator deployment gate.
+Focused UI/save tests cover direct first edits, field-exit formatting, untouched
+automatic payloads, source refresh, reset/recovery, capabilities, role boundaries
+and persisted/locked plans. Full validation and Pages build remain release gates.
+Rollback: **122.29.112**, which restores the former Add step and remains compatible
+with the signed reallocation records.
+
 ## Reallocation Footer Copy — 122.29.112, November 9, 2026
 
 Removed the explanatory approval-round sentence beneath the right panel action
@@ -17,11 +42,12 @@ linked modifications share one captured approval round. A zero or negative net
 change still requires the additional modification approval route; the existing
 PO amount and budget-overrun conditions remain independent.
 
-The optional **Add Reallocation** action prefills the exact increases required by
+The initial release's optional **Add Reallocation** action prefills the exact increases required by
 the current PO lines. Five Amount and Increase/Decrease controls allow offsets
 from unused funds on those same selected cost codes. Increases, decreases, net
 change, current/revised component budgets and a short required reason are shown
-together. No unrelated cost code can donate funds. Required positive amounts
+together. Release **122.29.113** removes that activation step and makes the rows
+directly editable. No unrelated cost code can donate funds. Required positive amounts
 follow edited PO lines and refreshed balances; reductions/reasons remain for
 review. Invalid plans disable Save/Submit with a specific correction. Draft plans
 round-trip through the existing operation receipt. Pending custom reallocations
