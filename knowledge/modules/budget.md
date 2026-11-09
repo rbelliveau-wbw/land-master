@@ -1,3 +1,19 @@
+## Deferred Reallocation Discussion — November 9, 2026
+
+**Status: On hold at the user's request pending internal discussion.**
+Do not implement the requested reallocation workflow until the user resumes it.
+
+The user's preferred simplification to consider is one editable UI request
+backed by two existing native records per Budget Item: an Increase for additions
+and a Decrease for offsets. The existing APIs accept all five nonnegative
+components per record, so this can avoid a signed-field or schema redesign.
+
+The approval-flow decision remains open. Existing separate mod APIs start two
+approval chains, and the PO must remain Draft until those adjustments are
+approved; standalone pending mods are not PO funding. Approving both adjustments
+with the PO requires changes to the combined PO bundle backend. Do not assume
+either flow was selected: the user explicitly deferred that decision.
+
 ## Manual PDF Execution Limit — 122.29.107, November 9, 2026
 
 Bluebonnet Crossing - Phase 01 reproduced Creator's statement execution limit
