@@ -127,8 +127,17 @@ navigation and local range Undo. Shift-click/Shift-arrows select, Ctrl+C/V copie
 and pastes, Ctrl+D fills down, F2 edits, and Tab/Enter moves between cells. Item name
 remains derived and immutable. Paste validates eligible cost codes, UOM, ELEM and
 exact decimals atomically, up to 250 rows. Formulas and imported formatting are
-unsupported. Structural row changes clear range Undo history. Downloads use the
-same compact SpreadsheetML .xls generator as the PO email attachment.
+unsupported. Structural row changes clear range Undo history. Downloads read the
+existing authenticated native SpreadsheetML response and use Budget Manager's
+existing workbook library to write genuine ZIP/OOXML `.xlsx` bytes with the
+matching filename and MIME type. Preserve typed values, dates, text identifiers,
+literal descriptions, totals/formulas, merges, compact sizing and every sheet.
+Opening a saved PO without an explicit intent, including an existing email or
+approval-queue link, selects read-only review. Show decisions only when the
+existing captured bundle grants them. A global editor who is also the current
+approver must still see Approve/Reject in review. The explicit pencil retains
+amendment mode and its separation of decisions from unsaved edits. New POs
+continue to open in composition mode. Keep unresolved-operation guards intact.
 
 Keep budget context to the left of the PO total: Available and Remaining or
 Modification on the first line. Editable drafts use the server's read-only route

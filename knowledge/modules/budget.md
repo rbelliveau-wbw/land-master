@@ -1,3 +1,12 @@
+## PO Review Links and Excel Downloads — 122.29.117, November 9, 2026
+
+Saved email and approval-queue links default to read-only review so the assigned
+approver's Approve/Reject actions remain visible when that person can also edit.
+Explicit pencil editing retains Save Changes. Requests downloads now convert the
+existing authenticated native XML into genuine `.xlsx` files through the proven
+budget workbook library. No Creator deployment is required. See
+[scope, verification and rollback](../../docs/po-approval-entry-and-excel-2026-11-09.md).
+
 ## Global Requests Tab — 122.29.116, November 9, 2026
 
 Requests is the second main tab, loaded only on explicit activation. The global

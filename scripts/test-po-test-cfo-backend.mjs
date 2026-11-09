@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
+import {verifyPODownload} from './lib/po-download-roundtrip.mjs';
 
 // Execute the checked-in Deluge functions against local records. This harness
 // verifies behavior; it does not replace native Creator compilation or email QA.
@@ -90,7 +91,7 @@ r=runtime({extraTables:submitted(),mailFailure:true});assert.match(vm.runInConte
 // Execute the real attachment generator with changed descriptions and mixed pricing.
 const emailTables=submitted();emailTables.Payment_Request[0].PO_Line_Count=2;
 emailTables.PO_Item=[
-  {ID:201,Purchase_Order:51,Revision:'revision-one',Line_Order:1,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:'Changed <description>',Quantity_Exact:'2',UOM:'EA',Cost_Element:'5',Unit_Price_Exact:'10.00',Final_Amount_Exact:'20.00'},
+  {ID:201,Purchase_Order:51,Revision:'revision-one',Line_Order:1,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:"Changed <description> O'Brien scope='literal'",Quantity_Exact:'2',UOM:'EA',Cost_Element:'5',Unit_Price_Exact:'10.00',Final_Amount_Exact:'20.00'},
   {ID:202,Purchase_Order:51,Revision:'revision-one',Line_Order:2,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:'=1+1',Quantity_Exact:null,UOM:'LS',Cost_Element:'5',Unit_Price_Exact:null,Final_Amount_Exact:'35.00'}
 ];
 r=runtime({extraTables:emailTables});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
@@ -115,6 +116,7 @@ r=runtime({extraTables:emailTables,environment:'Unknown'});assert.match(vm.runIn
 console.log('PO email URLs: absolute HTTPS Creator host, exact Dev/Stage/Prod path and PO identity, unknown-environment denial and duplicate delivery guard passed.');
 // The same compact workbook is used for a read-only download and email.
 r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.equal(workbook.content,packet.Attachments.content);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
+await verifyPODownload({...workbook,id:'51',budgetId:'61'});
 const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_Description='General & <scope>';r=runtime({extraTables:withDescription});workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true);assert.match(workbook.content,/General &amp; &lt;scope&gt;/);assert.match(workbook.content,/SUM\(R9C8:R10C8\)/);assert.equal((workbook.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,6);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
 // The real delivery and attachment producers must retain all five element rows.
 // Actual native element data selection/math is tested separately, so inject its
@@ -125,6 +127,8 @@ assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
 for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.content.includes(label));}
 assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.content,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
 assert.equal(r.c.mails[0].to,testCFO.email);assert.equal(r.c.mails.length,1);assert.equal(r.tables().PO_Item[0].Cost_Element,'5','outbound labels never change stored picklist codes');
+await verifyPODownload({...r.run('poExcelWorkbook','51'),id:'51',budgetId:'61'});
+console.log('PO Excel downloads: actual native XML through production download handler to genuine XLSX; typed IDs, escaped text, literal formulas, dates, currency, totals, layout and all five element rows round-trip correctly.');
 const descriptionPayload={action:'Submit',budgetId:'61',vendorId:'91',amount:'1.00',token:'description-test-000000001',requestDate:'2026-10-11',dateNeeded:'2026-10-12',lines:[{key:'line-1',budgetItemId:'71',description:'Inspection',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'1.00'}]};
 for(const description of ['', 'Header description\nSecond line', 'x'.repeat(1000), 'x'.repeat(1001), 1, []]){r=runtime();const result=r.run('poValidatePayload',JSON.stringify({...descriptionPayload,description}));assert.equal(result.success,typeof description==='string'&&description.length<=1000,JSON.stringify(result));assert.equal(r.c.writes,0);}
 // Owner-only policy preflight rejects a bad override before creating any audits/locks.
