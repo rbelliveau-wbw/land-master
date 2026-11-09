@@ -148,6 +148,7 @@ const lateGet=deferred();c.sdkRunBudgetFunction=async(name,args)=>{const p=JSON.
 console.log('PO profile child reads: CFO own-only report, authorized foreign-submit children, immutable financial caches, exact identities/revisions, stale metadata, readable failures, bounded3 Get and stale actor cancellation passed.');
 
 // First entry must not display report mods before the slower PO and child reads.
+vm.runInContext(block(widget,'renderRequestRailGroupContents'),c);
 vm.runInContext(block(widget,'renderRequestRailList'),c);
 c.modsForBudget=()=>[{...linked,ID:modId,Budget:{ID:budgetId},Budget_Item:{ID:itemId},Reference_Number:linked.reference}];
 c.renderRequestRailModification=(b,mod)=>"<article data-mod='"+mod.ID+"'>Linked mod</article>";

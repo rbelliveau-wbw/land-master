@@ -85,6 +85,13 @@ standing rule. Module documentation records actual coverage and pending adoption
 
 ## Repository rollout — October 15, 2026
 
+Budget 122.29.116 adds global Requests visible/linked/group/phase counts and
+request amounts to the canonical surface registry. Request keys include exact
+Budget, kind and string record ID; group keys include grouping and real group
+identity. Group/filter/order changes retain real final values and the shared
+Sliding push/reduced-motion behavior. Dates remain static. No aggregation or
+financial write behavior changes.
+
 The [inventory](../../docs/number-transition-opportunities-2026-10-14.md) now records
 adoption in all ten widgets. Budget 122.29.43, Manage Lots 0.13.2, Legal 1.62.4,
 Tax 19.17.15, Land Master 8.16.2, Gantt 1.1.10 and Settings 1.5.9 use the canonical

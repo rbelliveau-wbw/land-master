@@ -27,7 +27,7 @@ function harness(){
       async getRecords(config){calls.push({method:'read',config:plain(config)});const rows=data[config.report_name];return {code:3000,data:config.field_config==='custom'?rows.map(row=>Object.fromEntries(config.fields.split(',').map(field=>[field,row[field]]))):plain(rows)};}
     }}},
     document:{querySelector:()=>null,querySelectorAll:selector=>selector.includes('comment-activity-btn')?badges:[],getElementById:id=>nodes[id]},
-    $:id=>nodes[id]||(nodes[id]={innerHTML:'',textContent:'',style:{}}),auditLog:()=>{},toastShow:()=>{},shortErr:error=>error?.message||String(error),esc:value=>String(value??''),escAttr:value=>String(value??''),
+    $:id=>nodes[id]||(nodes[id]={innerHTML:'',textContent:'',style:{},setAttribute(name,value){this[name]=value;}}),auditLog:()=>{},toastShow:()=>{},shortErr:error=>error?.message||String(error),esc:value=>String(value??''),escAttr:value=>String(value??''),
     proformaName:row=>row?.Name||'',PFComments:{timestamp:value=>Date.parse(value)},canViewImportItems:()=>true,IMPORT_TAB_TROUBLESHOOT:false,
     importIsMissing:row=>!row.Budget_Item,hydrateBudgetSubdivisions:()=>{},buildProjects:()=>[],renderProjList:()=>{},renderApprQueue:()=>{},findProjectForBudget:()=>null,
     closeFullBudgetExportMenu:()=>{} // Export-menu DOM/focus behavior is covered by the actual desktop fixture.

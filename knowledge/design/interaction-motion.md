@@ -107,6 +107,12 @@ Release notes must record actual coverage, remaining native exceptions and rollb
 
 ### Budget Requests initial readiness
 
+The global second Requests tab uses the same main-tab moving pill, explicit pane
+registration, keyed Budget/request row identity and native group disclosures.
+Group/sort/filter changes remain local. Refresh patches only the phase coverage
+status until a completed replacement is ready, retaining mounted rows and group
+disclosures. Failed phase authorization clears that phase's retained rows.
+
 The first Requests reveal waits for both payment/PO rows and modification data,
 including linked PO child reads. Never paint an intermediate orphan modification
 then insert its PO above it. Keep a same-scope complete list during refresh;

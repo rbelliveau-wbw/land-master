@@ -4,22 +4,22 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.114"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.116"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.114"></script>
-<script src="po-reallocation.js?v=122.29.114"></script>
-<script src="po-reallocation-ui.js?v=122.29.114"></script>
-<script src="po-grid.js?v=122.29.114"></script>
-<script src="po-controller.js?v=122.29.114"></script>
-<script src="po-progress.js?v=122.29.114"></script>
-<script src="po-ui.js?v=122.29.114"></script>
-<script src="request-attachments.js?v=122.29.114"></script>
-<script src="full-budget-export.js?v=122.29.114"></script>
-<script src="budget-snapshot-pdf.js?v=122.29.114"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.114">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.114">
+<script src="po-domain.js?v=122.29.116"></script>
+<script src="po-reallocation.js?v=122.29.116"></script>
+<script src="po-reallocation-ui.js?v=122.29.116"></script>
+<script src="po-grid.js?v=122.29.116"></script>
+<script src="po-controller.js?v=122.29.116"></script>
+<script src="po-progress.js?v=122.29.116"></script>
+<script src="po-ui.js?v=122.29.116"></script>
+<script src="request-attachments.js?v=122.29.116"></script>
+<script src="full-budget-export.js?v=122.29.116"></script>
+<script src="budget-snapshot-pdf.js?v=122.29.116"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.116">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.116">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1845,18 +1845,20 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.114">
-<script src="success-feedback.js?v=122.29.114"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.114">
-<script src="interaction-motion.js?v=122.29.114"></script>
-<script src="interaction-surfaces.js?v=122.29.114"></script>
-<script src="number-edit-commit.js?v=122.29.114"></script>
-<script src="number-transitions.js?v=122.29.114"></script>
-<script src="number-surfaces.js?v=122.29.114"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.114">
-<script src="budget-import-ledger.js?v=122.29.114"></script>
-<script src="budget-import-workspace.js?v=122.29.114"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.114">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.116">
+<script src="success-feedback.js?v=122.29.116"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.116">
+<script src="interaction-motion.js?v=122.29.116"></script>
+<script src="interaction-surfaces.js?v=122.29.116"></script>
+<script src="number-edit-commit.js?v=122.29.116"></script>
+<script src="number-transitions.js?v=122.29.116"></script>
+<script src="number-surfaces.js?v=122.29.116"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.116">
+<script src="budget-import-ledger.js?v=122.29.116"></script>
+<script src="budget-import-workspace.js?v=122.29.116"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.116">
+<script src="budget-requests-workspace.js?v=122.29.116"></script>
+<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.116">
 
 </head>
 <body>
@@ -1869,6 +1871,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
   </div>
   <nav class="tabs" id="tabs">
     <a href="#" data-tab="budgets" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>All Budgets</a>
+    <a href="#" data-tab="requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" aria-hidden="true"><path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4"/></svg>Requests</a>
     <a href="#" data-tab="approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Approvals <span class="ct" id="apprCt">—</span></a>
     <a href="#" data-tab="imports" id="importsTabLink" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>Budget Import Items <span class="ct" id="importCt">—</span></a>
   </nav>
@@ -1909,6 +1912,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 </div>
 
 <!-- ── VIEW: BUDGETS (landing) ── -->
+<div id="vRequests" class="main" style="display:none" aria-label="All Requests"></div>
 <div id="vBudgets" class="main" style="display:none">
   <div class="wrap">
     <div class="landing-filter-toolbar">
@@ -2736,7 +2740,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.114", code:"BMW",
+  widget:"Budget Manager", version:"122.29.116", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -5132,10 +5136,11 @@ function showView(which) {
   if (S.view === "vEditor" && which !== "vEditor" && !budgetPerUnitNavigationAllowed()) return false;
   S.navigationGeneration=(S.navigationGeneration||0)+1;
   S.view = which;
+  var back=$("backBtn");if(back){back.title=S.requestsReturn?"Back to Requests":"Back to All Budgets";back.setAttribute("aria-label",back.title);}
   var fullExportButton=$("fullBudgetExportWrap");
   if(fullExportButton)fullExportButton.style.display = which === "vBudgets" ? "inline-block" : "none";
   closeFullBudgetExportMenu();
-  ["vLoading", "vBudgets", "vApprovals", "vImports", "vCompare", "vEditor", "vApprDetail"].forEach(function (id) {
+  ["vLoading", "vBudgets", "vRequests", "vApprovals", "vImports", "vCompare", "vEditor", "vApprDetail"].forEach(function (id) {
     var el = $(id);
     if (!el) return;
     var on = id === which;
@@ -9895,6 +9900,7 @@ document.addEventListener("focusin", function (e) { var i = e.target.closest(".b
 
 function openPhaseEditor(budgetId, mode) {
   if (!budgetPerUnitNavigationAllowed()) return;
+  S.requestsReturn=false;
   S.globalMode = mode || "view";
   S.rowMode = {};
 
@@ -9951,6 +9957,7 @@ function openPhaseEditor(budgetId, mode) {
 
 function openProjectEditor(projKeyOrName) {
   if (!budgetPerUnitNavigationAllowed()) return;
+  S.requestsReturn=false;
   // Use first budget of this project for metadata; show all phases as columns
   var proj = findProjectByKey(projKeyOrName);
   if (!proj || !proj.phases.length) return;
@@ -11789,6 +11796,7 @@ function renderMockApprDetail(a) {
 
 /* ── Back navigation ── */
 $("backBtn").addEventListener("click", function () {
+  if(S.requestsReturn){S.requestsReturn=false;openAllRequestsTab();return;}
   if (!showView("vBudgets")) return;
   setActiveTab("budgets");
   var ms = $("modeSwitch"); if (ms) ms.style.display = "none";
@@ -11831,7 +11839,7 @@ document.addEventListener("keydown", function (e) {
   var t = e.target;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
   if (document.querySelector("#notePop.show")) return;
-  if (S.view === "vEditor") { if (!showView("vBudgets")) return; setActiveTab("budgets"); var ms=$("modeSwitch"); if(ms) ms.style.display="none"; }
+  if (S.view === "vEditor") { if(S.requestsReturn){S.requestsReturn=false;openAllRequestsTab();return;}if (!showView("vBudgets")) return; setActiveTab("budgets"); var ms=$("modeSwitch"); if(ms) ms.style.display="none"; }
   else if (S.view === "vCompare") { showView("vBudgets"); setActiveTab("budgets"); renderProjList(); }
   else if (S.view === "vApprDetail") { showView("vApprovals"); setActiveTab("approvals"); }
 });
@@ -11839,6 +11847,53 @@ window.addEventListener("error", function (e) { auditLog("error", "Window error"
 window.addEventListener("unhandledrejection", function (e) { auditLog("error", "Unhandled promise rejection", { reason:e.reason }); });
 
 /* ── Tab switching ── */
+var allRequestsWorkspace=null;
+function allRequestsScope(){return budgetCreateScope("all-requests",String(S.myAccessId||""))+JSON.stringify([S.budgets.map(function(b){return String(b.ID);}).sort(),S.perms||S.acc||null]);}
+function allRequestEntries(ids,modsReady){
+  var wanted=new Set(ids),entries=[];
+  S.budgets.forEach(function(b){
+    var bid=String(b.ID);
+    if(!wanted.has(bid)||!S.checkWireRequestScopes||S.checkWireRequestScopes[bid]!==budgetCreateScope("requests",bid)||S.checkWireRequestState[bid]==="unavailable")return;
+    var project=findProjectForBudget(b),projectLabel=projectName(b),phase=phaseName(b),territory=territoryName(b)||"Territory Unavailable";
+    requestRailGroups(b,S.checkWireRequestsByBudget[bid]||[],modsReady?modsForBudget(bid):[]).forEach(function(group){
+      var row=group.record,type=group.kind==="modification"?"Bud Mod":cleanVal(row.Request_Type)||"Request",approval=cleanVal(row.PO_Approval_State),status=group.kind==="modification"?cleanVal(row.Status)||"Draft":approval&&approval!=="Not Configured"?approval:cleanVal(row.PO_Status)||"Unavailable";
+      entries.push(Object.assign({},group,{budget:b,budgetId:bid,project:projectLabel,projectKey:String(project&&project.key||projectLabel),phase:phase,territory:territory,type:type,status:status,search:[projectLabel,phase,territory,type,status,lookupName(row.Vendor),lookupName(row.Budget_Item),cleanVal(row.PO_Description),cleanVal(row.Reason),String(row.ID),group.children.map(function(child){return lookupName(child.Budget_Item)+" "+cleanVal(child.Reason);}).join(" ")].join(" ")}));
+    });
+  });
+  return entries;
+}
+function openAllRequestsPhase(bid,newRequest,action){
+  var scope=allRequestsScope();
+  var opening=Promise.resolve(openPhaseEditor(bid,"modifications")),token=budgetNavigationToken();S.requestsReturn=true;setActiveTab("requests");
+  $("backBtn").title="Back to Requests";$("backBtn").setAttribute("aria-label","Back to Requests");
+  return opening.then(function(){
+    if(scope!==allRequestsScope()||!budgetNavigationCurrent(token,"vEditor",bid)||!budgetDetailReady(bid))return;
+    return loadCheckWireRequests(bid,false).then(function(){
+      if(scope!==allRequestsScope()||!budgetNavigationCurrent(token,"vEditor",bid)||S.checkWireRequestState[bid]!=="loaded")return;
+      if(action){
+        var attrs=Array.from(action.attributes).filter(function(attr){return /^data-(request-|mod)/.test(attr.name);});
+        var target=Array.from($("modPhasePanel").querySelectorAll("button")).find(function(button){return attrs.every(function(attr){return button.getAttribute(attr.name)===attr.value;});});
+        if(target&&!target.disabled){target.focus({preventScroll:true});handleBudgetRequestClick({target:target});}else toastShow("This request changed. Review its current actions.");
+      }
+      else if(newRequest){var button=$("requestMenuBtn");if(button)button.click();}
+    });
+  });
+}
+function openAllRequestsTab(){
+  if(!S.startupReady){toastShow("Wait for budgets to finish loading.");return;}
+  if(!showView("vRequests"))return;setActiveTab("requests");
+  if(!allRequestsWorkspace)allRequestsWorkspace=LMBudgetRequests.create({
+    host:$("vRequests"),scope:allRequestsScope,budgets:function(){return S.budgets;},visible:function(){return S.view==="vRequests";},
+    loadMods:ensureBudgetModifications,
+    loadBudget:function(bid,fresh){return loadCheckWireRequests(bid,fresh,{attachments:false}).then(function(){if(S.checkWireRequestState[bid]!=="loaded")throw new Error("Requests unavailable for phase "+bid);});},
+    entries:allRequestEntries,reportDenied:function(bid){return !!(S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid]);},
+    renderGroup:function(entry){return renderRequestRailGroupContents(entry.budget,entry,{deferAttachments:true});},
+    phases:function(){return S.budgets.filter(function(b){return canSubmitMod(b)||canStartBudgetRequest("check",b)||canStartBudgetRequest("wire",b)||canStartBudgetRequest("purchase-order",b);}).map(function(b){return [String(b.ID),projectName(b)+" / "+phaseName(b)];}).sort(function(a,b){return a[1].localeCompare(b[1],undefined,{numeric:true});});},
+    openPhase:openAllRequestsPhase,openAction:function(bid,action){return openAllRequestsPhase(bid,false,action);},
+    onError:function(error){auditLog("error","All Requests unavailable",error);toastShow(shortErr(error));}
+  });
+  return allRequestsWorkspace.open();
+}
 function setActiveTab(tab) {
   [].forEach.call($("tabs").querySelectorAll("a"), function (a) { a.classList.toggle("active", a.dataset.tab === tab); });
 }
@@ -11858,8 +11913,9 @@ function syncBudgetImportBadge() {
 $("tabs").addEventListener("click", function (e) {
   var a = e.target.closest("a"); if (!a) return; e.preventDefault();
   if (!budgetPerUnitNavigationAllowed()) return;
-  var tab = a.dataset.tab; setActiveTab(tab);
+  var tab = a.dataset.tab; setActiveTab(tab);S.requestsReturn=false;
   if (tab === "budgets") { showView("vBudgets"); renderProjList(); }
+  else if (tab === "requests") { openAllRequestsTab(); }
   else if (tab === "imports") { openImportsTab(); }
   else { showView("vApprovals"); renderApprQueue(); }
 });
@@ -13628,13 +13684,15 @@ function retryBudgetFeature(key) {
 document.addEventListener("click",function(event){var button=event.target.closest("[data-budget-feature-retry]");if(button){event.preventDefault();retryBudgetFeature(button.dataset.budgetFeatureRetry);}});
 
 /* ── REQUESTS PAGE (pill-slider tab) ── */
-function loadCheckWireRequests(budgetId, fresh) {
+function loadCheckWireRequests(budgetId, fresh, options) {
   var bid = String(budgetId || "");
-  prepareRequestAttachmentBadges(bid);
+  if(!options||options.attachments!==false)prepareRequestAttachmentBadges(bid);
   var token=budgetNavigationToken(),scope=budgetCreateScope("requests",bid);
   S.checkWireRequestLoads=S.checkWireRequestLoads||{};
   S.checkWireRequestGeneration=S.checkWireRequestGeneration||{};
-  if (!bid || !fresh && S.checkWireRequestState[bid]) return S.checkWireRequestLoads[bid] || Promise.resolve();
+  S.checkWireRequestLoadScopes=S.checkWireRequestLoadScopes||{};
+  if (!bid || !fresh && (S.checkWireRequestState[bid]==="loaded"&&S.checkWireRequestScopes&&S.checkWireRequestScopes[bid]===scope||S.checkWireRequestState[bid]==="loading"&&S.checkWireRequestLoadScopes[bid]===scope)) return S.checkWireRequestLoads[bid] || Promise.resolve();
+  S.checkWireRequestLoadScopes[bid]=scope;
   var generation=S.checkWireRequestGeneration[bid]=(S.checkWireRequestGeneration[bid]||0)+1;
   function current(){return generation===S.checkWireRequestGeneration[bid]&&scope===budgetCreateScope("requests",bid)&&actor===String(S.myAccessId||"");}
   // Payment_Request / All_Wire_Requests are verified in Production.
@@ -13827,7 +13885,7 @@ function requestRailGroups(b,requests,mods) {
   (requests||[]).forEach(function(request){
     if(!request||Object.prototype.hasOwnProperty.call(request,"Budget")&&!lookupMatchesId(request.Budget,bid)||seenRequests.has(String(request.ID)))return;
     seenRequests.add(String(request.ID));var date=requestRailDateValue(request,false),group={kind:"payment",record:request,children:[],date:date,rank:requestRailDateRank(date)};
-    groups.push(group);if(savedPurchaseOrderRequest(request,bid)){parents.set(request.ID,group);if(request._poModificationsState==="loaded"&&Array.isArray(request._poModifications))request._poModifications.forEach(function(mod){var index=displayMods.findIndex(function(row){return row.ID===mod.ID&&lookupMatchesId(firstRaw(row,["Budget","Budget1","Add_Budget"]),bid);});if(index<0)displayMods.push(mod);else displayMods[index]=Object.assign({},displayMods[index],mod);});}
+    groups.push(group);if(savedPurchaseOrderRequest(request,bid)){parents.set(request.ID,group);if(request._poModificationsState==="loaded"&&Array.isArray(request._poModifications))request._poModifications.forEach(function(mod){var index=displayMods.findIndex(function(row){return row.ID===mod.ID&&lookupMatchesId(firstRaw(row,["Budget","Budget1","Add_Budget"]),bid);});if(index<0)displayMods.push(mod);else {var original=displayMods[index],merged=Object.assign({},original,mod);if(lookupMatchesId(original.Budget_Item,lookupId(mod.Budget_Item)))merged.Budget_Item=original.Budget_Item;displayMods[index]=merged;}});}
   });
   displayMods.forEach(function(mod){
     if(!mod||!lookupMatchesId(firstRaw(mod,["Budget","Budget1","Add_Budget"]),bid)||seenMods.has(String(mod.ID)))return;
@@ -13847,11 +13905,12 @@ function requestRailIcon(action,label,attrs,classes) {
 function requestRailIdentity(type,name,description) {
   return "<span class='po-request-kind'>"+esc(type)+"</span><div class='request-rail-primary'><strong class='po-request-vendor' title='"+escAttr(name)+"'>"+esc(name)+"</strong>"+(description?"<span class='request-rail-description' title='"+escAttr(description)+"'>"+esc(description)+"</span>":"")+"</div>";
 }
-function requestAttachmentButton(b,kind,id){
+function requestAttachmentButton(b,kind,id,options){
   var known=attachmentLinksReady(b.ID)&&budgetFeature('attachments:'+b.ID).status==='loaded',context={kind:kind,id:String(id)},count=known?budgetAttachments(b).filter(function(file){return requestAttachmentContextMatches(file,context);}).length:null,state=attachmentLinkStates[String(b.ID)];
-  return '<button type="button" class="attachment-action request-rail-action request-attachment-count-badge" data-request-attachments="'+escAttr(String(id))+'" data-request-attachment-kind="'+kind+'" data-budget-id="'+escAttr(String(b.ID))+'" aria-label="View request attachments" title="Attachments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21 11-9 9a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8L15 6"/></svg><small>'+ (count==null?(state&&state.status==='error'?'—':'…'):count)+'</small></button>';
+  var html='<button type="button" class="attachment-action request-rail-action request-attachment-count-badge" data-request-attachments="'+escAttr(String(id))+'" data-request-attachment-kind="'+kind+'" data-budget-id="'+escAttr(String(b.ID))+'" aria-label="View request attachments" title="Attachments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m21 11-9 9a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8L15 6"/></svg><small>'+ (count==null?(state&&state.status==='error'?'—':'…'):count)+'</small></button>';
+  return options&&options.deferAttachments&&count==null?html.replace(/<small>[^<]*<\/small>/,''):html;
 }
-function renderRequestRailPayment(b,request,children) {
+function renderRequestRailPayment(b,request,children,options) {
   var bid=String(b.ID),type=cleanVal(request.Request_Type)||"Request",managed=savedPurchaseOrderRequest(request,bid),kind=type==="Wire"?"wire":type==="Check"?"check":"po",item=firstRaw(request,["Budget_Item"]),itemId=lookupId(item),budgetItem=itemId?findItemById(itemId):null;
   var itemName=budgetItem?cleanVal(budgetItem.Item_Name):lookupName(item),code=budgetItem?cleanVal(budgetItem.Budget_Code||budgetItem.Cost_Code):"",vendorName=lookupName(request.Vendor),name=vendorName||itemName||type,description=cleanVal(request.PO_Description)||[itemName,code].filter(Boolean).join(" · ");
   if(managed&&!description&&children&&children.length){var details=children.map(function(mod){var identity=requestRailModIdentity(mod);return [identity.name,identity.code].filter(Boolean).join(" · ");});description=Array.from(new Set(details)).join(" · ");}
@@ -13863,7 +13922,7 @@ function renderRequestRailPayment(b,request,children) {
     acts=requestRailIcon("view","Preview PO",attrs+"data-request-po-intent='view'")+(editable?requestRailIcon("edit","Edit PO",attrs+"data-request-po-intent='edit'"):"")+requestRailIcon("download","Download PO Excel","data-request-po-download='"+escAttr(request.ID)+"'")+(canDeleteBudgetRequest(b)?requestRailIcon("delete","Delete PO",attrs+"data-request-po-intent='delete'","delete"):"");
   }
   if(!managed)acts=requestRailIcon('view','View saved request','data-request-payment-open="'+escAttr(request.ID)+'"');
-  acts+=requestAttachmentButton(b,'payment',request.ID);
+  acts+=requestAttachmentButton(b,'payment',request.ID,options);
   return "<article class='po-request-ledger request-rail-row' data-kind='"+kind+"' aria-label='"+escAttr(managed?"Purchase order":type+" request")+"'><div class='po-request-values'>"+requestRailIdentity(type==="Purchase Order"?"PO":type.toUpperCase(),name,description)+"<div class='request-rail-route'>"+(managed?poApproverCircles(request):"<span class='request-rail-route-empty'>—</span>")+"</div><span class='po-request-date' aria-label='Request date' title='Request date"+(needed?" · Needed "+escAttr(poRequestCardDate(needed)):"")+"'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount' aria-label='Request amount'>"+(rawAmount?fmt(v(rawAmount)):"—")+"</strong><div class='po-request-status'>"+(status?modBadge(status):"<span class='request-rail-route-empty'>—</span>")+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
 }
 function requestRailModIdentity(mod) {
@@ -13875,7 +13934,7 @@ function requestRailModChain(mod,info) {
   if(!info.chain.length)return "<span class='request-rail-route-empty'>—</span>";
   return "<button class='po-route-pill' type='button' data-moddetail='"+escAttr(String(mod.ID))+"' aria-label='View budget modification approvers' title='View budget modification approvers'>"+info.chain.map(function(row,index){var status=cleanVal(row.Status)||"Not Sent",role=cleanVal(firstRaw(row,["Title","Role"]))||"?";return(index?"<span class='po-route-link"+(cleanVal(info.chain[index-1].Status)==="Approved"?" is-approved":"")+"' aria-hidden='true'></span>":"")+"<span class='po-approver-circle' data-status='"+escAttr(status)+"' title='"+escAttr(role+" · "+status)+"'>"+esc(role)+"</span>";}).join("")+"</button>";
 }
-function renderRequestRailModification(b,mod,parent) {
+function renderRequestRailModification(b,mod,parent,options) {
   var identity=requestRailModIdentity(mod),signed=modSignedAmount(mod),date=requestRailDateValue(mod,true),status=cleanVal(mod.Status)||"Draft",acts,route,description;
   if(parent){
     var state=cleanVal(parent.PO_Approval_State);status=state&&state!=="Not Configured"?state:cleanVal(parent.PO_Status)||status;
@@ -13890,7 +13949,7 @@ function renderRequestRailModification(b,mod,parent) {
     if(low==="rejected"&&canSubmitMod(b))pending=requestRailIcon("reopen","Revise and resubmit budget modification","data-modreopen='"+escAttr(String(mod.ID))+"'");
     acts=requestRailIcon("view","Preview budget modification","data-moddetail='"+escAttr(String(mod.ID))+"'");
   }
-  acts+=requestAttachmentButton(b,'modification',mod.ID);
+  acts+=requestAttachmentButton(b,'modification',mod.ID,options);
   if(!parent){
     acts+=pending;
     if(canUseModificationTool(mod,b,'resend'))acts+=requestRailIcon('resend','Resend budget modification email',"data-modresend='"+escAttr(String(mod.ID))+"'");
@@ -13898,6 +13957,9 @@ function renderRequestRailModification(b,mod,parent) {
     if(canUseModificationTool(mod,b,'delete'))acts+=requestRailIcon('delete','Delete budget modification',"data-moddelete='"+escAttr(String(mod.ID))+"'",'delete');
   }
   return "<article class='"+(parent?"request-rail-child":"po-request-ledger request-rail-row")+"' data-kind='modification' aria-label='"+(parent?"Budget modification linked to PO "+escAttr(parent.ID):"Budget modification")+"'><div class='po-request-values'>"+requestRailIdentity(parent?"BUD MOD":"MOD",identity.name,description)+"<div class='request-rail-route'>"+route+"</div><span class='po-request-date' title='Effective date'>"+esc(poRequestCardDate(date))+"</span><strong class='po-request-amount "+(signed<0?"neg":"")+"' aria-label='Budget change'>"+fmtModAmount(signed)+"</strong><div class='po-request-status'>"+modBadge(status)+"</div><div class='po-request-actions attachment-page-row-actions'>"+acts+"</div></div></article>";
+}
+function renderRequestRailGroupContents(b,group,options) {
+  return (group.kind==="payment"?renderRequestRailPayment(b,group.record,group.children,options):renderRequestRailModification(b,group.record,null,options))+(group.record._poModificationsState==="legacy-unavailable"?"<p class='request-rail-notice' role='status'>Approval history unavailable for this older PO.</p>":group.record._poModificationsState==="unavailable"?"<p class='request-rail-notice' role='status'>Attached budget modifications unavailable. <button class='btn' type='button' data-request-po-children-retry='"+escAttr(group.record.ID)+"'>Retry</button></p>":"")+(group.children.length?"<ol class='request-rail-children' aria-label='PO budget modifications'>"+group.children.map(function(mod){return "<li><svg class='request-rail-branch' viewBox='0 0 20 20' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' aria-hidden='true'><path d='M2 1v6q0 9 9 9h6'/></svg>"+renderRequestRailModification(b,mod,group.record,options)+"</li>";}).join("")+"</ol>":"");
 }
 function renderRequestRailList(b) {
   var bid=String(b.ID),state=S.checkWireRequestState[bid]||"loading",retained=state==="loading"&&S.checkWireRequestScopes&&S.checkWireRequestScopes[bid]===budgetCreateScope("requests",bid)&&Array.isArray(S.checkWireRequestsByBudget[bid]),requests=state==="loaded"||retained?S.checkWireRequestsByBudget[bid]||[]:[],mods=modsForBudget(bid),notice="";
@@ -13908,7 +13970,7 @@ function renderRequestRailList(b) {
   if(state!=="loaded")notice+="<p class='request-rail-notice' role='status'>"+(state==="loading"?"Refreshing requests…":"Payment requests unavailable.")+"</p>";
   var groups=requestRailGroups(b,requests,mods);
   if(!groups.length)return notice+(state==="loaded"?"<div class='mod-page-empty'><h3>No requests yet</h3></div>":"");
-  return notice+"<div class='request-rail-scroll'><ol class='request-rail-list' aria-label='Requests, newest first'>"+groups.map(function(group){return "<li class='request-rail-group'>"+(group.kind==="payment"?renderRequestRailPayment(b,group.record,group.children):renderRequestRailModification(b,group.record,null))+(group.record._poModificationsState==="legacy-unavailable"?"<p class='request-rail-notice' role='status'>Approval history unavailable for this older PO.</p>":group.record._poModificationsState==="unavailable"?"<p class='request-rail-notice' role='status'>Attached budget modifications unavailable. <button class='btn' type='button' data-request-po-children-retry='"+escAttr(group.record.ID)+"'>Retry</button></p>":"")+(group.children.length?"<ol class='request-rail-children' aria-label='PO budget modifications'>"+group.children.map(function(mod){return "<li><svg class='request-rail-branch' viewBox='0 0 20 20' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' aria-hidden='true'><path d='M2 1v6q0 9 9 9h6'/></svg>"+renderRequestRailModification(b,mod,group.record)+"</li>";}).join("")+"</ol>":"")+"</li>";}).join("")+"</ol></div>";
+  return notice+"<div class='request-rail-scroll'><ol class='request-rail-list' aria-label='Requests, newest first'>"+groups.map(function(group){return "<li class='request-rail-group'>"+renderRequestRailGroupContents(b,group)+"</li>";}).join("")+"</ol></div>";
 }
 function renderCheckWireRequestColumn(b) {
   var bid=String(b.ID),state=S.checkWireRequestState[bid]||"loading",rows=S.checkWireRequestsByBudget[bid]||[],notice=S.checkWireReportDeniedByBudget&&S.checkWireReportDeniedByBudget[bid]?"<p class='request-rail-notice' role='status'>Check / wire requests unavailable for this profile.</p>":"";
@@ -14097,7 +14159,7 @@ function handleModDecision(modId, rowId, approve, notes) {
 }
 $("modModalClose").addEventListener("click", closeModModal);
 $("modOverlay").addEventListener("click", function (e) { if (e.target === this) closeModModal(); });
-document.addEventListener("click", function (e) {
+function handleBudgetRequestClick(e) {
   var approvalPO=e.target.closest("[data-request-po-approvals]");
   if(approvalPO){openPOApprovalDetails(approvalPO.dataset.requestPoApprovals,approvalPO);return;}
   var downloadPO=e.target.closest("[data-request-po-download]");
@@ -14253,7 +14315,8 @@ document.addEventListener("click", function (e) {
       .catch(function (err) { mreo.disabled = false; toastShow("Reopen failed: " + shortErr(err)); });
     return;
   }
-});
+}
+document.addEventListener("click",handleBudgetRequestClick);
 
 function budgetInitParams(){
   // The SDK must handshake after document injection reattaches its message listeners.
@@ -14571,6 +14634,7 @@ function applyDeepLinkPage(page) {
   var p = String(page || "").toLowerCase().replace(/[\s_-]/g, "");
   var target = null;
   if (p.indexOf("approval") >= 0 || p === "approvals" || p === "queue") target = "approvals";
+  else if (p === "requests" || p === "allrequests") target = "requests";
   else if (p.indexOf("import") >= 0) target = "imports";
   else if (p.indexOf("budget") >= 0 || p === "all" || p === "home") target = "budgets";
   if (!target) {
@@ -14585,6 +14649,7 @@ function applyDeepLinkPage(page) {
   auditLog("info", "Deep-link navigating to page", { page: page, tab: target });
   setActiveTab(target);
   if (target === "budgets") { showView("vBudgets"); renderProjList(); }
+  else if (target === "requests") { openAllRequestsTab(); }
   else if (target === "approvals") { showView("vApprovals"); renderApprQueue(); }
   else { openImportsTab(); }
 }
@@ -14634,7 +14699,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.114",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.116",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

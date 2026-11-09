@@ -1,3 +1,13 @@
+## Global Requests Tab — 122.29.116, November 9, 2026
+
+Requests is the second main tab, loaded only on explicit activation. The global
+Connected Rail list has chronological ordering, Date/Project/Territory/Type/Status
+grouping, search and searchable filters. Existing scoped readers and native
+phase actions retain permissions, exact PO child matching and financial totals.
+It does not preload Budget Items or attachments. No new native schema, function,
+API or permission deployment is required. See
+[scope, changed files, verification and rollback](../../docs/budget-all-requests-2026-11-09.md).
+
 ## Saved PO Review After Unknown Submission — 122.29.114, November 9, 2026
 
 Saved PO View, Edit and Attachments now read the requested saved record after an

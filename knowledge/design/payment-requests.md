@@ -1,5 +1,20 @@
 # Request list
 
+Budget Manager also exposes Requests as its second main tab. Load that index
+only after explicit activation; reuse scoped phase readers and the same rail
+renderer/actions. Default to newest first with Date groups. Offer Project,
+Territory, Request Type, Status and None through searchable single-select Group
+By, with searchable Type/Status filters. Use the existing pale-blue group bands,
+compact rounded toolbar and native smooth disclosures. Keep PO children with
+their parent through search/filter/grouping, including Bud Mods filtering. Show
+project/phase context above each row and distinguish primary from linked counts.
+Do not preload line items or attachments for the index. Unknown attachment
+counts remain omitted until their existing scope has been loaded. Preserve
+same-scope rows and disclosures during refresh; surface incomplete reads with
+Retry. Use the phase's current visible action after detail readiness, retaining
+native permissions and a Back route to the index. See the
+[implementation and regression notes](../../docs/budget-all-requests-2026-11-09.md).
+
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
 The phase Requests tab uses the selected Connected Rail layout: one newest-first
