@@ -281,7 +281,8 @@ in the native phase-locked write. Owned-budget access alone is insufficient.
 Place Reallocation immediately to the right of Summary on wide desktop screens.
 Each selected cost code has five element Amount controls with Increase/Decrease
 buttons, current/revised budgets and one reason. Keep net totals and the action
-in the panel footer while its records scroll. On narrower desktops, Summary and
+in the panel footer while its records scroll. Omit the explanatory approval-round
+footer sentence (user direction November 9, 2026). On narrower desktops, Summary and
 Reallocation remain side by side below the PO. Details/Attachments/Approvers
 changes retain the panel and edits.
 

@@ -1,3 +1,13 @@
+## Reallocation Footer Copy — 122.29.112, November 9, 2026
+
+Removed the explanatory approval-round sentence beneath the right panel action
+and its unused CSS. Reallocation controls, totals and combined approval behavior
+are unchanged. Frontend-only: no forms, fields, functions, Custom APIs or
+permissions changed, and no additional Creator publication is needed for this
+copy removal. The prior reallocation feature still has its documented Creator
+publication gate. Existing UI/domain/controller/native regressions, repository
+validation and Pages build apply. Rollback: 122.29.111.
+
 ## PO Reallocation — 122.29.111, November 9, 2026
 
 The user resumed Julie King's requirement and selected the right panel beside
