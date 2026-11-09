@@ -137,7 +137,11 @@ const freshQuotaNative=fs.readFileSync('creator/quota-five-hour-recovery-2026-11
 assert.equal(nativeTokens(freshQuotaNative),nativeTokens(expectedProcessor),'fresh Production matches the approved prior quota baseline before idle-recovery startup changes');
 const successorStartup=/nextPolicy = ifnull\(state\.get\("callbackPolicy"\),""\)\.toString\(\);[\s\S]*?nextAt = zoho\.currenttime\.addMinutes\(1\);/;
 assert.ok(successorStartup.test(importProcessor)&&successorStartup.test(expectedProcessor),'both processors expose exactly the existing Budget successor boundary');
-const preservedBusinessProcessor=importProcessor.replace(successorStartup,expectedProcessor.match(successorStartup)[0]);
+// Four newly migrated daily routes delegate before the unchanged eleven-route
+// processor. Their complete original business bodies are independently compared
+// and executed by test-resumable-daily-exports and the native migration tests.
+const preservedBusinessProcessor=importProcessor.replace(successorStartup,expectedProcessor.match(successorStartup)[0])
+  .replace(/if\(runKey == "Daily_Crew_Employees"[^\n]*\)\s*\{\s*return thisapp\.workflowExportDailyRun\(auditId\);\s*}\s*else if\(runKey == "Daily_Crew_Timecards"/,'if(runKey == "Daily_Crew_Timecards"');
 assert.equal(nativeTokens(preservedBusinessProcessor),nativeTokens(expectedProcessor),'preserve every deployed destination write, source, count, failure and predecessor guard outside the explicit startup handoff');
 assert.doesNotMatch(importProcessor,/\b(?:subdiv|budgCat|budG)\.(?:Acres|Lot_Total_Residential|Equiv_LF_of_Street)\s*=/,'scheduled imports cannot overwrite Budget-owned quantities');
 assert.match(importProcessor,/subdiv\.Projects_Status=status;/,'preserve Subdivision status imports');
