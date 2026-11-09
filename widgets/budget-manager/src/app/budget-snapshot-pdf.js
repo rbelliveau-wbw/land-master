@@ -79,11 +79,13 @@
     content.push({text:'Budget Elements',pageBreak:'before',fontSize:16,bold:true,color:ink,margin:[0,0,0,8]});
     ordered.forEach(function(category){
       if(!category.entries.length)return;
-      var detail=[];
+      var detail=[],codeCounts=new Map();
+      category.entries.forEach(function(entry){var code=entry.row[5];codeCounts.set(code,(codeCounts.get(code)||0)+1);});
       category.entries.forEach(function(entry){entry.elements.forEach(function(element,index){
         // Repeat the source code on every row so page continuations stay
-        // identifiable. Keep the full item name on its first element row.
-        detail.push([entry.row[5]+(index===0?'  '+entry.row[6]:'')].concat([element[7]],element.slice(8,15).map(function(value){return money(value,true);})));
+        // identifiable. Blank/shared codes also need the full name on every row.
+        var code=entry.row[5],name=index===0||!code.trim()||codeCounts.get(code)>1?entry.row[6]:'';
+        detail.push([code+(name?(code?'  ':'')+name:'')].concat([element[7]],element.slice(8,15).map(function(value){return money(value,true);})));
       });});
       var node=table(['Code / Budget Item','Element','Preliminary','Unapproved','Final','Approved Mods','Revised Final','HCSS Actuals','GP Actuals'],detail,[146,90,65,65,65,65,65,65,65],2,8,true);
       node.table.body.unshift([{text:category.code+'  '+category.name+'  |  '+category.department,colSpan:9,bold:true,fontSize:10,color:ink,fillColor:'#e5eef8'},{},{},{},{},{},{},{},{}]);

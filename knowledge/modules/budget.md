@@ -1,8 +1,8 @@
-## Compact Manual PDF — 122.29.108, November 9, 2026
+## Compact Manual PDF — 122.29.109, November 9, 2026
 
 Manual PDF uses a continuous element ledger for each category, repeating the
 category/column headings on page continuations and each item's saved cost code
-on all five element rows. Full item names remain on the first element row;
+on all five element rows. Full item names remain on the first element row and repeat for blank/shared codes;
 alternating group shading makes the blocks readable. Tighter row padding,
 less inter-table spacing and a wider Notes column reduce page count without
 shrinking the existing 7.5pt font or dropping any data.

@@ -8,10 +8,11 @@ main and Production publication with PMP.
 
 ## Layout
 
-Release 122.29.108 replaces one element table per item with a continuous,
+Release 122.29.109 replaces one element table per item with a continuous,
 nine-column element ledger per populated category. Each row contains the saved
 cost code, element label and all seven existing financial values. The full
-item name stays on its first element row. Category and column headings repeat
+item name stays on its first element row; blank/shared codes repeat the full
+item name on every row. Category and column headings repeat
 on every continuation page, and subtle alternating item-group shading separates
 the five-row blocks. No rows, zero values or unknown values are filtered out.
 

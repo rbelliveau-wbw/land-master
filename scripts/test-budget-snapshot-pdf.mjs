@@ -42,6 +42,10 @@ elements.forEach(node=>node.table.body.slice(2).forEach((row,index)=>{
   assert.match(row[0].text,/^\d+/,'every continuation row identifies its source item');
   if(index%5===0)assert.match(row[0].text,/\s\s\S/,'each item retains its full saved name');
 }));
+const ambiguousCodes=budgetPdfFixture();
+ambiguousCodes.rows[20][5]=ambiguousCodes.rows[0][5];ambiguousCodes.rows[1][5]='';
+const ambiguousLedger=context.BudgetSnapshotPdf.definition(ambiguousCodes).content.filter(node=>node.table?.widths.length===9);
+for(const identity of ['000000  Curb & Gutter - Jos\u00e9 <Literal>','000000  Item 20','Item 1'])assert.equal(ambiguousLedger.flatMap(node=>node.table.body.slice(2)).filter(row=>row[0].text===identity).length,5,'blank/shared codes retain complete item names on every continuation row');
 // Exact IDs, not equal category labels, determine the saved category assignment.
 const sameNames=budgetPdfFixture();Object.assign(sameNames.structure.categories[1],{Category_Code:'100',Budget_Category_Name:'Category 0'});
 sameNames.rows.forEach((row,i)=>{if(i%20===1){row[3]='100';row[4]='Category 0';sameNames.elementRows.slice(i*5,i*5+5).forEach(element=>{element[3]='100';element[4]='Category 0';});}});
