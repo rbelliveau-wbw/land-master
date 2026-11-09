@@ -18,7 +18,7 @@ function compile(source){
     previous=source;
     source=source.replace(/\{([^{}]*)\}/g,(whole,body)=>/^\s*"(?:\\.|[^"\\])*"\s*:/.test(body)?`recordValues(${body.replace(/(^|,)\s*("(?:\\.|[^"\\])*")\s*:/g,'$1$2,')})`:whole);
   } while(source!==previous);
-  return translate(source.replace(/\.sum\((\w+)\)/g,'.sum("$1")')).js;
+  return translate(source.replace(/\.sum\((\w+)\)/g,'.sum("$1")'),{ranges:true}).js;
 }
 const helperSource=fs.readFileSync('creator/functions/budgetImportedActualElements.dg','utf8');
 const helper=compile(helperSource);

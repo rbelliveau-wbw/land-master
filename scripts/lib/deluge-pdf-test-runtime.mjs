@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-export function translate(source) {
+export function translate(source, {ranges=false}={}) {
   const literals=[];
   let s=source.replace(/"(?:\\.|[^"\\])*"|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, token=>{
     if(!token.startsWith('"'))return '';
@@ -13,9 +13,12 @@ export function translate(source) {
   if(!signature)throw new Error('Unsupported function declaration');
   const name=signature[1],args=signature[2].split(',').filter(Boolean).map(x=>x.trim().split(/\s+/).at(-1));
   s=s.slice(signature[0].length).trim().slice(1,-1);
-  s=s.replace(/\b([A-Z][A-Za-z_]+)\[([^\]]+)\](?:\s+sort by\s+(\w+))?(?:\s+range from (\d+) to (\d+))?/g,(_,form,criteria,sort,start,end)=>{
+  // Existing adapters translate their own native ranges after this pass. Only
+  // opt-in fixtures with a range-aware query runtime may consume them here.
+  const queryPattern=ranges?/\b([A-Z][A-Za-z_]+)\[([^\]]+)\](?:\s+sort by\s+(\w+))?(?:\s+range from (\d+) to (\d+))?/g:/\b([A-Z][A-Za-z_]+)\[([^\]]+)\](?:\s+sort by\s+(\w+))?/g;
+  s=s.replace(queryPattern,(_,form,criteria,sort,start,end)=>{
     const predicate=criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2');
-    return `query('${form}',row=>${predicate},'${sort||''}'${start==null?'':','+start+','+end})`;
+    return `query('${form}',row=>${predicate},'${sort||''}'${!ranges||start==null?'':','+start+','+end})`;
   });
   s=s.replace(/\{([^{};\n]*,[^{};\n]*)\}/g,'[$1]');
   s=s.replace(/for each index\s+(\w+)\s+in\s+([^\n{]+)/g,'for ($1 of indexes($2))');
