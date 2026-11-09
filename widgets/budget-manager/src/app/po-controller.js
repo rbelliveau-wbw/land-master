@@ -14,8 +14,25 @@
     }else if(wanted.action==='Submit'&&wanted.automaticModifications===true){
       var bundle=snapshot.approvalBundle;
       if(!bundle||!Array.isArray(bundle.modifications)||!Array.isArray(bundle.rows)||!bundle.rows.length||bundle.rows[0].status!=='Pending'||bundle.rows.slice(1).some(function(row){return row.status!=='Not Sent';}))throw new Error('Combined PO approval chain was not verified.');
-      var planned=root.LMPO.validate(wanted,true).grouped,expected={},seen=new Set();
-      Object.keys(planned).forEach(function(id){if(!wanted.expectedBalances||typeof wanted.expectedBalances[id]!=='string'||!wanted.expectedPendingModifications||typeof wanted.expectedPendingModifications[id]!=='string')throw new Error('Submission item balance was not verified.');var amount=planned[id]-BigInt(wanted.expectedBalances[id])-BigInt(wanted.expectedPendingModifications[id]);if(amount>0n)expected[id]=root.LMPO.currency(amount);});
+      var planned=root.LMPO.validate(wanted,true).grouped,plannedComponents=Object.create(null),expected={},seen=new Set();
+      wanted.lines.forEach(function(line){var key=line.budgetItemId+'|'+line.costElement;plannedComponents[key]=(plannedComponents[key]||0n)+root.LMPO.money(line.finalAmount);});
+      Object.keys(planned).forEach(function(id){
+        if(!wanted.expectedBalances||typeof wanted.expectedBalances[id]!=='string'||!wanted.expectedPendingModifications||typeof wanted.expectedPendingModifications[id]!=='string')throw new Error('Submission item balance was not verified.');
+        var amount=planned[id]-BigInt(wanted.expectedBalances[id])-BigInt(wanted.expectedPendingModifications[id]);
+        var keys=Object.keys(plannedComponents).filter(function(key){return key.split('|')[0]===id;}),componentBalances=wanted.expectedComponentBalances,componentPending=wanted.expectedComponentPendingModifications;
+        // Native baselines reserve and modify each selected element separately.
+        // Legacy items carry no component expectations and keep the item total.
+        var hasComponents=keys.some(function(key){return componentBalances&&Object.prototype.hasOwnProperty.call(componentBalances,key)||componentPending&&Object.prototype.hasOwnProperty.call(componentPending,key);});
+        if(hasComponents){
+          amount=0n;
+          keys.forEach(function(key){
+            if(!componentBalances||typeof componentBalances[key]!=='string'||! /^-?\d+$/.test(componentBalances[key])||!componentPending||typeof componentPending[key]!=='string'||! /^\d+$/.test(componentPending[key]))throw new Error('Submission component balance was not verified.');
+            var shortfall=plannedComponents[key]-BigInt(componentBalances[key])-BigInt(componentPending[key]);
+            if(shortfall>0n)amount+=shortfall;
+          });
+        }
+        if(amount>0n)expected[id]=root.LMPO.currency(amount);
+      });
       bundle.modifications.forEach(function(mod){if(typeof mod.id!=='string'||!/^\d+$/.test(mod.id)||seen.has(mod.budgetItemId)||expected[mod.budgetItemId]!==mod.amount||mod.status!=='Submitted')throw new Error('Automatic budget modification was not verified.');seen.add(mod.budgetItemId);});
       if(seen.size!==Object.keys(expected).length||(snapshot.budgetModificationId||null)!==(bundle.modifications.length?bundle.modifications[0].id:null))throw new Error('Linked budget modification bundle was not verified.');
       if(bundle.modifications.length&&!bundle.rows.some(function(row){return row.role.toUpperCase()!=='CFO';}))throw new Error('Required budget modification approver was not verified.');

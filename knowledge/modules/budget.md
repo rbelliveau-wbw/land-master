@@ -1,3 +1,36 @@
+## PO Component Submission — 122.29.106, November 9, 2026
+
+PO Submit and pending-PO Save now send the existing native component-balance
+expectations for each selected Budget Item and cost element. The values use
+exact string cents, restore the PO's own reserved element amounts once, and
+exclude its own pending component credits. Missing, duplicated or malformed
+selected native component balances stop before the write. Legacy items without
+native component baselines keep the existing aggregate path; department-derived
+display baselines and legacy allocation warnings do not invent native balances.
+
+This fixes the false “Component balances changed” rejection exposed when blank
+Final component fields were backfilled on Eagle Prairie. Successful submission
+verification also follows native per-element modification shortfalls when the
+overall item still has surplus. Definitive not-started rejections now state
+that no changes were saved; ambiguous results retain status recovery.
+
+Changed source: `po-domain.js`, `po-ui.js`, `po-controller.js`, `po-progress.js`,
+the widget version stamp, and focused tests/release metadata. Existing
+`Manage_Purchase_Order` / `managePurchaseOrder` and `poBudgetBalances` contracts
+are consumed without backend changes. No Creator form, field, function or
+Custom API changes, or Creator publication, are required. Related native data
+remains Budget_Item Final components, Payment_Request, PO_Item and PO-created
+Budget_Modification reservations; routing, permissions and financial amounts
+retain their current rules.
+
+Regressions execute the actual save and controller paths with a five-line,
+three-item PO; duplicate/moved elements; pending amendments and credits; native
+zero/signed/large cents; malformed/unknown components; mixed legacy/native
+baselines; component overruns with aggregate surplus; no-write rejections; and
+unknown-response recovery. Run `npm run validate` and `npm run build:pages`.
+Rollback: restore Budget Manager Production to **122.29.105** and rebuild Pages,
+keeping the permanent Creator widget URL.
+
 ## PO Summary And Approvers Workspace — 122.29.105, November 9, 2026
 
 The PO Summary fills the main desktop editor's height and pins its Total below

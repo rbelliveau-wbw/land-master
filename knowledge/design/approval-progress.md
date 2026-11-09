@@ -83,6 +83,13 @@ For a new module, write its equivalent parent, row, delivery, and finalization p
 
 ## Terminal states and recovery
 
+Purchase Order prewrite rejection receipts (`writeState: "not-started"`) say
+**Purchase Order Not Saved** and **No changes were saved. Review the error before
+trying again.** Keep the actual error visible and offer the existing draft
+review/Close actions. Do not ask for saved-status recovery for a definitive
+rejection. Unknown replies retain **Check status** and their no-replay guard.
+Budget Manager 122.29.106 covers both paths in `scripts/test-po-progress.mjs`.
+
 | State | What the modal says and does |
 | --- | --- |
 | Success | State the verified outcome. For a non-final Budget approval: **“Approved and routed to {role}. Email sent to {address}.”** For final Budget approval: **“Approval track complete. Budget finalized.”** Offer **Done**; keep the result visible until dismissed. |

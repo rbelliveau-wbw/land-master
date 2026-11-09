@@ -124,6 +124,32 @@
       return {budgetItemId:id,verified:true,available:available,allocated:grouped[id],remaining:remaining,pending:pending,shortfall:shortfall>0n?shortfall:0n};
     });
   }
+  // Submission expectations use native component balances, independently of
+  // display-only legacy allocation warnings or derived department baselines.
+  function componentExpectations(lines, balances, reservedLines, reservedModifications) {
+    var expected=Object.create(null),pending=Object.create(null);
+    function cents(value){
+      if(typeof value!=="string"||! /^-?\d+$/.test(value))throw new Error('Component balance is unavailable. Refresh and review before submitting.');
+      return BigInt(value);
+    }
+    lines.forEach(function(line){
+      var balance=balances.find(function(row){return row.budgetItemId===line.budgetItemId;});
+      if(!balance)throw new Error('A selected item has no verified balance.');
+      if(balance.componentBaselineAvailable!==true)return;
+      var key=line.budgetItemId+'|'+line.costElement;
+      if(Object.prototype.hasOwnProperty.call(expected,key))return;
+      var parts=Array.isArray(balance.componentBalances)?balance.componentBalances.filter(function(part){return part&&part.costElement===line.costElement;}):[];
+      if(parts.length!==1)throw new Error('Component balance is unavailable. Refresh and review before submitting.');
+      var available=cents(parts[0].availableCents),otherPending=cents(parts[0].pendingModificationCents);
+      (reservedLines||[]).forEach(function(saved){if(saved.budgetItemId===line.budgetItemId&&saved.costElement===line.costElement)available+=money(saved.finalAmount);});
+      (reservedModifications||[]).forEach(function(mod){
+        if(mod.budgetItemId===line.budgetItemId&&mod.status!=='Approved'&&mod.components)otherPending-=money(mod.components[line.costElement]);
+      });
+      if(otherPending<0n)throw new Error('Pending PO component modification balance does not reconcile. Refresh and review before submitting.');
+      expected[key]=String(available);pending[key]=String(otherPending);
+    });
+    return {expectedComponentBalances:expected,expectedComponentPendingModifications:pending};
+  }
   // Read-only element arithmetic mirrors the native poBudgetBalances contract.
   // Unknown legacy allocations stay separate; an item total is never spread
   // across elements or silently assigned to Other.
@@ -158,5 +184,5 @@
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });
   }
-  root.LMPO={uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,elementAllocations:elementAllocations};
+  root.LMPO={uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);

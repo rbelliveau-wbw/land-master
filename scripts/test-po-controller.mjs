@@ -29,3 +29,36 @@ console.log('PO deletion: exact previews, duplicate-send blocking, captured read
 const withModification={...payload,automaticModifications:true,expectedBalances:{'4':'101'},expectedPendingModifications:{'4':'0'}};
 const vpSnapshot={...snapshot,budgetModificationId:'9',approvalBundle:{modifications:[{id:'9',budgetItemId:'4',amount:'1.00',status:'Submitted'}],rows:[{role:'CFO',status:'Pending'},{role:'VP',status:'Not Sent'}]}};
 assert.equal(c.LMPOController.verify(vpSnapshot,withModification),vpSnapshot,'Any configured additional role satisfies the modification route');assert.throws(()=>c.LMPOController.verify({...vpSnapshot,approvalBundle:{...vpSnapshot.approvalBundle,rows:[{role:'CFO',status:'Pending'}]}},withModification),/approver/);
+
+// Native component baselines can need a modification even when the whole item
+// has spare money. Verify the native plan from the exact submitted expectations.
+const componentPayload={...payload,automaticModifications:true,expectedBalances:{'4':'10000'},expectedPendingModifications:{'4':'0'},expectedComponentBalances:{'4|1':'0','4|5':'1000'},expectedComponentPendingModifications:{'4|1':'0','4|5':'0'}};
+const componentSnapshot={...vpSnapshot,approvalBundle:{...vpSnapshot.approvalBundle,modifications:[{id:'9',budgetItemId:'4',amount:'1.01',status:'Submitted'}]}};
+assert.equal(c.LMPOController.verify(componentSnapshot,componentPayload),componentSnapshot,'Labor shortfall is retained despite item-level surplus');
+const componentController=c.LMPOController.create({call:async()=>({contract:'po-v1',success:true,writeState:'verified',snapshot:componentSnapshot}),onState(){}});
+await componentController.begin(componentPayload);assert.equal(componentController.state().unknown,false,'Successful native component submission must not enter unknown recovery');assert.equal(componentController.state().snapshot.id,'5');
+
+const mixedLine={...payload.lines[1],key:'legacy',budgetItemId:'8',costElement:'2',finalAmount:'3.00'};
+const mixedPayload={...componentPayload,amount:'5.01',lines:[...payload.lines,mixedLine],expectedBalances:{'4':'10000','8':'100'},expectedPendingModifications:{'4':'0','8':'0'}};
+const mixedSnapshot={...componentSnapshot,amount:mixedPayload.amount,lines:[...snapshot.lines,{...mixedLine,ID:'10'}],approvalBundle:{...componentSnapshot.approvalBundle,modifications:[...componentSnapshot.approvalBundle.modifications,{id:'11',budgetItemId:'8',amount:'2.00',status:'Submitted'}]}};
+assert.equal(c.LMPOController.verify(mixedSnapshot,mixedPayload),mixedSnapshot,'Native component and legacy item plans coexist in one PO');
+const repeatedPayload={...componentPayload,amount:'3.02',lines:[...payload.lines,{...payload.lines[0],key:'labor-copy'}]};
+const repeatedSnapshot={...componentSnapshot,amount:repeatedPayload.amount,lines:[...snapshot.lines,{...payload.lines[0],key:'labor-copy',ID:'12'}],approvalBundle:{...componentSnapshot.approvalBundle,modifications:[{id:'9',budgetItemId:'4',amount:'2.02',status:'Submitted'}]}};
+assert.equal(c.LMPOController.verify(repeatedSnapshot,repeatedPayload),repeatedSnapshot,'Repeated lines group before applying component availability once');
+
+const fundedPayload={...componentPayload,expectedComponentBalances:{'4|1':'1','4|5':'0'},expectedComponentPendingModifications:{'4|1':'100','4|5':'100'}};
+const fundedSnapshot={...snapshot,budgetModificationId:null,approvalBundle:{modifications:[],rows:[{role:'CFO',status:'Pending'}]}};
+assert.equal(c.LMPOController.verify(fundedSnapshot,fundedPayload),fundedSnapshot,'Pending component credits fund only their own component without an extra modification');
+assert.equal(c.LMPOController.verify({...fundedSnapshot,approvalBundle:{...fundedSnapshot.approvalBundle}}, {...fundedPayload,expectedComponentBalances:{'4|1':'101','4|5':'100'},expectedComponentPendingModifications:{'4|1':'0','4|5':'0'}}).id,'5','No shortfall needs no modification or additional approver');
+assert.equal(c.LMPOController.verify(vpSnapshot,{...withModification,expectedComponentBalances:{},expectedComponentPendingModifications:{}}),vpSnapshot,'Legacy empty component maps preserve item-level verification');
+
+for(const changed of [
+  {expectedComponentBalances:{'4|1':'0'}},
+  {expectedComponentPendingModifications:{'4|1':'0'}},
+  {expectedComponentBalances:{'4|1':'0.00','4|5':'1000'}},
+  {expectedComponentPendingModifications:{'4|1':'-1','4|5':'0'}}
+])assert.throws(()=>c.LMPOController.verify(componentSnapshot,{...componentPayload,...changed}),/component balance/,'Incomplete or malformed component expectations cannot fall back to the item plan');
+for(const changed of [{amount:'1.00'},{id:9},{budgetItemId:'8'},{status:'Approved'}])assert.throws(()=>c.LMPOController.verify({...componentSnapshot,approvalBundle:{...componentSnapshot.approvalBundle,modifications:[{...componentSnapshot.approvalBundle.modifications[0],...changed}]}},componentPayload),/modification/,'Existing exact modification identity, amount and state guards remain');
+assert.throws(()=>c.LMPOController.verify({...componentSnapshot,approvalBundle:{...componentSnapshot.approvalBundle,modifications:[]}},componentPayload),/modification bundle/,'Every expected native modification is required');
+assert.throws(()=>c.LMPOController.verify({...componentSnapshot,approvalBundle:{...componentSnapshot.approvalBundle,rows:[{role:'CFO',status:'Pending'}]}},componentPayload),/approver/,'Component overrun still requires an additional configured approver');
+console.log('PO component verification: native element shortfalls, item surplus, mixed legacy items, repeated lines, pending credits, zero-modification plans, actual controller success and existing guards passed.');
