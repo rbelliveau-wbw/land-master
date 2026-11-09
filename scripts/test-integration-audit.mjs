@@ -44,6 +44,19 @@ function runtime(name,responder,environment='Development',auditRows=[]){
   return {execute,calls,events,delays};
 }
 const ok=body=>({responseCode:200,responseText:JSON.stringify(body)});
+for(const environment of ['Development','Stage','Production'])for(const status of ['Failed','Partial']){
+ const ID='4410926000000000099',h=runtime('workflowRunLog',()=>ok({code:3000,data:{ID}}),environment);
+ const result=h.execute([{action:'start',terminal:true,workflow:'Batch failure',system:'Creator Batch Workflows',status,stage:'Original failure',reference:'90071992547409961',message:'Original item error',details:'No replay',counts:{received:1,processed:1,failed:1}}]);
+ assert.equal(h.calls.length,1);assert.equal(h.calls[0].type,'POST');const payload=JSON.parse(h.calls[0].parameters);
+ assert.equal(payload.data.Run_Status,status);assert.equal(payload.data.External_Reference,'90071992547409961');assert.equal(payload.data.Message,'Original item error');assert.equal(payload.data.Rows_Failed,1);assert.equal(payload.data.Stage,'Original failure');assert.deepEqual(payload.skip_workflow,['schedules']);assert.equal(result.status,status);
+ assert.equal(h.calls[0].headers.environment,environment==='Production'?undefined:environment.toLowerCase());
+}
+for(const extra of [{status:'Running'},{status:'Success'},{callbackPolicy:'shared-recovery-30m'},{exportState:'{}'},{resumeAt:'11/09/2026 11:30:00 AM'}]){
+ const h=runtime('workflowRunLog',()=>{throw Error('Must not send');});assert.throws(()=>h.execute([{action:'start',terminal:true,workflow:'Batch failure',system:'Creator Batch Workflows',...extra}]));assert.equal(h.calls.length,0,'Invalid terminal starts fail before any write');
+}
+{
+ const h=runtime('workflowRunLog',()=>{throw Error('Lost terminal create reply');});assert.throws(()=>h.execute([{action:'start',terminal:true,workflow:'Batch failure',system:'Creator Batch Workflows',status:'Failed'}]));assert.equal(h.calls.length,1,'A terminal failure create never retries an ambiguous POST');
+}
 function analytics(sequence=['1004'],data={data:[{Code:'EA04',Cost:42}]}){let poll=0;return config=>{
   if(config.url.includes('/views/'))return ok({status:'success',data:{jobId:'90001'}});
   if(config.url.endsWith('/data?exportFormat=json'))return ok(data);

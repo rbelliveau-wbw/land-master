@@ -10,21 +10,28 @@ try
 	gpComponents = gpActualElements.get("components");
 	hcssComponents = hcssActualElements.get("components");
 	actualSource = "Creator Budget Item";
+	if(Budget_Item[ID == input.ID].count() != 1) { throw "The native Budget Item is missing or ambiguous."; }
+	actualItem = Budget_Item[ID == input.ID];
+	actualPercentComplete = Budget_Import_Item[Budget_Item == input.ID].sum(Percent_Complete);
 	actualWriteAttempted = true;
-	input.PROJ_Actual = gpActualElements.get("total");
-	input.HCSS_Actuals = hcssActualElements.get("total");
-	input.GP_Labor_Actuals = gpComponents.get("Labor");
-	input.GP_Materials_Actuals = gpComponents.get("Materials");
-	input.GP_Equipment_Actuals = gpComponents.get("Equipment");
-	input.GP_Subcontractor_Actuals = gpComponents.get("Subcontractor");
-	input.GP_Other_Actuals = gpComponents.get("Other");
-	input.HCSS_Labor_Actuals = hcssComponents.get("Labor");
-	input.HCSS_Materials_Actuals = hcssComponents.get("Materials");
-	input.HCSS_Equipment_Actuals = hcssComponents.get("Equipment");
-	input.HCSS_Subcontractor_Actuals = hcssComponents.get("Subcontractor");
-	input.HCSS_Other_Actuals = hcssComponents.get("Other");
-	input.Cost_to_Complete = hcssActualElements.get("costToComplete");
-	input.Percent_Complete = Budget_Import_Item[Budget_Item == input.ID].sum(Percent_Complete);
+	// One native update replaces fourteen separate field-update statements.
+	update actualItem
+	[
+		PROJ_Actual=gpActualElements.get("total")
+		HCSS_Actuals=hcssActualElements.get("total")
+		GP_Labor_Actuals=gpComponents.get("Labor")
+		GP_Materials_Actuals=gpComponents.get("Materials")
+		GP_Equipment_Actuals=gpComponents.get("Equipment")
+		GP_Subcontractor_Actuals=gpComponents.get("Subcontractor")
+		GP_Other_Actuals=gpComponents.get("Other")
+		HCSS_Labor_Actuals=hcssComponents.get("Labor")
+		HCSS_Materials_Actuals=hcssComponents.get("Materials")
+		HCSS_Equipment_Actuals=hcssComponents.get("Equipment")
+		HCSS_Subcontractor_Actuals=hcssComponents.get("Subcontractor")
+		HCSS_Other_Actuals=hcssComponents.get("Other")
+		Cost_to_Complete=hcssActualElements.get("costToComplete")
+		Percent_Complete=actualPercentComplete
+	];
 	// Preserve the existing Construction budget approval lifecycle exactly.
 	if(input.Department == "Construction")
 	{
@@ -43,11 +50,19 @@ try
 }
 catch(actualError)
 {
-	// workflowRunLog persists independently from the failing batch transaction.
-	// Log failures only; thousands of successful items do not create log noise.
-	actualAudit = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows"});
+	// Emit the original item/source error before attempting an external audit.
+	// An audit failure must never replace that original cause or trigger replay.
+	actualFailure = "Budget Item=" + input.ID + "; Source=" + actualSource + "; " + actualError.toString();
+	info actualFailure;
 	actualStatus = "Failed";
 	if(actualWriteAttempted) { actualStatus = "Partial"; }
-	thisapp.workflowRunLog({"action":"finish","id":actualAudit.get("id"),"status":actualStatus,"stage":"Apply Actual Elements","reference":input.ID.toString(),"counts":{"received":1,"processed":1,"created":0,"updated":0,"skipped":0,"failed":1},"message":actualError.toString(),"details":"Source=" + actualSource + "; Budget Item=" + input.ID + "; batch size=100. Native writes may roll back. Review the failed batch before retrying; no automatic replay."});
-	throw actualError;
+	try
+	{
+		thisapp.workflowRunLog({"action":"start","terminal":true,"workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows","status":actualStatus,"stage":"Apply Actual Elements","reference":input.ID.toString(),"counts":{"received":1,"processed":1,"created":0,"updated":0,"skipped":0,"failed":1},"message":actualFailure,"details":"Source=" + actualSource + "; Budget Item=" + input.ID + "; batch size=100. Native writes may roll back. Review the failed batch before retrying; no automatic replay."});
+	}
+	catch(actualAuditError)
+	{
+		info "BUDGET ACTUAL AUDIT FAILED; original=" + actualFailure + "; audit=" + actualAuditError.toString() + ". No audit retry or business replay.";
+	}
+	throw actualFailure;
 }

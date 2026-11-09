@@ -13,9 +13,9 @@ export function translate(source) {
   if(!signature)throw new Error('Unsupported function declaration');
   const name=signature[1],args=signature[2].split(',').filter(Boolean).map(x=>x.trim().split(/\s+/).at(-1));
   s=s.slice(signature[0].length).trim().slice(1,-1);
-  s=s.replace(/\b([A-Z][A-Za-z_]+)\[([^\]]+)\](?:\s+sort by\s+(\w+))?/g,(_,form,criteria,sort)=>{
+  s=s.replace(/\b([A-Z][A-Za-z_]+)\[([^\]]+)\](?:\s+sort by\s+(\w+))?(?:\s+range from (\d+) to (\d+))?/g,(_,form,criteria,sort,start,end)=>{
     const predicate=criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2');
-    return `query('${form}',row=>${predicate},'${sort||''}')`;
+    return `query('${form}',row=>${predicate},'${sort||''}'${start==null?'':','+start+','+end})`;
   });
   s=s.replace(/\{([^{};\n]*,[^{};\n]*)\}/g,'[$1]');
   s=s.replace(/for each index\s+(\w+)\s+in\s+([^\n{]+)/g,'for ($1 of indexes($2))');

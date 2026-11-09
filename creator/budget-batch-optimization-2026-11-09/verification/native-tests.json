@@ -1,0 +1,35 @@
+{
+  "revision": "budget-batch-20261109",
+  "environment": "development",
+  "finalNativeComparisons": {
+    "items": 40,
+    "sources": 80,
+    "linkedRows": 56,
+    "allMatched": true
+  },
+  "finalNativeApply": {
+    "requested": 100,
+    "processed": 100,
+    "elapsedMs": 2214,
+    "blockSize": 100
+  },
+  "nativeBatchRecordRunner": {
+    "success": true,
+    "seconds": 0.053
+  },
+  "savedValues": {
+    "items": 2,
+    "sourceComparisons": 4,
+    "allMatched": true
+  },
+  "terminalFailure": {
+    "status": "Failed",
+    "finishedAtPresent": true,
+    "resumeAtEmpty": true,
+    "elapsedMs": 477,
+    "recipients": 0,
+    "emailSent": false
+  },
+  "probeRestoredExact": true,
+  "scope": "No Production replay; no temporary helper promoted; source IDs and financial values omitted."
+}

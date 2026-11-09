@@ -1,4 +1,12 @@
 // Native on-failure action also catches execution failures outside a row's catch,
 // including batch runtime/statement limits. Preserve native failure reporting.
-batchAudit = thisapp.workflowRunLog({"action":"start","workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows"});
-thisapp.workflowRunLog({"action":"finish","id":batchAudit.get("id"),"status":"Failed","stage":"Native Batch Failure","counts":{"failed":1},"message":"The native Budget Item actuals batch failed.","details":"Batch size=100; sources=Great Plains and HeavyJob. Some batches may have completed. Open Creator's failed execution for the native batch number, failed rows and runtime error; inspect any item-specific Workflow Log entry before retrying. No automatic replay."});
+batchFailureMessage = "The native Budget Item actuals batch failed. Whole-run row counts are unavailable; zero counts on this summary do not mean no rows changed.";
+info batchFailureMessage;
+try
+{
+	thisapp.workflowRunLog({"action":"start","terminal":true,"workflow":"Budgets - Apply Cost to Budget Lines","system":"Creator Batch Workflows","status":"Failed","stage":"Native Batch Failure; Counts Unavailable","counts":{"failed":1},"message":batchFailureMessage,"details":"Batch size=100; sources=Great Plains and HeavyJob. This is the failure notification time, not the batch start/duration. Successful blocks may have committed; failed blocks may have rolled back. Whole-run received/processed/updated counts are unknown. Creator shows only the first five failed-block errors. Open the native batch execution and inspect item-specific Workflow Log entries before retrying. No automatic replay."});
+}
+catch(batchAuditError)
+{
+	info "BUDGET BATCH AUDIT FAILED; " + batchFailureMessage + "; audit=" + batchAuditError.toString() + ". Inspect Creator's native batch log; no retry or business replay.";
+}

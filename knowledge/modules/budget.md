@@ -284,6 +284,14 @@ Workflow Log** path. Logs retain the available source, captured batch, source
 key/cursor and acknowledged counts; uncertain operations require review before
 a manual retry. Existing failure recipients and access rules remain unchanged.
 
+The [November 9 runtime/logging repair](../../creator/budget-batch-optimization-2026-11-09/README.md)
+retains that 100-record size, daily clock and template exclusion. Its normal path
+uses direct native aggregates, preserves fetched-record zero/null semantics,
+and combines fourteen actual-field assignments into one native update. Original
+item/source failures are preserved before a single terminal audit POST; native
+batch summaries explicitly identify unavailable whole-run counts. The linked
+record contains native regression, timing, publication and rollback evidence.
+
 Development schema installation has verified the five renamed existing import
 fields and ten new optional blank **USD 16/4** Budget Item actual fields. This
 does not establish Production Creator availability or a completed live actuals

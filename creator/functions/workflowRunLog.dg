@@ -18,6 +18,7 @@ map workflowRunLog(map event)
 	fields = Map();
 	runIdText = "";
 	status = "Running";
+	terminalCreate = action == "start" && event.get("terminal") == true;
 	if(action == "start")
 	{
 		workflowName = ifnull(event.get("workflow"),"").toString().trim();
@@ -27,6 +28,19 @@ map workflowRunLog(map event)
 			throw "Workflow audit requires a workflow name and external system.";
 		}
 		fields = {"Workflow_Name":workflowName,"External_System":systemName,"Run_Status":"Running","Started_At":zoho.currenttime.toString("MM/dd/yyyy hh:mm:ss a"),"Stage":"Starting","Rows_Received":0,"Rows_Processed":0,"Rows_Created":0,"Rows_Updated":0,"Rows_Skipped":0,"Rows_Failed":0,"Failure_Notified":false};
+		if(terminalCreate)
+		{
+			status = ifnull(event.get("status"),"Failed").toString();
+			if(status != "Failed" && status != "Partial")
+			{
+				throw "A terminal audit create requires Failed or Partial status.";
+			}
+			if(event.get("callbackPolicy") != null || event.get("exportState") != null || event.get("resumeAt") != null)
+			{
+				throw "A terminal audit create cannot enqueue or resume work.";
+			}
+			fields.put("Run_Status",status);
+		}
 	}
 	else
 	{
@@ -46,6 +60,11 @@ map workflowRunLog(map event)
 			throw "Unknown workflow audit status: " + status;
 		}
 		fields.put("Run_Status",status);
+	}
+	// Explicit terminal creates persist a complete failure in one POST. Ordinary
+	// start/update/finish callers retain their existing fields and behavior.
+	if(action != "start" || terminalCreate)
+	{
 		textFields = {"stage":"Stage","reference":"External_Reference","message":"Message","details":"Details"};
 		for each  key in textFields.keys()
 		{
@@ -146,7 +165,7 @@ map workflowRunLog(map event)
 		fields.put("Resume_At",null);
 	}
 	payload = {"data":fields};
-	if(callbackPolicy == "shared-recovery-30m")
+	if(callbackPolicy == "shared-recovery-30m" || terminalCreate)
 	{
 		payload.put("skip_workflow",{"schedules"});
 	}

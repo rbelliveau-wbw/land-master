@@ -1,51 +1,53 @@
 map budgetImportedActualElements(int budgetItemId, string dataSource)
 {
-	// Read-only preflight used by the existing 100-record native Budget batch.
-	// Every Import row retains its source identity; the five columns are generic.
+	// Direct aggregate queries stay inside Creator's data engine. Fetched-record
+	// aggregate methods and normal-path source loops are avoided in native batches.
 	if(dataSource != "HeavyJob" && dataSource != "Great Plains")
 	{
 		throw "Unsupported actual source: " + dataSource;
 	}
-	sources = Budget_Import_Item[Budget_Item == budgetItemId.toLong() && Data_Source == dataSource];
-	components = {"Labor":0.0,"Materials":0.0,"Equipment":0.0,"Subcontractor":0.0,"Other":0.0};
-	complete = sources.count() > 0;
-	legacyCount = 0;
-	for each source in sources
+	itemId = budgetItemId.toLong();
+	rowCount = Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].count();
+	if(rowCount == 0)
 	{
-		parts = {"Labor":source.Labor,"Materials":source.Materials,"Equipment":source.Equipment,"Subcontractor":source.Subcontractor,"Other":source.Other};
-		present = 0;
-		for each key in components.keys()
-		{
-			if(parts.get(key) != null)
-			{
-				present = present + 1;
-				parts.put(key,parts.get(key).toDecimal());
-			}
-		}
-		if(present == 0)
-		{
-			// Existing total-only imports remain readable during the migration.
-			// They must never masquerade as measured all-zero allocations.
-			complete = false;
-			legacyCount = legacyCount + 1;
-		}
-		else
-		{
-			if(present != 5 || source.Cost == null)
-			{
-				throw "Incomplete actual elements; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
-			}
-			// Sum every selected source field independently from the saved Cost.
-			// Their difference is allowed and is never allocated to another field.
-			for each key in components.keys()
-			{
-				components.put(key,components.get(key) + parts.get(key));
-			}
-		}
+		// Native captured behavior: an empty collection totals zero, with an
+		// unknown allocation. Avoid four more queries for an unlinked source.
+		return {"complete":false,"components":{"Labor":null,"Materials":null,"Equipment":null,"Subcontractor":null,"Other":null},"rows":0,"legacyRows":0,"total":0.0,"costToComplete":0.0};
 	}
-	if(complete != true)
+	// Flat AND criteria avoid Creator's native formatter dropping mixed AND/OR
+	// grouping. Every nonlegacy row must have all five elements and a Cost.
+	legacyCount = Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource && Labor == null && Materials == null && Equipment == null && Subcontractor == null && Other == null].count();
+	validCount = Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource && Labor != null && Materials != null && Equipment != null && Subcontractor != null && Other != null && Cost != null].count();
+	if(validCount != rowCount - legacyCount)
 	{
-		components = {"Labor":null,"Materials":null,"Equipment":null,"Subcontractor":null,"Other":null};
+		// Error path only: retain the original first invalid import identity when
+		// it is inside the bounded native read. No Budget Item write is permitted.
+		for each source in Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource] range from 0 to 4999
+		{
+			legacy = source.Labor == null && source.Materials == null && source.Equipment == null && source.Subcontractor == null && source.Other == null;
+			if(!legacy)
+			{
+				if(source.Labor == null || source.Materials == null || source.Equipment == null || source.Subcontractor == null || source.Other == null || source.Cost == null)
+				{
+					throw "Incomplete actual elements; source=" + dataSource + "; import=" + source.ID + "; code=" + source.Code;
+				}
+			}
+		}
+		throw "Incomplete actual elements; source=" + dataSource + "; Budget Item=" + itemId + "; invalid import outside the bounded diagnostic read. No Budget Item changes were applied.";
 	}
-	return {"complete":complete,"components":components,"rows":sources.count(),"legacyRows":legacyCount,"total":sources.sum(Cost),"costToComplete":sources.sum(Cost_to_Complete)};
+	complete = rowCount > 0 && legacyCount == 0;
+	components = {"Labor":null,"Materials":null,"Equipment":null,"Subcontractor":null,"Other":null};
+	if(complete)
+	{
+		// Currency columns are native decimals. Sum each independently; never
+		// round, allocate a residual, or force agreement with the saved total.
+		components = {"Labor":Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Labor),"Materials":Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Materials),"Equipment":Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Equipment),"Subcontractor":Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Subcontractor),"Other":Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Other)};
+	}
+	total = Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Cost);
+	costToComplete = Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].sum(Cost_to_Complete);
+	// A fetched nonempty all-null column returned null in the old helper;
+	// direct sum returns zero. Retain the original null, including legacy Cost.
+	if(total == 0 && Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].count(Cost) == 0) { total = null; }
+	if(costToComplete == 0 && Budget_Import_Item[Budget_Item == itemId && Data_Source == dataSource].count(Cost_to_Complete) == 0) { costToComplete = null; }
+	return {"complete":complete,"components":components,"rows":rowCount,"legacyRows":legacyCount,"total":total,"costToComplete":costToComplete};
 }
