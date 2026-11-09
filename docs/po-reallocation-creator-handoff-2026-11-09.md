@@ -33,6 +33,10 @@ screen showed both environments at 9.169 and no remaining Development changes.
 That observation and the audit hashes describe this publication at completion;
 they do not audit later canonical capacity-repair bodies or claim that the shared
 Development application has no subsequent changes.
+The same incident's later scoped-capacity publication is recorded in the
+[capacity repair notes](po-submit-capacity-2026-11-09.md), separately from this
+9.169 field/report/approval-contract installation. Its final two-caller package
+completed Stage and Production as **9.171**.
 The scoped package contained exactly 13 components: the ten functions, marker
 field, report layout and form-on-load protection. See the
 [component record](../creator/po-reallocation-install-2026-11-09/native-components.json).

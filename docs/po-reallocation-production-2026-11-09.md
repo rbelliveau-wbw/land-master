@@ -10,8 +10,12 @@ fields. The existing Eagle Prairie PO loaded as a Draft with five saved lines.
 No Production financial write was used for verification.
 
 These native observations are historical as of this 9.169 publication. The
-later PO capacity repair and its Development-only installation retain their own
-source and verification record; this release does not promote that native work.
+later PO capacity repair retains its own source and verification record. The
+user subsequently authorized its native deployment for this same Eagle Prairie
+incident; its final two-caller package is tracked in the
+[capacity publication record](po-submit-capacity-2026-11-09.md). The 114 frontend
+publication did not itself promote that native work. The separate final native
+two-caller package subsequently completed Stage and Production as **9.171**.
 
 Budget Manager **122.29.113** removed the Add Reallocation activation step.
 **122.29.114** fixes saved PO reopening after an unknown submission result.

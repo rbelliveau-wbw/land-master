@@ -1,0 +1,58 @@
+{
+  "contract": "po-submit-capacity-publication-v1",
+  "recordedOn": "2026-11-09",
+  "authorization": "Explicit user authorization to update the required Creator functions in Development and deploy the same Eagle Prairie submission repair",
+  "repairFunctions": [
+    "poBudgetBalancesForItems",
+    "poBudgetBalances",
+    "poElementExportRows",
+    "managePurchaseOrder"
+  ],
+  "prerequisiteReallocationVersion": "9.169",
+  "beforeFinalPublication": {
+    "stageVersion": "9.170",
+    "productionVersion": "9.170",
+    "pendingFunctions": ["managePurchaseOrder", "poElementExportRows"],
+    "helperAndWrapperPending": false,
+    "helperAndWrapperPublicationVersion": "Not independently attributed"
+  },
+  "finalPackage": {
+    "version": "9.171",
+    "title": "PO Submission Execution Limit Repair",
+    "componentCount": 2,
+    "functions": ["managePurchaseOrder", "poElementExportRows"],
+    "stageStatus": "Completed",
+    "productionStatus": "Completed",
+    "completionObservation": "Creator Environments showed Stage 9.171, Production 9.171 and No changes available",
+    "evidenceMethod": "Observed native Environments and exact two-component publication selector; screenshot retained locally and excluded from Git"
+  },
+  "frontendVersion": "122.29.114",
+  "frontendVersionChangedByNativePublication": false,
+  "postPromotionReadOnlyCheck": {
+    "environment": "Production",
+    "action": "Get",
+    "budget": "Eagle Prairie - Phase 01",
+    "savedStatus": "Draft",
+    "savedLineCount": 5,
+    "descriptionPresent": true,
+    "frontendVersion": "122.29.114",
+    "saveOrSubmitPerformed": false
+  },
+  "frontendVerification": {
+    "commit": "321c9d25c290c175727c0103b5fffc9f57115e72",
+    "ci": {
+      "conclusion": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/42699399084"
+    },
+    "pages": {
+      "conclusion": "success",
+      "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/42699399276"
+    }
+  },
+  "developmentSourceAudit": "native-install-audit.json",
+  "developmentAuditModifiedByPublication": false,
+  "financialTestStoppedByUser": true,
+  "realPurchaseOrderSubmitted": false,
+  "approvalEmailsSent": false,
+  "remainingVerification": "Native financial submission, actual notification delivery and final approval were not exercised"
+}

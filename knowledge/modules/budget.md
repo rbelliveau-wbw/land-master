@@ -62,10 +62,16 @@ phase PO integrity checks remain unchanged. The incident PO touches three of
 
 All four functions are compiled, saved and reopened in Creator Development;
 native read-only checks confirm exact three-item parity against a 155-item phase.
-Production publication remains with the user. No form, field, API argument, frontend version or mapping
-change. The live response predates the separate reallocation capability, so apply
-this scope change against the actual native collector and preserve concurrent
-work. See [diagnosis, exact source, regressions and rollback](../../docs/po-submit-capacity-2026-11-09.md).
+The user's later explicit authorization includes deployment of this same
+Eagle Prairie repair. At the final review Stage/Production were already 9.170;
+only the two submission/export callers were pending. That exact two-component
+package completed Stage and Production **9.171**, with no changes available
+at the completion observation. The
+helper/wrapper publication version is not independently attributed. The earlier
+9.169 reallocation contract is retained. No form, field, API argument, frontend
+version or mapping changes; the current widget remains **122.29.114**. No live
+financial submission was performed. See
+[diagnosis, exact source, publication evidence, regressions and rollback](../../docs/po-submit-capacity-2026-11-09.md).
 
 ## Reallocation Footer Copy — 122.29.112, November 9, 2026
 

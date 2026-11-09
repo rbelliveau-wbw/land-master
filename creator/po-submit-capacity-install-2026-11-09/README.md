@@ -1,7 +1,22 @@
-# PO Capacity Repair — Creator Development Installation
+# PO Capacity Repair — Creator Installation
 
 All four required functions are compiled, saved and independently reopened in
-Creator Development. Production publication was not performed.
+Creator Development. The user explicitly authorized deployment of this repair
+for the same Julie King / Eagle Prairie code-9430 incident.
+
+At the final review, Stage and Production were already at **9.170** and only
+`managePurchaseOrder` and `poElementExportRows` were pending. The new helper and
+full-reader wrapper were not pending; their individual publication version was
+not independently attributed. Stage **9.171 — PO Submission Execution Limit
+Repair** completed with exactly those two caller functions. The matching
+Production publication also completed. The final native Environments screen
+showed Stage and Production at 9.171 with **No changes available**; this is the
+observation at publication completion, not a statement about future Development
+work.
+
+[The publication record](verification/production-deployment.json) distinguishes
+the collective four-function repair from the final two-component package.
+The original Development audit and capture hashes remain historical and unchanged.
 
 | Function | Verification |
 | --- | --- |
@@ -29,9 +44,9 @@ changed by verification. A native 227-item Submit including real notification
 delivery remains a separate end-to-end gate; the actual-source local fixture
 passes that Submit path with local delivery adapters.
 
-Publish these four components together, including the new helper dependency.
-Keep the current 122.29.113 widget mapping and permanent URL. Creator publication
-remains with the user. For rollback, restore the three captured original bodies
+The four functions must remain a compatible set with the helper dependency
+available before its callers. Keep the current **122.29.114** widget mapping and
+permanent URL. For rollback, restore the three captured original bodies
 before removing the helper; do not remove a function that still has callers.
 
 See [the incident and source repair](../../docs/po-submit-capacity-2026-11-09.md)

@@ -65,13 +65,33 @@ and arguments are unchanged. No frontend release or production mapping changes.
 compiled, saved and was independently reopened for source verification. The
 native full reader returned 155 items for Arroyo Ranch — Phase 05; the scoped
 helper returned exactly three selected items with identical complete balance
-DTOs. Production publication was not performed and remains with the user.
+DTOs. The user then explicitly authorized deployment of the required repair.
+At the final publication review, Stage and Production were already at **9.170**;
+the only pending functions were `managePurchaseOrder` and `poElementExportRows`.
+The helper and full-reader wrapper were not pending. Their individual publication
+version was not independently attributed.
+
+The final two caller components were published through Stage to Production as
+**9.171 — PO Submission Execution Limit Repair**. At completion the native
+Environments screen showed Stage and Production at 9.171 with **No changes
+available**. That observation applies to this publication's completion. The
+four-function repair is collective; this final
+publication does not claim all four were deployed together. The earlier
+**9.169** reallocation publication supplies the existing signed-component
+contract. No real PO or financial test was submitted during this deployment.
 Original and reloaded bodies plus the verification audit are captured in
 [`creator/po-submit-capacity-install-2026-11-09/`](../creator/po-submit-capacity-install-2026-11-09/README.md).
-Keep the existing permanent widget URL. Main advanced to Budget 122.29.113
-while this repair was being prepared; preserve that frontend mapping.
+The [publication manifest](../creator/po-submit-capacity-install-2026-11-09/verification/production-deployment.json)
+records the final component count, environment result and unchanged frontend.
+Keep the existing permanent widget URL and **122.29.114** frontend mapping.
 
-The incident's live Balances response lacks the newer reallocation capability
+After 9.171 completed, a read-only Production Get reopened the existing Eagle
+Prairie PO through 114 assets: **Draft**, **five saved lines**, with its PO
+Description present. Earlier 114 Eye and Pencil checks both opened those five
+lines; the Add Reallocation activation button was absent. No Save or Submit was
+performed after the user stopped the financial test.
+
+The incident's original live Balances response lacked the newer reallocation capability
 fields that are present in repository main. The repository patch is based on
 `6e2eb2cb`, then reconciled with main `3d085d49`; it must not be used to replace an older production function wholesale
 and inadvertently publish the separate reallocation feature. Compare the actual
@@ -82,8 +102,10 @@ The actual Development collector matched the original repository collector by
 source tokens. The helper and wrapper reloaded exactly by tokens; the two
 callers were patched surgically against their captured native bodies, preserving
 unrelated reallocation work and Creator's existing formatting. Publish only the
-intended component set, with dependencies resolved. Creator publication remains
-with the user.
+intended component set, with dependencies resolved. The later explicit deployment
+authorization superseded the original user-owned publication boundary for this
+same Eagle Prairie incident. Publication outcomes are recorded separately from
+the immutable Development source audit.
 
 ## Regression evidence
 
@@ -113,32 +135,27 @@ reconciliation and export tests continue to exercise their original guards.
 Local adapters do not establish native Creator compilation, sendmail success or
 completion under its actual statement limit.
 
-Local validation: all 127 JavaScript commands from the repository's validation
-script passed, as did the focused PO checks, `git diff --check`, repository
-validation and `npm run build:pages` (35 environment paths). `npm run validate`
-itself stops at an unrelated Python prerequisite: this host only has the Windows
-Store Python alias, not an installed interpreter. The Python checks are not
-claimed as passed. Repository validation also reports a pre-existing Contract
-Management source/manifest warning in baseline `6e2eb2cb`; this patch does not
-change that widget.
-
 After reconciliation with 122.29.113, focused Submit/final-approval checks and the
 Pages build passed again. Repository commit `074dcca2` passed the full GitHub
 [CI workflow](https://github.com/rbelliveau-wbw/land-master/actions/runs/42695506863),
-including the Python checks unavailable locally. The existing 122.29.113 Pages
-deployment is successful; backend-only files do not trigger a new widget release.
+including Python. The combined **122.29.114** tree was subsequently validated
+locally with the installed Python runtime and built successfully; its
+[CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/42699399084) and
+[Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/42699399276)
+also passed. The initial capacity-only host's Python alias limitation is not a
+remaining verification gap. This native publication adds no frontend release.
 
 Native compilation, persistence and read-only full/scoped parity are verified.
-Remaining native end-to-end verification must use a representative Development
-phase with at least 227 items and a five-line/three-item PO: verify one normal
-submission, its operation receipt/lock release, exact destination line
-count, approval chain and attached Excel. Check duplicate-send and read-only
-reconciliation without blindly replaying the production request. Re-read the exact
-production operation/lock before permitting a new submit if it remains unresolved.
+The user stopped the Development financial test before Save or Submit. A real
+five-line/three-item submission in a representative 227-item phase, actual email
+delivery, attached Excel, receipt/lock release and final approval are not claimed
+as tested. Any future authorized end-to-end test must preserve duplicate-send
+and read-only reconciliation protections. Re-read the exact production
+operation/lock before permitting a new submit if it remains unresolved.
 
 ## Rollback
 
-No production change was performed. If rollback is needed, restore the previous caller and
+If rollback is needed, restore the previous caller and
 wrapper versions together before removing the new helper. Do not remove a helper
 that still has callers. Restore each environment's captured native pre-change
 function versions; repository baseline `3d085d49` is the source rollback reference.
