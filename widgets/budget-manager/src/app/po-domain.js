@@ -5,6 +5,18 @@
   var UOMS = [ "CY", "EA", "LB", "LF",  "LOTS", "LS", "S", "SET", "SF", "SY", "TN",   "VF", "WK"];
   var ELEMENTS = [{id:"1",label:"(1) Labor"},{id:"2",label:"(2) Materials"},{id:"3",label:"(3) Equipment"},{id:"4",label:"(4) Subcontractor"},{id:"5",label:"(5) Other"}];
   var MAX_CENTS = 999999999999999n;
+  // Match the existing editor's grouped-on-blur convention without converting
+  // exact PO decimals through Number or accepting malformed comma grouping.
+  function editDecimal(raw) {
+    var text = String(raw == null ? "" : raw).trim();
+    return /^\d{1,3}(?:,\d{3})+(?:\.\d*)?$/.test(text) ? text.replace(/,/g, "") : text;
+  }
+  function formatDecimal(raw) {
+    var text = editDecimal(raw);
+    if (!/^\d+(?:\.\d*)?$/.test(text)) return text;
+    var parts = text.split(".");
+    return parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",") + (parts.length > 1 ? "." + parts[1] : "");
+  }
   function decimal(raw, label) {
     if (typeof raw !== "string" || !/^\d+(?:\.\d+)?$/.test(raw)) throw new Error((label || "Amount") + " must be an exact decimal string.");
     var p = raw.split("."), fraction = p[1] || "";
@@ -146,5 +158,5 @@
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });
   }
-  root.LMPO={uoms:UOMS,elements:ELEMENTS,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,elementAllocations:elementAllocations};
+  root.LMPO={uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);

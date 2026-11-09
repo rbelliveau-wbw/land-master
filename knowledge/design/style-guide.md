@@ -652,8 +652,12 @@ keyed motion and numeric identity registries.
 Purchase Order item choices show a cost-code pill before Item Name, in numeric
 code order under visible major-code and Budget Category headings. Keep amount
 columns aligned. Its ledger uses pale blue input surfaces, a fine blue border
-and a subtle focus glow to distinguish editable cells. Cost Element starts at 5
-and needs only five single-select options. Reuse Budget's floating request date
+and a subtle focus glow to distinguish editable cells. New Cost Element values
+start blank and require explicit selection from the five single-select options.
+Selecting a Budget Item never fills the separate line Description. Quantity,
+Unit Price and Total display thousands separators on render/blur and raw exact
+decimal strings on focus; preserve active text/caret and saved precision.
+Reuse Budget's floating request date
 picker rather than mounting a calendar inside the form. PO totals are calculated
 and labeled TOTAL in larger type; omit an editable header-amount control.
 

@@ -13,7 +13,9 @@ const save=source.slice(source.indexOf('    async function save(action)'),source
 vm.runInContext(save,ctx);
 await ctx.save('Save');assert.equal(ctx.savedPayload.amount,'3.03','Saved PO total calculated from exact line cents, ignoring old header');
 ctx.model.lines[1].finalAmount='3.04';await ctx.save('Save');assert.equal(ctx.savedPayload.amount,'4.05','Editing a saved draft recalculates its header');
-vm.runInContext(source.slice(source.indexOf('    function lineNew()'),source.indexOf('    function render()')),ctx);assert.equal(ctx.lineNew().costElement,'5');
+vm.runInContext(source.slice(source.indexOf('    function lineNew()'),source.indexOf('    function render()')),ctx);assert.equal(ctx.lineNew().costElement,'','new lines require an explicit element selection');assert.equal(ctx.lineNew().description,'');
+for(const submit of [false,true])assert.throws(()=>ctx.LMPO.validate({...ctx.model,amount:'4.05',lines:ctx.model.lines.map((line,index)=>index?line:{...line,costElement:''})},submit),/Cost Element/,'a blank element cannot be saved or submitted as Other');
+assert.equal(ctx.LMPO.validate({...ctx.model,amount:'4.05'},true).lines[0].costElement,'5','an explicitly selected or saved Other remains valid');
 // Render the real ledger with edited descriptions. Item names resolve from
 // the selected Budget Item rather than from the editable description.
 const nodes=new Map();ctx.card={querySelector:selector=>{if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',dataset:{},focus(){this.focused=true;},insertAdjacentHTML(position,html){this.innerHTML=position==='afterbegin'?html+this.innerHTML:this.innerHTML+html;}});return nodes.get(selector);}};ctx.overlay={querySelector:()=>({})};ctx.deleteReview=false;ctx.gridBinding=null;ctx.setDeleteReview=()=>{};ctx.trash='';ctx.closePopover=()=>{};ctx.itemRows=()=>[{id:'2001',label:'CB01-3225 · Survey & inspection',name:'Survey & inspection'}];ctx.esc=value=>String(value??'').replaceAll('&','&amp;').replaceAll('"','&quot;');ctx.dateField=()=>'';ctx.patchBalances=()=>{};ctx.patchTotal=()=>{};ctx.chevron='';ctx.duplicateIcon='';ctx.x='';ctx.model.phase='Bluebonnet Phase 01';ctx.model.status='Draft';
@@ -93,7 +95,8 @@ for(const name of ['quantity','unitPrice','finalAmount','description']){
   let value=first[name]??'';
   fields[name]={dataset:{poField:name,key:'one'},readOnly:false,writes:0,selectionStart:0,selectionEnd:0,hasAttribute:()=>false,closest:selector=>selector==='.po-line'?row:null,get value(){return value;},set value(next){this.writes++;value=next;}};
 }
-vm.runInContext(source.slice(source.indexOf('    function input(event)'),source.indexOf('    async function readBalances()')),entry);
+vm.runInContext(source.slice(source.indexOf('    function numericField('),source.indexOf('    function money(')),entry);
+vm.runInContext(source.slice(source.indexOf('    function numericFocus(event)'),source.indexOf('    async function readBalances()')),entry);
 function type(name,text){const target=fields[name];target.value=text;target.selectionStart=target.selectionEnd=text.length;target.writes=0;entry.input({target});assert.equal(target.value,text,'the edited native text stays mounted');assert.equal(target.writes,0,'the handler never rewrites the active input/caret');assert.equal(target.selectionStart,text.length);assert.equal(target.selectionEnd,text.length);assert.equal(JSON.stringify(entry.model.lines[1]),untouched,'pricing edits stay scoped to the exact line key');}
 for(const gridMode of ['row','excel']){
   entry.model.gridMode=gridMode;
@@ -102,7 +105,7 @@ for(const gridMode of ['row','excel']){
   for(const name of ['quantity','unitPrice']){assert.equal(fields[name].value,'');assert.equal(fields[name].readOnly,false,'manual blank inputs are immediately editable in '+gridMode+' mode');}
   assert.equal(mode.textContent,'Manual amount');assert.equal(reset.hidden,false);
   type('quantity','10');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,null,'incomplete pricing never retains a stale manual total');assert.equal(fields.finalAmount.value,'');assert.equal(mode.textContent,'');assert.equal(reset.hidden,true);
-  type('unitPrice','250.00');assert.equal(first.finalAmount,'2500.00');assert.equal(fields.finalAmount.value,'2500.00');
+  type('unitPrice','250.00');assert.equal(first.finalAmount,'2500.00');assert.equal(fields.finalAmount.value,'2,500.00');
   type('finalAmount','99.99');assert.equal(first.quantity,null);assert.equal(first.unitPrice,null);
   type('unitPrice','12.30');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,null,'price-first return also awaits its quantity');
   for(const value of ['1','1.','1.5','1.50'])type('quantity',value);
@@ -121,3 +124,36 @@ active=true;fields.description.dataset.key='removed-line';fields.description.val
 ctx.model.loadState='loaded';ctx.model.status='Draft';ctx.model.preview=false;ctx.model.lines[1].pricingMode='Manual';ctx.model.lines[1].quantity=null;ctx.model.lines[1].unitPrice=null;ctx.render();
 for(const name of ['quantity','unitPrice']){const tag=nodes.get('.po-body').innerHTML.match(new RegExp('<input[^>]*data-po-field="'+name+'"[^>]*data-key="two"[^>]*>'))?.[0];assert.ok(tag);assert.doesNotMatch(tag,/readonly/);}
 console.log('PO native input handler: row/spreadsheet Manual-to-Calculated parity, exact decimal edits, no active-input/caret rewrite, true-null manual payload, scoped lines and readonly/pending/stale guards passed.');
+
+// Grouping is presentation only: never round through Number or rewrite an
+// actively edited value. Valid pasted grouping is normalized in the model;
+// malformed separators remain invalid and cannot reach the exact API contract.
+for(const value of ['1234.500000','9999999999999.99','1000000000.000001','0','12.00'])assert.equal(entry.LMPO.editDecimal(entry.LMPO.formatDecimal(value)),value);
+assert.equal(entry.LMPO.formatDecimal('1234567.123456'),'1,234,567.123456');
+assert.equal(entry.LMPO.formatDecimal(null),'');
+assert.equal(entry.LMPO.editDecimal('1,25'),'1,25');
+assert.throws(()=>entry.LMPO.money(entry.LMPO.editDecimal('1,25')),/exact decimal/);
+type('finalAmount','1,234,567.89');assert.equal(first.finalAmount,'1234567.89');
+entry.numericBlur({target:fields.finalAmount});assert.equal(fields.finalAmount.value,'1,234,567.89');
+fields.finalAmount.selectionStart=4;fields.finalAmount.selectionEnd=8;
+fields.finalAmount.setSelectionRange=function(start,end){this.selectionStart=start;this.selectionEnd=end;};
+entry.numericFocus({target:fields.finalAmount});assert.equal(fields.finalAmount.value,'1234567.89');assert.equal(fields.finalAmount.selectionStart,3);assert.equal(fields.finalAmount.selectionEnd,6);
+for(const gridMode of ['row','excel']){
+  entry.model.gridMode=gridMode;
+  type('quantity','1,234.500000');type('unitPrice','1,000.01');
+  assert.equal(first.quantity,'1234.500000');assert.equal(first.unitPrice,'1000.01');assert.equal(first.finalAmount,'1234512.35');assert.equal(fields.finalAmount.value,'1,234,512.35');
+  entry.numericBlur({target:fields.quantity});assert.equal(fields.quantity.value,'1,234.500000');
+  entry.numericFocus({target:fields.quantity});assert.equal(fields.quantity.value,'1234.500000');
+}
+type('unitPrice','1,25');assert.equal(first.finalAmount,null);entry.numericBlur({target:fields.unitPrice});assert.equal(fields.unitPrice.value,'1,25');
+ctx.model.lines[0].quantity='1234.500000';ctx.model.lines[0].unitPrice='1000.01';ctx.model.lines[0].finalAmount='1234512.35';ctx.render();
+for(const [name,value] of [['quantity','1,234.500000'],['unitPrice','1,000.01'],['finalAmount','1,234,512.35']])assert.match(nodes.get('.po-body').innerHTML,new RegExp('data-po-field="'+name+'"[^>]*value="'+value.replaceAll('.','\\.')+'"'));
+
+// Exercise the real picker handler, including selecting another Budget Item
+// after custom text was entered. The separate Item Name remains derived.
+const selection=vm.createContext({vendorDialog:null,deleteReview:false,popover:null,progress:false,visualBusy:false,current:()=>true,readOnly:()=>false,closePopover(){},render(){}});
+selection.model={lines:[{key:'blank',budgetItemId:'',description:'',costElement:''},{key:'custom',budgetItemId:'2001',description:'User-entered scope',costElement:'4'}]};
+vm.runInContext(source.slice(source.indexOf('    function click(event)'),source.indexOf('    async function open(')),selection);
+for(const key of ['blank','custom']){const target={dataset:{poPick:'budgetItemId',key,value:'2002'},hasAttribute:()=>false};selection.click({target:{closest:selector=>selector==='button,input[data-po-date]'?target:null}});}
+assert.equal(selection.model.lines[0].description,'');assert.equal(selection.model.lines[0].costElement,'');assert.equal(selection.model.lines[1].description,'User-entered scope');assert.equal(selection.model.lines[1].costElement,'4');
+console.log('PO explicit entry: blank element guards, preserved saved selections, no picker Description autofill, exact grouped render/blur/paste, raw focus/caret and malformed-group rejection passed.');

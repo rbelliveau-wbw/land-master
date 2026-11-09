@@ -137,6 +137,13 @@ Manual save still has null quantity/price; never send stale calculated values
 with a manual total. Keep active text/caret and unrelated rows mounted while
 derived amounts update on the established field-exit boundary.
 
+New lines leave Description and Cost Element blank. Choosing or pasting a Budget
+Item must not fill Description or select an element. Preserve user-entered and
+saved values, including an explicitly selected Other; require an element before
+Save or Submit. Quantity, Unit Price and Total show comma grouping on render and
+blur, retain raw decimal strings while focused, and preserve exact fractional
+precision. Grouped pasted numbers must have valid thousands separators.
+
 Use the full labels **(1) Labor**, **(2) Materials**, **(3) Equipment**,
 **(4) Subcontractor**, and **(5) Other** in PO and standalone Modification
 pickers, selected values, detail rows, downloads and approval mail. Keep the

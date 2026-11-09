@@ -2361,3 +2361,22 @@ new deletion workflow. Other Budget archive and file deletion rules are unchange
 [Contract, tests and rollback](../../docs/budget-request-permissions-2026-10-19.md).
 Rollback: last live Budget 122.29.54; retain native authorization guards.
 
+## Explicit PO Entry — 122.29.103, November 9, 2026
+
+Choosing a Budget Item leaves the PO line Description unchanged in Row and
+Spreadsheet modes. New rows have no Cost Element default; the existing native
+and client validation requires an explicit 1–5 selection before Save or Submit.
+Saved and duplicated descriptions/elements remain intact. Quantity, Unit Price
+and Total show thousands separators while idle, return to exact ungrouped text
+on focus, and retain fractional precision and the active caret while typing.
+
+Changed sources: `po-ui.js`, `po-grid.js`, `po-domain.js`, actual-handler/grid
+regressions and the shared payment-request/style guides. No Creator forms,
+fields, functions or Custom APIs change; no Creator publication is required.
+Regression covers blank element rejection, explicit Other and saved selections,
+picker/paste Description preservation, six-place quantities, large exact prices,
+grouped paste, malformed separators, Manual/Calculated parity and scoped edits.
+Rollback: restore Budget widget production mapping to 122.29.102 and rebuild Pages;
+retain the permanent Creator widget URL. The Construction element data backfill
+is a separate operation and is not performed by this widget change.
+

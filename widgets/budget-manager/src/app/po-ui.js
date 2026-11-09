@@ -22,7 +22,8 @@
     function recoveryEligible(){return model.editable&&model.loadState==='loaded'&&typeof model.id==='string'&&/^\d+$/.test(model.id)&&model.recoveryAvailable===true&&model.recoveryToken===model.revision&&!model.recoveryBusy;}
     function recoveryReady(){return recoveryEligible()&&!model.recoveryUnknown;}
     function picker(label,value,rows,field,key){var selected=rows.find(function(row){return row.id===value;});return '<label class="po-field"><span>'+esc(label)+'</span><button type="button" class="po-picker-trigger'+(!selected?' is-placeholder':'')+'" data-po-picker="'+esc(field)+'" data-key="'+esc(key||'')+'" aria-haspopup="listbox" aria-expanded="false" aria-label="'+esc(label)+'" '+(readOnly()?'disabled':'')+'><span>'+esc(selected?selected.label:field==='uom'?'Unit':'Choose…')+'</span>'+chevron+'</button></label>';}
-    function field(label,value,name,key,locked){return '<label class="po-field"><span>'+esc(label)+'</span><input aria-label="'+esc(label)+'" data-po-field="'+name+'" data-key="'+esc(key||'')+'" value="'+esc(value)+'" '+(locked||readOnly()?'readonly':'')+' '+(/amount|Price|quantity|Amount/i.test(name)?'inputmode="decimal"':'')+'></label>';}
+    function numericField(name){return name==='quantity'||name==='unitPrice'||name==='finalAmount';}
+    function field(label,value,name,key,locked){return '<label class="po-field"><span>'+esc(label)+'</span><input aria-label="'+esc(label)+'" data-po-field="'+name+'" data-key="'+esc(key||'')+'" value="'+esc(numericField(name)?root.LMPO.formatDecimal(value):value)+'" '+(locked||readOnly()?'readonly':'')+' '+(numericField(name)?'inputmode="decimal"':'')+'></label>';}
     function money(value){try{var negative=typeof value==='string'&&value[0]==='-';var exact=root.LMPO.currency(root.LMPO.money(negative?value.slice(1):value)),parts=exact.split('.');return (negative?'−$':'$')+parts[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(parts[1]==='00'?'':'.'+parts[1]);}catch(e){return '—';}}
     function totals(){var total=0n;model.lines.forEach(function(line){try{total+=root.LMPO.money(line.finalAmount);}catch(ignore){}});return total;}
     function patchTotal(){var total=totals();model.amount=root.LMPO.currency(total);card.querySelector('[data-po-total]').textContent=money(model.amount);patchContext();overlay.querySelector('[data-po-summary-total]').textContent=money(model.amount);}
@@ -60,12 +61,12 @@
       overlay.setAttribute('data-lm-motion-exit','none');
       document.body.appendChild(overlay);card=overlay.querySelector('.po-card');
       previousInert=Array.from(document.body.children).filter(function(node){return node!==overlay&&node.tagName!=='SCRIPT'&&node.tagName!=='STYLE';}).map(function(node){var old=node.inert;node.inert=true;return [node,old];});
-      gridBinding=root.LMPOGrid.bind({container:overlay,model:function(){return model;},items:function(){return itemRows(true);},displayItems:function(){return itemRows();},locked:readOnly,busy:function(){return progress||visualBusy||!current();},newLine:lineNew,render:render,error:error});overlay.addEventListener('click',click);overlay.addEventListener('input',input);overlay.addEventListener('keydown',keydown);card.focus();
+      gridBinding=root.LMPOGrid.bind({container:overlay,model:function(){return model;},items:function(){return itemRows(true);},displayItems:function(){return itemRows();},locked:readOnly,busy:function(){return progress||visualBusy||!current();},newLine:lineNew,render:render,error:error});overlay.addEventListener('click',click);overlay.addEventListener('input',input);overlay.addEventListener('focusin',numericFocus);overlay.addEventListener('focusout',numericBlur);overlay.addEventListener('keydown',keydown);card.focus();
     }
     function close(){if(options.attachmentBusy&&options.attachmentBusy())return;if(vendorDialog){closeVendor();return;}clearTimeout(previewTimer);previewGeneration++;if(model.recoveryBusy||controller&&controller.state()&&controller.state().busy||visualBusy&&!model.deleteFromList)return;if(options.detachAttachments&&card)options.detachAttachments(card);generation++;if(controller&&controller.state()&&controller.state().unknown)unresolved[model.budgetId]={model:model,controller:controller};closePopover();overlay.remove();previousInert.forEach(function(pair){pair[0].inert=pair[1];});overlay=null;model=null;visualBusy=false;progress=false;if(trigger&&trigger.isConnected)trigger.focus();}
     function keydown(event){if(!popover&&!readOnly()&&event.target.dataset.poDate&&(event.key==='Enter'||event.key==='ArrowDown')){event.preventDefault();openDate(event.target);return;}if(popover&&!popover.date&&(event.key==='ArrowDown'||event.key==='ArrowUp')){event.preventDefault();var choices=Array.from(popover.element.querySelectorAll('[role=option]:not([hidden])'));var at=choices.indexOf(document.activeElement);if(choices.length)choices[(at+(event.key==='ArrowDown'?1:-1)+choices.length)%choices.length].focus();return;}if(event.key==='Escape'){event.preventDefault();event.stopPropagation();if(vendorDialog){closeVendor();return;}if(popover){closePopover();}else if(deleteReview){cancelDelete();}else close();return;}if(event.key==='Tab'){var nodes=Array.from((vendorDialog?vendorDialog:popover?popover.element:overlay).querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),textarea:not(:disabled),summary,[tabindex="0"]')).filter(function(node){return node.getClientRects().length;});if(!nodes.length){event.preventDefault();card.focus();return;}var first=nodes[0],last=nodes[nodes.length-1];if(event.shiftKey&&(document.activeElement===first||document.activeElement===card)){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}}
     function error(message){model.error=message;var el=card.querySelector('[data-po-error]');if(el){el.textContent=message;el.hidden=!message;}}
-    function lineNew(){return {key:uid(),budgetItemId:'',description:'',uom:'',costElement:'5',pricingMode:'Calculated',quantity:null,unitPrice:null,finalAmount:null};}
+    function lineNew(){return {key:uid(),budgetItemId:'',description:'',uom:'',costElement:'',pricingMode:'Calculated',quantity:null,unitPrice:null,finalAmount:null};}
     function render(){
       if(!overlay||progress||deleteReview)return;
       if(options.detachAttachments)options.detachAttachments(card);
@@ -172,6 +173,18 @@
       if(focusKey){var focus=Array.from(node.querySelectorAll('[data-po-summary-key]')).find(function(detail){return detail.dataset.poSummaryKey===focusKey;});if(focus)focus.querySelector('summary').focus({preventScroll:true});}
       overlay.querySelector('[data-po-summary-total]').textContent=money(root.LMPO.currency(totals()));
     }
+    function numericFocus(event){
+      var target=event.target;if(!current()||progress||readOnly()||!numericField(target.dataset.poField))return;
+      var before=target.value,raw=root.LMPO.editDecimal(before),start=target.selectionStart,end=target.selectionEnd;
+      if(raw===before)return;
+      target.value=raw;
+      if(typeof start==='number'&&typeof end==='number'&&target.setSelectionRange)target.setSelectionRange(before.slice(0,start).replace(/,/g,'').length,before.slice(0,end).replace(/,/g,'').length);
+    }
+    function numericBlur(event){
+      var target=event.target;if(!current()||progress||readOnly()||!numericField(target.dataset.poField))return;
+      var line=model.lines.find(function(row){return row.key===target.dataset.key;});if(!line)return;
+      target.value=root.LMPO.formatDecimal(line[target.dataset.poField]);
+    }
     function input(event){
       if(vendorDialog){if(event.target.dataset.poVendorField&&!model.vendorCreation.busy&&!model.vendorCreation.unknown)model.vendorCreation.data[event.target.dataset.poVendorField]=event.target.value;return;}
       if(!current()||progress)return;
@@ -182,9 +195,9 @@
       var fieldName=target.dataset.poField;if(!fieldName)return;
       var line=model.lines.find(function(row){return row.key===target.dataset.key;});
       if(!line){if(target.dataset.key)return;model[fieldName]=target.value;patchTotal();return;}
-      line[fieldName]=target.value;
+      line[fieldName]=numericField(fieldName)?root.LMPO.editDecimal(target.value):target.value;
       if(fieldName==='finalAmount'){line.pricingMode='Manual';line.quantity=null;line.unitPrice=null;var row=target.closest('.po-line');for(var f of ['quantity','unitPrice']){var node=row.querySelector('[data-po-field="'+f+'"]');node.value='';node.readOnly=false;}row.querySelector('[data-po-mode]').textContent='Manual amount';row.querySelector('[data-po-calculated]').hidden=false;}
-      if(fieldName==='quantity'||fieldName==='unitPrice'){line.pricingMode='Calculated';var lineNode=target.closest('.po-line');lineNode.querySelector('[data-po-mode]').textContent='';lineNode.querySelector('[data-po-calculated]').hidden=true;try{line.finalAmount=root.LMPO.multiply(line.quantity,line.unitPrice);}catch(e){line.finalAmount=null;}lineNode.querySelector('[data-po-field="finalAmount"]').value=line.finalAmount||'';}
+      if(fieldName==='quantity'||fieldName==='unitPrice'){line.pricingMode='Calculated';var lineNode=target.closest('.po-line');lineNode.querySelector('[data-po-mode]').textContent='';lineNode.querySelector('[data-po-calculated]').hidden=true;try{line.finalAmount=root.LMPO.multiply(line.quantity,line.unitPrice);}catch(e){line.finalAmount=null;}lineNode.querySelector('[data-po-field="finalAmount"]').value=root.LMPO.formatDecimal(line.finalAmount);}
       patchBalances();
       patchTotal();
     }
@@ -273,7 +286,7 @@
       if(target.dataset.poDuplicate){if(model.lines.length>=250){error('A PO can have at most 250 lines.');return;}var index=model.lines.findIndex(function(line){return line.key===target.dataset.poDuplicate;});if(index<0)return;var copy=root.LMPO.duplicate(model.lines[index],uid());model.lines.splice(index+1,0,copy);render();var input=card.querySelector('[data-line="'+copy.key+'"] [data-po-field=description]');input.focus();input.select();return;}
       if(target.dataset.poRemove){model.lines=model.lines.filter(function(line){return line.key!==target.dataset.poRemove;});render();return;}
       if(target.dataset.poCalculated){var at=model.lines.findIndex(function(l){return l.key===target.dataset.poCalculated;});model.lines[at]=root.LMPO.calculated(model.lines[at]);render();return;}
-      if(target.dataset.poPick){var line=model.lines.find(function(l){return l.key===target.dataset.key;});(line||model)[target.dataset.poPick]=target.dataset.value;if(target.dataset.poPick==='vendorId')model.vendorName=target.textContent;if(line&&target.dataset.poPick==='budgetItemId'&&!line.description){var item=options.items().find(function(i){return i.ID===line.budgetItemId;});line.description=item&&(item.Item_Name||item.Description)||'';}closePopover();render();return;}
+      if(target.dataset.poPick){var line=model.lines.find(function(l){return l.key===target.dataset.key;});(line||model)[target.dataset.poPick]=target.dataset.value;if(target.dataset.poPick==='vendorId')model.vendorName=target.textContent;closePopover();render();return;}
 
     }
     async function open(budget,source,purchaseOrderId,intent,deleteContext){if(overlay)return;trigger=source||document.activeElement;generation++;var pending=unresolved[String(budget.ID)];
