@@ -87,9 +87,10 @@ changes frozen Final/Preliminary component values or approval state.
 The [November 9 runtime/logging repair](../../budget-batch-optimization-2026-11-09/README.md)
 supersedes the original helper's fetched-record aggregation and the original
 two-request failure logging described below. It retains this exact 100-record
-batch scope/time and all amount/approval rules, with native zero/null parity and
+batch scope and all amount/approval rules, with native zero/null parity and
 one combined actual-field update. The new terminal-create logger contract,
-verification and rollback instructions are in that release record.
+verification, accepted environment clock difference and rollback instructions
+are in that release record.
 
 ## Error Handling
 

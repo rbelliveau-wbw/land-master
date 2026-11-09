@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-09",
+  "creator_version": "9.167",
+  "title": "Budget Batch Runtime And Failure Logging Repair",
+  "package_id": "4410926000005892095",
+  "stage": "Published",
+  "production": "Published",
+  "production_observed_by_utc": "2026-11-09T17:45:31Z",
+  "components": [
+    "Budgets_Apply_Cost_to_Bud",
+    "budgetImportedActualElements",
+    "workflowRunLog"
+  ],
+  "component_count": 3,
+  "temporary_probe_exactly_restored_and_excluded": true,
+  "unrelated_changes_excluded": true,
+  "batch_size": 100,
+  "frequency": "daily",
+  "criteria": "Budget_Item[Template_Item == false]",
+  "clock": {
+    "development_definition": "11/27/2025 09:45:35",
+    "previous_stage_definition": "11/27/2025 08:02:35",
+    "user_accepted_existing_difference": true,
+    "independent_properties_clock_edit": false
+  },
+  "source_verification": {
+    "development": "Two functions and two batch actions: normalized exact match",
+    "stage": "Two functions: normalized exact match; batch in immutable three-component package",
+    "production": "Two functions: normalized exact match; same immutable three-component package"
+  },
+  "implementation_commit": "284383b5bfb34ec24d3776d4350b5554f074e09f",
+  "verified_code_commit": "4293591595bd8b0974fceb77373d831a6bd25277",
+  "ci": {
+    "run_id": 42666759664,
+    "url": "https://github.com/rbelliveau-wbw/land-master/actions/runs/42666759664",
+    "validate": "success",
+    "build_pages": "success"
+  },
+  "next_normal_production_batch": "Pending observation; no forced replay",
+  "raw_records_and_financial_samples": "Kept private; excluded from repository"
+}

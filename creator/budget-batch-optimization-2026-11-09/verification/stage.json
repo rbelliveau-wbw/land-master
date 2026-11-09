@@ -1,0 +1,21 @@
+{
+  "environment": "stage",
+  "method": "Fresh native Creator source copied from visible IDE/action editors",
+  "components": [
+    {
+      "name": "budgetImportedActualElements.dg",
+      "expected": "creator/functions/budgetImportedActualElements.dg",
+      "normalized_sha256": "939f212c22a0f4fd711d2ac67f903c36da3643fe8a32477011ddf88ac295e038",
+      "expected_normalized_sha256": "939f212c22a0f4fd711d2ac67f903c36da3643fe8a32477011ddf88ac295e038",
+      "match": true
+    },
+    {
+      "name": "workflowRunLog.dg",
+      "expected": "creator/functions/workflowRunLog.dg",
+      "normalized_sha256": "c7a9343d4c2ef46785c0df08f726e711c7627237840d5f55574ec5c250e67859",
+      "expected_normalized_sha256": "c7a9343d4c2ef46785c0df08f726e711c7627237840d5f55574ec5c250e67859",
+      "match": true
+    }
+  ],
+  "match": true
+}

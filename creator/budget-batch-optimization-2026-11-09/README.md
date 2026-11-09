@@ -1,5 +1,13 @@
 # Apply Cost To Budget Lines — Runtime And Failure Logging Repair
 
+## Plain-English Result
+
+The job takes imported Great Plains and HeavyJob costs and copies the correct totals and cost categories onto budget lines. Previously it pulled import records into loops and saved fourteen fields separately. It now asks Creator's database for the totals and saves those fourteen fields together. Blank values, signs, source checks and approval rules retain their original meaning. Each batch still contains 100 budget lines.
+
+When work failed, the old error handler made two separate logging requests. If that logging stalled, its timeout could hide the useful original error. The repair saves a complete failure in one request, includes the item and source, and prevents a logging problem from replacing the original diagnostic. It also avoids scheduling a future timeout check for a failure already known to be finished. The generic native failure summary explicitly says when the total row counts are unknown.
+
+The live Development test processed 100 lines in 2.214 seconds, and 80 source comparisons matched the old calculation. That supports keeping the batch size at 100. It does not prove every Production block will finish: the next normal daily run is the remaining operational check. Batch Block quota stays the same for the same record count. Failure logging needs half as many requests per event; a precise daily/monthly quota reduction has not yet been measured.
+
 ## Problem And Scope
 
 The November 9 Production execution reported one-minute timeouts for native blocks 1, 53, 54, 55 and 56. Creator exposes only the first five failed-block errors, so these are not a complete failure count. Line 50 in the installed batch action was the start of a separate failure-audit request; an audit failure could obscure the original item/source error. The Settings summary's zero row counts and short duration described the failure notification, not the entire batch.
@@ -39,11 +47,19 @@ The fresh Production helper/logger sources matched Development and the repositor
 - A native terminal failure test retained its original message, reached Failed with a Finished At timestamp and no Resume At, and completed in **477 ms**. Development had zero failure-email recipients; its existing finalizer recorded the expected missing-recipient notification error and sent no email. This does not establish Production email delivery.
 - The temporary Development-only diagnostic is restored to its exact original source and excluded from publication. Synthetic diagnostic logs remain in Development; business records and audit history are not deleted.
 
-Release status and native source parity are recorded under `verification/`. Focused backend/logger and queue regression tests passed; `npm run build:pages` passed. Windows full validation reached the missing Microsoft Store Python alias; the release is gated on the complete Linux CI validation/build. The next normal scheduled Production execution remains a separate observation; a short Development test is not a measurement of every Production block or account-wide quota reduction.
+Release status and native source parity are recorded under `verification/`. Focused backend/logger and queue regression tests passed; `npm run build:pages` passed locally. Windows full validation reached the missing Microsoft Store Python alias; the complete `npm run validate` and `npm run build:pages` subsequently passed in [Linux CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/42666759664) for `4293591595bd8b0974fceb77373d831a6bd25277`. The next normal scheduled Production execution remains a separate observation; a short Development test is not a measurement of every Production block or account-wide quota reduction.
 
 ## Quota Effect
 
 Keeping 100 records preserves the existing Batch Blocks consumption for the same eligible record count. The success path creates no per-item API log records. Each failure event now needs one audit request instead of two, and no Running-log timeout is created for that terminal failure. Native database totals and combined field updates reduce Deluge/runtime work; they are not a measured account-wide Developer API or External Calls saving. No extra recurring schedules were added.
+
+## Published Release
+
+Creator **V9.167**, **Budget Batch Runtime And Failure Logging Repair**, was published to Stage and then Production on November 9, 2026. The immutable package contains exactly three components: the existing native batch workflow and the two named functions. Fresh Stage and Production IDE copies of both functions match the reviewed candidates; all four Development function/action copies match. The batch's Production installation is established by the same three-component Creator package, not a separately captured Production action-editor hash. Unrelated access, dashboard and backfill changes, and the restored diagnostic helper, were excluded.
+
+Implementation commit: `284383b5bfb34ec24d3776d4350b5554f074e09f`. Test-adapter correction and accepted clock documentation: `4293591595bd8b0974fceb77373d831a6bd25277`. The complete CI validation/build passed for the latter before Production promotion. This is a Creator backend release; no new widget release or Production hosting mapping change is required. Publication/source evidence is summarized in `verification/release.json`; raw screenshots, record IDs, sample financial values and native diagnostic outputs remain private.
+
+No full Production batch was forced or blindly replayed. The **next normal daily Production execution** remains the operational check for all native blocks, including source groups larger than the Development data. Historical failures remain visible and are not evidence that the new version has failed. Development's synthetic logging test is explicitly marked as an intentional failure and remains in its audit history.
 
 ## Rollback
 
