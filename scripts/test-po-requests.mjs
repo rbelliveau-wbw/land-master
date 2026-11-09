@@ -170,3 +170,18 @@ c.S.checkWireRequestState[budgetId]='loading';rail=c.renderRequestRailList(c.S.e
 scope='different-actor';rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/Loading requests/);assert.doesNotMatch(rail,/data-po=|data-mod=/,'Cached rows never survive a changed actor scope');
 c.S.checkWireRequestState[budgetId]='unavailable';rail=c.renderRequestRailList(c.S.edBudget);assert.match(rail,/Payment requests unavailable/);assert.doesNotMatch(rail,/data-po=/,'Failed authorization/read never retains old POs');
 console.log('Requests first reveal: delayed List and child Get expose no orphan mods; complete rows reveal together; same-scope refresh retains rows and actor/error boundaries clear them.');
+
+// Same authenticated bundle fallback must retain signed component meaning for
+// profiles whose ordinary modification report omits another submitter's rows.
+for(const [type,amount,normalized,actual] of [
+  ['Increase','0.00',{'1':'-100.00','2':'0.00','3':'0.00','4':'100.00','5':'0.00'},{'1':'-100.00','2':'0.00','3':'0.00','4':'100.00','5':'0.00'}],
+  ['Decrease','25.00',{'1':'125.00','2':'0.00','3':'0.00','4':'-100.00','5':'0.00'},{'1':'-125.00','2':'0.00','3':'0.00','4':'100.00','5':'0.00'}]
+]){
+  const mod={...linked,amount,modificationType:type,componentReallocation:true,components:normalized,signedComponents:actual};
+  const reply={...childReply,snapshot:{...childReply.snapshot,approvalBundle:{...childReply.snapshot.approvalBundle,reallocationContract:'po-reallocation-v1',modifications:[mod]}}};
+  const children=c.purchaseOrderRequestChildren({ID:poId,PO_Revision:submitted.revision},reply,budgetId);
+  assert.equal(children[0].Component_Reallocation,true);assert.equal(children[0].Modification_Type,type);assert.equal(children[0].Amount,amount);assert.equal(children[0].Labor_Budget,normalized['1']);assert.equal(children[0].Subcontractor_Budget,normalized['4']);
+  for(const patch of [{componentReallocation:false},{components:{...normalized,'1':'bad'}},{signedComponents:{...actual,'4':'999.00'}},{amount:'26.00'},{components:{...normalized,'5':undefined}}])assert.throws(()=>c.purchaseOrderRequestChildren({ID:poId,PO_Revision:submitted.revision},{...reply,snapshot:{...reply.snapshot,approvalBundle:{...reply.snapshot.approvalBundle,modifications:[{...mod,...patch}]}}},budgetId));
+  assert.throws(()=>c.purchaseOrderRequestChildren({ID:poId,PO_Revision:submitted.revision},{...reply,snapshot:{...reply.snapshot,approvalBundle:{...reply.snapshot.approvalBundle,reallocationContract:undefined}}},budgetId),'signed DTOs require the explicit backend contract');
+}
+console.log('PO request children: marked signed component changes, zero/negative net, normalized field preservation and incompatible/malformed bundle refusal passed.');

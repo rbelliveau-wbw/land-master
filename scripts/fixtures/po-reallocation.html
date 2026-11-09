@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>PO Reallocation Desktop Fixture</title>
+<link rel="stylesheet" href="/purchase-orders.css"><link rel="stylesheet" href="/request-attachments.css"><link rel="stylesheet" href="/interaction-motion.css"><link rel="stylesheet" href="/number-transitions.css">
+<style>body{font:14px Arial;background:#f3f6fa;color:#0b2345;padding:24px}button{cursor:pointer}.mbtn{padding:9px 14px;border:1px solid #ccd4df;background:white;border-radius:8px}.primary{background:#0b2345;color:white}pre{white-space:pre-wrap}</style>
+<h1>PO Reallocation Fixture</h1><p>Local simulation. No Creator writes or emails. Create Purchase Orders access only.</p>
+<button id="open">Review Julie Example</button><label><input id="old" type="checkbox">Old Backend</label><output id="writes">Writes: 0</output><pre id="payload"></pre>
+<script src="/po-domain.js"></script><script src="/po-reallocation.js"></script><script src="/po-reallocation-ui.js"></script><script src="/po-grid.js"></script><script src="/po-controller.js"></script><script src="/po-progress.js"></script><script src="/po-ui.js"></script><script src="/request-attachments.js"></script><script src="/number-edit-commit.js"></script><script src="/number-surfaces.js"></script><script src="/number-transitions.js"></script><script src="/interaction-surfaces.js"></script><script src="/interaction-motion.js"></script>
+<script>
+const contract='po-reallocation-v1',itemId='90071992547409931',budgetId='90071992547409930',vendorId='90071992547409932';let writes=0;
+const records=new Map(),receipts=new Map(),items=[{ID:itemId,Item_Name:'Task Conversion',Budget_Code:'3245',Cost_Code:'3245'}];
+records.set('90071992547409933',{id:'90071992547409933',budgetId,vendorId,vendorName:'Example Subcontractor',canEditDraft:true,amount:'33000.00',description:'Self-perform to subcontract',requestDate:'2026-11-09',dateNeeded:'2026-11-20',revision:'julie-example',status:'Draft',commitmentState:'None',approvalState:'Not Configured',lines:[{ID:'90071992547409934',key:'subcontract',budgetItemId:itemId,description:'Subcontract task',uom:'LS',costElement:'4',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'33000.00'}]});
+const files=LMRequestAttachments.create({scope:()=> 'reallocation-fixture',files:()=>[],loaded:()=>true,load:async()=>{},renderFiles(_b,node){node.textContent='No Attachments';},canStage:()=>false,busy:()=>false});
+const ui=LMPOUI.create({scope:()=> 'reallocation-fixture',userAccessId:()=> '90071992547409935',canEdit:()=>false,canCreate:()=>true,canDelete:()=>false,canEditInFlight:()=>false,phaseName:()=> 'Example Phase',items:()=>items,vendors:async()=>[{ID:vendorId,Vendor_Name:'Example Subcontractor'}],attachments(config){config.budget={ID:budgetId};files.mount(config);},detachAttachments(card){files.unmount(card);},saved(){},call:async payload=>{
+ if(payload.action==='PreviewApprovals')return {contract:'po-v1',success:true,approvalPreview:{roles:(payload.hasBudgetModification?['VP','CFO','COO']:['CFO']).map((role,i)=>({role,order:i+1,name:role+' Reviewer'}))}};
+ if(payload.action==='Get')return {contract:'po-v1',success:true,snapshot:structuredClone(records.get(payload.id))};
+ if(payload.action==='Balances'){
+  const amounts=['500000','900000','2000000','0','0'],parts=amounts.map((finalCents,i)=>({costElement:String(i+1),finalCents,modCents:'0',issuedCents:'0',availableCents:finalCents,pendingModificationCents:'0',pendingReductionCents:'0'}));
+  for(const order of records.values())if(order.commitmentState==='Reserved'){
+   for(const line of order.lines){const part=parts[Number(line.costElement)-1];part.issuedCents=String(BigInt(part.issuedCents)+LMPO.money(line.finalAmount));}
+   for(const mod of order.approvalBundle?.modifications||[])for(const [element,value] of Object.entries(mod.signedComponents||{})){const delta=value[0]==='-'?-LMPO.money(value.slice(1)):LMPO.money(value),part=parts[Number(element)-1];if(mod.status==='Approved')part.modCents=String(BigInt(part.modCents)+delta);else{part.pendingModificationCents=String(BigInt(part.pendingModificationCents)+delta);if(delta<0n)part.pendingReductionCents=String(BigInt(part.pendingReductionCents)-delta);}}
+  }
+  for(const part of parts)part.availableCents=String(BigInt(part.finalCents)+BigInt(part.modCents)-BigInt(part.issuedCents));
+  const total=field=>String(parts.reduce((sum,part)=>sum+BigInt(part[field]),0n));
+  const balance={budgetItemId:itemId,finalCents:total('finalCents'),modCents:total('modCents'),issuedCents:total('issuedCents'),availableCents:total('availableCents'),pendingModificationCents:total('pendingModificationCents'),subdivisionCode:'EX01',minorCode:'3245',componentBaselineAvailable:true,issuedComponentsAllocated:true,unallocatedIssuedCents:'0',unallocatedModificationCents:'0',unallocatedModificationCount:0,componentBalances:parts};
+  if(!document.querySelector('#old').checked)balance.reallocationContract=contract;
+  return {contract:'po-v1',success:true,reallocationContract:document.querySelector('#old').checked?null:contract,balances:[balance]};
+ }
+ if(payload.action==='Check')return structuredClone(receipts.get(payload.token));
+ if(!['Save','Submit'].includes(payload.action))throw Error('Unsupported fixture action');
+ writes++;document.querySelector('#writes').textContent='Writes: '+writes;document.querySelector('#payload').textContent=JSON.stringify(payload,null,2);
+ const snapshot={...structuredClone(payload),id:payload.id||'90071992547409933',revision:payload.token,canEditDraft:true,status:payload.action==='Submit'?'Submitted':'Draft',commitmentState:payload.action==='Submit'?'Reserved':'None',approvalState:payload.action==='Submit'?'Pending':'Not Configured',lines:payload.lines.map((line,i)=>({...line,ID:String(90071992547409940n+BigInt(i))}))};
+ if(payload.action==='Submit'){
+  const changes=payload.reallocation?.items||[{budgetItemId:itemId,components:{'1':'0.00','2':'0.00','3':'0.00','4':'33000.00','5':'0.00'},reason:''}];
+  const modifications=changes.flatMap((item,index)=>{let net=0n,gross=0n;Object.values(item.components).forEach(value=>{const n=value[0]==='-'?-LMPO.money(value.slice(1)):LMPO.money(value);net+=n;gross+=n<0n?-n:n;});if(!gross)return [];const negative=net<0n,components=Object.fromEntries(Object.entries(item.components).map(([element,value])=>{const n=value[0]==='-'?-LMPO.money(value.slice(1)):LMPO.money(value);return [element,LMPO.currency(negative?-n:n)];}));return [{id:String(90071992547409950n+BigInt(index)),budgetItemId:item.budgetItemId,amount:LMPO.currency(negative?-net:net),status:'Submitted',componentReallocation:!!payload.reallocation,modificationType:negative?'Decrease':'Increase',components,signedComponents:item.components,reason:item.reason}];});
+  snapshot.approvalBundle={reallocationContract:contract,modifications,rows:['VP','CFO','COO'].map((role,i)=>({id:String(90071992547409960n+BigInt(i)),role,order:i+1,status:i?'Not Sent':'Pending'})),canApprove:false,canRetryEmail:false};snapshot.budgetModificationId=modifications[0]?.id||null;
+ }
+ records.set(snapshot.id,snapshot);const response={contract:'po-v1',success:true,writeState:'verified',reallocationContract:contract,snapshot};receipts.set(payload.token,response);return structuredClone(response);
+}});
+document.querySelector('#open').onclick=()=>ui.open({ID:budgetId},document.querySelector('#open'),'90071992547409933');
+LMNumberSurfaces.install('budget-manager',{state:()=>({edBudget:{ID:budgetId},view:'editor'}),ready:()=>true,actor:()=>({ID:'fixture'}),project:()=>null});
+LMInteractionSurfaces.install('budget-manager',{state:()=>({edBudget:{ID:budgetId}}),ready:()=>true});
+</script>

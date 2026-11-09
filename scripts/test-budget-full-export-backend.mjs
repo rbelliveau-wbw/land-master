@@ -143,3 +143,15 @@ for(const alternative of itemQuery.split(' || '))assert.ok(alternative.includes(
 assert.doesNotMatch(branch,/insert into|sendmail|delete from|Edit_All|Budget_Owner|User_Access\[/,'full export stays an authenticated global read');
 assert.doesNotMatch(fs.readFileSync('creator/functions/budgetElementExportValues.dg','utf8'),/Budget_Item\[|Budget_Import_Item\[|Budget_Modification\[/,'shared row calculation cannot query per item');
 console.log('Full budget backend: 2,881 exact rows in 29 bounded pages, eight table reads per page, prior-helper parity, signed/unknown/default amounts, metadata fallbacks, source/page scoping and read-only behavior passed.');
+c.tables=fixtures;
+for(const [type,amount,values,actual,net] of [
+  ['Increase',0,[-100,0,0,100,0],[-100,0,0,100,0],0],
+  ['Increase',25,[-75,0,0,100,0],[-75,0,0,100,0],25],
+  ['Decrease',25,[125,0,0,-100,0],[-125,0,0,100,0],-25]
+]){
+  c.tables.Budget_Modification=[{ID:'91',Budget_Item:itemId(1),Status:'Approved',Modification_Type:type,Amount:amount,Component_Reallocation:true,...allocation('','_Budget',values)}];
+  const first=read({after:'0',through:'0'}).rows[0];assert.equal(first.values[12],net);assert.deepEqual(first.elements.map(row=>row.values[4]),actual,'batched export preserves all signed offsets for '+type+' net '+net);assert.deepEqual(first.elements,plain(c.budgetElementExportRows(itemId(1))));
+  delete c.tables.Budget_Modification[0].Component_Reallocation;assert.ok(read({after:'0',through:'0'}).rows[0].elements.every(row=>row.values[4]===null),'negative legacy components do not acquire signed interpretation in the batched path');
+}
+assert.equal(c.writes,0);
+console.log('Full export component changes: marked zero/positive/negative net, actual signed element allocations, per-item helper parity and unmarked isolation passed.');

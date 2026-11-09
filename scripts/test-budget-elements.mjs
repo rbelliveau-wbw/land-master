@@ -139,6 +139,19 @@ assert.equal(legacy.unallocated, true, 'a component mismatch cannot claim a reco
 assert.deepEqual(plain(legacy.amounts), [0, 0, 0, 0, 0], 'mismatched components cannot be partially applied');
 state.modifications = [];
 assert.deepEqual(plain(context.budgetElementModAmounts(BID)), {amounts: [0, 0, 0, 0, 0], unallocated: false});
+for(const [type,total,values,actual] of [
+  ['Increase','0',['-100','0','0','100','0'],[-100,0,0,100,0]],
+  ['Increase','25',['-75','0','0','100','0'],[-75,0,0,100,0]],
+  ['Decrease','25',['125','0','0','-100','0'],[-125,0,0,100,0]]
+]){
+  state.modifications=[modification(values,{Modification_Type:type,Amount:total,Component_Reallocation:true})];
+  const adjusted=plain(context.budgetElementModAmounts(BID));assert.deepEqual(adjusted.amounts,actual);assert.equal(adjusted.unallocated,false,'marked '+type+' component changes remain allocated');
+  delete state.modifications[0].Component_Reallocation;assert.equal(context.budgetElementModAmounts(BID).unallocated,true,'negative legacy fields never acquire signed meaning without the marker');
+}
+for(const [type,total,values] of [['Increase','0',['0','0','0','0','0']],['Decrease','0',['-100','0','0','100','0']],['Increase','1',['-100','0','0','100','0']]]){
+  state.modifications=[modification(values,{Modification_Type:type,Amount:total,Component_Reallocation:true})];assert.equal(context.budgetElementModAmounts(BID).unallocated,true,'empty/noncanonical/mismatched reallocations remain unavailable');
+}
+state.modifications=[];
 
 assert.equal(typeof context.budgetElementKey([BID]), 'string');
 assert.equal(context.budgetElementKey([BID]), context.budgetElementKey([BID]), 'stable native IDs retain disclosure identity');

@@ -108,10 +108,25 @@ string exportBudgetSnapshot(string budgetId, string exportType)
 					fullModSign = 1;
 					if(ifnull(fullMod.Modification_Type,"") == "Decrease") { fullModSign = -1; }
 					fullModified.put("amount",fullModified.get("amount") + fullModSign * ifnull(fullMod.Amount,0.0).abs());
+					fullComponentSum = 0.0;
+					fullComponentGross = 0.0;
+					fullComponentValid = fullMod.Modification_Type == "Increase" || fullMod.Modification_Type == "Decrease";
 					for each fullElement in fullKeys
 					{
-						if(fullModParts.get(fullElement) == null) { fullModified.put("complete",false); }
-						else { fullModValues.put(fullElement,fullModValues.get(fullElement) + fullModSign * fullModParts.get(fullElement)); }
+						fullComponentValue = fullModParts.get(fullElement);
+						if(fullComponentValue == null) { fullComponentValid = false; }
+						else
+						{
+							if(fullComponentValue < 0 && fullMod.Component_Reallocation != true) { fullComponentValid = false; }
+							fullComponentSum = fullComponentSum + fullComponentValue;
+							fullComponentGross = fullComponentGross + fullComponentValue.abs();
+						}
+					}
+					if(fullMod.Amount == null || (fullComponentSum - ifnull(fullMod.Amount,0).abs()).abs() >= 0.00005 || (fullMod.Component_Reallocation == true && (fullMod.Amount < 0 || fullComponentGross <= 0 || (fullMod.Amount == 0 && fullModSign == -1)))) { fullComponentValid = false; }
+					if(fullComponentValid != true) { fullModified.put("complete",false); }
+					for each fullElement in fullKeys
+					{
+						if(fullComponentValid == true) { fullModValues.put(fullElement,fullModValues.get(fullElement) + fullModSign * fullModParts.get(fullElement)); }
 					}
 					fullModified.put("values",fullModValues);
 					fullModsByItem.put(fullModKey,fullModified);

@@ -65,3 +65,16 @@ const offsetDetails=copyElements(native.elements);offsetDetails[0].values[3]=100
 function copyElements(value){return JSON.parse(JSON.stringify(value));}
 const offsets=await front.BudgetFullExport.collect(async()=>({contract:'budget-full-detail-v1',ok:true,rows:[{...native,values:offsetValues,elements:offsetDetails}],total:1,through:native.id,after:'0',next:native.id,hasMore:false}));assert.equal(offsets.length,1);assert.equal(offsets[0][11],0,'offsetting element values cannot replace the parent zero');assert.equal(offsets.elementRows[0][10],100);assert.equal(offsets.elementRows[4][10],-100);
 console.log('Budget element exports: actual native readonly helpers, explicit/preliminary/imported/frozen/signed/unknown/department fields, PO own reservation math, workbook precision/parent totals, all-five CSV rows and formula-safe text passed.');
+const priorMods=runtime.tables.Budget_Modification;
+for(const [type,amount,values,actual] of [
+  ['Increase',0,[-100,0,0,100,0],[-100,0,0,100,0]],
+  ['Increase',25,[-75,0,0,100,0],[-75,0,0,100,0]],
+  ['Decrease',25,[125,0,0,-100,0],[-125,0,0,100,0]]
+]){
+  runtime.tables.Budget_Modification=[{ID:99,Budget_Item:21,Status:'Approved',Modification_Type:type,Amount:amount,Component_Reallocation:true,...parts(values)}];
+  assert.deepEqual(call('budgetElementExportRows',21).map(row=>row.values[4]),actual,'native '+type+' normalized fields produce actual signed element deltas');
+  delete runtime.tables.Budget_Modification[0].Component_Reallocation;assert.ok(call('budgetElementExportRows',21).every(row=>row.values[4]===null),'unmarked negative legacy fields cannot be exported as approved signed allocations');
+}
+runtime.tables.Budget_Modification=[{ID:99,Budget_Item:21,Status:'Approved',Modification_Type:'Increase',Amount:0,Component_Reallocation:true,...parts([0,0,0,0,0])}];assert.ok(call('budgetElementExportRows',21).every(row=>row.values[4]===null),'an empty marked adjustment is not a valid zero-net transfer');
+runtime.tables.Budget_Modification=priorMods;
+console.log('Approved component reallocation readers: positive/zero/negative net, global sign normalization, legacy marker isolation and empty-change rejection passed.');

@@ -137,6 +137,74 @@ map handlePurchaseOrderApproval(map request)
 				Operation_Token=decisionToken
 				Actor=access.ID
 			];
+			// A reviewed transfer can wait for several approvers. Recheck donor
+			// funds under the decision lock before its final decision changes rows.
+			checkReallocationFunds = false;
+			if(action == "Approve" && found.get("order") == bundle.get("rows").size())
+			{
+				for each approvedCandidate in bundle.get("modifications") { if(approvedCandidate.get("componentReallocation") == true) { checkReallocationFunds = true; } }
+			}
+			if(checkReallocationFunds)
+			{
+				fundingError = "";
+				fundingItems = Map(); fundingElements = Map(); ownReductions = Map();
+				for each selectedLine in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision]
+				{
+					fundingItemKey = selectedLine.Budget_Item.toString();
+					fundingItems.put(fundingItemKey,true); fundingElements.put(fundingItemKey + "|" + selectedLine.Cost_Element,true);
+				}
+				for each approvedCandidate in bundle.get("modifications")
+				{
+					if(approvedCandidate.get("componentReallocation") == true)
+					{
+						fundingItemKey = approvedCandidate.get("budgetItemId"); fundingItems.put(fundingItemKey,true);
+						for each fundingElement in {"1","2","3","4","5"}
+						{
+							fundingDelta = approvedCandidate.get("signedComponents").get(fundingElement).replaceAll("[.]","").toLong();
+							fundingKey = fundingItemKey + "|" + fundingElement;
+							if(fundingDelta != 0) { fundingElements.put(fundingKey,true); }
+							if(fundingDelta < 0) { ownReductions.put(fundingKey,0 - fundingDelta); }
+						}
+					}
+				}
+				currentFunding = thisapp.poBudgetBalances(po.Budget.toString());
+				if(currentFunding.get("success") != true || currentFunding.get("reallocationContract") != "po-reallocation-v1") { fundingError = "Current component availability could not be verified. Refresh before approving."; }
+				else
+				{
+					fundingSeenItems = Map(); fundingSeenElements = Map();
+					for each fundingBalance in currentFunding.get("balances")
+					{
+						fundingItemKey = fundingBalance.get("budgetItemId");
+						if(fundingItems.get(fundingItemKey) == true)
+						{
+							fundingSeenItems.put(fundingItemKey,true);
+							if(fundingBalance.get("componentBaselineAvailable") != true || fundingBalance.get("unallocatedModificationCount") == null || fundingBalance.get("unallocatedModificationCount").toLong() != 0 || fundingBalance.get("unallocatedIssuedCents").toLong() != 0 || fundingBalance.get("unallocatedModificationCents").toLong() != 0 || fundingBalance.get("availableCents").toLong() + fundingBalance.get("pendingModificationCents").toLong() < 0) { fundingError = "The current budget no longer funds this PO and its component changes. Reject and revise the PO."; }
+							for each fundingPart in fundingBalance.get("componentBalances")
+							{
+								fundingKey = fundingItemKey + "|" + fundingPart.get("costElement");
+								if(fundingElements.get(fundingKey) == true)
+								{
+									fundingSeenElements.put(fundingKey,true);
+									if(fundingPart.get("availableCents") == null || fundingPart.get("pendingModificationCents") == null || fundingPart.get("pendingReductionCents") == null) { fundingError = "Current component availability could not be verified. Refresh before approving."; }
+									else
+									{
+										fundingAvailable = fundingPart.get("availableCents").toLong(); fundingPending = fundingPart.get("pendingModificationCents").toLong(); fundingDebits = fundingPart.get("pendingReductionCents").toLong();
+										if(fundingAvailable + fundingPending < 0 || fundingDebits < ifnull(ownReductions.get(fundingKey),0) || (ownReductions.get(fundingKey) != null && fundingAvailable - fundingDebits < 0)) { fundingError = "The current budget no longer funds this PO and its component changes. Reject and revise the PO."; }
+									}
+								}
+							}
+						}
+					}
+					for each fundingItemKey in fundingItems.keys() { if(fundingSeenItems.get(fundingItemKey) != true) { fundingError = "A selected item balance is unavailable. Refresh before approving."; } }
+					for each fundingKey in fundingElements.keys() { if(fundingSeenElements.get(fundingKey) != true) { fundingError = "A selected component balance is unavailable. Refresh before approving."; } }
+				}
+				if(fundingError != "")
+				{
+					delete from PO_Phase_Lock[ID == decisionLockId && Phase_Key == po.Budget.toString() && Operation_Token == decisionToken && Actor == access.ID];
+					if(PO_Phase_Lock[Phase_Key == po.Budget.toString() && Operation_Token == decisionToken].count() > 0) { result.put("writeState","unknown"); result.put("error","Approval was not recorded, but its phase lock needs review."); return result; }
+					decisionLockId = 0; result.put("error",fundingError); return result;
+				}
+			}
 			if(action == "RetryEmail")
 			{
 				mail = thisapp.sendPurchaseOrderEmail(poId);

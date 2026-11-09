@@ -22,6 +22,8 @@ assert.equal(hidden(rows[0]),false,'offsetting actual elements stay reachable ev
 delete items.zero.HCSS_Labor_Actuals; delete items.zero.HCSS_Materials_Actuals;
 context.applyBudgetItemFilters();
 assert.equal(hidden(rows[0]),true,'native numeric zero per-unit default must not keep an empty row');
+modifications.zero=[{amount:0,Component_Reallocation:true,Labor_Budget:'-100',Subcontractor_Budget:'100'}];context.applyBudgetItemFilters();assert.equal(hidden(rows[0]),false,'a zero-net component reallocation stays reachable');
+delete modifications.zero[0].Component_Reallocation;context.applyBudgetItemFilters();assert.equal(hidden(rows[0]),true,'unmarked zero-net legacy values do not acquire reallocation meaning');delete modifications.zero;
 for(const r of rows.slice(1))assert.equal(hidden(r),false,'keep credits, any actuals, cancelling modifications, other phases, drafts and unknown data');
 assert.equal(categories[2].style.display,'none','hide categories with no nonempty items');
 assert.equal(elements.budgetHideEmpty['aria-checked'],'true');

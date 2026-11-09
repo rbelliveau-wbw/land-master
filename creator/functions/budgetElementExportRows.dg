@@ -36,10 +36,25 @@ list budgetElementExportRows(int budgetItemId)
 		parts = {"1":modification.Labor_Budget,"2":modification.Materials_Budget,"3":modification.Equipment_Budget,"4":modification.Subcontractor_Budget,"5":modification.Other_Budget};
 		sign = 1;
 		if(ifnull(modification.Modification_Type,"") == "Decrease") { sign = -1; }
+		componentSum = 0.0;
+		componentGross = 0.0;
+		componentValid = modification.Modification_Type == "Increase" || modification.Modification_Type == "Decrease";
 		for each element in keys
 		{
-			if(parts.get(element) == null) { modificationsComplete = false; }
-			else { modifications.put(element,modifications.get(element) + sign * parts.get(element)); }
+			componentValue = parts.get(element);
+			if(componentValue == null) { componentValid = false; }
+			else
+			{
+				if(componentValue < 0 && modification.Component_Reallocation != true) { componentValid = false; }
+				componentSum = componentSum + componentValue;
+				componentGross = componentGross + componentValue.abs();
+			}
+		}
+		if(modification.Amount == null || (componentSum - ifnull(modification.Amount,0).abs()).abs() >= 0.00005 || (modification.Component_Reallocation == true && (modification.Amount < 0 || componentGross <= 0 || (modification.Amount == 0 && sign == -1)))) { componentValid = false; }
+		if(componentValid != true) { modificationsComplete = false; }
+		for each element in keys
+		{
+			if(componentValid == true) { modifications.put(element,modifications.get(element) + sign * parts.get(element)); }
 		}
 	}
 	sourceValues.put("imported",imported);

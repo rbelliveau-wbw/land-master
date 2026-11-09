@@ -1,3 +1,65 @@
+## PO Reallocation — 122.29.111, November 9, 2026
+
+The user resumed Julie King's requirement and selected the right panel beside
+Summary. One Budget Modification belongs to each selected Budget Item / cost
+code, with all five signed element changes inside it. The entire PO and all its
+linked modifications share one captured approval round. A zero or negative net
+change still requires the additional modification approval route; the existing
+PO amount and budget-overrun conditions remain independent.
+
+The optional **Add Reallocation** action prefills the exact increases required by
+the current PO lines. Five Amount and Increase/Decrease controls allow offsets
+from unused funds on those same selected cost codes. Increases, decreases, net
+change, current/revised component budgets and a short required reason are shown
+together. No unrelated cost code can donate funds. Required positive amounts
+follow edited PO lines and refreshed balances; reductions/reasons remain for
+review. Invalid plans disable Save/Submit with a specific correction. Draft plans
+round-trip through the existing operation receipt. Pending custom reallocations
+are read-only; rejection permits revision and a new complete approval round.
+Legacy automatic in-flight amendments retain their existing authorized path.
+
+Both client and native planner enforce exact cents, unique string identities,
+all five components, selected PO scope, exact required increases, actual available
+reduction limits, unknown-allocation guards, fresh item/component expectations
+and phase locking. Pending gross reductions reserve funds independently of any
+opposing pending credits. Current own reservations and adjustments are restored
+once for rejection/resubmission. A nearly zero net result cannot bypass approval,
+and a lost reply cannot blindly create the bundle again.
+
+Create Purchase Orders remains sufficient for the existing create-only flow;
+no general Budget edit or standalone modification grant is added. Assigned
+approvers use their current captured PO chain. The new native boolean
+`Budget_Modification.Component_Reallocation` distinguishes normalized signed
+components from historical records. Existing five component fields are reused;
+`Modification_Type` and absolute net `Amount` retain aggregate rollup behavior.
+Signed-aware readers keep net-zero records visible and preserve export totals.
+
+**Creator publication is required.** The frontend permits custom plans only
+when the native Balances response advertises `po-reallocation-v1`; older
+backends retain automatic PO submission and show the panel's update requirement.
+Repository main/Production promotion does not publish Creator. The
+[ordered native handoff](../../docs/po-reallocation-creator-handoff-2026-11-09.md)
+records the new field, existing functions/API, permissions, native compile and
+signed-currency storage gates. Generated catalog files remain historical.
+
+Shared number identities cover every panel projection/total with Sliding push
+and field-exit behavior. Shared motion registers cost-code insertion/removal;
+existing Details/Attachments/Approvers tabs and the multi-record progress dialog
+retain their established engines. Desktop panes use separate scrollers; narrow
+desktops place Summary and Reallocation beside each other below the PO.
+
+Regression evidence: actual domain/controller/UI/native-body and reader fixtures
+cover Julie's 34000 → 33000 example, zero/negative net, under/over-funding,
+committed and pending debit limits, repeated lines, stale/foreign plans, draft
+reopening, create-only permission boundaries, rejection, final bundle approval,
+legacy defaults and lost-response checks. Local tests do not prove native
+compilation, profile field visibility or signed USD storage. Desktop IAB checks
+use a synthetic no-email fixture, never a real financial submission.
+
+Rollback: map Budget Manager Production to **122.29.109**. If signed records
+already exist, retain the new field and signed-aware native readers; do not
+reinstall incompatible legacy bundle/balance functions or rewrite financial data.
+
 ## Compact Manual PDF — 122.29.109, November 9, 2026
 
 Manual PDF uses a continuous element ledger for each category, repeating the
@@ -17,22 +79,6 @@ element rows and 7,945 element financial cells match the prior downloaded PDF.
 Native save, download and 36-page preview succeeded. CI and Pages passed.
 See [compact PDF release notes](../../docs/budget-pdf-compact-2026-11-09.md).
 
-## Deferred Reallocation Discussion — November 9, 2026
-
-**Status: On hold at the user's request pending internal discussion.**
-Do not implement the requested reallocation workflow until the user resumes it.
-
-The user's preferred simplification to consider is one editable UI request
-backed by two existing native records per Budget Item: an Increase for additions
-and a Decrease for offsets. The existing APIs accept all five nonnegative
-components per record, so this can avoid a signed-field or schema redesign.
-
-The approval-flow decision remains open. Existing separate mod APIs start two
-approval chains, and the PO must remain Draft until those adjustments are
-approved; standalone pending mods are not PO funding. Approving both adjustments
-with the PO requires changes to the combined PO bundle backend. Do not assume
-either flow was selected: the user explicitly deferred that decision.
-
 ## Manual PDF Execution Limit — 122.29.107, November 9, 2026
 
 Bluebonnet Crossing - Phase 01 reproduced Creator's statement execution limit
@@ -47,37 +93,6 @@ The [incident and exact patch](../../docs/budget-pdf-statement-limit-2026-11-09.
 records affected fields/functions, the 227-item regression and browser download
 proof, successful native Bluebonnet export/download/82-page preview on
 Production, and rollback 122.29.106.
-
-## Requested PO-Linked Reallocation Workflow — November 9, 2026
-
-User direction based on Julie King's clarification: an element overrun requires
-a Budget Modification even when the overall Budget Item has available funds.
-Treat the element budget as a control independently of the item total.
-
-Julie's Windmill example needs an increase to element **4 — Subcontractor**,
-offset by decreases to **Labor, Materials and Equipment**, so the net Budget
-Modification is nearly zero. A requester must be able to review the combined
-adjustment rather than being limited to the automatically calculated increase.
-
-Requested future behavior:
-- Prefill the increases required by the PO's element shortfalls.
-- Allow the requester to edit the automatically populated adjustment lines.
-- Allow additional adjustment lines, including offsetting reductions.
-- Show the increases, reductions and net effect together before requesting
-  approval, and preserve each element's resulting budget and PO commitment.
-
-This is a recorded requirement, not functionality delivered in 122.29.106.
-Current standalone modifications support one item, one element and one
-Increase/Decrease amount; PO-created modification records are not independently
-editable, and the PO bundle accepts Increase-only children with one per item.
-An editable reallocation request needs frontend and native backend contract work.
-
-Before implementing, resolve the permitted scope of added lines (the same
-Budget Item or other items), gross-versus-net approval thresholds, exact zero-net
-requests, and whether edits after approval starts restart or retain decisions.
-Reuse existing Increase/Decrease records where practical; do not silently change
-the meaning of historical component fields or infer that a near-zero net change
-removes the approval requirement.
 
 ## PO Component Submission — 122.29.106, November 9, 2026
 

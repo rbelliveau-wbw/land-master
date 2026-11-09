@@ -274,3 +274,23 @@ grant plus a native in-flight-edit capability. Save changes preserves the
 captured approval people and decisions; do not offer Submit or approval decisions
 inside an unsaved in-flight editor. Recheck the current grant at entry/save and
 in the native phase-locked write. Owned-budget access alone is insufficient.
+
+
+## PO Reallocation Panel
+
+Place Reallocation immediately to the right of Summary on wide desktop screens.
+Each selected cost code has five element Amount controls with Increase/Decrease
+buttons, current/revised budgets and one reason. Keep net totals and the action
+in the panel footer while its records scroll. On narrower desktops, Summary and
+Reallocation remain side by side below the PO. Details/Attachments/Approvers
+changes retain the panel and edits.
+
+Prefill exact PO-required increases and show safe reduction limits. Invalid
+changes identify the element and block committing controls. Keep editable inputs
+mounted while their dependent values update, with shared field-exit numeric
+motion and stable cost-code/element/metric identities. Saved approval plans are
+read-only and display their captured changes, without revalidating historical
+increases against already-approved balances. One approval round covers the PO
+and every linked modification, including zero/negative net records. Capability
+and permission guards are visible before editing; ordinary automatic PO entry
+remains available when native reallocation support is absent.

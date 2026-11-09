@@ -33,6 +33,9 @@
     var sign = cents < 0n ? "-" : "", abs = cents < 0n ? -cents : cents;
     return sign + String(abs / 100n) + "." + String(abs % 100n).padStart(2,"0");
   }
+  function signedMoney(raw){return typeof raw==='string'&&raw[0]==='-'?-money(raw.slice(1)):money(raw);}
+  function modificationComponent(mod,element){return mod.componentReallocation===true&&mod.signedComponents?signedMoney(mod.signedComponents[element]):money(mod.components[element]);}
+  function modificationNet(mod){return (mod.componentReallocation===true&&mod.modificationType==='Decrease'?-1n:1n)*money(mod.amount);}
   function multiply(quantity, unitPrice) {
     var q = decimal(quantity,"Quantity"), price = money(unitPrice);
     if (q.coefficient <= 0n || q.scale > 6 || quantity.length > 16) throw new Error("Quantity must be positive, with at most six decimal places and Max Digits 16.");
@@ -112,27 +115,29 @@
   // immutable allocation back when displaying its own before/after formula.
   function allocations(lines, balances, reservedLines, reservedModifications) {
     var grouped=Object.create(null), own=Object.create(null), ownCredits=Object.create(null);
-    (reservedModifications||[]).forEach(function(mod){if(mod.status!=='Approved')ownCredits[mod.budgetItemId]=(ownCredits[mod.budgetItemId]||0n)+money(mod.amount);});
+    (reservedModifications||[]).forEach(function(mod){if(mod.status!=='Approved')ownCredits[mod.budgetItemId]=(ownCredits[mod.budgetItemId]||0n)+modificationNet(mod);});
     (reservedLines||[]).forEach(function(line){own[line.budgetItemId]=(own[line.budgetItemId]||0n)+money(line.finalAmount);});
     lines.forEach(function(line){if(!line.budgetItemId)return;var amount=0n;try{amount=money(line.finalAmount);}catch(ignore){}grouped[line.budgetItemId]=(grouped[line.budgetItemId]||0n)+amount;});
     return Object.keys(grouped).map(function(id){
       var balance=balances.find(function(row){return row.budgetItemId===id;});
       if(!balance)return {budgetItemId:id,verified:false};
       var available=BigInt(balance.availableCents)+(own[id]||0n), remaining=available-grouped[id], pending=BigInt(balance.pendingModificationCents||'0')-(ownCredits[id]||0n);
-      if(pending<0n)throw new Error('Pending PO modification balance does not reconcile.');
+      if(pending<0n&&balance.reallocationContract!=='po-reallocation-v1')throw new Error('Pending PO modification balance does not reconcile.');
       var shortfall=grouped[id]-available-pending;
       return {budgetItemId:id,verified:true,available:available,allocated:grouped[id],remaining:remaining,pending:pending,shortfall:shortfall>0n?shortfall:0n};
     });
   }
   // Submission expectations use native component balances, independently of
   // display-only legacy allocation warnings or derived department baselines.
-  function componentExpectations(lines, balances, reservedLines, reservedModifications) {
+  function componentExpectations(lines, balances, reservedLines, reservedModifications, reallocation) {
     var expected=Object.create(null),pending=Object.create(null);
     function cents(value){
       if(typeof value!=="string"||! /^-?\d+$/.test(value))throw new Error('Component balance is unavailable. Refresh and review before submitting.');
       return BigInt(value);
     }
-    lines.forEach(function(line){
+    var affected=lines.slice();
+    if(reallocation&&reallocation.contract==='po-reallocation-v1')reallocation.items.forEach(function(item){ELEMENTS.forEach(function(element){if(signedMoney(item.components[element.id])!==0n)affected.push({budgetItemId:item.budgetItemId,costElement:element.id});});});
+    affected.forEach(function(line){
       var balance=balances.find(function(row){return row.budgetItemId===line.budgetItemId;});
       if(!balance)throw new Error('A selected item has no verified balance.');
       if(balance.componentBaselineAvailable!==true)return;
@@ -143,9 +148,9 @@
       var available=cents(parts[0].availableCents),otherPending=cents(parts[0].pendingModificationCents);
       (reservedLines||[]).forEach(function(saved){if(saved.budgetItemId===line.budgetItemId&&saved.costElement===line.costElement)available+=money(saved.finalAmount);});
       (reservedModifications||[]).forEach(function(mod){
-        if(mod.budgetItemId===line.budgetItemId&&mod.status!=='Approved'&&mod.components)otherPending-=money(mod.components[line.costElement]);
+        if(mod.budgetItemId===line.budgetItemId&&mod.status!=='Approved'&&mod.components)otherPending-=modificationComponent(mod,line.costElement);
       });
-      if(otherPending<0n)throw new Error('Pending PO component modification balance does not reconcile. Refresh and review before submitting.');
+      if(otherPending<0n&&balance.reallocationContract!=='po-reallocation-v1')throw new Error('Pending PO component modification balance does not reconcile. Refresh and review before submitting.');
       expected[key]=String(available);pending[key]=String(otherPending);
     });
     return {expectedComponentBalances:expected,expectedComponentPendingModifications:pending};
@@ -172,14 +177,15 @@
         (reservedModifications||[]).forEach(function(mod){
           if(mod.budgetItemId!==id||mod.status==='Approved')return;
           if(!mod.components||ELEMENTS.some(function(e){return typeof mod.components[e.id]!=='string';})){pendingKnown=false;return;}
-          try{ownPending+=money(mod.components[element.id]);}catch(e){pendingKnown=false;}
+          try{ownPending+=modificationComponent(mod,element.id);}catch(e){pendingKnown=false;}
         });
         var baselineKnown=!!(balance&&(balance.componentBaselineAvailable===true||derivedBaseline)&&final!==null);
         var nativeKnown=!!(complete&&baselineKnown&&mods!==null&&issued!==null&&available!==null&&pending!==null&&final+mods-issued===available);
         var modified=nativeKnown?final+mods:null,otherPO=nativeKnown?issued-own:null,remainingPending=nativeKnown&&pendingKnown?pending-ownPending:null;
         var verified=!!(nativeKnown&&unallocatedPO===0n&&unallocatedMod===0n&&!ownUnknown&&otherPO>=0n&&currentKnown);
-        var before=verified?available+own:null,remaining=verified?before-allocated:null,shortfall=verified&&remainingPending!==null&&remainingPending>=0n?allocated-before-remainingPending:null;
-        return {costElement:element.id,label:element.label,verified:verified,final:baselineKnown?final:null,modifications:nativeKnown?mods:null,modified:modified,existingPOs:nativeKnown&&!ownUnknown&&otherPO>=0n?otherPO:null,available:before,allocated:currentKnown?allocated:null,remaining:remaining,pending:verified&&remainingPending!==null&&remainingPending>=0n?remainingPending:null,shortfall:shortfall===null?null:shortfall>0n?shortfall:0n};
+        var pendingValid=remainingPending!==null&&(remainingPending>=0n||balance&&balance.reallocationContract==='po-reallocation-v1');
+        var before=verified?available+own:null,remaining=verified?before-allocated:null,shortfall=verified&&pendingValid?allocated-before-remainingPending:null;
+        return {costElement:element.id,label:element.label,verified:verified,final:baselineKnown?final:null,modifications:nativeKnown?mods:null,modified:modified,existingPOs:nativeKnown&&!ownUnknown&&otherPO>=0n?otherPO:null,available:before,allocated:currentKnown?allocated:null,remaining:remaining,pending:verified&&pendingValid?remainingPending:null,shortfall:shortfall===null?null:shortfall>0n?shortfall:0n};
       });
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });

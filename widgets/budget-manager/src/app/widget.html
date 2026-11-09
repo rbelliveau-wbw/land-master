@@ -4,20 +4,22 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.109"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.111"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.109"></script>
-<script src="po-grid.js?v=122.29.109"></script>
-<script src="po-controller.js?v=122.29.109"></script>
-<script src="po-progress.js?v=122.29.109"></script>
-<script src="po-ui.js?v=122.29.109"></script>
-<script src="request-attachments.js?v=122.29.109"></script>
-<script src="full-budget-export.js?v=122.29.109"></script>
-<script src="budget-snapshot-pdf.js?v=122.29.109"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.109">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.109">
+<script src="po-domain.js?v=122.29.111"></script>
+<script src="po-reallocation.js?v=122.29.111"></script>
+<script src="po-reallocation-ui.js?v=122.29.111"></script>
+<script src="po-grid.js?v=122.29.111"></script>
+<script src="po-controller.js?v=122.29.111"></script>
+<script src="po-progress.js?v=122.29.111"></script>
+<script src="po-ui.js?v=122.29.111"></script>
+<script src="request-attachments.js?v=122.29.111"></script>
+<script src="full-budget-export.js?v=122.29.111"></script>
+<script src="budget-snapshot-pdf.js?v=122.29.111"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.111">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.111">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1843,18 +1845,18 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.109">
-<script src="success-feedback.js?v=122.29.109"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.109">
-<script src="interaction-motion.js?v=122.29.109"></script>
-<script src="interaction-surfaces.js?v=122.29.109"></script>
-<script src="number-edit-commit.js?v=122.29.109"></script>
-<script src="number-transitions.js?v=122.29.109"></script>
-<script src="number-surfaces.js?v=122.29.109"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.109">
-<script src="budget-import-ledger.js?v=122.29.109"></script>
-<script src="budget-import-workspace.js?v=122.29.109"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.109">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.111">
+<script src="success-feedback.js?v=122.29.111"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.111">
+<script src="interaction-motion.js?v=122.29.111"></script>
+<script src="interaction-surfaces.js?v=122.29.111"></script>
+<script src="number-edit-commit.js?v=122.29.111"></script>
+<script src="number-transitions.js?v=122.29.111"></script>
+<script src="number-surfaces.js?v=122.29.111"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.111">
+<script src="budget-import-ledger.js?v=122.29.111"></script>
+<script src="budget-import-workspace.js?v=122.29.111"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.111">
 
 </head>
 <body>
@@ -2734,7 +2736,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.109", code:"BMW",
+  widget:"Budget Manager", version:"122.29.111", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -10226,7 +10228,9 @@ function budgetElementModAmounts(itemId, excludeModId) {
     if (excludeModId && String(mod.ID) === String(excludeModId)) return;
     if (modStatusOf(mod).toLowerCase() !== "approved") return;
     var amounts = budgetElementSnapshot(mod), total = budgetElementNumber(mod.Amount);
-    if (!amounts || total === null || amounts.some(function(n){return n < 0;}) ||
+    var reallocation = cleanVal(mod.Component_Reallocation).toLowerCase() === "true", gross = amounts && amounts.reduce(function(sum,n){return sum+Math.abs(n);},0);
+    if (!amounts || total === null || reallocation && total < 0 || !["Increase","Decrease"].includes(cleanVal(mod.Modification_Type)) ||
+        (!reallocation && amounts.some(function(n){return n < 0;})) || (reallocation && (!(gross > 0) || total === 0 && cleanVal(mod.Modification_Type) === "Decrease")) ||
         Math.abs(amounts.reduce(function(sum,n){return sum+n;},0)-Math.abs(total)) > .00005) {
       result.unallocated = true; return;
     }
@@ -10478,7 +10482,7 @@ function budgetItemHasAmounts(it) {
   if (["HCSS","GP"].some(function(source){return ["Labor","Materials","Equipment","Subcontractor","Other"].some(function(element){return budgetUnitNumber(it[source+"_"+element+"_Actuals"]) !== 0;});})) return true;
   if (it._perUnit === true || cleanVal(it.Unit)) return true; // Keep per-unit setup and drafts reachable.
   if (!budgetModsReady()) return true;
-  return modsForItem(it.ID).some(function (m) { return modSignedAmount(m) !== 0; });
+  return modsForItem(it.ID).some(function (m) { return modSignedAmount(m) !== 0 || cleanVal(m.Component_Reallocation).toLowerCase() === "true" && ["Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"].some(function(field){return budgetUnitNumber(m[field]) !== 0;}); });
 }
 function applyBudgetItemFilters() {
   var search = $("itemSearch"), q = String(search && search.value || "").toLowerCase().trim();
@@ -13674,9 +13678,16 @@ function purchaseOrderRequestChildren(request,response,budgetId) {
   if(!["Pending","Approved","Rejected"].includes(snapshot.approvalState)||!bundle||typeof bundle.revision!=="string"||!bundle.revision||snapshot.approvalState!=="Rejected"&&bundle.revision!==snapshot.revision||!Array.isArray(bundle.modifications))throw new Error("Attached PO budget modifications could not be verified.");
   var ids=new Set(),items=new Set(),reference="PO:"+request.ID+":"+bundle.revision,wanted=snapshot.approvalState==="Pending"?"Submitted":snapshot.approvalState;
   var children=bundle.modifications.map(function(mod){
-    if(!mod||typeof mod.id!=="string"||!/^\d+$/.test(mod.id)||ids.has(mod.id)||typeof mod.budgetItemId!=="string"||!/^\d+$/.test(mod.budgetItemId)||items.has(mod.budgetItemId)||typeof mod.amount!=="string"||!window.LMPO||LMPO.money(mod.amount)<=0n||mod.reference!==reference||mod.status!==wanted)throw new Error("Attached PO budget modification identities are unavailable.");
+    if(!mod||typeof mod.id!=="string"||!/^\d+$/.test(mod.id)||ids.has(mod.id)||typeof mod.budgetItemId!=="string"||!/^\d+$/.test(mod.budgetItemId)||items.has(mod.budgetItemId)||typeof mod.amount!=="string"||!window.LMPO||LMPO.money(mod.amount)<0n||mod.reference!==reference||mod.status!==wanted)throw new Error("Attached PO budget modification identities are unavailable.");
+    var marked=mod.componentReallocation===true,fields={},sum=0n,gross=0n,type=marked?mod.modificationType:"Increase";
+    if(marked){
+      if(bundle.reallocationContract!=="po-reallocation-v1"||!["Increase","Decrease"].includes(type)||!mod.components||!mod.signedComponents)throw new Error("Attached PO component changes are unavailable.");
+      ["Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"].forEach(function(field,index){var key=String(index+1),raw=mod.components[key],signed=mod.signedComponents[key];if(typeof raw!=="string"||!/^[-]?\d+(?:\.\d{1,2})?$/.test(raw)||typeof signed!=="string"||!/^[-]?\d+(?:\.\d{1,2})?$/.test(signed))throw new Error("Attached PO component changes are unavailable.");var normalized=raw[0]==="-"?-LMPO.money(raw.slice(1)):LMPO.money(raw),actual=signed[0]==="-"?-LMPO.money(signed.slice(1)):LMPO.money(signed);if(actual!==(type==="Decrease"?-normalized:normalized))throw new Error("Attached PO component directions differ.");sum+=normalized;gross+=normalized<0n?-normalized:normalized;fields[field]=raw;});
+      if(gross===0n||sum!==LMPO.money(mod.amount)||LMPO.money(mod.amount)===0n&&type!=="Increase")throw new Error("Attached PO component totals differ.");
+      fields.Component_Reallocation=true;
+    }else if(LMPO.money(mod.amount)===0n||mod.signedComponents!=null||mod.modificationType!=null&&mod.modificationType!=="Increase"||mod.components&&Object.keys(mod.components).some(function(key){return typeof mod.components[key]!=="string"||mod.components[key][0]==="-";}))throw new Error("Attached PO budget modification identities are unavailable.");
     ids.add(mod.id);items.add(mod.budgetItemId);
-    return {ID:mod.id,Budget:{ID:budgetId},Budget_Item:{ID:mod.budgetItemId},Amount:mod.amount,Modification_Type:"Increase",Reference_Number:mod.reference,Status:mod.status};
+    return Object.assign({ID:mod.id,Budget:{ID:budgetId},Budget_Item:{ID:mod.budgetItemId},Amount:mod.amount,Modification_Type:type,Reference_Number:mod.reference,Status:mod.status},fields);
   });
   if(snapshot.budgetModificationId!=null&&!ids.has(snapshot.budgetModificationId))throw new Error("The linked PO budget modification is missing.");
   return children;
@@ -14615,7 +14626,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.109",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.111",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

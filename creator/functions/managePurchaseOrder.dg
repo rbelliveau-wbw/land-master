@@ -2,6 +2,7 @@ string managePurchaseOrder(string payload)
 {
 	environmentType = thisapp.environment.type;
 	result = {"success":false,"contract":"po-v1","writeState":"not-started"};
+	result.put("reallocationContract","po-reallocation-v1");
 	operationId = 0;
 	lockId = 0;
 	writeStarted = false;
@@ -73,6 +74,7 @@ string managePurchaseOrder(string payload)
 		}
 		// PO creation is separate from budget editing; legacy editor grants still apply.
 		canCreatePO = canEdit || access.Create_Purchase_Orders == true;
+		if(action == "Capabilities") { result.put("success",true); return result.toString(); }
 		if(action == "Approve" || action == "Reject" || action == "CheckDecision" || action == "RetryEmail")
 		{
 			return thisapp.handlePurchaseOrderApproval(p).toString();
@@ -866,6 +868,7 @@ string managePurchaseOrder(string payload)
 			return validated.toString();
 		}
 		p = validated.get("payload");
+		customReallocation = p.get("reallocation") != null;
 		token = p.get("token");
 		result.put("token",token);
 		if(PO_Operation[Token == token].count() > 0)
@@ -938,6 +941,7 @@ string managePurchaseOrder(string payload)
 				return result.toString();
 			}
 			priorBundle = beforePO.get("snapshot").get("approvalBundle");
+			if(amendPending && (customReallocation || priorBundle.get("reallocationContract") == "po-reallocation-v1")) { result.put("error","A submitted budget reallocation must be rejected before its PO or modification can be changed."); return result.toString(); }
 			if(validated.get("totalCents") != p.get("amount").replaceAll("[.]",""))
 			{
 				result.put("error","An edited reserved PO must keep its header and line total balanced.");
@@ -958,6 +962,7 @@ string managePurchaseOrder(string payload)
 			Actor=access.ID
 		];
 		requestProof = {"action":action,"token":token,"budgetId":budgetId,"lineCount":p.get("lines").size(),"digest":zoho.encryption.sha256(p.toString())};
+		requestProof.put("reallocationContract","po-reallocation-v1"); requestProof.put("reallocation",p.get("reallocation"));
 		operationId = insert into PO_Operation
 		[
 			Added_User=zoho.loginuser
@@ -1072,10 +1077,29 @@ string managePurchaseOrder(string payload)
 				pendingCredits = Map();
 				ownAllocation = Map();
 				ownCredits = Map();
+				componentAvailable = Map();
+				componentPendingCredits = Map();
+				componentPendingReductions = Map(); ownComponentReductions = Map();
+				componentBaselines = Map();
+				componentUnknownAllocations = Map();
+				ownComponentAllocation = Map();
+				ownComponentCredits = Map();
 				for each  balance in balances.get("balances")
 				{
 					available.put(balance.get("budgetItemId"),balance.get("availableCents").toLong());
 					pendingCredits.put(balance.get("budgetItemId"),ifnull(balance.get("pendingModificationCents"),"0").toLong());
+					componentBaselines.put(balance.get("budgetItemId"),balance.get("componentBaselineAvailable") == true);
+					componentUnknownAllocations.put(balance.get("budgetItemId"),ifnull(balance.get("unallocatedIssuedCents"),"0").toLong() != 0 || ifnull(balance.get("unallocatedModificationCents"),"0").toLong() != 0 || ifnull(balance.get("unallocatedModificationCount"),0).toLong() > 0);
+					if(balance.get("componentBaselineAvailable") == true)
+					{
+						for each  componentBalance in balance.get("componentBalances")
+						{
+							componentKey = balance.get("budgetItemId") + "|" + componentBalance.get("costElement");
+							componentAvailable.put(componentKey,componentBalance.get("availableCents").toLong());
+							componentPendingCredits.put(componentKey,ifnull(componentBalance.get("pendingModificationCents"),"0").toLong());
+							componentPendingReductions.put(componentKey,ifnull(componentBalance.get("pendingReductionCents"),"0").toLong());
+						}
+					}
 				}
 				if(wasReserved)
 				{
@@ -1085,13 +1109,28 @@ string managePurchaseOrder(string payload)
 					{
 						itemKey = oldLine.get("budgetItemId");
 						ownAllocation.put(itemKey,ifnull(ownAllocation.get(itemKey),0) + oldLine.get("finalAmount").replaceAll("[.]","").toLong());
+						componentKey = itemKey + "|" + oldLine.get("costElement");
+						ownComponentAllocation.put(componentKey,ifnull(ownComponentAllocation.get(componentKey),0) + oldLine.get("finalAmount").replaceAll("[.]","").toLong());
 					}
 					for each  oldMod in priorBundle.get("modifications")
 					{
-						ownCredits.put(oldMod.get("budgetItemId"),oldMod.get("amount").replaceAll("[.]","").toLong());
+						oldSign = 1; if(oldMod.get("componentReallocation") == true && oldMod.get("modificationType") == "Decrease") { oldSign = -1; }
+						ownCredits.put(oldMod.get("budgetItemId"),oldSign * oldMod.get("amount").replaceAll("[.]","").toLong());
+						if(oldMod.get("components") != null)
+						{
+							oldParts = oldMod.get("components");
+							for each  oldElement in {"1","2","3","4","5"}
+							{
+								componentKey = oldMod.get("budgetItemId") + "|" + oldElement;
+								oldPartCents = oldSign * oldParts.get(oldElement).replaceAll("[.]","").toLong();
+								ownComponentCredits.put(componentKey,oldPartCents);
+								if(oldPartCents < 0) { ownComponentReductions.put(componentKey,0 - oldPartCents); }
+							}
+						}
 					}
 				}
 				groupedCents = validated.get("groupedCents");
+				groupedComponentCents = validated.get("groupedComponentCents");
 				for each  itemKey in groupedCents.keys()
 				{
 					if(available.get(itemKey) == null)
@@ -1111,6 +1150,100 @@ string managePurchaseOrder(string payload)
 						{
 							budgetExceeded = true;
 						}
+						allocatedPlan = Map();
+						if(customReallocation)
+						{
+							if(componentBaselines.get(itemKey) != true) { result.put("error","A verified native component baseline is required for budget reallocation."); continue; }
+							if(componentUnknownAllocations.get(itemKey) == true) { result.put("error","Unallocated historical PO or modification amounts must be reviewed before budget reallocation."); continue; }
+							reviewedItem = Map();
+							for each reviewedCandidate in p.get("reallocation").get("items") { if(reviewedCandidate.get("budgetItemId") == itemKey) { reviewedItem = reviewedCandidate; } }
+							reviewedGross = 0; reviewedNet = 0; reviewedParts = Map();
+							for each reviewedElement in {"1","2","3","4","5"}
+							{
+								componentKey = itemKey + "|" + reviewedElement; reviewedDelta = 0;
+								if(reviewedItem.get("components") != null) { reviewedDelta = reviewedItem.get("components").get(reviewedElement).replaceAll("[.]","").toLong(); }
+								reviewedNet = reviewedNet + reviewedDelta; if(reviewedDelta < 0) { reviewedGross = reviewedGross - reviewedDelta; } else { reviewedGross = reviewedGross + reviewedDelta; }
+								reviewedParts.put(reviewedElement,reviewedDelta);
+								if(groupedComponentCents.get(componentKey) != null || reviewedDelta != 0)
+								{
+									if(componentAvailable.get(componentKey) == null) { result.put("error","A reviewed component balance is unavailable."); continue; }
+									beforeComponent = componentAvailable.get(componentKey) + ifnull(ownComponentAllocation.get(componentKey),0);
+									otherComponentPending = ifnull(componentPendingCredits.get(componentKey),0) - ifnull(ownComponentCredits.get(componentKey),0);
+									otherComponentReduction = ifnull(componentPendingReductions.get(componentKey),0) - ifnull(ownComponentReductions.get(componentKey),0);
+									if(otherComponentReduction < 0 || p.get("expectedComponentBalances") == null || p.get("expectedComponentBalances").get(componentKey) != beforeComponent.toString() || p.get("expectedComponentPendingModifications") == null || p.get("expectedComponentPendingModifications").get(componentKey) != otherComponentPending.toString()) { result.put("error","Component balances changed. Refresh and review before submitting."); }
+									currentComponent = ifnull(groupedComponentCents.get(componentKey),0); requiredIncrease = 0;
+									if(currentComponent > 0) { requiredIncrease = currentComponent - beforeComponent - otherComponentPending; if(requiredIncrease < 0) { requiredIncrease = 0; } }
+									if((requiredIncrease > 0 && reviewedDelta != requiredIncrease) || (reviewedDelta > 0 && reviewedDelta != requiredIncrease)) { result.put("error","Budget modification increases must exactly match the selected PO component shortfalls."); }
+									if(reviewedDelta < 0 && (0 - reviewedDelta > beforeComponent - currentComponent - otherComponentReduction)) { result.put("error","A budget reduction exceeds unused component budget after PO commitments and pending reductions."); }
+									if(currentComponent > beforeComponent) { budgetExceeded = true; }
+								}
+							}
+							if(reviewedNet < shortfall) { result.put("error","The reviewed budget modification leaves the selected PO item underfunded."); }
+							if(reviewedGross > 0)
+							{
+								reviewedType = "Increase"; reviewedSign = 1; reviewedAmount = reviewedNet;
+								if(reviewedNet < 0) { reviewedType = "Decrease"; reviewedSign = -1; reviewedAmount = 0 - reviewedNet; }
+								amountDigits = reviewedAmount.toString(); if(amountDigits.length() == 1) { amountDigits = "00" + amountDigits; } if(amountDigits.length() == 2) { amountDigits = "0" + amountDigits; }
+								for each normalizedElement in {"1","2","3","4","5"}
+								{
+									normalizedCents = reviewedSign * reviewedParts.get(normalizedElement); normalizedSign = ""; if(normalizedCents < 0) { normalizedSign = "-"; normalizedCents = 0 - normalizedCents; }
+									normalizedDigits = normalizedCents.toString(); if(normalizedDigits.length() == 1) { normalizedDigits = "00" + normalizedDigits; } if(normalizedDigits.length() == 2) { normalizedDigits = "0" + normalizedDigits; }
+									allocatedPlan.put(normalizedElement,normalizedSign + normalizedDigits.subString(0,normalizedDigits.length() - 2) + "." + normalizedDigits.subString(normalizedDigits.length() - 2,normalizedDigits.length()));
+								}
+								modificationPlan.add({"budgetItemId":itemKey,"amount":amountDigits.subString(0,amountDigits.length() - 2) + "." + amountDigits.subString(amountDigits.length() - 2,amountDigits.length()),"components":allocatedPlan,"componentReallocation":true,"modificationType":reviewedType,"reason":reviewedItem.get("reason")});
+							}
+							continue;
+						}
+						if(componentBaselines.get(itemKey) == true)
+						{
+							componentShortfall = 0;
+							for each  selectedElement in {"1","2","3","4","5"}
+							{
+								allocatedPlan.put(selectedElement,"0.00");
+								componentKey = itemKey + "|" + selectedElement;
+								if(groupedComponentCents.get(componentKey) != null)
+								{
+									if(componentAvailable.get(componentKey) == null)
+									{
+										result.put("error","A selected component balance is unavailable. Refresh the budget.");
+									}
+									else
+									{
+										beforeComponent = componentAvailable.get(componentKey) + ifnull(ownComponentAllocation.get(componentKey),0);
+										otherComponentPending = ifnull(componentPendingCredits.get(componentKey),0) - ifnull(ownComponentCredits.get(componentKey),0);
+										// Only a capability-matched new client may use verified signed pending reservations.
+										if((otherComponentPending < 0 && (p.get("reallocationContract") != "po-reallocation-v1" || balances.get("reallocationContract") != "po-reallocation-v1")) || p.get("expectedComponentBalances") == null || p.get("expectedComponentBalances").get(componentKey) != beforeComponent.toString() || p.get("expectedComponentPendingModifications") == null || p.get("expectedComponentPendingModifications").get(componentKey) != otherComponentPending.toString())
+										{
+											result.put("error","Component balances changed. Refresh and review before submitting.");
+										}
+										if(groupedComponentCents.get(componentKey) > beforeComponent)
+										{
+											budgetExceeded = true;
+										}
+										partShortfall = groupedComponentCents.get(componentKey) - beforeComponent - otherComponentPending;
+										if(partShortfall > 0)
+										{
+											componentShortfall = componentShortfall + partShortfall;
+											partText = partShortfall.toString();
+											if(partText.length() == 1)
+											{
+												partText = "00" + partText;
+											}
+											if(partText.length() == 2)
+											{
+												partText = "0" + partText;
+											}
+											allocatedPlan.put(selectedElement,partText.subString(0,partText.length() - 2) + "." + partText.subString(partText.length() - 2,partText.length()));
+										}
+									}
+								}
+							}
+							if(shortfall > componentShortfall)
+							{
+								result.put("error","Enter a budget modification with an explicit component allocation before submitting.");
+							}
+							shortfall = componentShortfall;
+						}
 						if(shortfall > 0)
 						{
 							if(shortfall > 999999999999999)
@@ -1127,7 +1260,12 @@ string managePurchaseOrder(string payload)
 								centsText = "0" + centsText;
 							}
 							amountText = centsText.subString(0,centsText.length() - 2) + "." + centsText.subString(centsText.length() - 2,centsText.length());
-							modificationPlan.add({"budgetItemId":itemKey,"amount":amountText});
+							plannedModification = {"budgetItemId":itemKey,"amount":amountText};
+							if(componentBaselines.get(itemKey) == true)
+							{
+								plannedModification.put("components",allocatedPlan);
+							}
+							modificationPlan.add(plannedModification);
 						}
 					}
 				}
@@ -1302,6 +1440,22 @@ string managePurchaseOrder(string payload)
 					}
 				}
 				reference = "PO:" + idText + ":" + token;
+				modLabor = null;
+				planType = "Increase"; planReason = "Purchase Order " + idText + " exceeds available item budget.";
+				if(plan.get("componentReallocation") == true) { planType = plan.get("modificationType"); planReason = plan.get("reason"); }
+				modMaterials = null;
+				modEquipment = null;
+				modSubcontractor = null;
+				modOther = null;
+				if(plan.get("components") != null)
+				{
+					planParts = plan.get("components");
+					modLabor = planParts.get("1").toDecimal();
+					modMaterials = planParts.get("2").toDecimal();
+					modEquipment = planParts.get("3").toDecimal();
+					modSubcontractor = planParts.get("4").toDecimal();
+					modOther = planParts.get("5").toDecimal();
+				}
 				if(modId == 0)
 				{
 					modId = insert into Budget_Modification
@@ -1310,9 +1464,15 @@ string managePurchaseOrder(string payload)
 						Budget=budget.ID
 						Budget_Item=item.ID
 						Budget_Category=item.Budget_Category
-						Modification_Type="Increase"
+						Modification_Type=planType
+						Component_Reallocation=plan.get("componentReallocation") == true
 						Amount=plan.get("amount").toDecimal()
-						Reason="Purchase Order " + idText + " exceeds available item budget."
+						Labor_Budget=modLabor
+						Materials_Budget=modMaterials
+						Equipment_Budget=modEquipment
+						Subcontractor_Budget=modSubcontractor
+						Other_Budget=modOther
+						Reason=planReason
 						Reference_Number=reference
 						Effective_Date=zoho.currentdate
 						Approval_Track=track
@@ -1320,7 +1480,15 @@ string managePurchaseOrder(string payload)
 					];
 				}
 				mod = Budget_Modification[ID == modId];
+				mod.Modification_Type=planType;
+				mod.Component_Reallocation=plan.get("componentReallocation") == true;
+				mod.Reason=planReason;
 				mod.Amount=plan.get("amount").toDecimal();
+				mod.Labor_Budget=modLabor;
+				mod.Materials_Budget=modMaterials;
+				mod.Equipment_Budget=modEquipment;
+				mod.Subcontractor_Budget=modSubcontractor;
+				mod.Other_Budget=modOther;
 				mod.Status="Submitted";
 				mod.Reference_Number=reference;
 				if(mod.Budget != budget.ID || mod.Budget_Item != item.ID || thisapp.poCurrencyString(mod.Amount.toString()) != plan.get("amount") || mod.Reference_Number != reference)
@@ -1334,7 +1502,13 @@ string managePurchaseOrder(string payload)
 				{
 					linkedModificationId = mod.ID;
 				}
-				modifications.add({"id":mod.ID.toString(),"budgetItemId":item.ID.toString(),"amount":plan.get("amount"),"reference":reference});
+				capturedModification = {"id":mod.ID.toString(),"budgetItemId":item.ID.toString(),"amount":plan.get("amount"),"reference":reference};
+				if(plan.get("componentReallocation") == true) { capturedModification.put("componentReallocation",true); capturedModification.put("modificationType",planType); capturedModification.put("reason",planReason); }
+				if(plan.get("components") != null)
+				{
+					capturedModification.put("components",plan.get("components"));
+				}
+				modifications.add(capturedModification);
 			}
 			po.PO_Budget_Modification=linkedModificationId;
 			if(amendPending)
@@ -1384,6 +1558,7 @@ string managePurchaseOrder(string payload)
 				context.put("recordId",idText);
 				context.put("submissionRevision",token);
 				context.put("modifications",modifications);
+				if(customReallocation) { context.put("reallocationContract","po-reallocation-v1"); context.put("reallocation",p.get("reallocation")); }
 				captured = thisapp.snapshotApprovalRoute(context);
 				if(captured.get("success") != true)
 				{
@@ -1470,7 +1645,8 @@ string managePurchaseOrder(string payload)
 			{
 				result.put("error","PO destination identity or line count was not verified.");
 			}
-			if(saved.get("budgetModificationId") != if(linkedModificationId == null,null,linkedModificationId.toString()))
+			wantedModificationId = null; if(linkedModificationId != null) { wantedModificationId = linkedModificationId.toString(); }
+			if(saved.get("budgetModificationId") != wantedModificationId)
 			{
 				result.put("error","Linked budget modification readback differs from the intended write.");
 			}
