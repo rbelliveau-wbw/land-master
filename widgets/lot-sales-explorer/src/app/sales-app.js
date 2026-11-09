@@ -539,7 +539,7 @@
   $('closeAudit').addEventListener('click', () => $('diagnostics').close());
   $('copyAudit').addEventListener('click', copyDiagnostics);
   $('diagnostics').addEventListener('close', () => { diagnosticsCopyGeneration++; $('copyAudit').disabled = false; $('copyAudit').removeAttribute('aria-busy'); });
-  $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()!=='budgets'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });
+  $('refresh').addEventListener('click', () => {state.refreshRequested=InsightsShell.current()==='sales'; if (InsightsShell.connected()) void authorizeAndLoad(); else void start(); });
   $('retryHistory').addEventListener('click', () => { if (state.loaded && state.historyError) void history(state.generation); });
   applyPeriod();
   async function authorizeAndLoad() {
@@ -568,7 +568,8 @@
       if (permissions.lotSalesDashboard && priorPermissions?.lotSalesDashboard && permissions.viewTotalLotRevenue === priorPermissions.viewTotalLotRevenue) refreshNumbers = priorNumbers;
       enforceRevenueAccess();
       InsightsShell.setAccess(permissions);
-      if (!permissions.lotSalesDashboard && !permissions.forecastsDashboard) {
+      $('connection').textContent = 'Connected';
+      if (!permissions.lotSalesDashboard && !permissions.forecastsDashboard && !permissions.budgetExceptionsDashboard) {
         $('connection').textContent = 'No dashboard access';
         $('summary').textContent = 'No dashboard access';
         log('Lot Sales dashboard access denied.');
@@ -597,6 +598,6 @@
     finally { starting = false; $('refresh').disabled = false; }
   }
   window.addEventListener('insights:dashboard',event=>{if(event.detail==='sales'&&state.permissions?.lotSalesDashboard&&!state.loaded&&!state.busy)void load();});
-  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("lot-sales-explorer",{state:()=>({...state,forecastGroupBy:window.ForecastInsightsApp?.groupBy()}),ready:()=>!!(state.permissions?.lotSalesDashboard||state.permissions?.forecastsDashboard),actor:()=>state.permissions});
+  if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("lot-sales-explorer",{state:()=>({...state,forecastGroupBy:window.ForecastInsightsApp?.groupBy(),budgetExceptionsScope:window.BudgetExceptionsApp?.scope()}),ready:()=>!!(state.permissions?.lotSalesDashboard||state.permissions?.forecastsDashboard||state.permissions?.budgetExceptionsDashboard),actor:()=>state.permissions});
   start();
 })();

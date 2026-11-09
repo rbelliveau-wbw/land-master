@@ -1,3 +1,20 @@
+## Budget Exceptions — 1.7.0, November 9, 2026
+
+The permission-gated dashboard combines overview cards and the expandable
+Subdivision → Category → Budget Line hierarchy. Saved Final stays authoritative
+during pending revisions. GP overruns are evaluated by category and positive
+overruns add without offsetting unused budget elsewhere. GP and HCSS stay
+separate; complete native snapshots, not sample data, supply the report.
+
+The dashboard reuses Quiet Workspace navigation, custom pickers, Forecasts
+loading, keyed disclosure motion and Sliding Push numbers. User Access has a
+new default-false Budget Exceptions Dashboard grant. The field and full/lean
+access functions require the user's Creator promotion; repository PMP does not
+promote Creator. Existing dashboard grants and report rights remain unchanged.
+
+[Definitions, affected components, coverage limits, regression and rollback](../../docs/insights-budget-exceptions-2026-11-09.md).
+Rollback Production to lot-sales-explorer 1.6.27 and rebuild Pages; retain 1.7.0.
+
 ## Sidebar Tools And Audit Log — 1.6.25, November 5, 2026
 
 The Insights / Dashboards breadcrumb strip is deleted entirely so reports gain

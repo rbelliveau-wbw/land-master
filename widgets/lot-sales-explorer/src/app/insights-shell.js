@@ -1,7 +1,7 @@
 (function(){
   'use strict';
   let dashboard=null,connected=false,access=null,route={dashboard:new URLSearchParams(location.search).get('dashboard')||'',projectId:new URLSearchParams(location.search).get('projectId')||''};
-  const names={sales:'Lot Sales',forecasts:'Forecasts'};
+  const names={sales:'Lot Sales',forecasts:'Forecasts','budget-exceptions':'Budget Exceptions'};
   const workspace=document.querySelector('.workspace'),navigation=document.getElementById('insightsNavigation'),navigationToggle=document.getElementById('navigationToggle');
   let navigationMotions=[];
   function setNavigationExpanded(expanded,animate=false){
@@ -31,8 +31,8 @@
     const next=event.key==='Home'?0:event.key==='End'?items.length-1:(index+(['ArrowUp','ArrowLeft'].includes(event.key)?-1:1)+items.length)%items.length;
     items[next].focus();show(items[next].dataset.dashboard);
   });
-  const allowed=name=>name==='sales'?!!access?.lotSalesDashboard:name==='forecasts'?!!access?.forecastsDashboard:false;
-  function normalize(value){const key=String(value||'').trim().toLowerCase();return ['sales','lotsales','lot-sales'].includes(key)?'sales':['forecast','forecasts'].includes(key)?'forecasts':'';}
+  const allowed=name=>name==='sales'?!!access?.lotSalesDashboard:name==='forecasts'?!!access?.forecastsDashboard:name==='budget-exceptions'?!!access?.budgetExceptionsDashboard:false;
+  function normalize(value){const key=String(value||'').trim().toLowerCase();return ['sales','lotsales','lot-sales'].includes(key)?'sales':['forecast','forecasts'].includes(key)?'forecasts':['budget-exceptions','budgetexceptions'].includes(key)?'budget-exceptions':'';}
   async function readRoute(){
     const util=window.ZOHO?.CREATOR?.UTIL;
     if(typeof util?.getQueryParams!=='function')return route;
@@ -47,19 +47,20 @@
     document.querySelectorAll('[data-dashboard]').forEach(button=>{const key=button.dataset.dashboard,active=key===name;button.hidden=!allowed(key);button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));if(active)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
     document.getElementById('salesDashboard').hidden=name!=='sales';
     document.getElementById('forecastsDashboard').hidden=name!=='forecasts';
+    document.getElementById('budgetExceptionsDashboard').hidden=name!=='budget-exceptions';
     document.getElementById('budgetsDashboard').hidden=true;
     document.getElementById('dashboardAccessMessage').hidden=!!name;
     document.getElementById('dashboardAccessText').textContent=error||(!access?'Checking dashboard access…':'Contact your administrator to be granted access to dashboards.');
-    const refresh=document.getElementById('refresh');refresh.title=name==='forecasts'?'Refresh forecasts':'Refresh lot sales';refresh.setAttribute('aria-label',refresh.title);
+    const refresh=document.getElementById('refresh');refresh.title=name==='budget-exceptions'?'Refresh Budget Exceptions':name==='forecasts'?'Refresh forecasts':'Refresh lot sales';refresh.setAttribute('aria-label',refresh.title);
   }
   function setAccess(next,error=''){
     access=next;
     window.dispatchEvent(new CustomEvent('insights:access',{detail:next}));
     if(!next){paint(null,error);return;}
     const requested=route.dashboard?normalize(route.dashboard):'';
-    if(route.dashboard&&!requested){paint(null,'Unknown dashboard. Use dashboard=sales or dashboard=forecasts.');return;}
+    if(route.dashboard&&!requested){paint(null,'Unknown dashboard. Use dashboard=sales, dashboard=forecasts, or dashboard=budget-exceptions.');return;}
     if(requested&&!allowed(requested)){paint(null,names[requested]+' dashboard access is required.');return;}
-    const target=requested||(allowed(dashboard)?dashboard:allowed('sales')?'sales':allowed('forecasts')?'forecasts':null);
+    const target=requested||(allowed(dashboard)?dashboard:allowed('sales')?'sales':allowed('forecasts')?'forecasts':allowed('budget-exceptions')?'budget-exceptions':null);
     if(target)show(target,false);else paint(null,error);
   }
   function show(name,updateUrl=true){

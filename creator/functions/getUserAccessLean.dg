@@ -17,6 +17,7 @@ string getUserAccessLean(string user)
 	// Data Insights permissions
 	lotSalesDashboard = false;
 	forecastsDashboard = false;
+	budgetExceptionsDashboard = false;
 	viewTotalLotRevenue = false;
 	// Pro Forma flags
 	pfEditAll = false;
@@ -64,6 +65,7 @@ string getUserAccessLean(string user)
 		// Data Insights permissions
 		lotSalesDashboard = row.Lot_Sales_Dashboard == true;
 		forecastsDashboard = row.Forecasts_Dashboard == true;
+		budgetExceptionsDashboard = row.Budget_Exceptions_Dashboard == true;
 		viewTotalLotRevenue = row.View_Total_Lot_Revenue == true;
 		// Pro Forma permissions
 		pfEditAll = row.Edit_All_Proformas == true;
@@ -123,7 +125,8 @@ string getUserAccessLean(string user)
 	// Data Insights permissions
 	result.put("lotSalesDashboard",lotSalesDashboard);
 	result.put("forecastsDashboard",forecastsDashboard);
-	if(forecastsDashboard)
+	result.put("budgetExceptionsDashboard",budgetExceptionsDashboard);
+	if(forecastsDashboard || budgetExceptionsDashboard)
 	{
 		result.put("today",zoho.currentdate.toString("yyyy-MM-dd"));
 	}

@@ -54,7 +54,7 @@
       
     }else if(module==='contract-management'){
       tab('.mode-seg:not(#aprTabs)','button','#view');
-      tab('#aprTabs','button','#overlays .modal-body');
+      tab('#aprTabs','button','#overlays');
       // Legal owns its existing FLIP and drag/drop; do not apply a second transform.
       panels.push({selector:'#view'});
       list('.ctable',':scope>tbody>tr',row=>row.dataset.sectionKey?'section:'+row.dataset.sectionKey:row.dataset.contractId?'contract:'+row.dataset.contractId:row.classList.contains('drillrow')?'details:'+row.previousElementSibling?.dataset.contractId:null,()=>state().workMode,{visibility:true,highlight:false});
@@ -92,14 +92,13 @@
       
       list('#matrixBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().groupBy||'sales',{highlight:false});
       list('#fcBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().forecastGroupBy||'project',{highlight:false,visibility:true});
+      list('#beBody','tr[data-motion-row]',row=>row.dataset.motionRow,()=>state().budgetExceptionsScope||'budget-exceptions',{highlight:false,visibility:true});
       surfaceExtra.push('#subdivisionCard,.insights-popover,#fcInfoCard');
-      panels.push({selector:'#salesDashboard,#forecastsDashboard,#detailBody'});
+      panels.push({selector:'#salesDashboard,#forecastsDashboard,#budgetExceptionsDashboard,#detailBody'});
       status('#connection');
     }else if(module==='forecast-manager'){
       tab('.segments','[data-view]','#matrixScroll');
-        tab('#reviewScope','button','#reviewRegister');
       list('#matrix','tbody tr[data-builder]',row=>row.dataset.builder,()=>state().sub);
-      list('#reviewActive,#reviewLegacyRows','tr[data-review-row]',row=>row.dataset.reviewRow,()=>options.actor?.()?.user,{visibility:true,hostKey:host=>host.id,highlight:false});
       surfaceExtra.push('.popover,.dialog');
       status('#saveStatus');
       status('.month-cell','.month-cell',node=>node.dataset.monthId||node.id||M.identity(node));

@@ -14,7 +14,7 @@ const fields = [
   ['Send_for_Approvals', 'send'], ['Edit_Budget_Owners', 'editOwners'],
   ['View_Budget_Import_Items', 'viewImports'], ['Edit_Budget_Import_Items', 'editImports'],
   ['Edit_All_Budgets', 'modAdmin'], ['Delete_Archive_Budgets', 'budgetDeleteArchive'],
-  ['Lot_Sales_Dashboard', 'lotSalesDashboard'], ['Forecasts_Dashboard', 'forecastsDashboard'], ['View_Total_Lot_Revenue', 'viewTotalLotRevenue'],
+  ['Lot_Sales_Dashboard', 'lotSalesDashboard'], ['Forecasts_Dashboard', 'forecastsDashboard'], ['Budget_Exceptions_Dashboard', 'budgetExceptionsDashboard'], ['View_Total_Lot_Revenue', 'viewTotalLotRevenue'],
   ['Edit_All_Proformas', 'pfEditAll'], ['Edit_Owned_Proformas', 'pfEditOwned'],
   ['Edit_Construction_Curve', 'pfEditCurve'], ['VP_Compensation_Tab', 'pfVpCompTab'],
   ['Edit_Probability', 'pfEditProbability'], ['Edit_Proforma_Owner', 'pfEditOwner'],
@@ -103,6 +103,9 @@ for (const [field, flag] of fields) {
   for (const [otherField, other] of fields) if (otherField !== field) assert.equal(value[other], false, `${field} must not grant ${other}.`);
 }
 const nullable = {...actor};
+assert.equal(assertParity('fixture_owner', [{...actor, Budget_Exceptions_Dashboard: true}]).lean.value.today, '2026-10-27', 'Budget Exceptions receives the Creator application date without requiring Forecasts.');
+assert.equal(assertParity('fixture_owner', [{...actor, Forecasts_Dashboard: true}]).lean.value.today, '2026-10-27', 'Forecasts keeps the same authoritative Creator date.');
+assert.equal(Object.hasOwn(assertParity('fixture_owner').lean.value, 'today'), false, 'Unrelated dashboard grants do not add an application date.');
 for (const [field] of fields) nullable[field] = null;
 for (const [, flag] of fields) assert.equal(assertParity('fixture_owner', [nullable]).lean.value[flag], false);
 const duplicate = assertParity('fixture_owner', [actor, {...actor, ID: roster[1].ID, Edit_All_Budgets: true}]).lean.value;

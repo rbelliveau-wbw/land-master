@@ -25,6 +25,7 @@ const creator = result => ({ DATA: { invokeCustomApi: async input => {
 let access = await load(creator({ code: 3000, details: { output: JSON.stringify({ found: true, lotSalesDashboard: true, viewTotalLotRevenue: false }) } }), runtime('PRODUCTION'));
 assert.equal(access.lotSalesDashboard, true);
 assert.equal(access.viewTotalLotRevenue, false);
+assert.equal(access.budgetExceptionsDashboard, false, 'Older access responses without the new field stay denied.');
 assert.equal(request.api_name, 'Get_User_Access');
 assert.equal(request.http_method, 'GET');
 assert.equal(Object.hasOwn(request, 'query_params'), false);
@@ -47,6 +48,25 @@ assert.equal(Object.hasOwn(request, 'query_params'), false, 'An email alias cann
 access = await load(creator({ code: 3000, result: JSON.stringify({ hasRow: true, lotSalesDashboard: true, viewTotalLotRevenue: true }) }), runtime('PRODUCTION'));
 assert.equal(access.viewTotalLotRevenue, true, 'the standard JSON string result envelope remains supported');
 assert.equal(Object.isFrozen(access), true);
+
+for (const environment of ['DEVELOPMENT', 'STAGE', 'PRODUCTION']) {
+  access = await load(creator({code:3000,result:{hasRow:true,budgetExceptionsDashboard:true,today:'2026-11-09'}}),runtime(environment));
+  assert.equal(access.budgetExceptionsDashboard,true,'Budget Exceptions can be granted independently in every Creator environment.');
+  assert.equal(access.lotSalesDashboard,false);
+  assert.equal(access.forecastsDashboard,false);
+  assert.equal(access.viewTotalLotRevenue,false);
+  assert.equal(access.today,'2026-11-09','Approval aging uses the date returned by Creator.');
+}
+for(const flags of [
+  {hasRow:true,lotSalesDashboard:true},
+  {hasRow:true,forecastsDashboard:true},
+  {hasRow:true,editAll:true,editOwned:true},
+  {hasRow:true,budgetExceptionsDashboard:false},
+  {hasRow:true,budgetExceptionsDashboard:null},
+  {hasRow:false,budgetExceptionsDashboard:true},
+  {budgetExceptionsDashboard:true}
+])assert.equal((await load(creator({code:3000,result:flags}),runtime('PRODUCTION'))).budgetExceptionsDashboard,false,'Unrelated grants, absent fields and missing access rows never grant Budget Exceptions.');
+await assert.rejects(load(creator({code:3000,result:{hasRow:true,budgetExceptionsDashboard:true},data:{hasRow:true,budgetExceptionsDashboard:false}}),runtime('PRODUCTION')),/no readable permissions/,'Conflicting Budget Exceptions permission envelopes fail closed.');
 
 access = await load(creator({ code: 3000, result: JSON.stringify({ found: false, lotSalesDashboard: true, viewTotalLotRevenue: true }) }), runtime('PRODUCTION'));
 assert.equal(access.lotSalesDashboard, false);
@@ -91,10 +111,10 @@ assert.equal(Object.hasOwn(failedRequest, 'parameters'), false);
 // both the native email and its local part, matching the live regression trigger.
 const fullFunction = translate(fs.readFileSync('creator/functions/getUserAccess.dg', 'utf8')).js;
 const constructionPermission = translate(fs.readFileSync('creator/functions/hasConstructionPermission.dg', 'utf8')).js;
-function fullAccess(user) {
-  const backend = vm.createContext({user});
+function fullAccess(user, budgetGrant = false) {
+  const backend = vm.createContext({user,budgetGrant});
   vm.runInContext(`
-    const rows = [{ID:'900000000000000001',User:'fixture_session_actor',Lot_Sales_Dashboard:true,View_Total_Lot_Revenue:true}];
+    const rows = [{ID:'900000000000000001',User:'fixture_session_actor',Lot_Sales_Dashboard:true,View_Total_Lot_Revenue:true,Budget_Exceptions_Dashboard:budgetGrant}];
     function choose(condition, yes, no) { return condition ? yes : no; }
     function ifnull(value, fallback) { return value == null ? fallback : value; }
     function List() { return []; }
@@ -105,7 +125,7 @@ function fullAccess(user) {
       const selected = (form === 'User_Access' ? rows : []).map(row => new Proxy(row, {get(object, key) { return object[key] ?? null; }})).filter(predicate);
       return new Proxy(selected,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;}});
     }
-    const zoho = {loginuser:'fixture_session_actor'};
+    const zoho = {loginuser:'fixture_session_actor',currentdate:{toString(format){if(format!=='yyyy-MM-dd')throw Error('Unexpected date format');return '2026-11-09';}}};
     const thisapp = {permissions:{profileForUser(){return '';}}};
     ${constructionPermission}
     thisapp.hasConstructionPermission = hasConstructionPermission;
@@ -127,7 +147,12 @@ for (const environment of ['PRODUCTION', 'STAGE']) {
   assert.equal(verified.hasRow, true);
   assert.equal(verified.lotSalesDashboard, true);
   assert.equal(verified.viewTotalLotRevenue, true);
+  assert.equal(verified.budgetExceptionsDashboard,false);
   assert.equal(actor.current().user, 'unrelated_mailbox@example.test', 'Backend session fallback must not rewrite the runtime/cache identity.');
+  const budgetNative={DATA:{invokeCustomApi:async input=>{assert.equal(input.http_method,'GET');return fullAccess(undefined,true);}}};
+  const verifiedBudget=await load(budgetNative,actor);
+  assert.equal(verifiedBudget.budgetExceptionsDashboard,true,'The saved full native function exposes the independent User Access grant.');
+  assert.equal(verifiedBudget.today,'2026-11-09','Budget-only date availability does not depend on Forecasts being enabled.');
 }
 await load(creator({code:3000,result:JSON.stringify({hasRow:true,lotSalesDashboard:true})}),runtime('DEVELOPMENT',' VIEWER+QA@EXAMPLE.COM '));
 assert.equal(request.payload.user,'viewer+qa','Development keeps its existing normalized POST/View-as alias contract.');

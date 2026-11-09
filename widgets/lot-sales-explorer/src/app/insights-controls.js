@@ -137,6 +137,7 @@
   document.addEventListener('keydown',e=>{if(opened&&e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true);}},true);
   document.addEventListener('focusin',e=>{if(opened&&!opened.panel.contains(e.target)&&e.target!==opened.trigger)close();});
   window.addEventListener('resize',position);document.addEventListener('scroll',position,true);
+  function mount(root) { root.querySelectorAll('select[data-picker]').forEach(control=>{if(!entries.has(control.id))mountSelect(control);}); }
   document.querySelectorAll('#salesDashboard select,#forecastsDashboard select').forEach(mountSelect);
   document.querySelectorAll('[data-month-picker]').forEach(mountMonth);
   const search=document.getElementById('search'),searchWrap=document.createElement('span'),searchClear=document.createElement('button');
@@ -144,5 +145,5 @@
   searchClear.type='button';searchClear.className='search-clear';searchClear.setAttribute('aria-label','Clear search');searchClear.innerHTML=cross;searchClear.hidden=true;searchWrap.append(searchClear);
   const syncSearch=()=>{searchClear.hidden=!search.value;};search.addEventListener('input',syncSearch);
   searchClear.addEventListener('click',e=>{e.preventDefault();search.value='';search.dispatchEvent(new Event('input',{bubbles:true}));search.focus();});
-  window.InsightsControls=Object.freeze({values,setValues,syncAll:()=>{entries.forEach(e=>e.sync());syncSearch();},placePicker:(id,target)=>{const entry=entries.get(id);if(entry&&target)target.append(entry.trigger.parentElement);},close});
+  window.InsightsControls=Object.freeze({values,setValues,mount,syncAll:()=>{entries.forEach(e=>e.sync());syncSearch();},placePicker:(id,target)=>{const entry=entries.get(id);if(entry&&target)target.append(entry.trigger.parentElement);},close});
 })();

@@ -695,3 +695,12 @@ Cards. Reuse Budget Manager's pill chassis: rounded 999px container, 4px padding
 with 11.5px semibold labels and the navy gradient active fill. The shared motion
 rail owns the selection movement. Keep branding left and session/refresh right;
 preserve all pending and uncertain-write navigation guards.
+
+## Budget Exceptions — November 9, 2026
+
+Data Insights places four overview cards above the expandable Subdivision /
+Category / Budget Line report. Cards filter the hierarchy while Search and
+custom Category, Territory and Project pickers scope both. Retain the Quiet
+Workspace shell, Forecasts navy/pale-blue palette, Title Case labels and separate
+GP/HCSS columns. Omit a carousel and second issue rail. Financial definitions and
+native access live in [the module release](../../docs/insights-budget-exceptions-2026-11-09.md).

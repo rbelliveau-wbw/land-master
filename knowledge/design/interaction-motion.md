@@ -112,3 +112,10 @@ including linked PO child reads. Never paint an intermediate orphan modification
 then insert its PO above it. Keep a same-scope complete list during refresh;
 actor/phase scope changes and failed authorization clear retained PO rows.
 The existing panel/row motion registry handles the final completed reveal.
+
+## Budget Exceptions Adoption — November 9, 2026
+
+Insights 1.7.0 registers beBody in the shared keyed-list registry with visibility
+changes enabled. Subdivision/category disclosures retain real rows, focus and
+scroll. The report pane and scalar values reuse shared panel and Sliding Push
+behavior. Actor/access resets clear old state before a new reveal.

@@ -1,0 +1,62 @@
+{
+  "status": "installed-development-pending-owner-promotion",
+  "reason": "Installed and saved in Creator Development on 2026-11-09. The field and both access functions were closed and reopened. PMP leaves native Stage/Production promotion to the user.",
+  "permission": {
+    "form": "User_Access",
+    "section": "Data_Insights",
+    "section_display_name": "Data Insights",
+    "link_name": "Budget_Exceptions_Dashboard",
+    "display_name": "Budget Exceptions Dashboard",
+    "type": "decision box",
+    "default": false,
+    "mandatory": false,
+    "help_text": "Grants read-only access to Budget Exceptions in Data Insights. Does not grant budget editing or approval authority.",
+    "response_flag": "budgetExceptionsDashboard",
+    "grant_users": [],
+    "grant_policy": "No automatic or inherited grants. An administrator selects intended viewers in User Access. Budget editing, Lot Sales and Forecasts permissions do not imply this grant.",
+    "native_description": ""
+  },
+  "functions_after_field_creation": [
+    "getUserAccess",
+    "getUserAccessLean"
+  ],
+  "function_contract": {
+    "permission": "row.Budget_Exceptions_Dashboard == true; false before a matching User_Access row is found",
+    "today": "zoho.currentdate.toString(yyyy-MM-dd), returned when Forecasts_Dashboard or Budget_Exceptions_Dashboard is true",
+    "unchanged_wrappers": [
+      "getUserAccessDev",
+      "getUserAccessLeanDev"
+    ],
+    "unchanged_apis": [
+      "Get_User_Access",
+      "Get_User_Access_DEV",
+      "Get_User_Access_STAGE",
+      "Get_User_Access_Lean",
+      "Get_User_Access_Lean_DEV"
+    ],
+    "identity": "Production and Stage preserve the authenticated zoho.loginuser fallback; Development preserves the existing View-as alias. No audience or identity override changes."
+  },
+  "page": {
+    "link_name": "Data_Insights",
+    "widget_url": "https://rbelliveau-wbw.github.io/land-master/prod/insights/",
+    "replace_widget_url": false,
+    "existing_parameters": [
+      "dashboard",
+      "projectId"
+    ],
+    "new_page_variables": []
+  },
+  "user_access_report": {
+    "link_name": "User_Access_Report",
+    "requested_change": "Make the new permission available for administrator selection beside the existing Data Insights grants; preserve existing profiles, report visibility, values and all other grants."
+  },
+  "report_authorization": "The new dashboard flag gates navigation and all dashboard reads but does not replace native Creator report/field authorization. Keep any dashboard-only report access read-only; do not add Add/Edit/Delete rights. Exact report fields are defined by the checked-in budget-exceptions-adapter.js contract.",
+  "schema_snapshot_policy": "Do not hand-edit creator/generated/fields/User_Access.json: it remains tied to its recorded DS baseline. This additive field contract must be updated with native saved/reopened evidence, or regenerated only from a current captured DS export.",
+  "native_verification": {
+    "field": "Saved and reopened the existing User Access form builder: Data Insights section, Budget Exceptions Dashboard / Budget_Exceptions_Dashboard, Decision box, Mandatory false, Initial Value false.",
+    "functions": "Both native functions compiled, saved, closed, and reopened. Whitespace-normalized full source matches the checked-in functions; FNV-1a fingerprints: getUserAccess f5d6a8cd, getUserAccessLean e412dddf.",
+    "user_access_report": "The saved User Access form exposes the new checkbox beside Lot Sales and Forecasts for administrator assignment. No user values or profile grants were changed; no new report column was required.",
+    "authorized_report_runtime": "Pending administrator selection of an intended viewer and native report/field authorization checks. Local desktop fixture and complete-read/access regressions do not establish an individual viewer profile."
+  },
+  "production_promotion": "User-managed under PMP. Do not promote Creator schema/functions through Stage or Production as part of the repository release."
+}

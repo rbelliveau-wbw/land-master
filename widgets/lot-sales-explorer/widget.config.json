@@ -2,13 +2,13 @@
   "slug": "lot-sales-explorer",
   "name": "Land Master Insights",
   "module": "insights",
-  "version": "1.6.27",
-  "description": "Smooth, reversible Quiet Workspace sidebar motion with stable icons, clipped label fades and retained mounted reports.",
+  "version": "1.7.0",
+  "description": "Permission-gated Budget Exceptions with overview cards, expandable subdivision/category/budget lines, and shared Insights loading and motion.",
   "source_entry": "widgets/lot-sales-explorer/src/app/widget.html",
   "creator_package_manifest": "widgets/lot-sales-explorer/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Insights",
-  "source_sha256": "3c615f7514f52412457006090d883a8c59222ba651b17ce74446435425e29ca5",
+  "source_sha256": "7b0a2819117bdeb97f1a9046110856c2ba052d94e5d80da3a77b8ae020aad20d",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

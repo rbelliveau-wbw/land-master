@@ -226,6 +226,13 @@ for(const workflow of currentWorkflows.values()){
 for(const f of pageDeployment.functions){
  assert.equal(f.savedAndReloaded,true,`${f.name}: independently reselected`);
  let current=read(f.source);
+ // Budget Exceptions is independently tested; remove only its exact additions
+ // before comparing the older native Construction capture below.
+ if(['getUserAccess','getUserAccessLean'].includes(f.name))current=current
+  .replace("\tbudgetExceptionsDashboard = false;\n",'')
+  .replace("\t\tbudgetExceptionsDashboard = row.Budget_Exceptions_Dashboard == true;\n",'')
+  .replace("\tresult.put(\"budgetExceptionsDashboard\",budgetExceptionsDashboard);\n",'')
+  .replace("\tif(forecastsDashboard || budgetExceptionsDashboard)\n","\tif(forecastsDashboard)\n");
  // This capture predates the separately tested October 27 Forecasts addition.
  // Preserve the complete Construction baseline; allow only the exact new flag/date blocks.
  if(['getUserAccess','getUserAccessLean'].includes(f.name))current=current

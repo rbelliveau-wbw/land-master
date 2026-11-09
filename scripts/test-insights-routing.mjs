@@ -18,7 +18,18 @@ const both={lotSalesDashboard:true,forecastsDashboard:true};
  assert.match(h.node('dashboardAccessText').textContent,/Lot Sales dashboard access/);assert.equal(h.c.InsightsShell.show('forecasts'),true);
  h.c.InsightsShell.setAccess(null);assert.equal(h.c.InsightsShell.current(),null);assert.equal(h.node('forecastsDashboard').hidden,true);
 }
-for(const [flags,expected]of [[{lotSalesDashboard:true},'sales'],[{forecastsDashboard:true},'forecasts'],[{},null]]){const h=harness();h.c.InsightsShell.setAccess(flags);assert.equal(h.c.InsightsShell.current(),expected);}
+for(const [flags,expected]of [[{lotSalesDashboard:true},'sales'],[{forecastsDashboard:true},'forecasts'],[{budgetExceptionsDashboard:true},'budget-exceptions'],[{},null]]){const h=harness();h.c.InsightsShell.setAccess(flags);assert.equal(h.c.InsightsShell.current(),expected);}
+for(const key of ['budget-exceptions','budgetexceptions']){
+ const h=harness('?dashboard='+key+'&projectId=900000000000000001');h.c.InsightsShell.setAccess({budgetExceptionsDashboard:true});
+ assert.equal(h.c.InsightsShell.current(),'budget-exceptions');assert.equal(h.node('budgetExceptionsDashboard').hidden,false);assert.equal(h.node('salesDashboard').hidden,true);assert.equal(h.node('forecastsDashboard').hidden,true);
+ assert.equal(h.node('budgetExceptionsTab').hidden,false);assert.equal(h.c.InsightsShell.route().projectId,'900000000000000001');assert.equal(h.node('refresh').getAttribute('aria-label'),'Refresh Budget Exceptions');
+ assert.equal(h.c.InsightsShell.show('sales'),false,'The exception permission grants no unrelated dashboard access');
+ h.c.InsightsShell.setAccess(both);assert.equal(h.c.InsightsShell.current(),null);assert.equal(h.node('budgetExceptionsDashboard').hidden,true);assert.equal(h.node('budgetExceptionsTab').hidden,true);assert.match(h.node('dashboardAccessText').textContent,/Budget Exceptions dashboard access/);
+ h.c.InsightsShell.setAccess(null);assert.equal(h.node('budgetExceptionsDashboard').hidden,true);
+}
+{
+ const h=harness('?dashboard=budget-exceptions');h.c.InsightsShell.setAccess(both);assert.equal(h.c.InsightsShell.current(),null,'Existing dashboard grants never imply exception access');assert.equal(h.c.InsightsShell.show('budget-exceptions'),false);
+}
 {
  const h=harness('?dashboard=sales',{dashboard:'forecasts',projectId:'native-project'});await h.c.InsightsShell.readRoute();h.c.InsightsShell.setAccess(both);assert.equal(h.c.InsightsShell.current(),'forecasts','Native Creator page variables take precedence over iframe defaults');assert.equal(h.c.InsightsShell.route().projectId,'native-project');
 }

@@ -50,3 +50,10 @@ Check desktop centering, matched visual tokens, reduced motion, all pending
 phases, completion/error/retry, access denial/reset, stale replies and export
 locks. Follow [interaction motion](interaction-motion.md) and
 [number transitions](number-transitions.md) where applicable.
+
+## Budget Exceptions Adoption — November 9, 2026
+
+Insights 1.7.0 reuses insights-loading for the complete Budget Exceptions
+snapshot. Direct refresh retains authorized complete rows; permission resets
+clear them immediately. Stale replies cannot hide a newer loader or republish
+revoked results. See [the module release](../../docs/insights-budget-exceptions-2026-11-09.md).
