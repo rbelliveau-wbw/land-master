@@ -140,12 +140,30 @@ verified all 33 source/release files are identical, Development selects
 122.29.107 and Production promotion selects 122.29.107. The pre-existing
 Contract Management manifest-hash warning is unrelated to this patch.
 
-Promotion to Production is authorized. A successful
-native Bluebonnet attachment save/download through the new frontend is still
-required after publication; the live reproduction established the failure,
-not post-release success. Existing native data transport/upload behavior is
-reused, but the fresh projected structure reads and worker must also be
-verified inside Creator after publication.
+## Production Verification
+
+Release commit `53c7b23a85e52c8055436496e921294d96e5f5b2` reached main and
+Production. [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/42670011551)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/42670011189)
+both completed successfully. The live Creator iframe loaded the new 122.29.107
+snapshot/PDF scripts through the permanent Production URL.
+
+At 12:03 PM America/Chicago on November 9, the agent-owned desktop browser
+successfully exported Bluebonnet Crossing - Phase 01 once. Native audit
+confirmed 227 items and 1,135 elements assembled, one file uploaded, and
+attachment `4410926000005910002` saved under the exact Budget
+`4410926000001671002`. Attachment count increased from two to three.
+The response marked `batchedBudgetExport:true`; no native whole-budget `PDF`
+call or export replay was needed.
+
+The generated file was downloaded through the existing Creator Download
+action. It opens in the existing native attachment preview with **82 pages**
+and **383,580 bytes**. Local parsing of the downloaded PDF verified 227 Labor
+and 227 Other rows, the saved summary Final total, approval history, nonempty
+pages, and Letter landscape dimensions. Poppler rendered all 82 pages and
+all page contact sheets were visually inspected. This also verified the fresh
+projected category/item reads, worker generation, native attachment upload,
+native download and base64 PDF preview inside Creator.
 
 ## Release and Rollback
 

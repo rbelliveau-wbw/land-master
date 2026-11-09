@@ -26,7 +26,8 @@ generation is unchanged. Release 122.29.107 includes the Production PDF patch.
 
 The [incident and exact patch](../../docs/budget-pdf-statement-limit-2026-11-09.md)
 records affected fields/functions, the 227-item regression and browser download
-proof, native post-release verification, and rollback 122.29.106.
+proof, successful native Bluebonnet export/download/82-page preview on
+Production, and rollback 122.29.106.
 
 ## Requested PO-Linked Reallocation Workflow — November 9, 2026
 
