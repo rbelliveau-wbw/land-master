@@ -40,6 +40,17 @@ function harness(options={}){
     attachmentLinkScope:id=>runtime.environment+':'+state.currentUser+':'+id+':'+scope,
     canAddBudgetAttachment:()=>permission,$:()=>button,
     auditLog:(...entry)=>audits.push(entry),
+    CFG:{reports:{categories:'All_Budget_Categories',items:'All_Budget_Items'}},
+    rowBelongsToBudget:(row,id)=>row.Budget.ID===id,
+    async sdkGetAllRecords(report,criteria,readOptions){
+      assert.equal(readOptions.fresh,true);assert.equal(readOptions.isCancelled(),false);
+      if(report==='All_Budget_Categories'){
+        assert.equal(criteria,'(Budget == '+budgetId+')');
+        return [{ID:'4410926000006000001',Budget:{ID:budgetId,display_value:'Phase 01'},Category_Code:'3100',Budget_Category_Name:'Site',Deparment:'Construction',Budget_Total:'22627.8884'}];
+      }
+      assert.equal(report,'All_Budget_Items');assert.equal(criteria,'(Budget_Category in [4410926000006000001])');
+      return records.map(row=>({ID:row.id,Budget_Category:{ID:'4410926000006000001',display_value:'Site'}}));
+    },
     async sdkRunBudgetFunction(name,args){
       assert.equal(name,'exportBudgetSnapshot');requests.push(plain(args));
       if(args.exportType==='SNAPSHOT_META'){
@@ -56,8 +67,7 @@ function harness(options={}){
         if(options.page)await options.page(page,detailCalls,ports);
         return {code:3000,result:JSON.stringify(page)};
       }
-      assert.equal(args.exportType,'PDF','Excel must never invoke the expensive legacy EXCEL path');
-      return {code:3000,result:'Budget PDF added to Attachments.'};
+      assert.fail('Manual exports must never invoke the expensive native PDF or EXCEL paths');
     },
     async uploadBudgetAttachments(files,requestContext,transfer){
       assert.equal(requestContext,null);uploads.push(files);
@@ -74,6 +84,12 @@ function harness(options={}){
     shortErr:error=>error?.message||String(error)
   });
   vm.runInContext(moduleSource,context);vm.runInContext(xlsxSource,context);
+  vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/budget-snapshot-pdf.js','utf8'),context);
+  context.BudgetSnapshotPdf.render=async snapshot=>{
+    context.BudgetSnapshotPdf.definition(snapshot);
+    if(options.render)await options.render(ports);
+    return new TextEncoder().encode('%PDF-fixture').buffer;
+  };
   context.budgetWorkbookLibrary=async()=>context.XLSX;
   vm.runInContext(source,context);
   return {...ports,context,get detailCalls(){return detailCalls;},button};
@@ -157,9 +173,22 @@ assert.equal(ambiguous.uploads.length,1);
 await assert.rejects(()=>ambiguous.context.runBudgetExcelSnapshot(budgetId),/Recheck the previous/);
 assert.equal(ambiguous.uploads.length,1,'an uncertain upload is never replayed');
 
-const pdf=harness();await pdf.context.runExportBudgetSnapshot(budgetId,'PDF');
-assert.deepEqual(pdf.requests,[{budgetId,exportType:'PDF'}]);assert.equal(pdf.uploads.length,0);
-assert.deepEqual(pdf.refreshes,[budgetId],'PDF keeps its existing native attachment flow');
+const pdf=harness();const pdfResult=await pdf.context.runExportBudgetSnapshot(budgetId,'PDF');
+assert.equal(pdfResult.batchedBudgetExport,true);assert.equal(pdf.detailCalls,12);
+assert.equal(pdf.uploads.length,1);assert.equal(pdf.uploads[0][0].type,'application/pdf');
+assert.match(pdf.uploads[0][0].name,/^Budget_Export_.*\.pdf$/);
+assert.equal(pdf.requests.some(request=>request.exportType==='PDF'||request.exportType==='EXCEL'),false);
+assert.deepEqual(pdf.refreshes,[],'the shared confirmed upload does not require another acknowledgement');
+for(const change of [ports=>ports.navigate(),ports=>ports.switchBudget(),ports=>{ports.state.currentUser='other@example.com';},ports=>{ports.runtime.environment='development';},ports=>ports.changeScope(),ports=>ports.deny()]){
+  const test=harness({render:change});
+  await assert.rejects(()=>test.context.runBudgetPdfSnapshot(budgetId));
+  assert.equal(test.uploads.length,0,'context and permission changes during PDF layout prevent writes');
+}
+const failedPdf=harness({render:()=>{throw new Error('PDF renderer failed');}});
+await assert.rejects(()=>failedPdf.context.runBudgetPdfSnapshot(budgetId),/PDF renderer failed/);assert.equal(failedPdf.uploads.length,0);
+const ambiguousPdf=harness({upload:(transfer,ports)=>{transfer.saved=false;transfer.safeRetry=false;ports.state.attachmentUploadReview={budgetId};return false;}});
+await assert.rejects(()=>ambiguousPdf.context.runBudgetPdfSnapshot(budgetId),error=>error.noReplay===true);
+await assert.rejects(()=>ambiguousPdf.context.runBudgetPdfSnapshot(budgetId),/Recheck the previous/);assert.equal(ambiguousPdf.uploads.length,1);
 const busy=harness();busy.state.exportBusy=true;await busy.context.runExportBudgetSnapshot(budgetId,'EXCEL');assert.equal(busy.requests.length,0);
 const pending=harness({pricingIssue:'pending'});await pending.context.runExportBudgetSnapshot(budgetId,'EXCEL');assert.equal(pending.requests.length,0);assert.match(pending.messages[0][0],/finish saving/);
-console.log('Budget batched export flow: actual widget and collector,227 items/12 reads/four-sheet XLSX/one upload; PDF compatibility, context/permission guards, read failures and no replay of uncertain uploads passed.');
+console.log('Budget batched export flow: actual widget and collector,227 items/12 reads/four-sheet XLSX and PDF/one upload; context/permission guards, read/renderer failures and no replay of uncertain uploads passed.');

@@ -1,3 +1,17 @@
+## Manual PDF Execution Limit — 122.29.107, November 9, 2026
+
+Bluebonnet Crossing - Phase 01 reproduced Creator's statement execution limit
+in the native whole-budget PDF path. Manual PDF now shares Excel's bounded
+snapshot reads and existing attachment uploader, with browser PDF assembly
+in a dedicated worker. Exact native item/category IDs and saved category
+Final totals are retained; all items, elements and approval history remain.
+No Creator schema/API/function deployment is needed. Automatic approved-PDF
+generation is unchanged. Release 122.29.107 includes the Production PDF patch.
+
+The [incident and exact patch](../../docs/budget-pdf-statement-limit-2026-11-09.md)
+records affected fields/functions, the 227-item regression and browser download
+proof, native post-release verification, and rollback 122.29.106.
+
 ## Requested PO-Linked Reallocation Workflow — November 9, 2026
 
 User direction based on Julie King's clarification: an element overrun requires

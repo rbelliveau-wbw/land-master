@@ -77,7 +77,7 @@
     var budgetId=options.budgetId,scoped=budgetId!=null;
     if(scoped&&(!id(budgetId)||budgetId==='0'))throw new Error('Invalid budget scope in export.');
     var wait=options.wait||function(ms){return new Promise(function(resolve){setTimeout(resolve,ms);});};
-    var after='0',through='0',total=null,pageSize=null,rows=[],elements=[];
+    var after='0',through='0',total=null,pageSize=null,rows=[],elements=[],itemIds=[];
     function check(){if(isCurrent&&!isCurrent())throw new Error('The signed-in user or environment changed. Export again.');}
     async function read(){
       for(var attempt=0;;attempt++){
@@ -96,6 +96,7 @@
       }
     }
     Object.defineProperty(rows,'elementRows',{value:elements});
+    Object.defineProperty(rows,'itemIds',{value:itemIds});
     if(scoped)Object.defineProperty(rows,'budgetId',{value:budgetId});
     for(;;){
       var page=await read();check();
@@ -121,7 +122,7 @@
         values[15]=values[15].replace(/<br\s*\/?\s*>/gi,'\n');
         detail.forEach(function(element){element[15]=values[15];});
         elements.push.apply(elements,detail);
-        rows.push(values);previous=row.id;
+        rows.push(values);itemIds.push(row.id);previous=row.id;
       });
       if(page.next!==previous||rows.length>total||page.hasMore!==(page.rows.length===pageSize))throw new Error('Full export pagination could not be verified.');
       if(onProgress)onProgress(rows.length,total);

@@ -1,5 +1,8 @@
 # Budget Excel Export Statement Limit
 
+The later single-budget PDF failure and browser PDF patch are documented in
+[the November 9 PDF incident](budget-pdf-statement-limit-2026-11-09.md).
+
 Production API logs confirmed `Number of statement execution limit exceed` for
 Julie’s single-budget Excel export (line 790) and Robby’s Export All Budgets
 (line 104) on November 5. Those numbers identify source lines, not execution

@@ -9,6 +9,10 @@
 *.ds linguist-language=Deluge
 *.dg linguist-language=Deluge
 
+# Preserve the pinned upstream renderer bytes, including its original line ends.
+widgets/budget-manager/src/app/vendor/pdfmake-*.js -text
+releases/budget-manager/*/vendor/pdfmake-*.js -text
+
 # Native Creator exports retain the editor's original indentation and spaces.
 creator/workflows/purchase-orders/live-before/*.ds -whitespace
 creator/workflows/approval-policies/live-before/*.ds -whitespace

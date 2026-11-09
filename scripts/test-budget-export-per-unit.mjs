@@ -74,7 +74,7 @@ assert.ok(excelItemRows.includes('unitXml = unitXml.replaceAll("&","&amp;")'),
 
 assert.ok(approvedWrapper.includes('thisapp.exportBudgetSnapshot(budgetId,"APPROVED_PDF")'),
   'approved export reaches the guarded PDF path');
-assert.ok(widget.includes('sdkRunBudgetFunction("exportBudgetSnapshot", { budgetId:bid, exportType:typ })'),
-  'widget dropdown still calls the same Creator export function');
+assert.ok(widget.includes('runBudgetPdfSnapshot(bid)')&&widget.includes('exportType:"SNAPSHOT_DETAIL"'),
+  'manual PDFs use the proven batched snapshot service; automatic approved PDFs retain their native path');
 
 console.log('Budget PDF, Excel, blank manual item, and approved PDF export structure passed.');
