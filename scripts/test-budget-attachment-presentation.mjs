@@ -12,7 +12,7 @@ function block(name){
 const clone=value=>JSON.parse(JSON.stringify(value));
 const esc=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const BID='90071992547409931',RID='90071992547409991';
-const functions=['attachmentLinkScope','cleanVal','isObj','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','attachmentAuthorLabel','normalizeBudgetAttachmentRecord','attachmentExt','attachmentIconSvg','attachmentInlineStateHtml','renderAttachmentPage','handleBudgetAttachmentDrop'];
+const functions=['requestAttachmentWritesLocked','attachmentLinkScope','cleanVal','isObj','rawPath','firstRaw','lookupId','safeDecodeURIComponent','prettifyAttachmentName','attachmentQueryValue','normalizeAttachmentEntry','collectAttachmentEntries','attachmentRecordBudgetId','attachmentAuthorLabel','normalizeBudgetAttachmentRecord','attachmentExt','attachmentIconSvg','attachmentInlineStateHtml','renderAttachmentPage','handleBudgetAttachmentDrop'];
 function harness(){
   const pane={innerHTML:''},calls=[],features={},classes=new Set();
   const zone={classList:{toggle(name,on){if(on)classes.add(name);else classes.delete(name);}},classes};

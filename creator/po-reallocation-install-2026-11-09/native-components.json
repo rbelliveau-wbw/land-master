@@ -1,0 +1,60 @@
+{
+  "application": "land-master",
+  "owner": "wbdevelopment",
+  "installedOn": "2026-11-09",
+  "field": {
+    "form": "Budget_Modification",
+    "displayName": "Component Reallocation",
+    "linkName": "Component_Reallocation",
+    "type": "Decision box",
+    "required": false,
+    "initialValue": false,
+    "showFieldTo": "Everyone",
+    "verifiedAfterReload": true
+  },
+  "report": {
+    "linkName": "All_Budget_Modifications",
+    "change": "Added Component Reallocation to the Web field layout",
+    "verifiedAfterReload": true
+  },
+  "workflow": {
+    "displayName": "Lock PO Reallocation Marker",
+    "linkName": "Lock_PO_Reallocation_Mark",
+    "form": "Budget_Modification",
+    "recordEvent": "Created or Edited",
+    "formEvent": "Load of the form",
+    "condition": "Execute without condition",
+    "action": "disable Component_Reallocation;",
+    "savedActionObserved": true
+  },
+  "permissions": {
+    "newProfileGrants": false,
+    "newUserAccessGrants": false,
+    "newCustomApis": false,
+    "recordOwnershipRulesChanged": false
+  },
+  "publication": {
+    "components": 13,
+    "stageVersion": "9.169",
+    "productionVersion": "9.169",
+    "productionStatus": "Completed; Stage and Production showed 9.169, with no Development changes available at that observation",
+    "observationScope": "Historical completion of this 13-component publication; later Development work is outside this installation record"
+  },
+  "financialTest": {
+    "status": "Stopped at user request before Submit",
+    "purchaseOrdersCreated": 0,
+    "purchaseOrderLinesCreated": 0,
+    "modificationsCreated": 0,
+    "approvalRoutesCreated": 0,
+    "approvalRowsCreated": 0,
+    "testFixtureInitialization": {
+      "function": "snapshotBudgetItemComponents",
+      "initializeOnly": true,
+      "dryRun": false,
+      "itemIds": ["4410926000005121018", "4410926000005121020"],
+      "scope": "Existing labeled Development PO test items only",
+      "components": {"Labor_Budget": "1000.00", "Materials_Budget": "0.00", "Equipment_Budget": "0.00", "Subcontractor_Budget": "0.00", "Other_Budget": "0.00"},
+      "existingItemTotalsChanged": false
+    }
+  }
+}

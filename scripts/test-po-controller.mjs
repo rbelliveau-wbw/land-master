@@ -1,4 +1,5 @@
 import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+import './test-po-unresolved-open.mjs';
 const c=vm.createContext({setTimeout,clearTimeout});for(const file of ['po-domain.js','po-controller.js'])vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/'+file,'utf8'),c);
 const payload={action:'Submit',token:'test-operation-123456789',budgetId:'1',vendorId:'2',amount:'2.01',requestDate:'2026-10-08',dateNeeded:'2026-10-09',userAccessId:'3',lines:[{key:'first',budgetItemId:'4',description:'One',costElement:'1',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'second',budgetItemId:'4',description:'Two',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'1.00'}]};
 payload.lines.forEach(line=>{line.uom='EA';line.costCode='C_SH01-3225-'+line.costElement;});

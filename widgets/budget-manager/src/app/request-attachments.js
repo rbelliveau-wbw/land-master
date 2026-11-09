@@ -50,7 +50,7 @@
       if(q&&q.entries.some(function(e){return e.status!=='saved';}))renderDraft(s,true);
     }
     function renderDraft(s,saved){
-      var q=s.model.attachmentDraft||draft(s.model,options.draftScope?options.draftScope(s.budget):s.scope),allowed=options.canStage&&options.canStage(s.budget),locked=q.busy||options.busy()||!!s.model.createUnknown;
+      var q=s.model.attachmentDraft||draft(s.model,options.draftScope?options.draftScope(s.budget):s.scope),allowed=options.canStage&&options.canStage(s.budget),locked=q.busy||options.busy()||!!s.model.createUnknown||!!s.model.operationPending;
       if(q.scope!==(options.draftScope?options.draftScope(s.budget):s.scope)){s.content.innerHTML='<div class="request-attachment-empty">Attachment context changed. Reopen this request.</div>';return;}
       var labels={queued:'Ready to upload',uploading:'Uploading…',saved:'Saved',failed:'Upload failed',unknown:'Check upload status',blocked:'Access changed'};
       var paperclip='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.4 11.6 12 21a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7L9.2 18.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/></svg>';
@@ -96,6 +96,7 @@
       }
       nav.addEventListener('click',function(e){var b=e.target.closest('[data-ra-tab]');if(!b||!current(s))return;model.attachmentTab=b.dataset.raTab;update(s);});
       nav.addEventListener('keydown',function(e){if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;var buttons=Array.from(nav.querySelectorAll('[role=tab]')),at=buttons.indexOf(document.activeElement);if(at<0)return;e.preventDefault();var next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(at+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;buttons[next].click();buttons[next].focus();});
+      ['click','change','drop'].forEach(function(type){pane.addEventListener(type,function(e){if(s.model.operationPending&&e.target.closest('input[type="file"],[data-add-budget-attachment],[data-budget-attachment-drop],[data-delete-budget-attachment],[data-ra-existing],[data-ra-draft-choose],[data-ra-draft-drop],[data-ra-draft-remove],[data-ra-draft-retry]')){e.preventDefault();e.stopImmediatePropagation();}},true);});
       pane.addEventListener('click',function(e){
         var q=s.model.attachmentDraft;
         if(e.target.closest('[data-ra-draft-input]')){if(!current(s)||!q||q.busy||options.busy()||s.model.createUnknown||q.entries.some(function(f){return f.status==='unknown';})||!options.canStage||!options.canStage(s.budget))e.preventDefault();else e.target.value='';return;}
@@ -104,7 +105,7 @@
         if(e.target.closest('[data-ra-draft-retry]')&&options.flushDraft){options.flushDraft(s.model,s.budget,s.requestContext,true).then(function(){if(current(s))load(s);});return;}
         if(e.target.closest('[data-ra-retry]'))load(s);if(e.target.closest('[data-ra-close]'))config.close();if(e.target.closest('[data-ra-existing]'))openPicker({surface:s,budget:s.budget,mode:'existing',trigger:e.target.closest('button')});if(e.target.closest('[data-ra-budget]')&&!options.busy()){config.close();options.openBudget(s.budget);}
       });
-      function chooseDraft(selected){if(!current(s)||!options.canStage||!options.canStage(s.budget)||options.busy()||s.model.createUnknown)return;addDraft(s.model.attachmentDraft||draft(s.model,options.draftScope?options.draftScope(s.budget):s.scope),selected);update(s);var choose=pane.querySelector('[data-ra-draft-input]');if(choose&&!choose.disabled)choose.focus();}
+      function chooseDraft(selected){if(!current(s)||!options.canStage||!options.canStage(s.budget)||options.busy()||s.model.createUnknown||s.model.operationPending)return;addDraft(s.model.attachmentDraft||draft(s.model,options.draftScope?options.draftScope(s.budget):s.scope),selected);update(s);var choose=pane.querySelector('[data-ra-draft-input]');if(choose&&!choose.disabled)choose.focus();}
       pane.addEventListener('change',function(e){if(e.target.matches('[data-ra-draft-input]'))chooseDraft(e.target.files);});
       pane.addEventListener('dragover',function(e){if(e.target.closest('[data-ra-draft-drop]'))e.preventDefault();});
       pane.addEventListener('drop',function(e){if(e.target.closest('[data-ra-draft-drop]')){e.preventDefault();e.stopPropagation();chooseDraft(e.dataTransfer.files);}});
@@ -115,7 +116,7 @@
     function find(node){return surfaces.find(function(s){return current(s)&&s.pane.contains(node);})||null;}
     function closePicker(){if(!picker||picker.busy)return;var p=picker;picker=null;p.dialog.close();p.dialog.remove();if(p.trigger&&p.trigger.isConnected)p.trigger.focus();else if(p.surface&&current(p.surface))p.surface.nav.querySelector('[aria-selected="true"]').focus();}
     async function openPicker(config){
-      if(picker||options.busy())return;
+      if(picker||options.busy()||config.surface&&config.surface.model.operationPending)return;
       var dialog=document.createElement('dialog'),p=Object.assign({dialog:dialog,busy:false,scope:options.scope(config.budget),rows:[],review:options.review()},config);picker=p;
       dialog.className='request-attachment-picker';dialog.setAttribute('aria-labelledby','request-attachment-picker-title');dialog.setAttribute('data-lm-motion','dialog');
       dialog.innerHTML='<header><strong id="request-attachment-picker-title">Link to Record</strong><button type="button" class="request-attachment-x" data-ra-picker-close aria-label="Close association picker">'+x+'</button></header><div class="request-attachment-picker-body"><strong class="request-attachment-picker-context" data-ra-context>'+esc(p.mode==='existing'?p.surface.requestTitle:p.file.name)+'</strong><p class="request-attachment-hint" data-ra-hint>'+(p.mode==='existing'?'Choose a Budget file to also show on this request.':'Choose a request to link this attachment to.')+'</p><input type="search" placeholder="'+(p.mode==='existing'?'Search Budget files…':'Search requests…')+'" aria-label="Search files or requests"><div data-ra-options></div><div class="request-attachment-picker-status" role="status" data-lm-motion="feedback"></div></div><footer class="request-attachment-footer"><button type="button" class="btn" data-ra-picker-close>Cancel</button><button type="button" class="btn primary" data-ra-save-link disabled>Save</button></footer>';

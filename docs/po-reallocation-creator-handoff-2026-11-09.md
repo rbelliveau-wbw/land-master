@@ -7,6 +7,43 @@ approval round**. Zero or negative net changes still require that approval.
 Standalone Budget Modification creation and its existing permissions are not
 changed by this feature.
 
+## Deployment Authorization And Evidence
+
+The user explicitly authorized installing this feature in Creator Development,
+testing it there, and deploying the scoped changes through Stage to Production.
+That instruction overrides the usual repository-only `PMP` boundary for this
+installation. It does not authorize unrelated schema, profile or application
+changes. Native publication must be recorded separately from a frontend release.
+
+Budget Manager **122.29.113** was published to repository main and the Development
+and Production frontend mappings in commit
+[`3d085d49`](https://github.com/rbelliveau-wbw/land-master/commit/3d085d49cb2889f95ed65402914c2f25c00e51f7).
+Both [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/42694421128)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/42694421229)
+passed. The five element rows are directly editable when the existing capability,
+scope and balance checks allow it; no Add Reallocation action is required.
+
+All ten changed Development functions were saved, compiled and reopened. Their
+captured bodies were independently compared with the checked-in sources in the
+[native installation audit](../creator/po-reallocation-install-2026-11-09/verification/native-install-audit.json).
+The audit preserves the before/after bodies and explains Creator formatter and
+compiler differences. Creator version **9.169 — PO Component Reallocation** was
+published through Stage to Production on November 9. The native Environments
+screen showed both environments at 9.169 and no remaining Development changes.
+That observation and the audit hashes describe this publication at completion;
+they do not audit later canonical capacity-repair bodies or claim that the shared
+Development application has no subsequent changes.
+The scoped package contained exactly 13 components: the ten functions, marker
+field, report layout and form-on-load protection. See the
+[component record](../creator/po-reallocation-install-2026-11-09/native-components.json).
+
+The user stopped the CFO Development test before Save or Submit. No PO, PO
+lines, Bud Mods or approval records were created by that test. The existing two
+labeled QA items were initialized through the existing guarded native snapshot
+helper, preserving their $1,000 totals. Signed storage and final approval were
+therefore not exercised live; compilation and read-only evidence do not imply a
+successful financial submission.
+
 ## New Native Field
 
 Create this field in Creator **before saving the changed functions**:
@@ -85,9 +122,13 @@ the new behavior. No new Custom API registration is needed.
    lock before recording a marked reallocation's final approval. Do not create
    or submit separate standalone approval chains.
 5. Compile/save/reopen the changed native bodies in Development. Verify a
-   read-only capability response before exposing committing controls. The user
-   promotes the scoped Creator changes and report to Stage/Production; repository
-   PMP does not publish Creator functions or add native fields.
+   read-only capability response before exposing committing controls. Complete
+   the scoped native Development checks below, then use Creator's existing
+   Development → Stage → Production deployment workflow under the user's
+   explicit authorization. Review the selected deployment changes, preserve the
+   existing field/report audiences and function execution access, and record
+   each environment's result. Repository PMP alone does not publish Creator
+   functions or add native fields.
 
 ## Financial And Recovery Checks
 
@@ -135,7 +176,8 @@ element detail and Hide Empty. Aggregate totals stay unchanged when net is zero.
 ## Verification Limits And Native Gate
 
 Local tests execute the actual checked-in reader/output bodies and native-shaped
-fixtures. They are not proof of Creator compilation, signed currency storage,
+fixtures. The separate native installation audit proves the captured Development
+sources compiled; local tests alone do not prove signed currency storage,
 profile field visibility or successful native publication. In particular,
 negative values in existing USD fields and a marked Amount 0 require a native
 Development test after the new boolean field exists.

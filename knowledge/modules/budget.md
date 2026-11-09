@@ -1,3 +1,29 @@
+## Saved PO Review After Unknown Submission — 122.29.114, November 9, 2026
+
+Saved PO View, Edit and Attachments now read the requested saved record after an
+unknown operation instead of reopening its retained progress result. A short
+warning and Check Status remain visible; the saved record stays read-only until
+the original actor-scoped operation is verified. Closing, reopening and opening
+another PO in the same phase retain the original token and draft. Explicit Check
+uses that captured operation only, invalidates superseded reads and never replays
+Submit. A failed saved-record read still exposes Check Status.
+Queued attachments remain queued after Check and require explicit review; direct
+acknowledged saves retain their established one-time attachment handoff.
+
+PO request uploads, deletion and association share this lock. Ordinary Budget
+files, other request types and unrelated request IDs retain their existing rights.
+Focused controller/navigation and attachment tests cover the original receipt,
+read-only controls, stale reads, actor changes and absence of mutation retries.
+The new navigation test runs through the existing controller validation entry.
+
+Creator **9.169** is published to Stage and Production; the existing Eagle Prairie
+draft and tagged balance contract were checked read-only. The user stopped the
+Development test before Save/Submit, so no financial test submission occurred.
+This reopen fix needs no additional native change. See the
+[Creator handoff](../../docs/po-reallocation-creator-handoff-2026-11-09.md).
+Full validation and Pages build remain release gates. Rollback: **122.29.113**,
+retaining the signed-aware native contract and records.
+
 ## Direct Reallocation Editing — 122.29.113, November 9, 2026
 
 The five element Amount and Increase/Decrease controls are editable immediately

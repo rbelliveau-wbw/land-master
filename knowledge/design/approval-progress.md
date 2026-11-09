@@ -90,6 +90,14 @@ review/Close actions. Do not ask for saved-status recovery for a definitive
 rejection. Unknown replies retain **Check status** and their no-replay guard.
 Budget Manager 122.29.106 covers both paths in `scripts/test-po-progress.mjs`.
 
+Saved PO View/Edit/Attachments may open a fresh read-only record while that
+unknown operation remains retained. Show the warning and Check Status without
+restoring progress automatically. Explicit Check targets the original actor,
+budget and token; superseded saved-record reads cannot replace its captured
+model. Keep the same write lock through close/reopen and failed reads. Budget
+Manager 122.29.114 covers this in `scripts/test-po-unresolved-open.mjs`, included
+by the controller validation entry.
+
 | State | What the modal says and does |
 | --- | --- |
 | Success | State the verified outcome. For a non-final Budget approval: **“Approved and routed to {role}. Email sent to {address}.”** For final Budget approval: **“Approval track complete. Budget finalized.”** Offer **Done**; keep the result visible until dismissed. |

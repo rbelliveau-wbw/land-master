@@ -32,7 +32,7 @@ const adapter={current:()=>current,allowed:()=>allowed,upload:async(f,t)=>{write
  const b={ID:'1001'},model={attachmentDraft:D.get({},scope)},q=model.attachmentDraft;D.add(q,[file('lost.pdf'),file('later.pdf')]);q.entries[0].status='unknown';q.entries[0].attachmentId='7001';
  let checks=0,uploads=0;
  const w=vm.createContext({S:{edBudget:b,attachmentUploadReview:{budgetId:'1001',attachmentId:'7001',requestContext:target}},LMRequestAttachments:c.window.LMRequestAttachments,requestFileDrafts:{},requestAttachmentUI:null,approvalProgress:null,budgetNavigationToken:()=>1,attachmentLinkScope:()=>scope,canAddBudgetAttachment:()=>true,ensureRequestAttachments:async()=>{},shortErr:e=>e.message,recheckBudgetAttachmentUpload:async()=>{checks++;return true;},uploadBudgetAttachments:async()=>{uploads++;return true;}});
- for(const name of ['requestFileDraftKey','flushRequestAttachmentDraft'])vm.runInContext(sourceOf(name),w);
+ for(const name of ['requestAttachmentWritesLocked','requestFileDraftKey','flushRequestAttachmentDraft'])vm.runInContext(sourceOf(name),w);
  await w.flushRequestAttachmentDraft(model,b,target,false);assert.equal(checks,0);assert.equal(uploads,0);
  await w.flushRequestAttachmentDraft(model,b,{...target,id:'foreign'},true);assert.equal(checks,0);
  await w.flushRequestAttachmentDraft(model,b,target,true);assert.equal(checks,1);assert.equal(q.entries[0].status,'saved');assert.equal(uploads,0,'Check status performs no upload and stops before remaining files');

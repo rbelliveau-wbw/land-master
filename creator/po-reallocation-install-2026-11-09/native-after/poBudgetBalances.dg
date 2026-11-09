@@ -1,0 +1,278 @@
+map poBudgetBalances(string budgetId)
+{
+	result = {"success":false};
+	costElements = {"1","2","3","4","5"};
+	statuses = {"Draft","Submitted"};
+	modificationTypes = {"Increase","Decrease"};
+	try 
+	{
+		budgetKey = budgetId.toLong();
+		budget = Add_Budget[ID == budgetKey];
+		committed = Map();
+		pendingModifications = Map();
+		componentCommitted = Map();
+		componentPending = Map();
+		componentPendingReductions = Map();
+		verifiedReallocations = Map();
+		unallocatedIssued = Map();
+		for each  po in Payment_Request[Budget == budgetKey && Request_Type == "Purchase Order"]
+		{
+			if(ifnull(po.PO_Revision,"") != "" && po.PO_Status == "Draft")
+			{
+				continue;
+			}
+			if(ifnull(po.PO_Revision,"") == "")
+			{
+				// Historical single-item POs count the parent exactly once.
+				legacyAmount = thisapp.poCurrencyString(po.Request_Amount.toString());
+				if(po.Budget_Item == null || legacyAmount == "")
+				{
+					result.put("error","A legacy PO needs budget-item or amount review.");
+					return result;
+				}
+				itemKey = po.Budget_Item.toString();
+				legacyItem = Budget_Item[ID == po.Budget_Item && Budget == budgetKey];
+				if(legacyItem.ID == null)
+				{
+					result.put("error","A legacy PO references another phase.");
+					return result;
+				}
+				if(ifnull(committed.get(itemKey),0) > 999999999999999 - legacyAmount.replaceAll("[.]","").toLong())
+				{
+					result.put("error","Committed amounts exceed supported exact capacity.");
+					return result;
+				}
+				committed.put(itemKey,ifnull(committed.get(itemKey),0) + legacyAmount.replaceAll("[.]","").toLong());
+				legacyElement = ifnull(po.Element,"").toString().trim();
+				if(costElements.contains(legacyElement))
+				{
+					componentKey = itemKey + "|" + legacyElement;
+					componentCommitted.put(componentKey,ifnull(componentCommitted.get(componentKey),0) + legacyAmount.replaceAll("[.]","").toLong());
+				}
+				else
+				{
+					unallocatedIssued.put(itemKey,ifnull(unallocatedIssued.get(itemKey),0) + legacyAmount.replaceAll("[.]","").toLong());
+				}
+			}
+			else
+			{
+				snapshot = thisapp.poSnapshot(po.ID.toString());
+				if(snapshot.get("success") != true)
+				{
+					result.put("error",snapshot.get("error"));
+					return result;
+				}
+				if(po.PO_Status == "Submitted")
+				{
+					savedPO = snapshot.get("snapshot");
+					savedLines = savedPO.get("lines");
+					if(savedPO.get("approvalBundle") != null)
+					{
+						poBundle = savedPO.get("approvalBundle");
+						linkedModifications = poBundle.get("modifications");
+						for each  linkedMod in linkedModifications
+						{
+							pendingSign = 1;
+							if(linkedMod.get("componentReallocation") == true)
+							{
+								verifiedReallocations.put(linkedMod.get("id"),true);
+								if(linkedMod.get("modificationType") == "Decrease")
+								{
+									pendingSign = -1;
+								}
+							}
+							if(linkedMod.get("status") != "Approved")
+							{
+								modKey = linkedMod.get("budgetItemId");
+								modCents = pendingSign * linkedMod.get("amount").replaceAll("[.]","").toLong();
+								if(ifnull(pendingModifications.get(modKey),0) + modCents > 999999999999999 || ifnull(pendingModifications.get(modKey),0) + modCents < -999999999999999)
+								{
+									result.put("error","Pending PO modifications exceed supported exact capacity.");
+									return result;
+								}
+								pendingModifications.put(modKey,ifnull(pendingModifications.get(modKey),0) + modCents);
+								if(linkedMod.get("components") != null)
+								{
+									pendingParts = linkedMod.get("components");
+									for each  pendingElement in costElements
+									{
+										pendingKey = modKey + "|" + pendingElement;
+										pendingAmount = pendingParts.get(pendingElement).replaceAll("[.]","").toLong();
+										pendingAmount = pendingSign * pendingAmount;
+										if(ifnull(componentPending.get(pendingKey),0) + pendingAmount > 999999999999999 || ifnull(componentPending.get(pendingKey),0) + pendingAmount < -999999999999999)
+										{
+											result.put("error","Pending component modifications exceed supported capacity.");
+											return result;
+										}
+										componentPending.put(pendingKey,ifnull(componentPending.get(pendingKey),0) + pendingAmount);
+										if(pendingAmount < 0)
+										{
+											if(ifnull(componentPendingReductions.get(pendingKey),0) - pendingAmount > 999999999999999)
+											{
+												result.put("error","Pending component reductions exceed supported capacity.");
+												return result;
+											}
+											componentPendingReductions.put(pendingKey,ifnull(componentPendingReductions.get(pendingKey),0) - pendingAmount);
+										}
+									}
+								}
+							}
+						}
+					}
+					for each  line in savedLines
+					{
+						itemKey = line.get("budgetItemId");
+						if(ifnull(committed.get(itemKey),0) > 999999999999999 - line.get("finalAmount").replaceAll("[.]","").toLong())
+						{
+							result.put("error","Committed amounts exceed supported exact capacity.");
+							return result;
+						}
+						committed.put(itemKey,ifnull(committed.get(itemKey),0) + line.get("finalAmount").replaceAll("[.]","").toLong());
+						componentKey = itemKey + "|" + line.get("costElement");
+						componentCommitted.put(componentKey,ifnull(componentCommitted.get(componentKey),0) + line.get("finalAmount").replaceAll("[.]","").toLong());
+					}
+				}
+			}
+		}
+		balances = List();
+		for each  item in Budget_Item[Budget == budgetKey && Template_Item != true]
+		{
+			nativeFinal = ifnull(item.Budget_Ttl,0).toString();
+			finalSign = 1;
+			if(nativeFinal.startsWith("-"))
+			{
+				finalSign = -1;
+				nativeFinal = nativeFinal.subString(1,nativeFinal.length());
+			}
+			finalText = thisapp.poCurrencyString(nativeFinal);
+			if(finalText == "")
+			{
+				result.put("error","A Final Budget amount cannot be read exactly.");
+				return result;
+			}
+			finalCents = finalSign * finalText.replaceAll("[.]","").toLong();
+			modCents = 0;
+			componentMods = Map();
+			unallocatedModCents = 0;
+			unallocatedModificationCount = 0;
+			for each  modification in Budget_Modification[Budget == budgetKey && Budget_Item == item.ID && Status == "Approved"]
+			{
+				if(modification.Component_Reallocation == true && verifiedReallocations.get(modification.ID.toString()) != true)
+				{
+					result.put("error","An approved reallocation has no verified PO approval contract.");
+					return result;
+				}
+				modText = thisapp.poCurrencyString(modification.Amount.toString());
+				if(modText == "" || !modificationTypes.contains(modification.Modification_Type))
+				{
+					result.put("error","An approved modification cannot be read exactly.");
+					return result;
+				}
+				modAmount = modText.replaceAll("[.]","").toLong();
+				if(modification.Modification_Type == "Decrease")
+				{
+					modAmount = 0 - modAmount;
+				}
+				if(modCents + modAmount > 999999999999999 || modCents + modAmount < -999999999999999)
+				{
+					result.put("error","Approved modifications exceed supported exact capacity.");
+					return result;
+				}
+				modCents = modCents + modAmount;
+				modNativeParts = {"1":modification.Labor_Budget,"2":modification.Materials_Budget,"3":modification.Equipment_Budget,"4":modification.Subcontractor_Budget,"5":modification.Other_Budget};
+				allocatedModification = true;
+				for each  modElement in costElements
+				{
+					if(modNativeParts.get(modElement) == null)
+					{
+						allocatedModification = false;
+					}
+				}
+				if(allocatedModification)
+				{
+					for each  modElement in costElements
+					{
+						partRaw = modNativeParts.get(modElement).toString();
+						partSign = 1;
+						if(partRaw.startsWith("-") && modification.Component_Reallocation == true)
+						{
+							partSign = -1;
+							partRaw = partRaw.subString(1,partRaw.length());
+						}
+						partText = thisapp.poCurrencyString(partRaw);
+						if(partText == "")
+						{
+							result.put("error","An approved modification component cannot be read exactly.");
+							return result;
+						}
+						partCents = partSign * partText.replaceAll("[.]","").toLong();
+						if(modification.Modification_Type == "Decrease")
+						{
+							partCents = 0 - partCents;
+						}
+						if(ifnull(componentMods.get(modElement),0) + partCents > 999999999999999 || ifnull(componentMods.get(modElement),0) + partCents < -999999999999999)
+						{
+							result.put("error","Approved component modifications exceed supported capacity.");
+							return result;
+						}
+						componentMods.put(modElement,ifnull(componentMods.get(modElement),0) + partCents);
+					}
+				}
+				else
+				{
+					unallocatedModCents = unallocatedModCents + modAmount;
+					unallocatedModificationCount = unallocatedModificationCount + 1;
+				}
+			}
+			issued = ifnull(committed.get(item.ID.toString()),0);
+			availableCents = finalCents + modCents - issued;
+			itemKey = item.ID.toString();
+			nativeParts = {"1":item.Labor_Budget,"2":item.Materials_Budget,"3":item.Equipment_Budget,"4":item.Subcontractor_Budget,"5":item.Other_Budget};
+			baselineAvailable = true;
+			for each  componentElement in costElements
+			{
+				if(nativeParts.get(componentElement) == null)
+				{
+					baselineAvailable = false;
+				}
+			}
+			componentBalances = List();
+			for each  componentElement in costElements
+			{
+				componentKey = itemKey + "|" + componentElement;
+				componentIssued = ifnull(componentCommitted.get(componentKey),0);
+				componentMod = ifnull(componentMods.get(componentElement),0);
+				componentFinalText = null;
+				componentAvailableText = null;
+				if(baselineAvailable)
+				{
+					// PO commitments use whole cents. Preserve native snapshot precision;
+					// floor availability only when expressing the spendable cent balance.
+					componentNative = nativeParts.get(componentElement).toDecimal();
+					componentFinal = (componentNative * 100).floor().toLong();
+					if(componentFinal > 999999999999999 || componentFinal < -999999999999999)
+					{
+						result.put("error","A component budget exceeds supported currency capacity.");
+						return result;
+					}
+					componentFinalText = componentFinal.toString();
+					componentAvailableText = (componentFinal + componentMod - componentIssued).toString();
+				}
+				componentBalances.add({"costElement":componentElement,"finalCents":componentFinalText,"modCents":componentMod.toString(),"issuedCents":componentIssued.toString(),"availableCents":componentAvailableText,"pendingModificationCents":ifnull(componentPending.get(componentKey),0).toString(),"pendingReductionCents":ifnull(componentPendingReductions.get(componentKey),0).toString()});
+			}
+			unallocatedIssuedCents = ifnull(unallocatedIssued.get(itemKey),0);
+			balances.add({"budgetItemId":itemKey,"subdivisionCode":ifnull(budget.Subdivision1.Subdivision_Code,""),"minorCode":ifnull(item.Cost_Code,0).toString(),"finalCents":finalCents.toString(),"modCents":modCents.toString(),"issuedCents":issued.toString(),"availableCents":availableCents.toString(),"pendingModificationCents":ifnull(pendingModifications.get(itemKey),0).toString(),"componentBaselineAvailable":baselineAvailable,"componentBalances":componentBalances,"unallocatedIssuedCents":unallocatedIssuedCents.toString(),"issuedComponentsAllocated":unallocatedIssuedCents == 0,"unallocatedModificationCents":unallocatedModCents.toString(),"unallocatedModificationCount":unallocatedModificationCount});
+		}
+		result.put("balances",balances);
+		for each  taggedBalance in balances
+		{
+			taggedBalance.put("reallocationContract","po-reallocation-v1");
+		}
+		result.put("success",true);
+		result.put("reallocationContract","po-reallocation-v1");
+	}	catch (e)
+	{
+		result.put("error","Budget availability cannot be verified. No submission is allowed.");
+	}
+	return result;
+}

@@ -17,6 +17,15 @@ Saved request paperclips open their Attachments tab and show scoped file counts.
 Saved Check/Wire rows also offer a read-only View action. Keep file associations
 separate from approval administration; see [Attachments](attachments.md).
 
+An unknown PO operation must not redirect saved-record View, Edit or Attachments
+back to its progress result. Read the requested saved PO, retain its warning and
+offer Check Status. Keep its fields, vendor creation, decisions, recovery and
+request-file mutations read-only until the original actor/token is verified.
+Close/reopen and another PO in the same phase must preserve that original
+operation. Only explicit Check returns to its captured progress and reads its
+status; opening a saved record never retries a mutation. Ordinary Budget files
+and other request contexts retain their established permissions.
+
 PO-created modifications sit immediately beneath their owning PO, with a fixed
 indent and branch connector. Match exact PO identity, current revision and phase
 using the stored PO reference; never use a vendor name or reason-text match.

@@ -1,0 +1,15 @@
+{
+  "environment": "PRODUCTION",
+  "readOnly": true,
+  "nativeVersion": "9.169",
+  "frontendAssets": "122.29.113",
+  "contract": "po-v1",
+  "reallocationContract": "po-reallocation-v1",
+  "itemCount": 227,
+  "allTagged": true,
+  "allUnknownCountsNumeric": true,
+  "allGrossReductionFields": true,
+  "savedGetSuccess": true,
+  "savedStatus": "Draft",
+  "savedLineCount": 5
+}

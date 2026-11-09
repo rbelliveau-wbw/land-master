@@ -1,0 +1,285 @@
+{
+  "contract": "po-reallocation-native-install-audit-v1",
+  "auditedAt": "2026-11-09T20:27:01.404Z",
+  "environment": "Development",
+  "method": "Lexical comparison excludes comments and whitespace, retains quoted strings and operators; condition AST comparison uses documented Zoho Creator NOT > OR > AND precedence and preserves operand order. The only builtin-name normalization permitted is .getAll( to .getall(.",
+  "precedenceSource": "https://www.zoho.com/deluge/help/operators/logical-operators.html",
+  "catalogSha256": "8aaa5901a8bb7195bed8a70e1adf1629ccdd4ae212b09f93fb9d09d298e66524",
+  "sourceBaselineCommit": "16063e0f",
+  "allTenCapturesVerified": true,
+  "unexpectedAfterDifferences": 0,
+  "unrecognizedBeforeBodies": 0,
+  "compilerChanges": [
+    {
+      "function": "poApprovalBundle",
+      "change": "Compare a named nativeCustomComponents boolean with the captured marker; avoid comparing a parenthesized comparison result directly."
+    },
+    {
+      "function": "managePurchaseOrder",
+      "change": "Resolve the captured reallocation items into a named list before for-each; Creator rejected the chained get() loop source."
+    },
+    {
+      "function": "poValidatePayload,poApprovalBundle",
+      "change": "Use nested guards for the required-reason and captured-contract checks; no approval or funding guard weakened."
+    }
+  ],
+  "regressions": {
+    "command": "node scripts/test-po-reallocation-backend.mjs",
+    "result": "passed",
+    "coverage": "Actual source signed increase/zero/decrease submissions, captured vectors and marker/reason corruption, required reason limits, gross debit reserves, guarded writes and rejected resubmission. Explicit syntax regression bans chained get() loop sources in managePurchaseOrder and both export readers.",
+    "diffCheck": "passed"
+  },
+  "nativeCompileStatus": "Parent observed all ten saved, compiled and reopened in Creator; this audit independently verifies the captured bodies, not financial execution.",
+  "after": [
+    {
+      "function": "budgetElementExportRows",
+      "source": "creator/functions/budgetElementExportRows.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/budgetElementExportRows.dg",
+      "sourceSha256": "c2afc88d4cc5d8814951a85196a55adf7fbe108c8a2ddd3c81a7c65f18fafb6f",
+      "captureSha256": "0fe617b804b69f7735b7507d0f55330816df1176aece0d95873a99f2014e8356",
+      "sourceTokens": 788,
+      "captureTokens": 786,
+      "equivalence": "creator-condition-parentheses",
+      "verified": true
+    },
+    {
+      "function": "exportBudgetSnapshot",
+      "source": "creator/functions/exportBudgetSnapshot.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/exportBudgetSnapshot.dg",
+      "sourceSha256": "f6802fd45664184649a3ea1587e15f46b2d33ac0963edd3584102ecdf2cc4300",
+      "captureSha256": "6462444cb81179dbb51a1fc1bb9b25466bdd6aa22afa3ce67b66c9c99a86773d",
+      "sourceTokens": 9868,
+      "captureTokens": 9866,
+      "equivalence": "creator-condition-parentheses-and-builtin-method-case",
+      "verified": true
+    },
+    {
+      "function": "handlePurchaseOrderApproval",
+      "source": "creator/functions/handlePurchaseOrderApproval.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/handlePurchaseOrderApproval.dg",
+      "sourceSha256": "42ae033f6042fa5b285771f2f888cf9084e803bf9b7cf5189b85aa935b79d9be",
+      "captureSha256": "85af589e8258f8bce9b577100facfda512354b767b36353e55af8cee42e0bab8",
+      "sourceTokens": 2640,
+      "captureTokens": 2640,
+      "equivalence": "exact-tokens",
+      "verified": true
+    },
+    {
+      "function": "managePurchaseOrder",
+      "source": "creator/functions/managePurchaseOrder.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/managePurchaseOrder.dg",
+      "sourceSha256": "5434d7074ce82ab2b42e389319a033e6a3d7b70b0472599dfe7c69ad624955d8",
+      "captureSha256": "5ddfe4fae1dd9c7f5fbf7bb78ebb84dd8ab2384a0cdc492aa5cc84b849b201b6",
+      "sourceTokens": 13710,
+      "captureTokens": 13704,
+      "equivalence": "creator-condition-parentheses",
+      "verified": true
+    },
+    {
+      "function": "poApprovalBundle",
+      "source": "creator/functions/poApprovalBundle.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/poApprovalBundle.dg",
+      "sourceSha256": "1e9ab39f8a759f9bfbb7f01276a25812c9f527161de4a5909c88d09026d1e843",
+      "captureSha256": "bda9e4785a90ee3d71132efefff44aefffddbd93ca6ac5d7692dac46fea9e292",
+      "sourceTokens": 3227,
+      "captureTokens": 3227,
+      "equivalence": "exact-tokens",
+      "verified": true
+    },
+    {
+      "function": "poBudgetBalances",
+      "source": "creator/functions/poBudgetBalances.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/poBudgetBalances.dg",
+      "sourceSha256": "1ac2c7a0130d074124792d46a0d75ed378f3911440ac1536dd2972616cc5fd58",
+      "captureSha256": "f2ccda6d87c33db4475a1046d7ec57f00c05f6aabd50f5eda0cb99ad93e0b176",
+      "sourceTokens": 2142,
+      "captureTokens": 2142,
+      "equivalence": "exact-tokens",
+      "verified": true
+    },
+    {
+      "function": "poExcelWorkbook",
+      "source": "creator/functions/poExcelWorkbook.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/poExcelWorkbook.dg",
+      "sourceSha256": "88fd7e5392e29dc7a47d234ab2e776332e3dc4c49a5f0379cb7de2f5f2efd3cd",
+      "captureSha256": "6c53e48d57fa81200b291b14eeb967a8189e5a2141c25308c2a7cc37bbefd6ee",
+      "sourceTokens": 1559,
+      "captureTokens": 1559,
+      "equivalence": "exact-tokens",
+      "verified": true
+    },
+    {
+      "function": "poSnapshot",
+      "source": "creator/functions/poSnapshot.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/poSnapshot.dg",
+      "sourceSha256": "d16724127d375c7cdc0bb8a8f279b35f2e7bf0052b59968895dc9207588e5f6c",
+      "captureSha256": "4d85c6e581107cf11b310eee9e78d13df90d27a09e07367edc3f69f9ba97578f",
+      "sourceTokens": 1355,
+      "captureTokens": 1353,
+      "equivalence": "creator-condition-parentheses",
+      "verified": true
+    },
+    {
+      "function": "poValidatePayload",
+      "source": "creator/functions/poValidatePayload.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/poValidatePayload.dg",
+      "sourceSha256": "3dcced70f01dd54f4ac580a60ad53753d47ffb3e9d70cad837df2289b62b83d1",
+      "captureSha256": "bd8047a0f2877f0acf27f4b07b17afcc2ac8b49b283449d3e0f8236410d0cd91",
+      "sourceTokens": 2019,
+      "captureTokens": 2019,
+      "equivalence": "exact-tokens",
+      "verified": true
+    },
+    {
+      "function": "sendPurchaseOrderEmail",
+      "source": "creator/functions/sendPurchaseOrderEmail.dg",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-after/sendPurchaseOrderEmail.dg",
+      "sourceSha256": "879bab152bcac92002cf8a1a2228f9cfb13c001126902a243160c971610449b5",
+      "captureSha256": "2d56257f6b9fff5de8cc1f243ba692236060611591aa0222065261b3dfab5794",
+      "sourceTokens": 1220,
+      "captureTokens": 1220,
+      "equivalence": "exact-tokens",
+      "verified": true
+    }
+  ],
+  "before": [
+    {
+      "function": "budgetElementExportRows",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/budgetElementExportRows.dg",
+      "captureSha256": "75266133532efbe08cce75e4919a7c189e3864651e2a9dc89dbeb34bc7149116",
+      "captureTokens": 631,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/budgetElementExportRows.dg",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "exportBudgetSnapshot",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/exportBudgetSnapshot.dg",
+      "captureSha256": "69ffd700797e67cf7de21448c5d6b69dcde87b825c8ca9d415d4893ec0b1ded7",
+      "captureTokens": 9711,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/exportBudgetSnapshot.dg",
+          "equivalence": "builtin-method-case"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "handlePurchaseOrderApproval",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/handlePurchaseOrderApproval.dg",
+      "captureSha256": "5030341186b5665754d44c590cce28608d0cb6df517a9b6393b6186e2617f180",
+      "captureTokens": 1856,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/handlePurchaseOrderApproval.dg",
+          "equivalence": "exact-tokens"
+        },
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "managePurchaseOrder",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/managePurchaseOrder.dg",
+      "captureSha256": "731edf53fda0b86a5cf2784696954c4ac7f82c7c028b8fa4f1edb50d5de57750",
+      "captureTokens": 12430,
+      "baselineMatches": [
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "poApprovalBundle",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/poApprovalBundle.dg",
+      "captureSha256": "85830a40d1b80e31cc3441b4e14741d76271f0e6802d05347443c9690abbacb6",
+      "captureTokens": 2247,
+      "baselineMatches": [
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "poBudgetBalances",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/poBudgetBalances.dg",
+      "captureSha256": "a8fe12734a0bbac1d587a5ca204fd9065c3e31f086d235196434870a3a27e877",
+      "captureTokens": 1756,
+      "baselineMatches": [
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "poExcelWorkbook",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/poExcelWorkbook.dg",
+      "captureSha256": "80b36439eb5a91a9e66aa874935e297b8729902d42ed6de56a00598b2c6f912e",
+      "captureTokens": 1463,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/poExcelWorkbook.dg",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "poSnapshot",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/poSnapshot.dg",
+      "captureSha256": "6d7ba2561d75ec6cfd7c87957b266b94c8a788465e870f25c825fc60a8d2c0b6",
+      "captureTokens": 1154,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/poSnapshot.dg",
+          "equivalence": "exact-tokens"
+        },
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "poValidatePayload",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/poValidatePayload.dg",
+      "captureSha256": "375ffd6c01ad033f9f763ac41f2c30d9289e99cfd525c37841c421b11e713a67",
+      "captureTokens": 1454,
+      "baselineMatches": [
+        {
+          "baseline": "creator/exports/Land_Master_2026-11-02-catalog.ds",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    },
+    {
+      "function": "sendPurchaseOrderEmail",
+      "capture": "creator/po-reallocation-install-2026-11-09/native-before/sendPurchaseOrderEmail.dg",
+      "captureSha256": "5e903ea613f1989fb441c0f0c2f50da28278911bfc562a8dec59b5b0d0c76ef3",
+      "captureTokens": 879,
+      "baselineMatches": [
+        {
+          "baseline": "git:16063e0f:creator/functions/sendPurchaseOrderEmail.dg",
+          "equivalence": "exact-tokens"
+        }
+      ],
+      "unrelatedLiveOnlyBehavior": false
+    }
+  ]
+}

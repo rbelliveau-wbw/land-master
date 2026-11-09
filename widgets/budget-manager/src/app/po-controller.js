@@ -98,7 +98,7 @@
     function execute(check){
       var captured=run;
       var payload=check?(captured.deletion?Object.assign({},captured.payload,{action:'CheckDelete'}):captured.decision?Object.assign({},captured.payload,{action:'CheckDecision',decision:captured.payload.action}):{action:"Check",budgetId:captured.payload.budgetId,userAccessId:captured.payload.userAccessId,token:captured.payload.token}):captured.payload;
-      captured.busy=true;options.onState(captured,check?"checking":"saving");
+      captured.readOnlyCheck=check;captured.busy=true;options.onState(captured,check?"checking":"saving");
       var timer;
       return Promise.race([Promise.resolve().then(function(){return options.call(payload);}),new Promise(function(resolve,reject){timer=setTimeout(function(){reject(new Error(captured.deletion?"Response was lost or timed out. The PO may have been deleted.":"Response was lost or timed out. The PO may have been saved."));},options.timeoutMs||90000);})]).then(function(receipt){
         if(!receipt||receipt.contract!=="po-v1")throw new Error("PO verification is unavailable in this environment.");

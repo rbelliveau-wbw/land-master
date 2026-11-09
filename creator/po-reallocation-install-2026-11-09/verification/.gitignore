@@ -1,0 +1,4 @@
+*
+!.gitignore
+!native-install-audit.json
+!production-contract-check.json

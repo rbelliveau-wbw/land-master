@@ -16,7 +16,7 @@ const c=vm.createContext({S:{myAccessId:'90071992547409935',attachmentBusy:false
   sdkGetRecordById:async()=>read,
   sdkRunBudgetFunction:async(name,args)=>{calls.push({name,p:JSON.parse(args.budgetId)});if(outcome==='lost')throw Error('Network lost');return {result:JSON.stringify({ok:outcome!=='rejected',contract:'budget-request-attachments-v1',writeState:outcome==='rejected'?'not-started':'acknowledged',budgetId:bid,attachmentId:fid,message:'Rejected before write'})};}
 });
-for(const name of ['attachmentLinkScope','attachmentLinksReady','attachmentLinkResponse','callAttachmentLink','requestAttachmentContextMatches','changeAttachmentAssociation','recheckAttachmentAssociation'])vm.runInContext(sourceOf(name),c);
+for(const name of ['requestAttachmentWritesLocked','attachmentLinkScope','attachmentLinksReady','attachmentLinkResponse','callAttachmentLink','requestAttachmentContextMatches','changeAttachmentAssociation','recheckAttachmentAssociation'])vm.runInContext(sourceOf(name),c);
 c.attachmentLinkStates[bid]={scope,status:'loaded'};
 assert.equal(c.requestAttachmentContextMatches({...f,paymentRequestId:rid},{kind:'payment',id:rid}),true);
 for(const bad of [{paymentRequestId:rid,modificationId:mid},{paymentRequestId:Number(rid)},{paymentRequestId:rid+'0'},{}])assert.equal(c.requestAttachmentContextMatches({...f,...bad},{kind:'payment',id:rid}),false,'Only the exact exclusive saved parent matches');
@@ -53,7 +53,7 @@ function uploadHarness(){
  sdkRunBudgetFunction:async(name,args)=>{const p=JSON.parse(args.budgetId);writes.push({name,p});if(hold)await hold;rows.push({ID:fid,Budget:{ID:p.budgetId},Payment_Request:p.paymentRequestId?{ID:p.paymentRequestId}:null,Budget_Modification:p.modificationId?{ID:p.modificationId}:null});return {result:JSON.stringify({ok:true,attachmentId:fid,budgetId:bid})};},
  sdkUploadFile:async(_report,id,_field,file)=>{writes.push({name:'FILE',id,file});return {code:3000,data:{}};},sdkGetRecordById:async()=>rows[0]
  });
- for(const name of ['requestAttachmentContextMatches','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','uploadBudgetAttachments'])vm.runInContext(sourceOf(name),x);
+ for(const name of ['requestAttachmentWritesLocked','requestAttachmentContextMatches','parseAttachmentCreateResponse','inspectBudgetAttachment','budgetAttachmentMatches','uploadBudgetAttachments'])vm.runInContext(sourceOf(name),x);
  return {x,writes,setActor:v=>actor=v,setNavigation:v=>navigation=v,setDenied:v=>denied=v,setHold:v=>hold=v};
 }
 {

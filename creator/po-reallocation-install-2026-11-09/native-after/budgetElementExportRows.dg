@@ -1,0 +1,93 @@
+list budgetElementExportRows(int budgetItemId)
+{
+	// Read-only element detail shared by downloads, attachments and approval mail.
+	// Never recompute parent totals from snapshots or infer actual elements.
+	rows = List();
+	item = Budget_Item[ID == budgetItemId.toLong()];
+	if(item.count() != 1)
+	{
+		return rows;
+	}
+	sourceValues = Map();
+	sourceValues.put("department",ifnull(item.Budget_Category.Deparment,""));
+	sourceValues.put("preliminary",{"1":item.Prelim_Labor_Budget,"2":item.Prelim_Materials_Budget,"3":item.Prelim_Equipment_Budget,"4":item.Prelim_Subcontractor_Budget,"5":item.Prelim_Other_Budget});
+	sourceValues.put("finals",{"1":item.Labor_Budget,"2":item.Materials_Budget,"3":item.Equipment_Budget,"4":item.Subcontractor_Budget,"5":item.Other_Budget});
+	sourceValues.put("hcssActuals",{"1":item.HCSS_Labor_Actuals,"2":item.HCSS_Materials_Actuals,"3":item.HCSS_Equipment_Actuals,"4":item.HCSS_Subcontractor_Actuals,"5":item.HCSS_Other_Actuals});
+	sourceValues.put("gpActuals",{"1":item.GP_Labor_Actuals,"2":item.GP_Materials_Actuals,"3":item.GP_Equipment_Actuals,"4":item.GP_Subcontractor_Actuals,"5":item.GP_Other_Actuals});
+	sourceValues.put("preliminaryTotal",item.Prelim_Budget_Ttl);
+	sourceValues.put("unapprovedTotal",item.Unapproved_Final_Budget_Ttl);
+	sourceValues.put("finalTotal",item.Budget_Ttl);
+	keys = {"1","2","3","4","5"};
+	imports = Budget_Import_Item[Budget_Item == item.ID && Data_Source == "HeavyJob Budget"];
+	imported = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
+	importComplete = imports.count() > 0;
+	importTotal = 0.0;
+	for each  source in imports
+	{
+		parts = {"1":source.Labor,"2":source.Materials,"3":source.Equipment,"4":source.Subcontractor,"5":source.Other};
+		importTotal = importTotal + ifnull(source.Cost,0.0);
+		for each  element in keys
+		{
+			if(parts.get(element) == null)
+			{
+				importComplete = false;
+			}
+			else
+			{
+				imported.put(element,imported.get(element) + parts.get(element));
+			}
+		}
+	}
+	modifications = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
+	modificationsComplete = true;
+	for each  modification in Budget_Modification[Budget_Item == item.ID && Status == "Approved"]
+	{
+		parts = {"1":modification.Labor_Budget,"2":modification.Materials_Budget,"3":modification.Equipment_Budget,"4":modification.Subcontractor_Budget,"5":modification.Other_Budget};
+		sign = 1;
+		if(ifnull(modification.Modification_Type,"") == "Decrease")
+		{
+			sign = -1;
+		}
+		componentSum = 0.0;
+		componentGross = 0.0;
+		componentValid = modification.Modification_Type == "Increase" || modification.Modification_Type == "Decrease";
+		for each  element in keys
+		{
+			componentValue = parts.get(element);
+			if(componentValue == null)
+			{
+				componentValid = false;
+			}
+			else
+			{
+				if(componentValue < 0 && modification.Component_Reallocation != true)
+				{
+					componentValid = false;
+				}
+				componentSum = componentSum + componentValue;
+				componentGross = componentGross + componentValue.abs();
+			}
+		}
+		if(modification.Amount == null || (componentSum - ifnull(modification.Amount,0).abs()).abs() >= 0.00005 || (modification.Component_Reallocation == true && modification.Amount < 0 || componentGross <= 0 || (modification.Amount == 0 && sign == -1)))
+		{
+			componentValid = false;
+		}
+		if(componentValid != true)
+		{
+			modificationsComplete = false;
+		}
+		for each  element in keys
+		{
+			if(componentValid == true)
+			{
+				modifications.put(element,modifications.get(element) + sign * parts.get(element));
+			}
+		}
+	}
+	sourceValues.put("imported",imported);
+	sourceValues.put("importComplete",importComplete);
+	sourceValues.put("importTotal",importTotal);
+	sourceValues.put("modifications",modifications);
+	sourceValues.put("modificationsComplete",modificationsComplete);
+	return thisapp.budgetElementExportValues(sourceValues);
+}
