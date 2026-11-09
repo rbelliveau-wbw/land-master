@@ -63,8 +63,35 @@ npm run build:pages
 All listed checks passed before publication. Pages built all 35 environment
 paths; the complete immutable release matches the current source.
 
-The post-deployment Bluebonnet export, download and native preview will verify
-the actual production page count. Production verification follows publication.
+## Production Verification
+
+Release `122.29.109`, commit `e1e4b496e9bf81b942bf5b32c8685dde9e06ce3f`,
+reached main and Production. [CI](https://github.com/rbelliveau-wbw/land-master/actions/runs/42675243922)
+and [Pages deployment](https://github.com/rbelliveau-wbw/land-master/actions/runs/42675243628)
+both completed successfully. The agent-owned Creator browser loaded the new
+109 PDF script through the permanent Production URL.
+
+Bluebonnet Crossing - Phase 01 was exported once at 12:39 PM America/Chicago
+on November 9. The new PDF saved successfully, increased its attachment count
+from three to four, downloaded through the existing Creator Download action,
+and opened in the existing native preview at **36 pages**. This is **46 fewer
+pages (56.1%)** than the prior complete 82-page PDF. The file is 313,072 bytes.
+
+The downloaded PDF contains all 227 item element blocks and all 1,135 element
+rows. A read-only comparison of both actual downloaded PDFs matched every
+element label and all **7,945 element financial cells** exactly. The saved
+summary total and approval history remain present. Every page is nonempty and
+Letter landscape. Poppler rendered all 36 pages and all contact sheets were
+visually inspected; the live native preview was also confirmed at 36 pages.
+The actual-source regression independently verifies complete parent item/notes,
+summary/category totals and approval-history cell parity against 122.29.107,
+including precision, zero/unknown, Unicode and unusually long notes.
+
+The first 108 publishing attempt encountered a GitHub internal server error
+before its deployment job started. Re-running the successful build produced
+two artifacts with the same `github-pages` name, blocking that retry. The fresh
+109 workflow published successfully with one artifact. Both immutable releases
+remain intact; Production and Development select 109.
 
 ## Rollback
 

@@ -12,6 +12,9 @@ approval cell against immutable 122.29.107. Its 227-item stress fixture shrinks
 from 99 to 44 pages, including a 15,000-character note. Read/upload permissions,
 native APIs, Excel and automatic approved PDFs retain their existing paths.
 No Creator deployment is required. Rollback: Budget Manager 122.29.107.
+Production Bluebonnet verification: **82 to 36 pages (56.1% fewer)**; all 1,135
+element rows and 7,945 element financial cells match the prior downloaded PDF.
+Native save, download and 36-page preview succeeded. CI and Pages passed.
 See [compact PDF release notes](../../docs/budget-pdf-compact-2026-11-09.md).
 
 ## Deferred Reallocation Discussion — November 9, 2026
