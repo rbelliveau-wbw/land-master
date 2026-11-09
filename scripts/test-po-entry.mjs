@@ -89,7 +89,7 @@ console.log('PO Review after Submit: saved $50,065 PO and $100 mod, unknown-then
 const entry=vm.createContext({vendorDialog:null,progress:false});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),entry);entry.root=entry;
 let editable=true,active=true,summaryUpdates=0,totalUpdates=0;
-entry.current=()=>active;entry.readOnly=()=>!editable;
+entry.current=()=>active;entry.readOnly=()=>!editable;entry.popover=null;
 entry.patchBalances=()=>summaryUpdates++;entry.patchTotal=()=>totalUpdates++;
 entry.model={gridMode:'row',description:'PO header',lines:[{key:'one',budgetItemId:'2001',description:'First line',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'5',unitPrice:'150.00',finalAmount:'750.00'},{key:'two',budgetItemId:'2002',description:'Second line',uom:'EA',costElement:'1',pricingMode:'Calculated',quantity:'10',unitPrice:'250.00',finalAmount:'2500.00'}]};
 const first=entry.model.lines[0],untouched=JSON.stringify(entry.model.lines[1]),mode={textContent:''},reset={hidden:true},fields={};

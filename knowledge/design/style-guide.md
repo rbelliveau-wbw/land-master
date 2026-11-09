@@ -8,6 +8,12 @@ Use the short [design index](README.md) to find a focused component guide.
 UI verification is desktop-only, per Robby's October 13, 2026 direction.
 Do not spend time checking phone or tablet formatting.
 
+November 9, 2026 Budget direction: remove small filler copy such as "Budget
+reservation retained" and generic explanations beneath results, headings and
+menus. Use the heading and action labels. Preserve actual data, required fields,
+errors and warnings that affect the next action; make destination information
+part of the action heading when it matters.
+
 User direction October 30, 2026: page headings, tabs, column headings, field
 labels and action labels use Title Case, such as **By Foreman**, **Labor Type**
 and **New Crew**. Keep record names and source-owned values unchanged; ordinary

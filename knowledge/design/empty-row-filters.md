@@ -20,6 +20,15 @@ Budget's saved element amounts also keep their parent line visible. Expanded
 element rows inherit their parent line's search, Hide Empty and category state;
 they do not become additional items or affect totals.
 
+Reallocation uses the same pill as **Show $0**, in its title bar, off by default.
+Hide known zero-budget element rows. Preserve nonzero original/revised budgets,
+changes, PO amounts, availability and pending activity, including negatives and
+required increases; keep unknown data and a focused editor visible. The switch
+only changes mounted row visibility and restores every zero row when enabled.
+Do not save, change the reallocation model or recompute displayed totals from
+the switch. Keep entered reasons/amounts and stable numbered element identity.
+Use the shared keyed visibility/resize registry and reduced motion.
+
 Budget's phase and all-phases item lists use the shared keyed movement engine
 with `visibility:true` so filtered survivors move to their real positions.
 Existing 100-row motion limits and reduced-motion behavior remain in force.

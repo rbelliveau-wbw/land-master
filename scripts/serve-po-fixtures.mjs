@@ -1,7 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 const paths=new Map([
- ['/purchase-orders.html','scripts/fixtures/purchase-orders.html'],['/approval-policies.html','scripts/fixtures/approval-policies.html'],
+ ['/purchase-orders.html','scripts/fixtures/purchase-orders.html'],['/po-reallocation-controls.html','scripts/fixtures/po-reallocation-controls.html'],['/approval-policies.html','scripts/fixtures/approval-policies.html'],
  ...['po-domain.js','po-reallocation.js','po-reallocation-ui.js','po-grid.js','po-controller.js','po-ui.js','po-progress.js','purchase-orders.css','request-attachments.js','request-attachments.css','interaction-motion.js','interaction-motion.css','interaction-surfaces.js'].map(f=>['/'+f,'widgets/budget-manager/src/app/'+f]),
  ...['approval-policy-domain.js','approval-admin.js','approval-admin.css'].map(f=>['/'+f,'widgets/settings-manager/src/app/'+f])
 ]);

@@ -1,3 +1,13 @@
+## Required PO Rejection Reason and Reallocation Controls — 122.29.121, November 9, 2026
+
+Reject PO prompts for a required reason and uses the existing Approval Notes
+contract. Budget screens omit generic small-print success and explanatory copy.
+Reallocation uses green plus/red minus controls, numbered elements, and a Show
+$0 pill that defaults off and changes only mounted element visibility. Keep
+required/entered changes, unknowns and active editors visible. No Creator change
+is required for this release. See
+[scope, regressions and rollback](../../docs/budget-rejection-reallocation-ui-2026-11-09.md).
+
 ## Requests API Repair — 122.29.120, November 9, 2026
 
 The global index uses one authenticated ListRequests header call, one complete

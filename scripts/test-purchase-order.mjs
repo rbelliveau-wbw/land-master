@@ -1,6 +1,7 @@
 import './test-po-vendor-preview.mjs';
 import './test-po-create-permission-ui.mjs';
 import './test-po-approval-entry.mjs';
+import './test-po-rejection-reason.mjs';
 import './test-po-delete-direct.mjs';
 import './test-budget-breadcrumbs.mjs';
 import assert from 'node:assert/strict';

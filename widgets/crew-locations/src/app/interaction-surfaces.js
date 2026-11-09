@@ -45,6 +45,7 @@
       meters.push('.aq-progress-fill');
       list('[data-lm-row-list="request-attachment-files"]','.attachment-page-row[data-record-id]',row=>row.dataset.recordId,()=>state().edBudget?.ID||'budget-files');
       list('.po-reallocation-body','.po-rea-item[data-po-rea-item]',row=>row.dataset.poReaItem,()=>state().edBudget?.ID||'po-reallocation',{resize:true});
+      list('.po-rea-item','.po-rea-row[data-po-rea-row]',row=>row.dataset.poReaRow,()=>state().edBudget?.ID||'po-reallocation',{hostKey:host=>host.dataset.poReaItem,visibility:true,resize:true});
     }else if(module==='manage-lots'){
       tab('nav.tabs','[data-view]',null);
       tab('#lotsLayout','#lotsListMode,#llEditMode,#lotsGridMode',null);

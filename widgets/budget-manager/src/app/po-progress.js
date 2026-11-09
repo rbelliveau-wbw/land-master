@@ -7,16 +7,15 @@
     var completed=!!(snapshot||run.deleted),warning=!!(snapshot&&snapshot.status==='Submitted'&&snapshot.approvalState==='Pending'&&!(bundle&&bundle.emailSent));
     var state=completed?(warning?'warning':'success'):run.rejected?'error':'unknown';
     var title=run.deleted?'Purchase order deleted':!completed?(run.rejected?'Purchase Order Not Saved':'Purchase order needs review'):preserving?'Purchase order updated':action==='RetryEmail'?'Approval notification updated':action==='Reject'?'Purchase order rejected':action==='Approve'?(snapshot.approvalState==='Approved'?'Purchase order approved':'Approval recorded'):snapshot.status==='Submitted'?'Purchase order submitted':'Draft saved';
-    var active=bundle&&bundle.rows.find(function(row){return row.status==='Pending';});
-    var message=run.deleted?'PO and associated records removed.':!completed?(run.rejected?'No changes were saved. Review the error before trying again.':'Check the saved status before trying again.'):preserving?'Current approval chain and decisions kept.':snapshot.approvalState==='Rejected'?'Budget reservation retained.':snapshot.approvalState==='Approved'?'Approval chain complete.':snapshot.status==='Submitted'?(active?'Awaiting '+active.role+' approval.':'Budget reserved.')+(warning?' Email needs attention.':bundle&&bundle.emailSent?' Approval email sent.':''):'No budget reserved.';
-    if(run.attachmentResult&&(run.attachmentResult.total||!run.attachmentResult.complete)){message+=' '+(run.attachmentResult.message||'Attachments need review')+'.';if(!run.attachmentResult.complete){state='warning';title='PO saved · attachments need attention';message+=' Review PO to finish the remaining files.';warning=true;}}
+    var message=!completed?(run.rejected?'No changes were saved. Review the error before trying again.':'Check the saved status before trying again.'):warning?'Email needs attention.':'';
+    if(run.attachmentResult&&!run.attachmentResult.complete){state='warning';title='PO saved · attachments need attention';message=[message,run.attachmentResult.message||'Attachments need review.','Open the PO to finish uploading.'].filter(Boolean).join(' ');warning=true;}
     return {state:state,title:title,message:message,completed:completed,warning:warning};
   }
   function mount(options){
     var card=options.card,overlay=options.overlay,model=options.model,action=options.action||'Save';
     overlay.classList.add('po-progress-mode');
     card.querySelector('#po-title').textContent=action==='Approve'?'Approving purchase order':action==='Reject'?'Rejecting purchase order':action==='RetryEmail'?'Sending approval notification':action==='Delete'?'Deleting purchase order':action==='Submit'?'Submitting purchase order':'Saving purchase order';
-    var labels=action==='Delete'?['Check deletion details','Delete PO and associated records','Confirm records removed']:['Approve','Reject','RetryEmail'].includes(action)?['Check approval decision','Record decision and update chain','Confirm approval and notification']:['Check purchase order details','Save PO and budget changes','Confirm saved purchase order'];
+    var labels=action==='Delete'?['Check Records','Delete PO','Confirm Deletion']:action==='Reject'?['Check PO','Save Rejection','Confirm Rejection']:action==='RetryEmail'?['Check Approver','Send Email','Confirm Email']:action==='Approve'?['Check Approval','Save Decision','Confirm Status']:['Check PO','Save PO','Confirm Save'];
     var vendor=model.vendors.find(function(row){return row.ID===model.vendorId;});
     card.querySelector('#po-context').textContent=model.phase+' · '+(vendor&&vendor.Vendor_Name||model.vendorName||'Vendor')+' · '+options.money(model.amount);
     card.querySelector('.po-heading').insertAdjacentHTML('beforeend','<div class="po-progress-bar" role="progressbar" aria-label="Purchase order progress" aria-valuemin="0" aria-valuemax="3" aria-valuenow="1"><i style="width:33.333%"></i></div>');
@@ -45,7 +44,7 @@
       card.querySelector('#po-title').textContent=run.decision?'Purchase order approval':'Purchase order';
       var outcome=card.querySelector('[data-po-outcome]');outcome.className='po-progress-outcome '+result.state;
       card.querySelector('.po-progress-outcome-icon').innerHTML=result.state==='success'?check:'!';
-      card.querySelector('[data-po-outcome-title]').textContent=result.title;card.querySelector('[data-po-outcome-message]').textContent=result.message;
+      card.querySelector('[data-po-outcome-title]').textContent=result.title;card.querySelector('[data-po-outcome-message]').textContent=result.message;card.querySelector('[data-po-outcome-message]').hidden=!result.message;
       card.querySelector('[data-po-status]').textContent=result.state==='success'?'Complete':result.warning?'Email needs attention':run.unknown?'Saved status needs review':'Not saved';
     }else card.querySelector('[data-po-status]').textContent=options.stage==='checking'?'Checking saved status…':'Working…';
     if(root.LMPOUI)root.LMPOUI.fitDialog(card);

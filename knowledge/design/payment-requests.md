@@ -142,6 +142,28 @@ approver must still see Approve/Reject in review. The explicit pencil retains
 amendment mode and its separation of decisions from unsaved edits. New POs
 continue to open in composition mode. Keep unresolved-operation guards intact.
 
+Reject PO opens a focused in-page dialog with a required Rejection Reason and
+Cancel/Reject PO actions. Blank or whitespace-only reasons cannot submit. Cancel,
+Escape and backdrop dismiss only the prompt and restore the Reject PO focus.
+Recheck the actor, PO, revision and active approval before confirmation. Append
+the trimmed reason after any recorded approval notes, using the existing native
+Approval Notes field. Start the existing decision progress immediately after
+confirmation; retain its duplicate/unknown-reply guards. Approve stays direct
+with an optional note. The rejection prompt uses the shared registered dialog
+surface and existing centered SVG close icon.
+
+Budget result dialogs use the outcome heading without a second generic success
+caption. Omit reservation/chain-retention statements, export descriptions and
+implementation explanations. Retain actual errors, incomplete work, recipient
+and record identity, amounts, field requirements and actionable warnings.
+
+Reallocation direction controls are centered SVG plus/minus buttons: green for
+Increase, red for Decrease, with tinted surfaces and a clear selected state.
+Retain explicit accessible names, tooltips, pressed states, keyboard focus and
+the existing signed amounts/permissions. Show numbered element names such as
+**(1) Labor**. Its title bar has the shared **Show $0** sliding pill; follow the
+[empty-row definition](empty-row-filters.md) without rebuilding live inputs.
+
 Keep budget context to the left of the PO total: Available and Remaining or
 Modification on the first line. Editable drafts use the server's read-only route
 preview with ordered approver pills. Hide this forecast panel when the current
