@@ -56,9 +56,10 @@ legacy defaults and lost-response checks. Local tests do not prove native
 compilation, profile field visibility or signed USD storage. Desktop IAB checks
 use a synthetic no-email fixture, never a real financial submission.
 
-Rollback: map Budget Manager Production to **122.29.109**. If signed records
-already exist, retain the new field and signed-aware native readers; do not
-reinstall incompatible legacy bundle/balance functions or rewrite financial data.
+Rollback before marked records exist: map Production to **122.29.109**. After
+signed records exist, use a forward fix retaining both signed-aware frontend and
+native readers; the older frontend cannot interpret these records correctly.
+Do not reinstall incompatible readers or rewrite financial data.
 
 ## Compact Manual PDF — 122.29.109, November 9, 2026
 

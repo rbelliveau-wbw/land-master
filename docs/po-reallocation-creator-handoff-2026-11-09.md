@@ -157,9 +157,10 @@ submission regressions and the repository validation/Pages build.
 
 ## Rollback
 
-Repository rollback restores the prior immutable Budget Manager environment
-mapping recorded with the release. Once any signed records exist, retain the new
-boolean and signed-aware native readers during a frontend rollback. Installing
-legacy bundle/balance functions over signed records would misread reductions or
-make saved POs unreadable. Never clear the marker, rewrite signed amounts or
-delete linked records as a deployment rollback.
+Before any marked records exist, repository rollback may restore Budget Manager
+122.29.109 through the environment mapping. Once signed records exist, use a
+forward fix retaining BOTH signed-aware frontend and native readers. Do not
+blindly map back to 122.29.109: its older element readers cannot interpret these
+records correctly. Retain the new boolean and compatible bundle/balance
+functions. Never clear the marker, rewrite signed amounts or delete linked
+records as a deployment rollback.

@@ -79,7 +79,9 @@ live end-to-end approval require the user-published Creator update. Local Deluge
 execution fixtures cannot establish those native gates. No real Eagle Prairie
 PO was submitted as part of regression testing.
 
-Rollback Production to **122.29.109** through the environment mapping, retaining
-the permanent widget URL. After signed records exist, retain the new boolean
-and compatible signed-aware native readers even during frontend rollback. Do
-not clear the marker, rewrite amounts or delete financial records to roll back.
+Before marked records exist, roll back Production to **122.29.109** through the
+environment mapping, retaining the permanent widget URL. Once signed records
+exist, use a forward fix retaining both signed-aware frontend and native readers;
+122.29.109 cannot interpret those new component records correctly. Keep the new
+boolean and compatible bundle/balance functions. Do not clear the marker,
+rewrite amounts or delete financial records to roll back.
