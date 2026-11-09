@@ -20,6 +20,20 @@ fixed eight-pixel label/chevron gap. See the [API repair](../../docs/budget-requ
 
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
+## Live PO Reallocation Projection
+
+Editing the Reallocation pane updates the PO context, Approvers net Bud Mod and
+Summary from the same current plan. Show Bud Mod separately from Available and
+This PO; Remaining includes the proposed signed change. Include offset elements
+even when they have no PO line. Keep the actual PO total separate from the budget
+change and retain gross changes for the existing approval route. Reset restores
+automatic projections. Approved changes already in native balances are never
+added again. Preserve the allocation input/caret, summary disclosures/scroll,
+field-exit number motion and existing submission gates. These projections do not
+mutate financial balances, native expectations or saved records.
+
+## Phase Request Rail
+
 The phase Requests tab uses the selected Connected Rail layout: one newest-first
 list of Purchase Orders, Check requests, Wire requests and budget modifications.
 Keep one shared column grid so type pills, names/descriptions, approvers, dates,

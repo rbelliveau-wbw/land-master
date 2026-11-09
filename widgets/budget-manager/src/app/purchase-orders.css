@@ -93,6 +93,7 @@
 .po-summary-group{border-bottom:1px solid #d5e1ee;background:#fff}
 .po-summary-group:last-child{border-bottom:0}
 .po-summary-group-heading,.po-summary-element-heading,.po-summary-element-columns{display:grid;grid-template-columns:minmax(0,1.6fr) repeat(3,minmax(0,1fr));gap:9px;align-items:center}
+.po-summary-group.has-bud-mod .po-summary-group-heading,.po-summary-group.has-bud-mod .po-summary-element-heading,.po-summary-group.has-bud-mod .po-summary-element-columns{grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr));gap:7px}
 .po-summary-group-heading{padding:14px 15px;background:#f4f8fe;list-style:none;cursor:pointer}
 .po-summary summary::-webkit-details-marker{display:none}
 .po-summary summary:focus-visible{outline:2px solid #6399e8;outline-offset:-3px}

@@ -1,3 +1,13 @@
+## Live PO Reallocation — 122.29.122, November 9, 2026
+
+PO Details, Approvers and Summary reflect allocation edits from the current
+reallocation plan. Summary exposes Bud Mod and includes it in Remaining, with
+donor elements visible even without PO lines. Approvers shows net Bud Mod
+alongside unchanged gross changes. Payment totals and native saves/routing stay
+unchanged. No Creator deployment is required. Existing numeric Sliding push
+surfaces and disclosure/focus preservation apply. See
+[scope, regression evidence and rollback](../../docs/po-live-reallocation-summary-2026-11-09.md).
+
 ## Required PO Rejection Reason and Reallocation Controls — 122.29.121, November 9, 2026
 
 Reject PO prompts for a required reason and uses the existing Approval Notes
