@@ -12,20 +12,36 @@ vm.runInContext(fs.readFileSync(path.join(root,'full-budget-export.js'),'utf8'),
 vm.runInContext(fs.readFileSync(path.join(root,'budget-snapshot-pdf.js'),'utf8'),context);
 const fixture=budgetPdfFixture(),definition=context.BudgetSnapshotPdf.definition(fixture);
 assert.equal(definition.pageSize,'LETTER');assert.equal(definition.pageOrientation,'landscape');
-const tables=definition.content.filter(node=>node.table),detail=tables.filter(node=>node.table.widths.length===10),elements=tables.filter(node=>node.table.widths.length===8);
+const tables=definition.content.filter(node=>node.table),detail=tables.filter(node=>node.table.widths.length===10),elements=tables.filter(node=>node.table.widths.length===9);
 assert.equal(detail.length,21,'empty categories remain visible');
 assert.equal(detail.reduce((count,node)=>count+node.table.body.slice(2).filter(row=>row.length===10&&!row[0].colSpan).length,0),227);
-assert.equal(elements.length,227);assert.equal(elements.reduce((count,node)=>count+node.table.body.length-2,0),1135);
+assert.equal(elements.length,20,'one continuous element ledger per populated category');assert.equal(elements.reduce((count,node)=>count+node.table.body.length-2,0),1135);
 assert.match(tables[0].table.body[1][4].text,/1,188,716\.12/,'summary uses saved grand Final');
 assert.match(detail[0].table.body[0][0].text,/1,234,567\.89/,'category uses saved total, never a recomputed sum');
 assert.equal(detail[0].table.body[2][3].text,'','unknown unit rate stays blank');
-assert.equal(elements[0].table.body[2][1].text,'\u2014','unknown element remains unknown');
-assert.equal(elements[0].table.body[2][2].text,'$0','known zero stays known');
+assert.equal(elements[0].table.body[2][2].text,'\u2014','unknown element remains unknown');
+assert.equal(elements[0].table.body[2][3].text,'$0','known zero stays known');
 assert.ok(JSON.stringify(definition).includes('-$100.12'));assert.ok(JSON.stringify(definition).includes('-$10.4321'));
 assert.ok(JSON.stringify(definition).includes('Jos\u00e9 <Literal>'),'text remains literal with Unicode');
 assert.equal(tables.at(-1).table.body[1][5].text,'Saved approval\nSecond line');
 assert.deepEqual(plain(definition.footer(2,30)).text,'Page 2 of 30');
-for(const node of tables){assert.ok(node.table.widths.reduce((sum,n)=>sum+n,0)+node.table.widths.length*8<=742,'tables fit landscape letter margins');}
+for(const node of tables){assert.ok(node.table.widths.reduce((sum,n)=>sum+n,0)+node.table.widths.length*5<=742,'tables fit landscape letter margins');}
+// Compare every data cell with the immutable release that exported Bluebonnet.
+// Only repeated headings/identity placement and whitespace may differ.
+const baselineRoot=path.resolve('releases/budget-manager/122.29.107'),baselineContext=vm.createContext({console,Map,Set});
+vm.runInContext(fs.readFileSync(path.join(baselineRoot,'full-budget-export.js'),'utf8'),baselineContext);
+vm.runInContext(fs.readFileSync(path.join(baselineRoot,'budget-snapshot-pdf.js'),'utf8'),baselineContext);
+const baseline=baselineContext.BudgetSnapshotPdf.definition(budgetPdfFixture()),oldTables=baseline.content.filter(node=>node.table);
+const cells=(node,start=0)=>node.table.body.slice(start).map(row=>row.map(cell=>cell.text));
+assert.deepEqual(plain(tables[0].table.body),plain(oldTables[0].table.body),'saved summary and labels stay complete');
+assert.deepEqual(plain(detail.map(node=>cells(node))),plain(oldTables.filter(node=>node.table.widths.length===10).map(node=>cells(node))),'every parent item, saved total, unit, rate and note matches the existing PDF');
+assert.deepEqual(plain(elements.flatMap(node=>cells(node,2).map(row=>row.slice(1)))),plain(oldTables.filter(node=>node.table.widths.length===8).flatMap(node=>cells(node,2))),'all 1135 element rows and seven financial columns match the existing PDF exactly');
+assert.deepEqual(plain(cells(tables.at(-1))),plain(cells(oldTables.at(-1))),'complete approval text/history is preserved');
+assert.equal(definition.defaultStyle.fontSize,baseline.defaultStyle.fontSize,'compactness never shrinks the body font');
+elements.forEach(node=>node.table.body.slice(2).forEach((row,index)=>{
+  assert.match(row[0].text,/^\d+/,'every continuation row identifies its source item');
+  if(index%5===0)assert.match(row[0].text,/\s\s\S/,'each item retains its full saved name');
+}));
 // Exact IDs, not equal category labels, determine the saved category assignment.
 const sameNames=budgetPdfFixture();Object.assign(sameNames.structure.categories[1],{Category_Code:'100',Budget_Category_Name:'Category 0'});
 sameNames.rows.forEach((row,i)=>{if(i%20===1){row[3]='100';row[4]='Category 0';sameNames.elementRows.slice(i*5,i*5+5).forEach(element=>{element[3]='100';element[4]='Category 0';});}});
@@ -56,16 +72,21 @@ for(const mode of ['success','error','messageerror','invalid','timeout','constru
 
 // Execute the production worker and pinned browser builds. The shim replaces
 // only the Worker transport/importScripts with local files; no Creator writes.
-const pdf=await new Promise((resolve,reject)=>{
+function renderFixture(rendererRoot){return new Promise((resolve,reject)=>{
   const sandbox={console,setTimeout,clearTimeout,TextEncoder,TextDecoder,Uint8Array,ArrayBuffer};
   const worker=vm.createContext(sandbox);worker.self=worker;worker.location={search:'?v=fixture'};
   worker.addEventListener=()=>{};
   worker.postMessage=message=>message.ok?resolve(Buffer.from(message.buffer)):reject(new Error(message.error));
-  worker.importScripts=(...urls)=>urls.forEach(url=>vm.runInContext(fs.readFileSync(path.join(root,url.split('?')[0]),'utf8'),worker,{filename:url}));
-  vm.runInContext(fs.readFileSync(path.join(root,'budget-snapshot-pdf-worker.js'),'utf8'),worker);
+  worker.importScripts=(...urls)=>urls.forEach(url=>vm.runInContext(fs.readFileSync(path.join(rendererRoot,url.split('?')[0]),'utf8'),worker,{filename:url}));
+  vm.runInContext(fs.readFileSync(path.join(rendererRoot,'budget-snapshot-pdf-worker.js'),'utf8'),worker);
   worker.onmessage({data:budgetPdfFixture()});
-});
+});}
+const pdf=await renderFixture(root),oldPdf=await renderFixture(baselineRoot);
 assert.equal(pdf.subarray(0,5).toString(),'%PDF-');assert.ok(pdf.length>30000);
+// The pinned PDF build emits ordinary Page objects, not compressed object streams.
+const pageCount=bytes=>(bytes.toString('latin1').match(/\/Type\s*\/Page(?=\s|\/|>)/g)||[]).length;
+const pages=pageCount(pdf),oldPages=pageCount(oldPdf);
+assert.ok(pages>0&&pages<=oldPages*0.6,'complete stress fixture uses at least 40% fewer pages with the same font');
 const outputIndex=process.argv.indexOf('--output');
 if(outputIndex>=0){const output=process.argv[outputIndex+1];fs.mkdirSync(path.dirname(output),{recursive:true});fs.writeFileSync(output,pdf);console.log('PDF fixture saved: '+output);}
-console.log('Budget PDF: production worker and pinned renderer;227 items,1135 elements,21 exact-ID categories, saved totals, credits, unknown/zero, approvals, Unicode and long-note pagination passed ('+pdf.length+' bytes).');
+console.log('Budget PDF: production worker and pinned renderer;227 items,1135 elements,21 exact-ID categories; all data cells match 122.29.107, font unchanged; '+oldPages+' -> '+pages+' pages; scope, saved totals, credits, unknown/zero, approvals, Unicode and long notes passed ('+pdf.length+' bytes).');

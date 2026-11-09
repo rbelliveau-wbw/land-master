@@ -61,8 +61,8 @@
     ordered.forEach(function(category){category.entries.sort(function(a,b){return a.row[5]<b.row[5]?-1:a.row[5]>b.row[5]?1:a.index-b.index;});});
     var ink='#183d70',line='#d7e1ed';
     function cell(value,numeric,header){return {text:text(value),alignment:numeric?'right':'left',bold:!!header,color:header?ink:'#23364d',fillColor:header?'#eef4fb':undefined};}
-    function table(head,body,widths,numericStart,numericEnd){
-      return {margin:[0,3,0,12],table:{headerRows:1,keepWithHeaderRows:1,widths:widths,body:[head.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,true);})].concat(body.map(function(row){return row.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,false);});}))},layout:{hLineWidth:function(){return 0.35;},vLineWidth:function(){return 0;},hLineColor:function(){return line;},paddingLeft:function(){return 4;},paddingRight:function(){return 4;},paddingTop:function(){return 5;},paddingBottom:function(){return 5;}}};
+    function table(head,body,widths,numericStart,numericEnd,dense){
+      return {margin:[0,2,0,8],table:{headerRows:1,keepWithHeaderRows:1,widths:widths,body:[head.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,true);})].concat(body.map(function(row){return row.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,false);});}))},layout:{hLineWidth:function(){return 0.35;},vLineWidth:function(){return 0;},hLineColor:function(){return line;},paddingLeft:function(){return 2.5;},paddingRight:function(){return 2.5;},paddingTop:function(){return dense?1.25:2.25;},paddingBottom:function(){return dense?1.25:2.25;}}};
     }
     var summary=meta.summary,content=[{text:'Budget Export',fontSize:20,bold:true,color:ink,margin:[0,0,0,10]},
       table(['Budget','Subdivision Code','Territory','Exported','Current Final Budget'],[[summary.budgetLabel,summary.subdivisionCode,summary.territory,summary.exportedDate,money(summary.grandFinal)]],[230,72,100,134,110],4,4)];
@@ -70,19 +70,28 @@
       // The heading is part of the repeated table header, so page breaks never
       // strand a category label or lose its saved Final total.
       var heading=category.code+'  '+category.name+'  |  '+category.department+'  |  Final: '+money(category.final);
-      var node=table(['Code','Budget Item','Unit','Cost per Unit','Preliminary','Unapproved','Final','HCSS Actuals','GP Actuals','Notes'],category.entries.map(function(entry){var row=entry.row;return [row[5],row[6],row[7],row[8]===null?'':money(row[8]),money(row[9]),money(row[10]),money(row[11]),money(row[13]),money(row[14]),row[15]];}),[48,112,26,57,63,63,63,63,63,64],3,8);
+      var node=table(['Code','Budget Item','Unit','Cost per Unit','Preliminary','Unapproved','Final','HCSS Actuals','GP Actuals','Notes'],category.entries.map(function(entry){var row=entry.row;return [row[5],row[6],row[7],row[8]===null?'':money(row[8]),money(row[9]),money(row[10]),money(row[11]),money(row[13]),money(row[14]),row[15]];}),[44,126,26,62,60,60,60,60,60,134],3,8);
       node.table.body.unshift([{text:heading,colSpan:10,bold:true,fontSize:10,color:ink,fillColor:'#e5eef8'},{},{},{},{},{},{},{},{},{}]);
       node.table.headerRows=2;
       if(!category.entries.length)node.table.body.push([{text:'No Budget Items',colSpan:10,color:'#62758c'},{},{},{},{},{},{},{},{},{}]);
       content.push(node);
     });
-    content.push({text:'Budget Elements',pageBreak:'before',fontSize:16,bold:true,color:ink,margin:[0,0,0,10]});
-    ordered.forEach(function(category){category.entries.forEach(function(entry){
-      var node=table(['Element','Preliminary','Unapproved','Final','Approved Mods','Revised Final','HCSS Actuals','GP Actuals'],entry.elements.map(function(element){return [element[7]].concat(element.slice(8,15).map(function(value){return money(value,true);}));}),[126,78,78,78,78,78,78,78],1,7);
-      node.table.body.unshift([{text:entry.row[5]+'  '+entry.row[6]+'  |  '+category.name,colSpan:8,bold:true,fontSize:10,color:ink,fillColor:'#e5eef8'},{},{},{},{},{},{},{}]);
+    content.push({text:'Budget Elements',pageBreak:'before',fontSize:16,bold:true,color:ink,margin:[0,0,0,8]});
+    ordered.forEach(function(category){
+      if(!category.entries.length)return;
+      var detail=[];
+      category.entries.forEach(function(entry){entry.elements.forEach(function(element,index){
+        // Repeat the source code on every row so page continuations stay
+        // identifiable. Keep the full item name on its first element row.
+        detail.push([entry.row[5]+(index===0?'  '+entry.row[6]:'')].concat([element[7]],element.slice(8,15).map(function(value){return money(value,true);})));
+      });});
+      var node=table(['Code / Budget Item','Element','Preliminary','Unapproved','Final','Approved Mods','Revised Final','HCSS Actuals','GP Actuals'],detail,[146,90,65,65,65,65,65,65,65],2,8,true);
+      node.table.body.unshift([{text:category.code+'  '+category.name+'  |  '+category.department,colSpan:9,bold:true,fontSize:10,color:ink,fillColor:'#e5eef8'},{},{},{},{},{},{},{},{}]);
       node.table.headerRows=2;
+      node.table.body.slice(2).forEach(function(row,index){row[0].bold=index%5===0;if(Math.floor(index/5)%2===1)row.forEach(function(value){value.fillColor='#f5f8fc';});});
+      node.layout.hLineWidth=function(index){return index<2||((index-2)%5===0)?0.5:0.2;};
       content.push(node);
-    });});
+    });
     content.push({text:'Approval History',pageBreak:'before',fontSize:16,bold:true,color:ink,margin:[0,0,0,10]});
     var approvals=meta.approvals.map(function(row){return ['track','role','approver','status','respondedDate','notes'].map(function(key){return text(row[key]);});});
     content.push(table(['Track','Role','Approver','Status','Responded','Approval Notes'],approvals.length?approvals:[['No Approval History','','','','','']],[88,70,170,90,80,140],-1,-1));

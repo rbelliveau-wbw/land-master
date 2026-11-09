@@ -210,6 +210,13 @@ Budget's application-wide Export All Budgets action sits in the landing header
 beside Audit Log. Keep its loading/count feedback inside the same button and
 preserve the current report, filters and scroll. Download only after every native
 page has completed; a failed read leaves the same action available for retry.
+Budget PDFs use continuous element ledgers by category rather than repeating a
+complete table header for each item. Repeat category/column headings on page
+continuations and the saved cost code on every element row. Keep the full item
+name on its first element row, all five elements, all amount columns, notes,
+saved totals and approval history. Use tighter padding and wider Notes before
+reducing type size; the compact layout retains the existing 7.5pt body font.
+Alternate subtle item-group shading so the five-row blocks remain easy to scan.
 [Attachments](attachments.md) defines Legal's shared file workspace and the
 required main-list modal target. [Comments](comments.md) defines conversation
 surfaces, composer, activity states and interaction guards. Read the relevant

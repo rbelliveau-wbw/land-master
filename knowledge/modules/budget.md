@@ -1,3 +1,19 @@
+## Compact Manual PDF — 122.29.108, November 9, 2026
+
+Manual PDF uses a continuous element ledger for each category, repeating the
+category/column headings on page continuations and each item's saved cost code
+on all five element rows. Full item names remain on the first element row;
+alternating group shading makes the blocks readable. Tighter row padding,
+less inter-table spacing and a wider Notes column reduce page count without
+shrinking the existing 7.5pt font or dropping any data.
+
+The actual renderer regression compares every summary, item, element and
+approval cell against immutable 122.29.107. Its 227-item stress fixture shrinks
+from 99 to 44 pages, including a 15,000-character note. Read/upload permissions,
+native APIs, Excel and automatic approved PDFs retain their existing paths.
+No Creator deployment is required. Rollback: Budget Manager 122.29.107.
+See [compact PDF release notes](../../docs/budget-pdf-compact-2026-11-09.md).
+
 ## Deferred Reallocation Discussion — November 9, 2026
 
 **Status: On hold at the user's request pending internal discussion.**
