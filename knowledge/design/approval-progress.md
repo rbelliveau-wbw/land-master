@@ -269,3 +269,7 @@ no workbook attachment; existing Pending-approver mail keeps its attachment.
 See [the PO feature contract](../../docs/po-outcome-notifications-2026-11-10.md)
 for native claims, activity DTO/actions, configuration, verification and
 rollback. Native publication and release evidence remain separately recorded.
+
+### Legacy PO Rule Migration
+
+An existing PO policy whose saved route differs from the fixed VP → CFO → conditional COO route exposes Save Rule in its editor. Opening is read-only; Save Rule uses the existing audited save progress and retains the exact published policy ID, scope and enabled state. Already normalized rules retain ordinary inline saves.

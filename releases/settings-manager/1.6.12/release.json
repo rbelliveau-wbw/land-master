@@ -1,0 +1,8 @@
+{
+  "widget": "settings-manager",
+  "version": "1.6.12",
+  "created_at": "2026-11-10T21:07:38.120Z",
+  "source": "widgets/settings-manager/src/app/widget.html",
+  "source_sha256": "d9c44cb6d37f993940d96c997fc48a4c23b0ae484f58ac2a01295ab090586e03",
+  "status": "candidate"
+}

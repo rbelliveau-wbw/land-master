@@ -23,7 +23,7 @@ displayed net; the frontend includes it in the cache key and rejects a preview
 whose roles do not match VP → CFO → conditional COO.
 
 Settings normalizes legacy rules only in the editable draft and saves through
-the existing audited contract. Merely opening/testing does not persist edits.
+the existing audited contract. Merely opening/testing does not persist edits. An existing legacy PO rule exposes Save Rule so its normalized route can be explicitly applied through the same audited SavePolicy contract without temporarily disabling or rescoping the rule.
 Missing roles or invalid policies block saving/submission. PO order cannot be
 changed, disabled, or extended through the editor. Existing captured routes
 and decisions remain unchanged. Pending POs using the new rule cannot cross
@@ -41,7 +41,7 @@ submissions cannot use the obsolete exception.
   Approval_Route_Snapshot.Context_JSON/Route_JSON; Payment_Request PO fields;
   Budget_Modification amounts/types/components; Budget_Approvals execution.
   No new native form, field, report, or recipient list is required.
-- Candidates: Settings Manager 1.6.11 and Budget Manager 122.29.130.
+- Candidates: Settings Manager 1.6.12 and Budget Manager 122.29.130.
 
 Creator deployment is required. Compile/save the three functions in
 Development, and save the PO policy using the updated Settings editor. Verify
@@ -63,7 +63,7 @@ Completed checks: the full prevalidate, validate and postvalidate suites,
 `npm run build:pages` (35 environment paths), and diff whitespace checks.
 Desktop verification in the agent-owned browser confirmed the fixed editor
 sequence and $9,999/$10,000 Settings previews without live Creator writes.
-PMP promotes Settings 1.6.11 and Budget 122.29.130 in Development and
+PMP promotes Settings 1.6.12 and Budget 122.29.130 in Development and
 Production. Stage and unrelated widget mappings remain unchanged. Creator
 functions have been saved and compiled in Development. Creator promotion and
 the matching Production policy update are the next release steps.

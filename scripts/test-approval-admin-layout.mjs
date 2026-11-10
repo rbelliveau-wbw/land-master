@@ -37,3 +37,16 @@ reset(null);api.fixture({panel,card,config:clone(config),draft:clone(assignment)
 // Roles autosave and actor/session changes prevent delayed unsent writes.
 reset(null);api.fixture({panel,card,config:clone(config),draft:{id:'1',name:'CFO',active:true},editing:'Roles'});api.render();api.input(inlineField('name','Chief Financial Officer'));scope='different';await api.flushInline();assert.equal(calls.length,0);scope='same';await api.flushInline();assert.equal(calls[0].action,'SaveRole');assert.equal(api.state().inlineState,'Saved');
 console.log('Approval inline saves: coalesced edits, exact IDs, mounted form, incomplete creation, rules/roles/order, manual new rule, no-op, unknown read-only Check, rejected retry and session guards passed.');
+
+// A legacy PO draft is normalized without a write; Save Rule applies the exact
+// existing published policy through the normal audited request, without disabling it.
+const legacyPO={id:'4410926000005174032',workflow:'Purchase Order',territory:'',department:'',status:'Published',enabled:true,selfApproval:'Allow',steps:[{key:'vp',roleId:'2',order:1,condition:'Budget modification',enabled:true},{key:'cfo',roleId:'1',order:2,condition:'Always',enabled:true},{key:'coo',roleId:'3',order:3,condition:'Budget modification',enabled:true}]};
+const migrationConfig=clone(config);migrationConfig.policies=[clone(legacyPO)];reset(null);api.fixture({panel,card,config:migrationConfig});
+api.click({target:{dataset:{apEdit:legacyPO.id},closest(){return this;},hasAttribute(){return false;}}});
+assert.equal(calls.length,0,'Opening a legacy rule must not write or disable it');assert.match(node('footer').innerHTML,/data-ap-save>Save Rule/);
+assert.deepEqual(clone(api.state().draft.steps.map(s=>s.condition)),['Always','Always','At or above']);
+answer=p=>({contract:'approval-policy-v1',success:true,writeState:'verified',token:p.token,after:clone(p.data)});
+api.click({target:{dataset:{},closest(){return this;},hasAttribute:n=>n==='data-ap-save'}});await tick();await tick();
+assert.equal(calls.length,1);assert.equal(calls[0].action,'SavePolicy');assert.equal(calls[0].data.id,legacyPO.id);assert.equal(calls[0].data.enabled,true);assert.equal(calls[0].data.status,'Published');assert.equal(calls[0].data.steps[2].threshold,'10000.00');assert.equal(api.state().pending.after.id,legacyPO.id);
+const canonicalConfig=clone(migrationConfig);canonicalConfig.policies=[clone(calls[0].data)];api.fixture({panel,card,config:canonicalConfig,draft:clone(calls[0].data)});api.render();assert.doesNotMatch(node('footer').innerHTML,/data-ap-save/,'Already migrated policies retain normal inline saves');
+console.log('Legacy PO policy migration: explicit audited Save Rule, no open-time write, same Published ID, enabled throughout, canonical VP/CFO/COO and no repeat migration action passed.');
