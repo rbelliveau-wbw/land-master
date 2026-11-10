@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T23:19:26.734Z",
+  "generated_at": "2026-11-10T14:41:49.845Z",
   "widgets": [
     {
       "slug": "proforma-manager",
@@ -43,13 +43,13 @@
       "slug": "budget-manager",
       "name": "Budget Manager",
       "module": "budget",
-      "version": "122.29.122",
+      "version": "122.29.123",
       "description": "Budget management, approvals, attachments, and pro forma comparison.",
       "source_entry": "widgets/budget-manager/src/app/widget.html",
       "creator_package_manifest": "widgets/budget-manager/src/plugin-manifest.json",
       "baseline_zip": "widgets/budget-manager/baseline/budget_widget_v121_compact_comparison_metrics.zip",
       "html_title": "Budget Manager",
-      "source_sha256": "fc4d064e9cc8dad36237bb4767554b50aa068a97edece9733e1e06a1d828e23e",
+      "source_sha256": "22b988c4af324eb835e74800534f1d212abd5e167f6427cb109a50ac0ded34fe",
       "baseline_zip_sha256": "5391cbdbc78327452d6415f76d51e002f41c55fbb49c09d92484cf38595ece17",
       "plugin_manifest": {
         "service": "CREATOR",

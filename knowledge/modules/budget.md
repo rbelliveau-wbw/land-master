@@ -1,3 +1,12 @@
+## Eagle Prairie PO Check — 122.29.123, November 10, 2026
+
+Live line totals, grouped balances and temporary signed/zero-net allocation
+changes agree for the $167,122.50 Eagle Prairie Phase 01 PO. The saved record
+was restored without writes. Summary now uses two labeled metric columns at
+pane widths up to 440px so large currency values and cents do not overlap;
+wider panes retain the aligned grid. No Creator change is required. See
+[live calculations, regression scope and rollback](../../docs/eagle-prairie-po-verification-2026-11-10.md).
+
 ## Live PO Reallocation — 122.29.122, November 9, 2026
 
 PO Details, Approvers and Summary reflect allocation edits from the current

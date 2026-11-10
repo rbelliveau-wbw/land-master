@@ -32,6 +32,12 @@ added again. Preserve the allocation input/caret, summary disclosures/scroll,
 field-exit number motion and existing submission gates. These projections do not
 mutate financial balances, native expectations or saved records.
 
+PO Summary adapts to its pane width. At 440px or less, put the cost code or
+element name on its own row and the labeled metrics in two columns. Keep full
+currency values readable, including cents and signed Bud Mods; never squeeze
+them into overlapping columns or hide the labels on element metrics. Wider
+panes retain the aligned header/element grid and existing disclosures.
+
 ## Phase Request Rail
 
 The phase Requests tab uses the selected Connected Rail layout: one newest-first
