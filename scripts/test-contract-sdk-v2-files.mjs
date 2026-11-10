@@ -68,41 +68,16 @@ for(const envelope of [{code:3000,data:{content:'%PDF-1.7',status:'failure'}},{c
  const blob=await h.c.fileResponseToBlob(foreignBlob,'application/pdf');
  assert.deepEqual(Array.from(new Uint8Array(await blob.arrayBuffer())),Array.from(bytes),'cross-frame native Blob bytes retain their binary representation');
 }
-async function devExportFixture(env='development'){
+for(const env of ['', 'development', 'stage']){
  const h=await ready({realDOM:true,pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:env?'/environment/'+env:'',loginUser:'preview-actor@example.test'})}),f=files(h);
  h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
- h.c.configurePageReports({constructionReportScope:'construction'});
- h.c.document.referrer='https://creatorapp.zoho.com/wbdevelopment/environment/'+env+'/land-master/#Page:Construction';
- const id=await h.c.createContractAttachmentRecord(ID),row=h.reports.All_Attachments.find(row=>row.ID===id);row.File_field1={filepath:'1794323647620880_saved.pdf'};h.c.S.versions=structuredClone(h.reports.All_Attachments);
- const native=f.nativeCreate;h.api.invokeCustomApi=config=>String(config.api_name).replace(/_(DEV|STAGE)$/,'')===h.c.CFG.customApis.attachmentPreview?Promise.resolve({code:3000,details:{output:JSON.stringify({ok:false,message:'You do not have access to this attachment.'})}}):native(config);
- f.setReadResponse({unsupportedNativeContent:true});
- const requests=[];h.c.fetch=async(url,options)=>{requests.push({url,options});return {ok:true,blob:async()=>new h.c.Blob(['%PDF-1.7\nfixture'],{type:'application/pdf'})};};
- return {h,f,row,requests};
-}
-{
- const {h,f,row,requests}=await devExportFixture();
- const b64=await h.c.getVersionPdfBase64(row);assert.equal(atob(b64),'%PDF-1.7\nfixture');
- assert.equal(requests.length,1);const request=requests[0],url=new URL(request.url);
- assert.equal(url.origin,'https://creatorexport.zoho.com');assert.equal(url.pathname,'/wbdevelopment/land-master-development/report/Construction_Attachments/'+row.ID+'/File_field1/download-file');
- assert.equal(url.searchParams.get('filepath'),'/1794323647620880_saved.pdf');assert.equal(url.searchParams.get('mediaType'),'1');assert.equal(url.searchParams.has('digestValue'),false);assert.equal(request.options.credentials,'include');assert.equal(request.options.cache,'no-store');
- assert.equal(f.calls.filter(call=>['uploadFile','deleteAttachment'].includes(call.method)).length,0,'file reading cannot replay or delete an upload');
- h.c.fetch=async()=>({ok:true,blob:async()=>new h.c.Blob(['<!doctype html>Sign In'],{type:'text/html'})});
- await assert.rejects(h.c.getVersionPdfBase64(row),error=>/PDF bytes/.test(error.message),'authenticated HTML is never shown as a PDF');
-}
-for(const env of ['', 'stage']){
- const {h,row,requests}=await devExportFixture(env);await assert.rejects(h.c.getVersionPdfBase64(row));assert.equal(requests.length,0,'export fallback cannot change Production or Stage behavior');
-}
-{
- const {h,f,row,requests}=await devExportFixture();f.setReadResponse({code:2898,message:'Denied file'});
- await assert.rejects(h.c.getVersionPdfBase64(row));assert.equal(requests.length,0,'an actual native permission denial cannot use the content fallback');
-}
-{
- const {h,row,requests}=await devExportFixture();h.reports.All_Attachments[0].Contract1={ID:(BigInt(ID)+1n).toString()};
- await assert.rejects(h.c.getVersionPdfBase64(row));assert.equal(requests.length,0,'fresh native parent mismatch prevents any file fetch');
-}
-{
- const {h,row,requests}=await devExportFixture();h.c.fetch=async()=>{requests.push(true);h.c.LMRuntime.apply({envUrlFragment:'/environment/development',loginUser:'other-actor@example.test'});return {ok:true,blob:async()=>new h.c.Blob(['%PDF-1.7'])};};
- await assert.rejects(h.c.getVersionPdfBase64(row),/session changed/,'a changed actor cannot receive stale attachment bytes');assert.equal(requests.length,1);
+ const id=await h.c.createContractAttachmentRecord(ID),row=h.reports.All_Attachments[0];
+ row.File_field1={filepath:'1794323647620880_saved.pdf'};h.c.S.versions=structuredClone(h.reports.All_Attachments);
+ await h.c.getVersionPdfBase64(row);await h.c.getVersionBlob(row,'application/pdf');
+ const calls=f.calls.filter(call=>call.method==='attachmentPreview');assert.equal(calls.length,2);
+ for(const call of calls){assert.equal(call.config.payload.attachmentId,id);if(env==='development')assert.deepEqual(JSON.parse(call.config.payload.contractId),{contractId:ID,userAccessId:String(h.c.S.myAccessId)});else assert.equal(call.config.payload.contractId,ID,'Stage/Production keep the plain parent-ID API contract');}
+ if(env==='development'){h.c.LMRuntime.apply({envUrlFragment:'/environment/development',loginUser:'another-actor@example.test'});assert.equal(h.c.contractAttachmentPreviewArgs(row).contractId,ID,'stale access snapshots cannot select a demo actor');}
+ assert.equal(f.calls.filter(call=>['uploadFile','deleteAttachment'].includes(call.method)).length,0);
 }
 {
  const h=await ready({realDOM:true}),f=files(h),gate=deferred(),native=f.nativeUpload;

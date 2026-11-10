@@ -1636,7 +1636,7 @@ Rollback Development to 1.62.61 (upload works; prior preview limitation returns)
 ## Development Attachment Export Fallback — 1.62.64, November 10, 2026
 
 The native Creator viewer opened the saved QA PDF (36 pages), while FILE.readFile
-returned an unreadable object in Development View as. Read conversion now accepts
+returned unreadable content in Development View as. Read conversion now accepts
 cross-frame Blob/File objects without altering bytes. For Construction Development
 only, the existing preview API's exact owner-context denial plus an unreadable SDK
 reply permits Budget Manager's proven authenticated Creator export route. A fresh
@@ -1653,3 +1653,35 @@ native permission denial, Stage/Production exclusion and zero upload/delete repl
 Full repository validation and Pages build precede native PDF acceptance testing.
 Rollback Development to 1.62.63; upload remains working with the earlier preview
 limitation. Preserve independently promoted Production releases.
+
+Live acceptance of 1.62.64 found a 297,453-character SDK string that cannot retain
+the PDF's binary bytes, plus a browser-blocked export fetch. That export fallback
+is removed in 1.62.65; it is not the accepted preview solution.
+
+## Development Preview Actor — 1.62.65, November 10, 2026
+
+With explicit user approval, getContractAttachmentPreview now reuses the already
+deployed constructionReviewActor resolver for Development Construction preview.
+The widget passes its current authenticated User Access ID inside the existing
+string contractId argument, alongside the exact parent ID. The resolver permits
+View-as selection only for the native owner in Development; ordinary callers
+retain their own identity. The backend then checks the exact attachment/parent,
+Construction module and existing hasConstructionPermission grants before encoding
+the saved file. No grants or field permissions change. Plain ID requests retain
+their existing behavior, and actor envelopes are rejected outside Development.
+
+The approved function was saved in Creator Development and independently reloaded;
+its tokenized body matches the checked-in patch. The Custom API signature and
+binding remain unchanged. Production/Stage Creator functions are not promoted.
+Development frontend 1.62.65 sends this context for both Preview and Download;
+other modules/environments retain the plain parent-ID payload. The failed export
+fallback is removed; unknown/binary SDK formats are not guessed into PDF bytes.
+
+Regression: actual-source payloads for Preview/Download in all three environments,
+stale actor exclusion, translated native function tests for exact saved base64,
+owner-only Dev actor selection, denied users, wrong parent/module, Stage/Production
+compatibility, no preview writes, full validation and Pages build. Native final
+acceptance requires opening the uploaded QA PDF through the widget after reload.
+Rollback: Development frontend to 1.62.63 and restore the backed-up Development
+getContractAttachmentPreview body; upload remains functional. Production stays at
+its independently promoted version.

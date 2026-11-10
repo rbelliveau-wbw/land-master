@@ -1985,16 +1985,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.64"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.64">
-<script src="interaction-motion.js?v=1.62.64"></script>
-<script src="interaction-surfaces.js?v=1.62.64"></script>
-<script src="number-edit-commit.js?v=1.62.64"></script>
-<script src="number-transitions.js?v=1.62.64"></script>
-<script src="number-surfaces.js?v=1.62.64"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.64">
-<link rel="stylesheet" href="report-layout.css?v=1.62.64">
-<link rel="stylesheet" href="construction-board.css?v=1.62.64">
+<script src="success-feedback.js?v=1.62.65"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.65">
+<script src="interaction-motion.js?v=1.62.65"></script>
+<script src="interaction-surfaces.js?v=1.62.65"></script>
+<script src="number-edit-commit.js?v=1.62.65"></script>
+<script src="number-transitions.js?v=1.62.65"></script>
+<script src="number-surfaces.js?v=1.62.65"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.65">
+<link rel="stylesheet" href="report-layout.css?v=1.62.65">
+<link rel="stylesheet" href="construction-board.css?v=1.62.65">
 </head>
 <body>
 
@@ -2043,7 +2043,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.64", pageSize: 200, maxPages: 25,
+  version: "1.62.65", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -8460,9 +8460,16 @@ function blobToBase64(blob){
    rendering - so it serves any file type, not just the PDFs it was first added
    for. It is now the primary source for every attachment read, with readFile kept
    only as the fallback for the admins who do have API access.                  */
+function contractAttachmentPreviewArgs(v){
+  var cid=contractFileParent(v),args={contractId:String(cid),attachmentId:String(v.ID)},scope=contractMutationScope();
+  if(LMRuntime.current().environment==='DEVELOPMENT'&&constructionMode()&&constructionAccess()&&
+     S.contractCoreScope===scope&&S.contractAccessScope===scope&&workVisible(findContract(cid))&&contractId(String(S.myAccessId||'')))
+    args.contractId=JSON.stringify({contractId:String(cid),userAccessId:String(S.myAccessId)});
+  return args;
+}
 function getVersionApiBase64(v){
   var cid=lookupId(v.Contract1);
-  return invokeContractAttachmentApi("attachmentPreview",{contractId:String(cid),attachmentId:String(v.ID)})
+  return invokeContractAttachmentApi("attachmentPreview",contractAttachmentPreviewArgs(v))
     .then(function(payload){
       /* the bytes are the contract - ok can come back as the string "true" */
       if(payload&&payload.base64) return normalizeBase64(payload.base64);
@@ -8471,35 +8478,6 @@ function getVersionApiBase64(v){
 }
 /* Blob for any attachment: admin-scope API, then readFile, and it is the caller's
    job to decide what to do when both are refused. */
-function contractDevAttachmentExportBlob(v,mime,apiErr,readErr){
-  if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||
-     !apiErr||apiErr.message!=='You do not have access to this attachment.'||
-     /^(1060|1130|2896|2897|2898|2899|3830)$/.test(String(readErr&&readErr.code||'')))return Promise.reject(readErr);
-  var scope=contractMutationScope(),id=contractId(v&&v.ID),cid=contractFileParent(v);
-  if(!S.liveSDK||!id||!cid||S.contractCoreScope!==scope||!workVisible(findContract(cid)))return Promise.reject(readErr);
-  var attempt={scope:scope,id:id,cid:cid};
-  // Reuse Budget's authenticated Creator export route, after a fresh scoped read.
-  return contractFileReadback(attempt).then(function(row){
-    if(scope!==contractMutationScope()||!workVisible(findContract(cid)))throw new Error('Creator session changed before reading the attachment.');
-    var nativeUrl=versionPreviewUrl(row);if(!nativeUrl)throw new Error('The attachment file path is unavailable.');
-    var url=new URL(nativeUrl);
-    if(url.origin!==new URL(CFG.creatorHost).origin)throw new Error('The attachment host is unavailable.');
-    url.hostname='creatorexport.zoho.com';url.searchParams.delete('digestValue');url.searchParams.delete('isPreview');url.searchParams.set('mediaType','1');
-    return LMData.request('contracts:file-export',function(){
-      if(scope!==contractMutationScope())throw new Error('Creator session changed before reading the attachment.');
-      return fetch(url.href,{method:'GET',credentials:'include',cache:'no-store',redirect:'follow',headers:{Accept:'application/pdf,application/octet-stream,*/*'}});
-    });
-  }).then(function(response){
-    if(scope!==contractMutationScope())throw new Error('Creator session changed while reading the attachment.');
-    if(!response.ok)throw new Error('Creator file request failed ('+response.status+').');
-    return response.blob();
-  }).then(function(blob){
-    if(scope!==contractMutationScope())throw new Error('Creator session changed while reading the attachment.');
-    if(!blob||!blob.size)throw new Error('Creator returned an empty attachment.');
-    if(mime==='application/pdf')return blobToBase64(blob).then(normalizePdfBase64).then(function(){return blob;});
-    return blob;
-  });
-}
 function getVersionBlob(v,mime){
   return getVersionApiBase64(v)
     .then(function(b64){ return base64ToBlob(b64,mime); })
@@ -8510,18 +8488,16 @@ function getVersionBlob(v,mime){
         .catch(function(readErr){
           /* both sources refused - say which, on screen and in the audit log,
              instead of reporting only the second failure */
-          return contractDevAttachmentExportBlob(v,mime,apiErr,readErr).catch(function(exportErr){
-            var why="API: "+errText(apiErr)+" \u00b7 readFile: "+errText(readErr);
-            if(exportErr!==readErr)why+=" \u00b7 Creator file: "+errText(exportErr);
-            auditLog("error","Attachment bytes unavailable",{versionId:String(v.ID),api:errText(apiErr),readFile:errText(readErr),creatorFile:exportErr!==readErr?errText(exportErr):''});
-            throw {message:why};
-          });
+          var why="API: "+errText(apiErr)+" \u00b7 readFile: "+errText(readErr);
+          auditLog("error","Attachment bytes unavailable from both sources",
+            {versionId:String(v.ID),api:errText(apiErr),readFile:errText(readErr)});
+          throw {message:why};
         });
     });
 }
 function getVersionPdfBase64(v){
   var cid=lookupId(v.Contract1);
-  return invokeContractAttachmentApi("attachmentPreview",{contractId:String(cid),attachmentId:String(v.ID)})
+  return invokeContractAttachmentApi("attachmentPreview",contractAttachmentPreviewArgs(v))
     .then(function(payload){
       if(!payload||!payload.base64) throw {message:(payload&&payload.message)||"Preview API unavailable."};
       return normalizePdfBase64(payload.base64);
@@ -8530,8 +8506,7 @@ function getVersionPdfBase64(v){
       diag("Preview custom API unavailable, falling back to readFile",apiErr);
       return sdkReadVersionFile(v.ID)
         .then(function(resp){ return fileResponseToBlob(resp,"application/pdf"); })
-        .then(function(blob){ return blobToBase64(blob).then(normalizePdfBase64); })
-        .catch(function(readErr){return contractDevAttachmentExportBlob(v,"application/pdf",apiErr,readErr).then(blobToBase64).then(normalizePdfBase64);});
+        .then(function(blob){ return blobToBase64(blob).then(normalizePdfBase64); });
     });
 }
 function renderPdfIsolated(base64,name,vid){
