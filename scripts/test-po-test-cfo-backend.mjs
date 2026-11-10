@@ -6,7 +6,7 @@ import {verifyPODownload} from './lib/po-download-roundtrip.mjs';
 
 // Execute the checked-in Deluge functions against local records. This harness
 // verifies behavior; it does not replace native Creator compilation or email QA.
-const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','poActorResponse','handlePurchaseOrderApproval','sendPurchaseOrderEmail','poExcelWorkbook','poValidatePayload','managePurchaseOrder'];
+const names=['approvalConfigurationSnapshot','resolveApprovalRoute','manageApprovalPolicies','poApprovalBundle','poEmailCanViewActivity','poEmailCanReadPO','poActorResponse','handlePurchaseOrderApproval','activityEmailClaim','sendPurchaseOrderEmail','poExcelWorkbook','poValidatePayload','managePurchaseOrder'];
 const source=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
 // Creator keeps native record iterator types across branches. Reusing one for a
 // function-result map compiles but fails at runtime; JS alone cannot model it.
@@ -37,7 +37,7 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   const tables={Approval_Policy:[clone(policyRow)],Approval_Role:[{ID:1,Role_Name:'CFO',Active:true}],Approval_Role_Assignment:[{ID:21,Role:1,Company:31,Person:12,Active:true,Territory_Key:'',Department_Key:'',Effective_From:null,Effective_To:null}],User_Access:users||[{ID:19,User:'test-owner',Full_Name:'Robby Belliveau',Approver_Email:'legal@example.com',Approval_Routing_Enabled:false},{ID:12,User:'normal-cfo',Full_Name:'Normal CFO',Approver_Email:'normal@example.com',Approval_Routing_Enabled:true}],Territory:[],Company:[{ID:31}],Add_Budget:[{ID:61}],Approval_Config_Audit:[],Approval_Config_Lock:[],PO_Phase_Lock:[],PO_Item:[],PO_Operation:[],Budget_Modification:[],Budget_Approvals:[],Payment_Request:[],Approval_Route_Snapshot:[],...clone(extraTables)};
   const c=vm.createContext({tables:clone(tables),payload:clone(context),login,environment,mailFailure,deleteFailure});
   vm.runInContext(`
-  tables=JSON.parse(JSON.stringify(tables));payload=JSON.parse(JSON.stringify(payload));
+  tables=JSON.parse(JSON.stringify(tables));tables.Activity_Log=[];payload=JSON.parse(JSON.stringify(payload));
   function map(v){if(!v||typeof v!=='object'||Object.prototype.hasOwnProperty.call(v,'get'))return v;if(Array.isArray(v))return v.map(map);for(var k of Object.keys(v))v[k]=map(v[k]);Object.defineProperties(v,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=map(v);}},remove:{value:function(k){delete this[k];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});return v;}
   function Map(){return map({});}function List(){return [];}function ifnull(v,f){return v==null?f:v;}function choose(c,a,b){return c?a:b;}
   function recordValues(...pairs){var data={};for(var i=0;i<pairs.length;i+=2)data[pairs[i]]=pairs[i+1];return map(data);}
@@ -56,6 +56,11 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   // New read-only element producer has its own actual-source fixture; these
   // older authorization/delivery cases retain their original PO-shaped tables.
   thisapp.poElementExportRows=function(){return [];};
+  // Outcome recipient/claim execution has its own actual-source native-shaped
+  // fixture. Keep this older policy/financial fixture focused on its boundary.
+  thisapp.poOutcomeNotificationStatus=function(){return map({contract:'po-outcome-email-v1',state:'Not Started',emailSent:false,canRetryEmail:false,events:[]});};
+  thisapp.sendPurchaseOrderOutcomeEmail=thisapp.poOutcomeNotificationStatus;
+  zoho.currenttime={toString(){return '2026-11-10T10:30:00-06:00';},toDate(){return '2026-11-10';}};
   var request=map(payload);
   thisapp.environment={type:environment};
   thisapp.permissions={profileForUser(){return '';}};
@@ -126,9 +131,10 @@ const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_D
 // Actual native element data selection/math is tested separately, so inject its
 // documented readonly DTO here without changing these older approval fixtures.
 r=runtime({extraTables:emailTables});
-vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?55:0,index===4?10:100]})));};`,r.c);
+vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),costCode:'0032<&',values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?55:0,index===4?10:100]})));};`,r.c);
 assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
 for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.content.includes(label));}
+assert.match(r.c.mails[0].message,/Cost Code/);assert.equal((r.c.mails[0].message.match(/0032&lt;&amp;/g)||[]).length,5,'preserve the independently captured native Cost Code column on every element row');
 assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.content,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
 assert.equal(r.c.mails[0].to,testCFO.email);assert.equal(r.c.mails.length,1);assert.equal(r.tables().PO_Item[0].Cost_Element,'5','outbound labels never change stored picklist codes');
 await verifyPODownload({...r.run('poExcelWorkbook','51'),id:'51',budgetId:'61'});

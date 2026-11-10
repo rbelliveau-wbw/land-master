@@ -1,0 +1,35 @@
+{
+  "function": "managePurchaseOrder",
+  "verification": "Complete actual-AX reopened native source comparison",
+  "supersedes_earlier_clipboard_based_comparison": true,
+  "byte_equal": false,
+  "name": "managePurchaseOrder",
+  "source": "creator/functions/managePurchaseOrder.dg",
+  "source_sha256": "48ae52462b027393882e12c9e5d706fb203b5e8ab4add1ed414ad40f42c104f1",
+  "native_capture": "evidence/functions/managePurchaseOrder.native.dg",
+  "native_capture_sha256": "531d854881c75c73ea64028b0d7b318344272be7346ef5fbf849c7a9a6ba1fd8",
+  "strict_code_tokens_equal": false,
+  "all_string_literals_equal": true,
+  "source_string_literal_count": 1139,
+  "native_string_literal_count": 1139,
+  "exact_formatter_allowances": [
+    {
+      "source": "Payment_Request[(BudgetinlistBudgetNumbers)&&",
+      "native": "Payment_Request[BudgetinlistBudgetNumbers&&",
+      "occurrences": 1
+    },
+    {
+      "source": ".Vendor.getAll()",
+      "native": ".Vendor.getall()",
+      "occurrences": 1
+    },
+    {
+      "source": "if(reviewedDelta<0&&(0-reviewedDelta>beforeComponent-currentComponent-otherComponentReduction))",
+      "native": "if(reviewedDelta<0&&0-reviewedDelta>beforeComponent-currentComponent-otherComponentReduction)",
+      "occurrences": 1
+    }
+  ],
+  "complete_code_equal_after_exact_allowances": true,
+  "all_other_code_tokens_match_after_exact_allowances": true,
+  "note": "Only the three individually listed harmless native formatting deltas are accepted. Boolean authorization/finalization grouping was hardened before this capture. No controller write or live email was executed by this comparison."
+}

@@ -1,5 +1,36 @@
 # Settings Manager
 
+## Pending Release — PO Outcome Notifications
+
+**Modules → Purchase Orders** adds Approved Notification Recipients and Rejected
+Notification Recipients. Both use the existing searchable User Access picker
+and native Settings autosave path. They accept name-and-email contacts with a
+blank Creator User and do not require Approval Routing Enabled. The final
+outcome helper also includes the PO territory's **Construction PM**, assigned
+on the native Territory record. These lists do not add approval steps.
+
+User Access keeps Full Name and Approver Email mandatory; User becomes optional.
+A row without a login is a notification contact, with no application or approval
+grants. New approver choices exclude blank-login contacts, and route validation
+continues to require a real login. Selecting notification contacts never creates
+or edits User Access records. Previously saved unresolved IDs remain selected;
+new choices need a valid email and a complete authorized roster read.
+
+The new fields were saved in the Development form builder on November 10, 2026.
+The owner's private Development setup configured approved notifications to Sam,
+Sokha, Kimberly and Michael, and rejected notifications to Sam. Native Apply and
+a later read-only Check confirmed the four contact identities and recipient
+counts with no retained lock; no email was sent. Construction PM assignment
+remains explicit on each Territory. See the
+[native setup record](../../creator/schema-changes/po-outcome-activity-2026-11-10/setup-verification.json).
+The reusable Activity Log, backend functions, profile restrictions and runtime
+delivery checks have their own installation status; this README does not claim
+that they are published or live in Production. See the
+[schema and installation package](../../creator/schema-changes/po-outcome-activity-2026-11-10/README.md)
+and its native installation evidence. Local regression coverage includes the
+whole Settings picker/autosave flow with native lookup shapes and email-only
+contacts. Native publication remains separate from a widget release.
+
 ## 1.6.8 — Five-Hour Shared Cycle
 
 Automation now describes the shared five-hour schedule and batch rotation. Its
@@ -78,6 +109,7 @@ widget URL unchanged. Repository-wide validation and Pages build are required be
 | Modules | Forecasting | Forecasting window and global unlock switches |
 | Modules | Contracts & Legal | Legal notification recipients and builder contract templates |
 | Modules | Budget | Retained legacy COO threshold and `Multi_Line` free text |
+| Modules | Purchase Orders | Approved/rejected notification recipient lookups; territory Construction PM is added by the outcome helper |
 | Modules | Pro Forma Defaults | Eight percentage defaults and current blank-default count |
 | Modules | Construction Curves | Monthly cost distribution grouped by curve length |
 | AI & Data | AI Review | Pro Forma criteria, provider, model and criteria timestamp |
@@ -121,7 +153,7 @@ continue sharing the existing provider/model settings.
 | Report | `All_Contract_Approvals` | `Builder_Approval_Template` choices |
 | Report | `All_Contract_Actions` | `Builder_Contract_Action_Template` choices |
 | Report | `All_Pro_Formas` | Curve-row `Pro_Forma` choices |
-| Form | `User_Access` | Approval identities and workflow failure recipients |
+| Form | `User_Access` | Authenticated approval identities and name/email-only notification contacts |
 | Report | `Workflow_Run_Log_Report` | Read-only Workflow Log |
 
 Settings and curves use native `ZOHO.CREATOR.DATA` SDK2 methods. Approval
@@ -136,6 +168,13 @@ Multiple records retain the duplicate warning and selected-record identity
 protection. Curves are child records with the existing `Settings` back-pointer,
 rather than a nested Settings subform payload. A missing parent link can cause
 `Delete_Orphaned_Objects` to reap a curve row.
+
+Purchase Order outcome settings require `PO_Approved_Recipients` and
+`PO_Rejected_Recipients` to be returned by `All_Settings`. Missing fields stay
+unavailable; loading Settings never seeds defaults or drops saved selections.
+Keep current Settings and User Access report scope; no new ordinary-profile
+roster grants are required. The budget Activity Log view reads through the
+authenticated PO controller rather than raw User Access or log reports.
 
 ## Current approval configuration
 

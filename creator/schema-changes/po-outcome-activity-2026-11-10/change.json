@@ -1,0 +1,47 @@
+{
+  "change": "po-outcome-activity-2026-11-10",
+  "status": "source-candidates-live-evidence-tracked-separately",
+  "generated_metadata_refreshed": false,
+  "source_authority": "Committed 2026-10-21 Development export and native Development builder inspection on 2026-11-10. These additive definitions do not replace whole current forms.",
+  "live_evidence": "native-install-progress.json",
+  "new_form": {
+    "link_name": "Activity_Log",
+    "display_name": "Activity Log",
+    "definition": "Activity_Log.form.ds",
+    "generic_identity": "Object_Type/Object_ID and Context_Type/Context_ID are text, so future processes can link other object types without PO-specific lookup columns.",
+    "claim_contract": "Claim_Key is required with native No Duplicate Values. Only a successful unique insert owns an email send attempt.",
+    "history_contract": "Retain every send and retry attempt. Status/stamps change only through the authenticated server helper; retries append a new attempt, never overwrite an earlier attempt.",
+    "status_choices": ["Preparing","Sending","Sent","Failed","Unknown","Skipped"],
+    "required_fields": ["Claim_Key","Object_Type","Object_ID"],
+    "system_fields": ["ID","Added_User","Added_Time","Modified_User","Modified_Time"],
+    "validate_action": "Activity_Log.validate.dg",
+    "delete_validate_action": "Activity_Log.delete.dg"
+  },
+  "settings_fields": [
+    {"link_name":"PO_Approved_Recipients","display_name":"Approved Notification Recipients","type":"list","lookup_form":"User_Access","mandatory":false},
+    {"link_name":"PO_Rejected_Recipients","display_name":"Rejected Notification Recipients","type":"list","lookup_form":"User_Access","mandatory":false}
+  ],
+  "territory_field": {"link_name":"Construction_PM","display_name":"Construction PM","type":"picklist","lookup_form":"User_Access","cardinality":"single","mandatory":false,"assignment":"Existing native Territory edit form; never add a PM approval-role step."},
+  "lookup_display": "Full_Name + ' - ' + Approver_Email",
+  "user_access": {
+    "optional_field": "User",
+    "keep_mandatory": ["Full_Name","Approver_Email"],
+    "preserve_defaults": "All existing permission checkboxes and Approval_Routing_Enabled remain false by default.",
+    "native_validation_candidate": "User_Access.validate.dg",
+    "validation_rule": "Blank User can appear on multiple notification contacts. Duplicate-login checks run only for a nonblank User. A blank User cannot have approval routing enabled.",
+    "existing_workflow": "Current live builder exposes Retire Modification Permission on load. Preserve it; no User autofill was observed. Verify any concurrent workflows before installation."
+  },
+  "seed": "contacts.json",
+  "verified_development_setup": "setup-verification.json",
+  "development_setup_utility": {
+    "function": "setupPurchaseOrderNotifications",
+    "source": "../../functions/setupPurchaseOrderNotifications.dg",
+    "argument": "action: string; Check or Apply only",
+    "scope": "Authenticated application owner in Development only; no Custom API or automatic workflow",
+    "effects": "Check is read-only. Explicit Apply reuses exact contact emails, creates missing notification-only contacts and sets empty/already-intended Settings lists. No email, native account, permission, Construction PM or Production changes.",
+    "native_lock": "Existing Approval_Config_Lock with dedicated unique Lock_Key po-notification-setup",
+    "test": "scripts/test-po-notification-setup.mjs"
+  },
+  "permissions": "permissions.json",
+  "reports": "reports.json"
+}

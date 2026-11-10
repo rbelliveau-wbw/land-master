@@ -221,3 +221,51 @@ Construction **View Rejection** and read-only **Check Status** use checking/load
 stage labels and **Rejection Details** on success. They must not present a saved
 decision read as a new rejection or a new notification send. Patch the mounted
 stage labels when a guarded email retry changes the action.
+
+## PO Outcome Notifications — November 10, 2026
+
+Final PO Approved/Rejected decisions have separate outcome mail. Keep existing
+decision, chain, reserved commitment, financial and phase-lock predicates. Start
+outcome mail only after a verified terminal decision releases its lock; a mail
+problem leaves that decision saved. Intermediate approvals retain the existing
+next-Pending-approver email path. Read-only CheckDecision never starts outcome
+mail or repeats finalization.
+
+Terminal success may say **Outcome notifications sent** only when the exact
+PO/Budget/revision outcome snapshot has `contract: po-outcome-email-v1`,
+`state: Sent`, `emailSent: true` and stamped send evidence. API success or the
+Approved/Rejected parent alone proves no email success. A missing, Failed,
+Partial, Preparing or Unknown notification keeps the saved decision visible and
+offers **Email Activity**, with the final stage **Confirm Outcome Email** marked
+for attention. Sent means Creator accepted the send request, not recipient
+delivery/read. A stamped Skipped address can reuse an already confirmed send.
+
+Activity retry is distinct from approving/rejecting again. Only the latest
+confirmed Failed recipient attempt in the same revision and with a server
+grant exposes Retry Email. Capture the exact activity/operation and stable
+`recipientKey`; an address corrected after failure cannot inherit another
+recipient's sent status. Configuration-only failures reconcile their newly
+captured plan as a whole. Sending/Unknown/Preparing never permits blind resend.
+A lost retry reply retains its operation through close/reopen and offers
+read-only Check Status. That read uses checking labels rather than pretending
+to send another notification.
+
+Every settled email result, including Unknown, offers **Back To Activity**.
+Return to the history list and refresh it read-only; do not trap the Budget log
+behind a retained result screen. Close clears result presentation, so reopen
+also shows history. Retain exact unresolved identities per recipient/operation
+across other row actions and replacement reads. Only that unresolved target is
+Check-only; other confirmed Failed recipients remain usable. A lost initial or
+plan-level send retains its aggregate no-replay guard until an exact check.
+
+A server-confirmed Not Started outcome may expose an explicit initial retry.
+An interrupted plan with `canResumeEmail` and its exact plan ID may expose
+Resume Outcome Emails for never-claimed recipients only; it cannot replay
+existing attempts. Retain compact mounted progress, pending close/duplicate
+locks, inert background, focus/Escape behavior, truthful phases and display-only
+pacing/reduced motion. The outcome email contains concise cost-code totals and
+no workbook attachment; existing Pending-approver mail keeps its attachment.
+
+See [the PO feature contract](../../docs/po-outcome-notifications-2026-11-10.md)
+for native claims, activity DTO/actions, configuration, verification and
+rollback. Native publication and release evidence remain separately recorded.

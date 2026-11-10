@@ -125,3 +125,25 @@ Insights 1.7.0 registers beBody in the shared keyed-list registry with visibilit
 changes enabled. Subdivision/category disclosures retain real rows, focus and
 scroll. The report pane and scalar values reuse shared panel and Sliding Push
 behavior. Actor/access resets clear old state before a new reveal.
+
+## PO Email Activity Adoption — November 10, 2026
+
+Budget's persistent PO Email Activity uses semantic dialog/details surfaces,
+keyed `[data-po-activity-id]` rows in `.po-activity-list`, and the shared panel,
+feedback and meter annotations. Scope row history to the current Budget and
+exact authenticated `myAccessId`; native IDs/dates and immutable attempt numbers
+stay static. Refresh patches status while retaining complete authorized rows,
+open disclosures, scroll and focus until the real replacement arrives. Actor,
+permission, environment or Budget changes clear/close the old surface.
+
+Explicit email retry/check changes the same mounted compact progress shell;
+patch its rows and actual meter rather than replacing the dialog or using
+elapsed time as send proof. Requests start immediately. Pending close/duplicate
+controls remain locked; readable display pacing respects reduced motion.
+Closing removes the original surface immediately and restores the opener.
+Settled email results return to history through Back To Activity without losing
+per-target unknown/no-replay state; Close/reopen restores the list rather than
+remounting an old result. Preserve the existing rows during its scoped read.
+Source checks and deterministic actual-module fixtures cover these guards;
+desktop/native release evidence is recorded separately in the
+[feature contract](../../docs/po-outcome-notifications-2026-11-10.md).

@@ -225,7 +225,28 @@ for(const workflow of currentWorkflows.values()){
 }
 for(const f of pageDeployment.functions){
  assert.equal(f.savedAndReloaded,true,`${f.name}: independently reselected`);
- let current=read(f.source);
+ let current=read(f.source).replace(/\r\n/g,'\n');
+ if(['getUserAccess','getUserAccessLean'].includes(f.name)){
+  // The historical Construction capture predates notification-only contacts.
+  // Unwrap only this exact, separately behavior-tested blank-login guard;
+  // every original roster statement, literal and permission remains compared.
+  const originalRoster=[
+   '\t\tm = Map();',
+   '\t\tm.put("id",r.ID.toString());',
+   '\t\tm.put("label",r.User.toString());',
+   '\t\tm.put("email",r.User.toString());',
+   '\t\tm.put("userName",r.User.toString());',
+   '\t\tm.put("approverEmail",ifnull(r.Approver_Email,"").toString().trim());',
+   '\t\tm.put("fullName",ifnull(r.Full_Name,"").toString().trim());',
+   '\t\tuserList.add(m);'
+  ].join('\n');
+  const wrappedRoster='\t\t// Name/email-only notification contacts are not login/owner choices.\n'
+   +'\t\t// Settings notification pickers read their own authorized contact report.\n'
+   +'\t\tif(ifnull(r.User,"").toString().trim() != "")\n\t\t{\n'
+   +originalRoster.replace(/^\t\t/gm,'\t\t\t')+'\n\t\t}';
+  assert.equal(current.split(wrappedRoster).length-1,1,`${f.name}: exact separately tested notification-contact wrapper occurs once`);
+  current=current.replace(wrappedRoster,originalRoster);
+ }
  // Budget Exceptions is independently tested; remove only its exact additions
  // before comparing the older native Construction capture below.
  if(['getUserAccess','getUserAccessLean'].includes(f.name))current=current
@@ -239,7 +260,7 @@ for(const f of pageDeployment.functions){
   .replace('\tforecastsDashboard = false;\n','')
   .replace('\t\tforecastsDashboard = row.Forecasts_Dashboard == true;\n','')
   .replace('\tresult.put("forecastsDashboard",forecastsDashboard);\n\tif(forecastsDashboard)\n\t{\n\t\tresult.put("today",zoho.currentdate.toString("yyyy-MM-dd"));\n\t}\n','');
- assert.equal(canonicalDeluge(read(f.evidence)),canonicalDeluge(current),`${f.name}: native Construction body and literals match outside the audited Forecasts additions`);
+ assert.equal(canonicalDeluge(read(f.evidence)),canonicalDeluge(current),`${f.name}: native Construction body and literals match outside the separately tested Forecasts and contact-roster additions`);
 }
 const nativeParent=read(currentWorkflows.get('Field_Validations_Contrac').evidence);
 assert.doesNotThrow(()=>runValidation(null,request({Parent_Contract:21,Builder:101}),{...scope,Contract:[{ID:21,Work_Module:'Construction',Parent_Contract:null,Contract_Type:'Offsite',Builder:202,Project:404}],User_Access:[grants({edit:true})]},nativeParent),'native formatter preserved non-Lot parent semantics');

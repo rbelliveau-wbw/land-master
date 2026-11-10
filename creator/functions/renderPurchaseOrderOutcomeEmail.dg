@@ -1,0 +1,28 @@
+map renderPurchaseOrderOutcomeEmail(map content)
+{
+	result = {"success":false};
+	try
+	{
+		// Render only captured facts. The immutable plan stores no repeated HTML
+		// markup, keeping all cost-code totals well below the native text limit.
+		outcome = content.get("outcome");
+		if(outcome != "Approved" && outcome != "Rejected") { return result; }
+		phase = ifnull(content.get("phaseName"),"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		vendor = ifnull(content.get("vendorName"),"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		amount = content.get("amount").toDecimal().text("$#,##0.00");
+		badgeColor = "#087653"; badgeBackground = "#ecf9f2"; confirmation = "All required approvals are complete.";
+		if(outcome == "Rejected") { badgeColor = "#a12e3e"; badgeBackground = "#fff0f1"; confirmation = "This purchase order was rejected."; }
+		body = "<div style='background:#f0f3f7;padding:24px;font-family:Arial,Helvetica,sans-serif;color:#17304c'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:600px;margin:auto;background:#fff;border:1px solid #e4e9ef;border-radius:7px'><tr><td style='background:#15365f;color:#fff;padding:18px 28px;font-size:12px;letter-spacing:2px;font-weight:bold'>LAND MASTER <span style='float:right;font-size:10px;letter-spacing:1px;font-weight:normal'>PURCHASE ORDERS</span></td></tr><tr><td style='padding:28px'><span style='display:inline-block;padding:5px 9px;border-radius:4px;background:" + badgeBackground + ";color:" + badgeColor + ";font-size:11px;font-weight:bold;letter-spacing:1px'>" + outcome.toUpperCase() + "</span><h1 style='font-size:25px;margin:15px 0 6px'>Purchase order " + outcome.toLowerCase() + "</h1><div style='font-size:14px;color:#64748b'>" + phase + "</div><div style='margin-top:25px;font-size:11px;color:#64748b'>PO amount</div><div style='font-size:36px;font-weight:bold;margin-top:3px'>" + amount + "</div><p style='font-size:12px;color:#64748b;margin:8px 0 22px'>" + confirmation + "</p><table cellpadding='0' cellspacing='0' style='width:100%;font-size:12px;border-top:1px solid #e4e9ef;border-bottom:1px solid #e4e9ef'><tr><td style='padding:12px 0;color:#64748b'>Purchase order</td><td align='right'>" + content.get("objectId") + "</td></tr><tr><td style='padding:0 0 12px;color:#64748b'>Vendor</td><td align='right' style='padding:0 0 12px 18px'>" + vendor + "</td></tr></table><h2 style='font-size:13px;margin:22px 0 9px'>Cost Code Summary</h2><table cellpadding='0' cellspacing='0' style='width:100%;font-size:12px;border-collapse:collapse'><thead><tr><th align='left' style='font-weight:normal;color:#64748b;padding:0 10px 8px 0'>Cost Code</th><th align='right' style='font-weight:normal;color:#64748b;padding-bottom:8px'>PO Total</th></tr></thead><tbody>";
+		for each rawCode in content.get("costCodes")
+		{
+			code = rawCode.toString().toMap();
+			escapedCode = code.get("code").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			total = (code.get("cents").toDecimal() / 100).text("$#,##0.00");
+			body = body + "<tr><td style='padding:8px 10px 8px 0;border-top:1px solid #e4e9ef'>" + escapedCode + "</td><td align='right' style='padding:8px 0;border-top:1px solid #e4e9ef;white-space:nowrap'>" + total + "</td></tr>";
+		}
+		body = body + "<tr><td style='padding-top:12px;border-top:1px solid #e4e9ef;font-weight:bold'>Total</td><td align='right' style='padding-top:12px;border-top:1px solid #e4e9ef;font-weight:bold;white-space:nowrap'>" + amount + "</td></tr></tbody></table><p style='margin:24px 0 4px'><a href='" + content.get("url") + "' style='display:inline-block;padding:12px 17px;background:#15365f;color:#fff;text-decoration:none;font-size:12px;font-weight:bold;border-radius:5px'>View Purchase Order</a></p></td></tr><tr><td style='padding:13px 28px;border-top:1px solid #e4e9ef;font-size:10px;color:#64748b'>Land Master · Purchase order notification</td></tr></table></div>";
+		result.put("body",body); result.put("success",true);
+	}
+	catch(renderError) { result.put("error","The saved notification facts could not be rendered."); }
+	return result;
+}

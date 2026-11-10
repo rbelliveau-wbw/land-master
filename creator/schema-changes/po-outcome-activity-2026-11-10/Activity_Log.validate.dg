@@ -1,0 +1,3 @@
+// Internal Activity_Log / Created or Edited / Validate action.
+alert "Activity history is maintained by the application.";
+cancel submit;

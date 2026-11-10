@@ -1,0 +1,39 @@
+map activityEmailClaim(map event, int expectedAttempt)
+{
+	// Private reusable send boundary. Public APIs must authenticate and authorize
+	// the object before calling; never expose this as a writable Custom API.
+	result = {"claimed":false};
+	try
+	{
+		operation = ifnull(event.get("operationId"),"");
+		recipientKey = ifnull(event.get("recipientKey"),"");
+		if(operation == "" || recipientKey == "" || expectedAttempt < 1) { result.put("error","A notification identity and exact attempt are required."); return result; }
+		if(event.get("snapshot").toString().length() > 16000) { result.put("error","The complete email audit snapshot exceeds its safe size. No email was sent."); return result; }
+		claim = "mail|" + zoho.encryption.sha256(operation + "|" + recipientKey) + "|" + expectedAttempt;
+		// Claim_Key is native No Duplicate Values. A stale concurrent retry uses
+		// the same captured attempt and can never claim the next attempt instead.
+		id = insert into Activity_Log
+		[
+			Claim_Key=claim
+			Object_Type=event.get("objectType")
+			Object_ID=event.get("objectId")
+			Context_Type=event.get("contextType")
+			Context_ID=event.get("contextId")
+			Process=event.get("process")
+			Event=event.get("event")
+			Operation_ID=operation
+			Attempt_No=expectedAttempt
+			Status="Preparing"
+			Recipient_Email=event.get("recipientEmail")
+			Recipient_Name=event.get("recipientName")
+			Subject=event.get("subject")
+			Started_At=zoho.currenttime
+			Snapshot=event.get("snapshot").toString()
+			Actor_ID=event.get("actorId")
+			Added_User=zoho.loginuser
+		];
+		result.put("id",id.toString()); result.put("claimed",true);
+	}
+	catch(claimError) { result.put("error","This email attempt is already claimed or its activity could not be recorded. Check its status before retrying."); }
+	return result;
+}

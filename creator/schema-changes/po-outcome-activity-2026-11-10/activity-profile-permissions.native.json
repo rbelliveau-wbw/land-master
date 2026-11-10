@@ -1,0 +1,272 @@
+[
+  {
+    "profile": "Write",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Read",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Accounting - Lot Management",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Accounting - Lot Management - Ross",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "CFO",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Construction Budgeting",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Contract Mgmt",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Dev/Land Acq - Proforma & Budgets",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  },
+  {
+    "profile": "Project/Forecast Management",
+    "activity": [
+      {
+        "inputs": [
+          {
+            "checked": false,
+            "id": "4410926000005894481-add"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-view"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-edit"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-delete"
+          },
+          {
+            "checked": false,
+            "id": "4410926000005894481-more"
+          }
+        ],
+        "text": "Activity Log\n\t\n\t\n\t\n\t\n\t"
+      }
+    ]
+  }
+]

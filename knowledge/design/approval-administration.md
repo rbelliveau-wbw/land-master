@@ -11,6 +11,21 @@ Use this pattern for approvers, approval rules and route testing. Keep
 role membership separate from ordered approval steps. The Settings Manager
 implementation is [approval-admin.js](../../widgets/settings-manager/src/app/approval-admin.js).
 
+## Notification Contacts — November 10, 2026
+
+User Access may also hold contacts with only Full Name and Approver Email;
+its native User field is optional for this purpose. Keep those contacts out of
+new Approver choices. An approval identity must still have a nonblank Creator
+login, valid approval email and the required routing flag. Server routing and
+authenticated actor matching remain authoritative; matching a contact's name
+or email never grants a login, role, owner or permission.
+
+PO Approved/Rejected Notification Recipients belong on the separate Purchase
+Orders Settings screen. Territory **Construction PM** is a notification lookup,
+not an approval step. Neither setting rewrites captured routes or changes the
+one-approver-at-a-time chain. Existing invalid assignments remain visible for
+review and fail route validation rather than silently resolving to another user.
+
 ## Embedded Settings workspace — 1.6.1
 
 Approval Rules, Approvers, Roles, Test Route and Change History are separate

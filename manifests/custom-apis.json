@@ -492,7 +492,8 @@
     {
       "name": "Manage_Purchase_Order_DEV",
       "consumers": [
-        "widgets/budget-manager/src/app/po-controller.js"
+        "widgets/budget-manager/src/app/po-controller.js",
+        "widgets/budget-manager/src/app/po-activity.js"
       ],
       "matching_creator_function": "managePurchaseOrder",
       "confidence": "verified-native-2026-10-08",
@@ -510,7 +511,10 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "Registered and configuration verified in Creator Microservices; function execution verified separately. Widget API invocation has not yet been verified."
+      "notes": "Registered and configuration verified in Creator Microservices; function execution verified separately. Widget API invocation has not yet been verified. Additive candidate Activity, RetryOutcomeEmail and CheckOutcomeEmail actions reuse payload:string and the existing OAuth2 binding. Read-only Activity is Budget/PO scoped with exact ID-string pagination; outcome retry claims only confirmed-unsent or never-started recipients. Private Activity_Log helpers are not public APIs. Source/native installation evidence and Creator publication remain separate; no production sends are part of verification.",
+      "activity_contract": "po-activity-v1",
+      "outcome_notification_contract": "po-outcome-email-v1",
+      "implementation_contract": "docs/po-outcome-notifications-2026-11-10.md"
     },
     {
       "name": "Manage_Approval_Policies_DEV",
@@ -538,7 +542,8 @@
     {
       "name": "Manage_Purchase_Order",
       "consumers": [
-        "widgets/budget-manager/src/app/po-controller.js"
+        "widgets/budget-manager/src/app/po-controller.js",
+        "widgets/budget-manager/src/app/po-activity.js"
       ],
       "matching_creator_function": "managePurchaseOrder",
       "confidence": "verified-2026-10-19",
@@ -556,9 +561,12 @@
         }
       ],
       "response_type": "Standard",
-      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration.",
+      "notes": "Registered and configuration verified in Creator Microservices; authenticated Admin-only POST with payload:string. Native function publication is separate from API registration. Additive candidate Activity, RetryOutcomeEmail and CheckOutcomeEmail actions reuse payload:string and the existing OAuth2 binding. Read-only Activity is Budget/PO scoped with exact ID-string pagination; outcome retry claims only confirmed-unsent or never-started recipients. Private Activity_Log helpers are not public APIs. Source/native installation evidence and Creator publication remain separate; no production sends are part of verification.",
       "live_binding_verification": "Authenticated Creator Microservices: Enabled, POST, OAuth2, All users, key/value JSON, standard response and correct Land Master function binding. See docs/budget-mod-row-tools-2026-10-19.md.",
-      "permission_contract": "manifests/budget-request-permissions.json"
+      "permission_contract": "manifests/budget-request-permissions.json",
+      "activity_contract": "po-activity-v1",
+      "outcome_notification_contract": "po-outcome-email-v1",
+      "implementation_contract": "docs/po-outcome-notifications-2026-11-10.md"
     },
     {
       "name": "Manage_Approval_Policies",

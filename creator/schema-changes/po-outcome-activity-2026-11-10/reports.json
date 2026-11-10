@@ -1,0 +1,25 @@
+{
+  "status": "development-native-report-link-observed",
+  "new_internal_report": {
+    "link_name": "Activity_Log_Report",
+    "display_name": "Activity Log Report",
+    "superseded_candidate_link_name": "All_Activity_Logs",
+    "source_form": "Activity_Log",
+    "native_observation": {
+      "environment": "Development",
+      "verified_on": "2026-11-10",
+      "method": "Parent agent inspected the Application IDE Access Development report link and Open Builder target",
+      "access_development_fragment": "#Report:Activity_Log_Report",
+      "builder_path": "/reportbuilder/Activity_Log_Report/edit"
+    },
+    "sort": "Started_At descending, ID descending",
+    "required_fields": ["ID","Claim_Key","Object_Type","Object_ID","Context_Type","Context_ID","Process","Event","Operation_ID","Attempt_No","Status","Recipient_Email","Recipient_Name","Subject","Started_At","Sent_At","Error_Detail","Snapshot","Actor_ID","Added_User","Added_Time"],
+    "access": "Admin inspection only. No ordinary application profile read/add/edit/delete/export grant. Budget reads go through authenticated Manage_Purchase_Order Activity action.",
+    "runtime_dependency": false
+  },
+  "updates": [
+    {"report":"All_Settings","preserve_criteria":true,"add_fields":["PO_Approved_Recipients","PO_Rejected_Recipients"],"native_lookup_shapes":"Multiselect records with string IDs, optional display labels; preserve unresolved saved IDs."},
+    {"report":"User_Access_Report","preserve_existing_scope":true,"required_existing_fields":["ID","Full_Name","Approver_Email","User"],"allow_blank_user_in_rows":true,"new_profile_grants":false}
+  ],
+  "not_required": "The budget activity view never reads this raw report or the User Access roster. Do not broaden either report's profile access."
+}

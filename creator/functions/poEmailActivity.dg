@@ -1,0 +1,87 @@
+map poEmailActivity(map request)
+{
+	// Called only after managePurchaseOrder authenticates the native user and
+	// resolves the requested Budget. This API never exposes other log processes.
+	result = {"success":false,"contract":"po-v1","activityContract":"po-activity-v1","writeState":"not-started"};
+	try
+	{
+		budgetId = request.get("budgetId").toString(); userAccessId = request.get("userAccessId").toString();
+		action = request.get("action"); poId = ifnull(request.get("id"),"").toString();
+		canViewBudget = thisapp.poEmailCanViewActivity(budgetId,userAccessId);
+		if(poId != "")
+		{
+			po = Payment_Request[ID == poId.toLong() && Budget == budgetId.toLong() && Request_Type == "Purchase Order"];
+			if(po.count() != 1) { result.put("error","The Purchase Order does not belong to this budget."); return result; }
+			if(canViewBudget != true && thisapp.poEmailCanReadPO(poId,userAccessId) != true) { result.put("permissionDenied",true); result.put("error","Only a Budget editor, Budget owner, PO submitter or captured approver can view this activity."); return result; }
+		}
+		if(action == "Activity")
+		{
+			cursor = ifnull(request.get("cursor"),""); beforeId = "9223372036854775807".toLong();
+			if(cursor != "")
+			{
+				typedCursor = {"value":cursor};
+				if(!typedCursor.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[1-9][0-9]*\"[ ]*[}]")) { result.put("error","The activity cursor must be an exact ID string."); return result; }
+				beforeId = cursor.toLong();
+			}
+			emailEvents = {"Approval Request Email","Approved Email","Rejected Email"};
+			rows = Activity_Log[Context_Type == "Budget" && Context_ID == budgetId && Object_Type == "Purchase Order" && Process == "PO Approval" && ID < beforeId && Event in emailEvents] sort by ID desc range from 0 to 50;
+			if(poId != "") { rows = Activity_Log[Context_Type == "Budget" && Context_ID == budgetId && Object_Type == "Purchase Order" && Object_ID == poId && Process == "PO Approval" && ID < beforeId && Event in emailEvents] sort by ID desc range from 0 to 50; }
+			events = List(); nextCursor = ""; count = 0; hasMore = false;
+			for each entry in rows
+			{
+				count = count + 1;
+				if(count <= 50)
+				{
+					// No blanket log grant follows from Create PO or notification
+					// membership. Noneditors see only their captured PO relationships.
+					if(canViewBudget || thisapp.poEmailCanReadPO(entry.Object_ID,userAccessId)) { events.add(thisapp.poEmailActivityRow(entry.ID.toString(),userAccessId)); }
+					nextCursor = entry.ID.toString();
+				}
+				else { hasMore = true; }
+			}
+			if(!hasMore) { nextCursor = ""; }
+			result.put("events",events); result.put("hasMore",hasMore); result.put("nextCursor",nextCursor); result.put("success",true);
+			if(poId != "")
+			{
+				terminalOutcome = po.PO_Approval_State == "Approved" || po.PO_Approval_State == "Rejected";
+				if(terminalOutcome) { result.put("outcomeNotification",thisapp.poOutcomeNotificationStatus(poId,userAccessId)); }
+			}
+			return result;
+		}
+		if(poId == "" || (action != "RetryOutcomeEmail" && action != "CheckOutcomeEmail")) { result.put("error","An exact Purchase Order is required."); return result; }
+		if(po.PO_Revision != request.get("expectedRevision")) { result.put("error","The PO revision changed. Refresh its activity before continuing."); return result; }
+		if(action == "RetryOutcomeEmail")
+		{
+			if(thisapp.poEmailCanRetry(poId,userAccessId) != true) { result.put("permissionDenied",true); result.put("error","Only the PO submitter or an assigned approver can retry this notification."); return result; }
+			activityId = ifnull(request.get("activityId"),"");
+			if(activityId != "")
+			{
+				typedActivity = {"value":activityId};
+				if(!typedActivity.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[1-9][0-9]*\"[ ]*[}]")) { result.put("error","An exact activity identity is required."); return result; }
+				entry = Activity_Log[ID == activityId.toLong() && Object_Type == "Purchase Order" && Object_ID == poId && Context_Type == "Budget" && Context_ID == budgetId && Process == "PO Approval"];
+				if(entry.count() != 1) { result.put("error","The notification attempt does not belong to this Purchase Order and budget."); return result; }
+				beforeResume = thisapp.poOutcomeNotificationStatus(poId,userAccessId);
+				if(entry.Event == po.PO_Approval_State + " Email Plan" && beforeResume.get("planId") == activityId && beforeResume.get("canResumeEmail") == true)
+				{
+					// This resumes only missing never-claimed recipient attempts.
+				}
+				else
+				{
+				projection = thisapp.poEmailActivityRow(activityId,userAccessId);
+				if(projection.get("canRetry") != true || projection.get("retryAction") != "RetryOutcomeEmail") { result.put("error","This email attempt cannot be safely retried. Check its current status."); return result; }
+				}
+			}
+			else
+			{
+				before = thisapp.poOutcomeNotificationStatus(poId,userAccessId);
+				if(before.get("state") != "Not Started") { result.put("error","Choose the exact failed recipient attempt before retrying."); return result; }
+			}
+			status = thisapp.sendPurchaseOrderOutcomeEmail(poId,activityId,userAccessId);
+			result.put("writeState","verified");
+		}
+		else { status = thisapp.poOutcomeNotificationStatus(poId,userAccessId); }
+		result.put("outcomeNotification",status); result.put("events",status.get("events")); result.put("success",true);
+	}
+	catch(activityError) { result.put("error","PO email activity could not be checked. No decision was changed."); }
+	return result;
+}

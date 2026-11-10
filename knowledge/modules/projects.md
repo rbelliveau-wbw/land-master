@@ -54,6 +54,30 @@ Project and subdivision schedules, milestone synchronization, forecasts, and the
 
 Known milestone rollups include development/engineering start and submittal, construction plan release/start, HMAC milestones, final acceptance, and estimated completion dates. Verify exact Creator and Zoho Projects field names before modifying integrations.
 
+## Territory Construction PM — November 10, 2026
+
+`Territory.Construction_PM`, labeled **Construction PM**, is one optional lookup
+to `User_Access`, displayed by Full Name and Approver Email. Edit it on the
+existing native Territory form. The PO outcome notification helper adds that
+territory's person to the configured approved/rejected recipient list and
+deduplicates email addresses. This assignment does not create an approval step,
+change Territory VP/Dev Mgr routing, or infer a PM from either existing role.
+
+User Access can contain a notification contact with mandatory `Full_Name` and
+`Approver_Email` and blank `User`. All existing permission/routing defaults are
+preserved; the contact receives no application account, approval authority,
+ownership or profile grant. Duplicate-login validation applies only to nonblank
+User values, so multiple name/email-only contacts are intentional. Existing
+actor authentication still resolves native login identities, never contact
+names or email matches. Keep those contacts out of new approval-role choices.
+
+The optional User property and new Territory/Settings fields were saved in
+Development on November 10, 2026. Production publication, the reusable log and
+runtime email evidence are separate; see the
+[additive schema package](../../creator/schema-changes/po-outcome-activity-2026-11-10/README.md)
+and its native installation record. This does not change subdivision schedule
+data or Zoho Projects integration fields.
+
 ## Daily Subdivision construction dates — October 23, 2026
 
 The daily `Sync_Final_Acceptance_Due` workflow is displayed as **Zoho Projects -

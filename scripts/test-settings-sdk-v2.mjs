@@ -323,4 +323,31 @@ for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
   assert.equal(h.widget.queue('Approval_Reminder_Interval_Days',12),false,'Unavailable fields remain blocked');
 }
 
-console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID/currency verification, strict Curve CRUD/parent verification, no mutation replay and guarded native handshake.');
+// Notification recipients are contacts, not approval identities. Exercise the
+// real picker and autosave path with native string-ID/lookup shapes and no User.
+{
+  const h=await ready(),field='PO_Approved_Recipients',contact='900000000000000051',login='900000000000000052',invalid='900000000000000053',unresolved='900000000000000054';
+  h.records[0][field]=[{ID:unresolved,zc_display_value:'Saved contact not returned by roster'}];
+  h.records[0].PO_Rejected_Recipients=[];
+  h.reports.User_Access_Report=[
+    {ID:contact,Full_Name:'Notification Contact',Approver_Email:'contact@example.invalid',User:''},
+    {ID:login,Full_Name:'Existing App User',Approver_Email:'login@example.invalid',User:'login.fixture'},
+    {ID:invalid,Full_Name:'Missing Email',Approver_Email:'',User:''}
+  ];
+  await h.widget.load();assert.equal(h.widget.controller.canEdit(field),true);
+  const picker=h.widget.multi({n:field,l:'Approved Notification Recipients',src:'notificationContacts'},h.widget.state.rec[field]);
+  assert.match(picker,/Notification Contact/,'A valid contact needs no Creator login');
+  assert.match(picker,/contact@example.invalid/,'Email remains visible beside the name');
+  assert.doesNotMatch(picker,/Missing Email/,'A contact without an email is not a new picker option');
+  assert.match(picker,new RegExp(unresolved),'Existing unresolved recipient IDs remain visible');
+  assert.equal(h.widget.queue(field,[contact,unresolved]),true);await h.widget.flush();
+  assert.deepEqual(clone(h.records[0][field]),[contact,unresolved].sort(),'Native autosave persists exact contact IDs, including a saved unresolved ID');
+  assert.equal(h.widget.state.uncertain,null);assert.equal(h.calls.filter(call=>call.method==='add').length,0,'Recipient selection never creates a User Access record');
+  assert.equal(h.widget.queue(field,[invalid]),false);await h.widget.flush();
+  assert.deepEqual(clone(h.records[0][field]),[contact,unresolved].sort(),'Invalid new addresses never overwrite the saved recipient list');
+  h.widget.state.resources.users='error';assert.equal(h.widget.controller.canEdit(field),false,'Unavailable contact reads block only their dependent picker');
+  assert.equal(h.widget.controller.canEdit('PO_Rejected_Recipients'),false);
+  assert.match(inline,/key:'purchase-orders',title:'Purchase Orders'/,'Notifications have their own Modules screen');
+}
+
+console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID/currency verification, strict Curve CRUD/parent verification, contact-only PO recipients, no mutation replay and guarded native handshake.');

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PO Email Activity Desktop Fixture</title>
+<link rel="stylesheet" href="../../widgets/budget-manager/src/app/purchase-orders.css">
+<link rel="stylesheet" href="../../widgets/budget-manager/src/app/po-activity.css">
+<style>
+:root{--font:Arial,sans-serif}body{margin:0;background:#f0f3f7;color:#173f78;font:13px/1.5 Arial,sans-serif}.fixture-shell{max-width:1120px;margin:34px auto;padding:0 24px}.fixture-header{display:flex;justify-content:space-between;gap:24px;align-items:center;border-bottom:1px solid #d8e2ef;padding-bottom:20px}.fixture-header h1{margin:0;font-size:23px}.fixture-header p{margin:5px 0 0;color:#7486a0;font-size:12px}.fixture-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:25px 0}.fixture-buttons{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.fixture-toolbar{background:white;padding:22px;border:1px solid #d8e2ef;border-radius:10px}.fixture-toolbar h2{margin:0;font-size:15px}.fixture-mode{font-size:11px;color:#7386a2}.fixture-mode button[aria-pressed=true]{background:#e6f0ff;border-color:#9bb8e0;color:#174e9c}.mbtn{height:32px;padding:0 14px;border-radius:8px;font:800 12px Arial,sans-serif;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:6px;letter-spacing:.01em;transition:background .12s,border-color .12s,box-shadow .12s}.mbtn.neutral{background:#fff;border-color:#c9d8eb;color:#365a88}.mbtn.primary{background:#174e9c;border-color:#174e9c;color:white}.mbtn:disabled{opacity:.55;cursor:default}.fixture-note{color:#7486a0;font-size:11px}.fixture-header small{font-size:11px;color:#7486a0}.fixture-contact{margin-top:22px;color:#7486a0;font-size:12px}button:focus-visible,summary:focus-visible{outline:2px solid #6f9be0;outline-offset:3px}
+</style>
+<script src="../../widgets/budget-manager/src/app/po-activity.js"></script></head><body>
+<main class="fixture-shell"><header class="fixture-header"><div><h1>Eagle Prairie — Phase 01</h1><p>Budget Requests</p></div><small>Deterministic Desktop Fixture · No Live Calls</small></header><section class="fixture-toolbar"><h2>Requests</h2><div class="fixture-actions"><button class="mbtn primary" id="budget-activity">Email Activity</button><button class="mbtn neutral" id="po-activity">One PO</button><button class="mbtn neutral" id="no-plan-activity">No Outcome Recorded</button></div><div class="fixture-buttons fixture-mode"><span>Retry Reply</span><button class="mbtn neutral" type="button" data-fixture-mode="sent" aria-pressed="true">Sent</button><button class="mbtn neutral" type="button" data-fixture-mode="failed" aria-pressed="false">Failed</button><button class="mbtn neutral" type="button" data-fixture-mode="lost" aria-pressed="false">Lost Reply</button></div><p class="fixture-note">Includes a long contact name/email, a sent retry, an unknown attempt, a failed recipient and an older page.</p></section></main>
+<script>
+(() => {
+  const budget={ID:'777777777777777777',Budget_Name:'Eagle Prairie — Phase 01'};
+  const actor='888888888888888888',po='666666666666666666',noPlanPO='666666666666666667',revision='submission-2026-11-10';
+  const contacts=[{ID:'100000000000000001',Full_Name:'Sokha Sim',Approver_Email:'ssim@wbdevelopment.com',User:''},{ID:'100000000000000002',Full_Name:'Kimberly M. Singer — Construction Coordination',Approver_Email:'kimberly.construction.coordination.long-address@example.com',User:''},{ID:'100000000000000003',Full_Name:'Michael Wilson',Approver_Email:'mwilson@wbdevelopment.com',User:''}];
+  const op='po-outcome|'+po+'|'+revision+'|Approved';
+  const make=(id,contact,extra={})=>({id,objectId:po,budgetId:budget.ID,event:'Approved Email',operationId:op,recipientKey:'contact|'+contact.ID,revision,approvalId:'',attemptNo:1,status:'Sent',recipientEmail:contact.Approver_Email,recipientName:contact.Full_Name,subject:'Purchase Order Approved · Eagle Prairie — Phase 01 · $187,132.50',startedAt:'2026-11-10T10:42:00-06:00',sentAt:'2026-11-10T10:42:01-06:00',error:'',canRetry:false,retryAction:'',...extra});
+  let mode='sent',counter=900000000000000010n,initial=true;
+  let events=[make('900000000000000005',contacts[0],{attemptNo:2}),make('900000000000000004',contacts[1],{status:'Failed',sentAt:'',error:'A valid email is required. Check the contact or Territory Construction PM assignment.',canRetry:true,retryAction:'RetryOutcomeEmail'}),make('900000000000000003',contacts[2],{status:'Unknown',sentAt:'',error:'Email delivery could not be confirmed. Check delivery before any resend.'}),make('900000000000000002',contacts[0],{event:'Approval Request Email',operationId:'po-request|'+po+'|approval-1',attemptNo:2,recipientName:'Sam',recipientEmail:'sam@example.com',subject:'Purchase Order Approval · Eagle Prairie — Phase 01'})];
+  const older=[make('900000000000000001',contacts[0],{status:'Failed',sentAt:'',error:'Recipient configuration was incomplete.',canRetry:false,startedAt:'2026-11-09T16:12:00-06:00'})];
+  const envelope=rows=>({contract:'po-v1',activityContract:'po-activity-v1',success:true,events:rows,hasMore:false,nextCursor:''});
+  function latestRows(id){const seen=new Set();return events.filter(row=>row.objectId===id&&row.event!=='Approval Request Email').filter(row=>{if(seen.has(row.recipientEmail))return false;seen.add(row.recipientEmail);return true;});}
+  function notice(id){const rows=latestRows(id);return {contract:'po-outcome-email-v1',id,budgetId:budget.ID,outcome:'Approved',revision,operationId:id===po?op:'po-outcome|'+id+'|'+revision+'|Approved',state:rows.some(row=>row.status==='Unknown')?'Unknown':rows.length&&rows.every(row=>row.status==='Sent')?'Sent':rows.length?'Partial':'Not Started',emailSent:!!rows.length&&rows.every(row=>row.status==='Sent'),canRetryEmail:!rows.length||rows.some(row=>row.status==='Failed'),events:rows,message:rows.some(row=>row.status==='Unknown')?'The PO decision is saved. One email still needs a delivery check.':rows.length?'Notification attempt recorded.':'Outcome notification has not started.'};}
+  const call=async payload=>{
+    if(payload.budgetId!==budget.ID||payload.userAccessId!==actor)throw new Error('Budget access denied.');
+    await new Promise(resolve=>setTimeout(resolve,350));
+    if(payload.action==='Activity'){
+      const rows=payload.cursor?older:events.filter(row=>!payload.id||row.objectId===payload.id);
+      const response=envelope(rows);if(!payload.cursor&&(!payload.id||payload.id===po)){response.hasMore=true;response.nextCursor='900000000000000002';}
+      if(payload.id)response.outcomeNotification=notice(payload.id);return response;
+    }
+    if(payload.action==='RetryOutcomeEmail'){
+      const prior=events.find(row=>row.id===payload.activityId),id=payload.id;
+      const row=prior?{...prior,id:String(counter++),attemptNo:prior.attemptNo+1,status:mode==='failed'?'Failed':'Sent',sentAt:mode==='failed'?'':'2026-11-10T10:45:01-06:00',startedAt:'2026-11-10T10:45:00-06:00',canRetry:mode==='failed',error:mode==='failed'?'Recipient configuration still needs attention.':'',retryAction:mode==='failed'?'RetryOutcomeEmail':''}:make(String(counter++),contacts[0],{objectId:id,operationId:'po-outcome|'+id+'|'+revision+'|Approved',startedAt:'2026-11-10T10:45:00-06:00',sentAt:'2026-11-10T10:45:01-06:00'});
+      if(prior)prior.canRetry=false;events.unshift(row);if(mode==='lost')throw new Error('The email reply was lost. Check Status before another send.');
+    }
+    if(payload.action==='RetryOutcomeEmail'||payload.action==='CheckOutcomeEmail'){const status=notice(payload.id);return {...envelope(status.events),writeState:'verified',outcomeNotification:status};}
+    throw new Error('Unsupported fixture action');
+  };
+  const ui=LMPOActivity.create({scope:id=>'fixture|Development|'+actor+'|'+id,userAccessId:()=>actor,phaseName:()=>budget.Budget_Name,call});
+  const open=(id,button)=>ui.open(budget,button,id).catch(error=>{document.querySelector('.fixture-note').textContent=error.message;});
+  document.querySelector('#budget-activity').addEventListener('click',event=>open(null,event.currentTarget));document.querySelector('#po-activity').addEventListener('click',event=>open(po,event.currentTarget));document.querySelector('#no-plan-activity').addEventListener('click',event=>open(noPlanPO,event.currentTarget));
+  document.querySelectorAll('[data-fixture-mode]').forEach(button=>button.addEventListener('click',()=>{mode=button.dataset.fixtureMode;document.querySelectorAll('[data-fixture-mode]').forEach(other=>other.setAttribute('aria-pressed',String(other===button)));}));
+  open(null,document.querySelector('#budget-activity'));
+})();
+</script></body></html>

@@ -1,0 +1,17 @@
+bool poEmailCanReadPO(string purchaseOrderId, string userAccessId)
+{
+	allowed = false;
+	try
+	{
+		if(!ifnull(purchaseOrderId,"").matches("^[1-9][0-9]*$") || !ifnull(userAccessId,"").matches("^[1-9][0-9]*$")) { return false; }
+		person = User_Access[ID == userAccessId.toLong()];
+		if(person.count() != 1 || ifnull(person.User,"").toString().trim() == "") { return false; }
+		if(person.User != zoho.loginuser && !(thisapp.environment.type == "Development" && zoho.loginuser == zoho.adminuser)) { return false; }
+		checked = thisapp.poApprovalBundle(purchaseOrderId);
+		if(checked.get("success") != true) { return false; }
+		bundle = checked.get("bundle"); allowed = bundle.get("submitterId") == userAccessId;
+		for each entry in bundle.get("rows") { if(entry.get("userAccessId") == userAccessId) { allowed = true; } }
+	}
+	catch(permissionError) { allowed = false; }
+	return allowed;
+}

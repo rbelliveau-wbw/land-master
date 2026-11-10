@@ -1,0 +1,78 @@
+map poOutcomeEmailReady(string purchaseOrderId)
+{
+	// Read-only equivalent of the existing terminal decision predicates. The
+	// notification retry must not replay a decision or its financial rollups.
+	result = {"success":false};
+	try 
+	{
+		actual = thisapp.poSnapshot(purchaseOrderId);
+		if(actual.get("success") != true)
+		{
+			result.put("error",actual.get("error"));
+			return result;
+		}
+		saved = actual.get("snapshot");
+		if((saved.get("approvalState") != "Approved" && saved.get("approvalState") != "Rejected") || saved.get("commitmentState") != "Reserved")
+		{
+			result.put("error","The terminal PO decision is unavailable.");
+			return result;
+		}
+		if(PO_Phase_Lock[Phase_Key == saved.get("budgetId")].count() > 0)
+		{
+			result.put("error","The Budget has an unresolved PO operation. Check its saved status before sending outcome mail.");
+			return result;
+		}
+		if(saved.get("approvalState") == "Approved")
+		{
+			savedModifications = saved.get("approvalBundle").get("modifications");
+			modifiedItemIds = List();
+			for each  modification in savedModifications
+			{
+				if(!modifiedItemIds.contains(modification.get("budgetItemId")))
+				{
+					modifiedItemIds.add(modification.get("budgetItemId"));
+				}
+			}
+			if(modifiedItemIds.size() > 0)
+			{
+				// Email checks touch only the modifications whose finalization is
+				// relevant to this PO; a no-modification PO needs no balance scan.
+				financial = thisapp.poBudgetBalancesForItems(saved.get("budgetId"),modifiedItemIds);
+				if(financial.get("success") != true)
+				{
+					result.put("error","Approved PO balances could not be verified.");
+					return result;
+				}
+			}
+			for each  modification in savedModifications
+			{
+				item = Budget_Item[ID == modification.get("budgetItemId").toLong()];
+				matched = false;
+				for each  balance in financial.get("balances")
+				{
+					if(balance.get("budgetItemId") == modification.get("budgetItemId"))
+					{
+						matched = true;
+						expectedCents = balance.get("finalCents").toLong() + balance.get("modCents").toLong();
+						actualText = thisapp.poCurrencyString(ifnull(item.Revised_Final,0).toString());
+						if(actualText == "" || actualText.replaceAll("[.]","").toLong() != expectedCents)
+						{
+							result.put("error","Approved modification totals could not be verified.");
+							return result;
+						}
+					}
+				}
+				if(!matched)
+				{
+					result.put("error","An approved item balance is unavailable.");
+					return result;
+				}
+			}
+		}
+		result.put("success",true);
+	}	catch (verifyError)
+	{
+		result.put("error","The terminal PO could not be verified for notification.");
+	}
+	return result;
+}

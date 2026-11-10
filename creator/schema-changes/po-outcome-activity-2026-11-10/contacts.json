@@ -1,0 +1,46 @@
+{
+  "status": "development-configured-with-production-sam-readback",
+  "development_setup_evidence": "setup-verification.json",
+  "form": "User_Access",
+  "matching": "Reuse exactly one existing row by trimmed case-insensitive Approver_Email. Stop on multiple matches. Never change an existing login or permission fields.",
+  "create_only_when_no_match": {
+    "User": null,
+    "Approval_Routing_Enabled": false,
+    "permissions": "Retain all existing false defaults; do not assign a profile, owner, role or permission grant."
+  },
+  "contacts": [
+    {"Full_Name":"Sokha Sim","Approver_Email":"ssim@wbdevelopment.com"},
+    {"Full_Name":"Kimberly M. Singer","Approver_Email":"kim.singer@wbdevelopment.com"},
+    {"Full_Name":"Michael Wilson","Approver_Email":"mwilson@wbdevelopment.com"}
+  ],
+  "required_existing_person": {
+    "name": "Samuel Spears",
+    "alias": "Sam",
+    "email": "sspears@wbdevelopment.com",
+    "provenance": {
+      "environment": "Production",
+      "report": "User_Access_Report",
+      "verified_on": "2026-11-10",
+      "method": "Authenticated native report read-only inspection by the parent agent",
+      "native_record_id": "4410926000005497010",
+      "native_user": "sspears_wbdevelopment",
+      "production_record_changed": false
+    },
+    "rule": "Production: reuse this exact confirmed existing Sam record without changing its login or permissions. Resolve record IDs in each environment separately; never copy a Production record ID into Development lookups.",
+    "development_seed": {
+      "Full_Name": "Samuel Spears",
+      "Approver_Email": "sspears@wbdevelopment.com",
+      "User": null,
+      "Approval_Routing_Enabled": false,
+      "rule": "Development began with demo users and now has separately created notification contacts recorded in setup-verification.json. Reuse exactly one matching email if present; otherwise explicitly create a notification-only Sam contact with existing false permission defaults. Do not create or map a Creator account."
+    }
+  },
+  "settings": {
+    "record": "Require exactly one Settings record; never create a second singleton.",
+    "PO_Approved_Recipients": ["Sam (environment-specific resolved ID)","Sokha Sim (resolved ID)","Kimberly M. Singer (resolved ID)","Michael Wilson (resolved ID)"],
+    "PO_Rejected_Recipients": ["Sam (environment-specific resolved ID)"],
+    "write": "Explicit one-time setup only. Preserve pre-existing choices unless the user requested replacing them. Loading Settings never seeds or rewrites these lists."
+  },
+  "territories": "Do not infer Construction PM from VP, Dev Mgr, name or department. Assignment is explicit on each Territory.",
+  "production_rollout": "The read-only Sam inspection is not a Production mutation or release. Creation of the three provided Production contacts and recipient-list setup are deferred until the Creator publication step; Production's existing Sam record remains unchanged."
+}

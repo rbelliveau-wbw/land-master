@@ -1,0 +1,13 @@
+// Candidate field to add inside the existing Territory form.
+Construction_PM
+(
+    type = picklist
+    displayname = "Construction PM"
+    values = User_Access.ID
+    displayformat = [Full_Name + " - " + Approver_Email]
+    advanced field search = true
+    sortorder = ascending
+    row = 1
+    column = 1
+    width = medium
+)

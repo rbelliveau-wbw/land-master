@@ -41,14 +41,15 @@ string managePurchaseOrder(string payload)
 		if(environmentType == "Development" && zoho.loginuser == zoho.adminuser)
 		{
 			previewActor = User_Access[ID == p.get("userAccessId").toString().toLong()];
-			if(previewActor.count() == 1)
+			if(previewActor.count() == 1 && ifnull(previewActor.User,"").toString().trim() != "")
 			{
 				actorUser = previewActor.User;
 			}
 		}
 		access = User_Access[User == actorUser];
-		if(access.count() != 1 || access.ID.toString() != ifnull(p.get("userAccessId"),"").toString())
+		if(ifnull(actorUser,"").toString().trim() == "" || access.count() != 1 || ifnull(access.User,"").toString().trim() == "" || access.ID.toString() != ifnull(p.get("userAccessId"),"").toString())
 		{
+			result.put("permissionDenied",true);
 			result.put("error","An unambiguous authenticated User Access identity is required.");
 			return result.toString();
 		}
@@ -75,6 +76,7 @@ string managePurchaseOrder(string payload)
 		// PO creation is separate from budget editing; legacy editor grants still apply.
 		canCreatePO = canEdit || access.Create_Purchase_Orders == true;
 		if(action == "Capabilities") { result.put("success",true); return result.toString(); }
+		if(action == "Activity" || action == "RetryOutcomeEmail" || action == "CheckOutcomeEmail") { return thisapp.poEmailActivity(p).toString(); }
 		if(action == "Approve" || action == "Reject" || action == "CheckDecision" || action == "RetryEmail")
 		{
 			return thisapp.handlePurchaseOrderApproval(p).toString();
@@ -1048,7 +1050,10 @@ string managePurchaseOrder(string payload)
 				return result.toString();
 			}
 			priorBundle = beforePO.get("snapshot").get("approvalBundle");
-			if(amendPending && (customReallocation || priorBundle.get("reallocationContract") == "po-reallocation-v1")) { result.put("error","A submitted budget reallocation must be rejected before its PO or modification can be changed."); return result.toString(); }
+			if(amendPending)
+			{
+				if(customReallocation || priorBundle.get("reallocationContract") == "po-reallocation-v1") { result.put("error","A submitted budget reallocation must be rejected before its PO or modification can be changed."); return result.toString(); }
+			}
 			if(validated.get("totalCents") != p.get("amount").replaceAll("[.]",""))
 			{
 				result.put("error","An edited reserved PO must keep its header and line total balanced.");
@@ -1325,7 +1330,9 @@ string managePurchaseOrder(string payload)
 										beforeComponent = componentAvailable.get(componentKey) + ifnull(ownComponentAllocation.get(componentKey),0);
 										otherComponentPending = ifnull(componentPendingCredits.get(componentKey),0) - ifnull(ownComponentCredits.get(componentKey),0);
 										// Only a capability-matched new client may use verified signed pending reservations.
-										if((otherComponentPending < 0 && (p.get("reallocationContract") != "po-reallocation-v1" || balances.get("reallocationContract") != "po-reallocation-v1")) || p.get("expectedComponentBalances") == null || p.get("expectedComponentBalances").get(componentKey) != beforeComponent.toString() || p.get("expectedComponentPendingModifications") == null || p.get("expectedComponentPendingModifications").get(componentKey) != otherComponentPending.toString())
+										invalidPendingContract = false;
+										if(otherComponentPending < 0) { invalidPendingContract = p.get("reallocationContract") != "po-reallocation-v1" || balances.get("reallocationContract") != "po-reallocation-v1"; }
+										if(invalidPendingContract || p.get("expectedComponentBalances") == null || p.get("expectedComponentBalances").get(componentKey) != beforeComponent.toString() || p.get("expectedComponentPendingModifications") == null || p.get("expectedComponentPendingModifications").get(componentKey) != otherComponentPending.toString())
 										{
 											result.put("error","Component balances changed. Refresh and review before submitting.");
 										}

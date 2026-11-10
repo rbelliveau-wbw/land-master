@@ -1,12 +1,15 @@
 map poActorResponse(map response, string userAccessId)
 {
 	environmentType = thisapp.environment.type;
+	canReadEmail = false;
 	// All callers authenticate userAccessId before this private projection.
 	if(response.get("success") == true && response.get("snapshot") != null && userAccessId != null && userAccessId.matches("[0-9]+"))
 	{
 		editActor = User_Access[ID == userAccessId.toLong()];
 		editSnapshot = response.get("snapshot");
 		editBudget = Add_Budget[ID == ifnull(editSnapshot.get("budgetId"),"0").toString().toLong()];
+		canReadEmail = thisapp.poEmailCanViewActivity(ifnull(editSnapshot.get("budgetId"),"").toString(),userAccessId) || thisapp.poEmailCanReadPO(ifnull(editSnapshot.get("id"),"").toString(),userAccessId);
+		if(!canReadEmail) { editSnapshot.remove("outcomeNotification"); response.remove("outcomeNotification"); }
 		editSnapshot.put("canEditInFlight",editActor.count() == 1 && editActor.Edit_All_Budgets == true && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Submitted" && editSnapshot.get("approvalState") == "Pending");
 		canEditDraft = false;
 		if(editActor.count() == 1 && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Draft" && editSnapshot.get("commitmentState") == "None" && editSnapshot.get("approvalState") == "Not Configured")
@@ -32,6 +35,13 @@ map poActorResponse(map response, string userAccessId)
 		}
 		editSnapshot.put("canEditDraft",canEditDraft);
 		response.put("snapshot",editSnapshot);
+		terminalEmailOutcome = editSnapshot.get("approvalState") == "Approved" || editSnapshot.get("approvalState") == "Rejected";
+		if(canReadEmail && terminalEmailOutcome)
+		{
+			// Per-actor mail permissions are projected only after authentication.
+			notification = thisapp.poOutcomeNotificationStatus(editSnapshot.get("id"),userAccessId);
+			editSnapshot.put("outcomeNotification",notification); response.put("snapshot",editSnapshot); response.put("outcomeNotification",notification);
+		}
 	}
 	// Permission hints are projected only after the caller has authenticated the actor.
 	// This changes the Development preview display, never a Production grant.
@@ -76,6 +86,21 @@ map poActorResponse(map response, string userAccessId)
 			}
 			profileSnapshot.put("approvalBundle",profileBundle);
 			response.put("snapshot",profileSnapshot);
+		}
+	}
+	if(canReadEmail && response.get("success") == true && response.get("snapshot") != null)
+	{
+		mailSnapshot = response.get("snapshot"); mailBundle = mailSnapshot.get("approvalBundle");
+		if(mailBundle != null && mailBundle.get("active").get("id") != null)
+		{
+			mailOperation = "po-approval|" + mailSnapshot.get("id") + "|" + mailSnapshot.get("revision") + "|" + mailBundle.get("active").get("id"); latestMailId = 0;
+			for each mailEntry in Activity_Log[Operation_ID == mailOperation && Event == "Approval Request Email"] { if(mailEntry.ID > latestMailId) { latestMailId = mailEntry.ID; } }
+			if(latestMailId > 0)
+			{
+				mailEntry = Activity_Log[ID == latestMailId]; mailBundle.put("emailState",mailEntry.Status);
+				if(mailEntry.Status == "Preparing" || mailEntry.Status == "Sending" || mailEntry.Status == "Unknown") { mailBundle.put("canRetryEmail",false); }
+				mailSnapshot.put("approvalBundle",mailBundle); response.put("snapshot",mailSnapshot);
+			}
 		}
 	}
 	return response;

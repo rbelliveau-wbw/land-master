@@ -1,0 +1,250 @@
+{
+  "environment": "Development",
+  "verified_on": "2026-11-10",
+  "status": "complete-reopened-actual-editor-source-verified",
+  "capture_method": "Root read the full editable function source through the accessibility value after saving, navigating away and reopening. Clipboard readText captures are not used for this evidence.",
+  "comparison_method": "Strip only comments/whitespace outside string literals, compare complete ordered code tokens retaining parentheses, and compare every ordered string literal exactly. managePurchaseOrder permits exactly three documented nonsemantic formatter deltas, each once; no broad parenthesis normalization.",
+  "function_count": 18,
+  "strict_token_matches": 17,
+  "exact_allowlisted_formatter_matches": 1,
+  "all_function_literals_match": true,
+  "functions": [
+    {
+      "name": "activityEmailClaim",
+      "source": "creator/functions/activityEmailClaim.dg",
+      "source_sha256": "555e212e93e5c36fa0eb123166af1cdc256b6ccd6bb1658f9ba10476b0205413",
+      "native_capture": "evidence/functions/activityEmailClaim.native.dg",
+      "native_capture_sha256": "542ad50fd83ad98ef6312616bd952dea679a9ee6e987d4655b9a2c5cb0babc8f",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 31,
+      "native_string_literal_count": 31
+    },
+    {
+      "name": "poEmailCanRetry",
+      "source": "creator/functions/poEmailCanRetry.dg",
+      "source_sha256": "8f3cdb2e6b2cd70f08fe41d4b4070dae7634fe5b9ad9946c38da330b3083c8ea",
+      "native_capture": "evidence/functions/poEmailCanRetry.native.dg",
+      "native_capture_sha256": "467a7f4ac4a9e9c94422f2c7440f939d780a6d44edaa7d27170cbe1bcdcc11e8",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 13,
+      "native_string_literal_count": 13
+    },
+    {
+      "name": "poEmailCanViewActivity",
+      "source": "creator/functions/poEmailCanViewActivity.dg",
+      "source_sha256": "bd490ce00f6c823cdcdbd35940cedcf8ffdd51dcddba3ddbca6caa79f77f4b26",
+      "native_capture": "evidence/functions/poEmailCanViewActivity.native.dg",
+      "native_capture_sha256": "e843ec47c859eb7cac77edc0d9bd1ce29fd1684dd75438b4082e3d6822375ff3",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 7,
+      "native_string_literal_count": 7
+    },
+    {
+      "name": "poEmailCanReadPO",
+      "source": "creator/functions/poEmailCanReadPO.dg",
+      "source_sha256": "ebdaee8d639b0eaae71b3f54fd8af8de3ce3e766268162f48f76a1fab58946bf",
+      "native_capture": "evidence/functions/poEmailCanReadPO.native.dg",
+      "native_capture_sha256": "ac6f4120db1f6b9370f24af5bb656ed73cf0e80e509a32971a3e78359575fabb",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 12,
+      "native_string_literal_count": 12
+    },
+    {
+      "name": "poEmailActivityRow",
+      "source": "creator/functions/poEmailActivityRow.dg",
+      "source_sha256": "d7b1df422da72070bca4b6cdb885082d40ab5b168f5af5c7f129b7382d5b67ae",
+      "native_capture": "evidence/functions/poEmailActivityRow.native.dg",
+      "native_capture_sha256": "078b485ce32f714c7972f03e6d01254c625367b7e0644ee625cd6509126d67fc",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 73,
+      "native_string_literal_count": 73
+    },
+    {
+      "name": "renderPurchaseOrderOutcomeEmail",
+      "source": "creator/functions/renderPurchaseOrderOutcomeEmail.dg",
+      "source_sha256": "b1e19f5f1a1fab0f7993acf644725671164f41ccc18e28bd047790981984d51f",
+      "native_capture": "evidence/functions/renderPurchaseOrderOutcomeEmail.native.dg",
+      "native_capture_sha256": "1df00059ecc77360934a1bce10c0567677f23daf07bacb373235eaf97dfd499b",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 61,
+      "native_string_literal_count": 61
+    },
+    {
+      "name": "buildPurchaseOrderOutcomeEmail",
+      "source": "creator/functions/buildPurchaseOrderOutcomeEmail.dg",
+      "source_sha256": "657eb1e0fc0363a28d92e6374011ca730b41a6701714292b7c98e500a02e84b8",
+      "native_capture": "evidence/functions/buildPurchaseOrderOutcomeEmail.native.dg",
+      "native_capture_sha256": "012171d1fc90b1e8ab5e1943ec8844709bde5ffb690b4d60977321be9f62d444",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 121,
+      "native_string_literal_count": 121
+    },
+    {
+      "name": "poOutcomeEmailReady",
+      "source": "creator/functions/poOutcomeEmailReady.dg",
+      "source_sha256": "25d5ec3e77a871aee74fe098799208dae8f8b6be242fedee8073fec88724b206",
+      "native_capture": "evidence/functions/poOutcomeEmailReady.native.dg",
+      "native_capture_sha256": "4738e5339a42eba90ab7a317489c35e4f4b3af51c091edd051b50b4103395ff8",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 42,
+      "native_string_literal_count": 42
+    },
+    {
+      "name": "poOutcomeNotificationStatus",
+      "source": "creator/functions/poOutcomeNotificationStatus.dg",
+      "source_sha256": "61d9bbf5588067140d27b30087d0186d9c7fb9ca428ef06ffb34a605d68ec652",
+      "native_capture": "evidence/functions/poOutcomeNotificationStatus.native.dg",
+      "native_capture_sha256": "47e51f315503f7b27288bd9c2c643aa0dc8594d7e9c8801cbeb32ad524ca3b50",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 68,
+      "native_string_literal_count": 68
+    },
+    {
+      "name": "sendPurchaseOrderOutcomeEmail",
+      "source": "creator/functions/sendPurchaseOrderOutcomeEmail.dg",
+      "source_sha256": "ed571eb46a38ddbe1aae47048c2303d9e07d1b629a8cc735c8dd994fb6a72ae3",
+      "native_capture": "evidence/functions/sendPurchaseOrderOutcomeEmail.native.dg",
+      "native_capture_sha256": "959bf7f3739115b07622ad54201e76c67a97614be940b2025468b4612207237c",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 154,
+      "native_string_literal_count": 154
+    },
+    {
+      "name": "poEmailActivity",
+      "source": "creator/functions/poEmailActivity.dg",
+      "source_sha256": "1acbe6345a44f3f3c23ba78b8c1382d7c78b00b7926c4a81ca2cf18ef4a56fb7",
+      "native_capture": "evidence/functions/poEmailActivity.native.dg",
+      "native_capture_sha256": "2d50f8aa131b558215db5287e44f19136c47c2eedb93b1cb29fa6bad91acb673",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 92,
+      "native_string_literal_count": 92
+    },
+    {
+      "name": "sendPurchaseOrderEmail",
+      "source": "creator/functions/sendPurchaseOrderEmail.dg",
+      "source_sha256": "2c967656a9c02042e813b8a0eab28642c7d73fcb235347cee3f6a243995237a8",
+      "native_capture": "evidence/functions/sendPurchaseOrderEmail.native.dg",
+      "native_capture_sha256": "bd46e829018959639d2fa4c6bf3f1d031cc69f718ba13c2c40ed976afbd81a9c",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 245,
+      "native_string_literal_count": 245
+    },
+    {
+      "name": "poActorResponse",
+      "source": "creator/functions/poActorResponse.dg",
+      "source_sha256": "715e829c1cc15c9140149564d4a6111ade0319fc617c7eba954ce31e9bc2f006",
+      "native_capture": "evidence/functions/poActorResponse.native.dg",
+      "native_capture_sha256": "9e4b77a82d76ab28cfc8bd0c2700b6690c7b75cd7bbb3953d097aebb8699de77",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 88,
+      "native_string_literal_count": 88
+    },
+    {
+      "name": "handlePurchaseOrderApproval",
+      "source": "creator/functions/handlePurchaseOrderApproval.dg",
+      "source_sha256": "990d6d0832cf38a3b2367703ec491215fab226dfdc4a1ea1a9d51b0607bd2204",
+      "native_capture": "evidence/functions/handlePurchaseOrderApproval.native.dg",
+      "native_capture_sha256": "3f850265066aa5c380fd4a452c89f09dd1877aa604e5b6f4db6b287de940463e",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 231,
+      "native_string_literal_count": 231
+    },
+    {
+      "name": "managePurchaseOrder",
+      "source": "creator/functions/managePurchaseOrder.dg",
+      "source_sha256": "48ae52462b027393882e12c9e5d706fb203b5e8ab4add1ed414ad40f42c104f1",
+      "native_capture": "evidence/functions/managePurchaseOrder.native.dg",
+      "native_capture_sha256": "531d854881c75c73ea64028b0d7b318344272be7346ef5fbf849c7a9a6ba1fd8",
+      "strict_code_tokens_equal": false,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 1139,
+      "native_string_literal_count": 1139,
+      "exact_formatter_allowances": [
+        {
+          "source": "Payment_Request[(BudgetinlistBudgetNumbers)&&",
+          "native": "Payment_Request[BudgetinlistBudgetNumbers&&",
+          "occurrences": 1
+        },
+        {
+          "source": ".Vendor.getAll()",
+          "native": ".Vendor.getall()",
+          "occurrences": 1
+        },
+        {
+          "source": "if(reviewedDelta<0&&(0-reviewedDelta>beforeComponent-currentComponent-otherComponentReduction))",
+          "native": "if(reviewedDelta<0&&0-reviewedDelta>beforeComponent-currentComponent-otherComponentReduction)",
+          "occurrences": 1
+        }
+      ],
+      "complete_code_equal_after_exact_allowances": true
+    },
+    {
+      "name": "getUserAccess",
+      "source": "creator/functions/getUserAccess.dg",
+      "source_sha256": "c2f295410eb04d81ab66ad526eed528ed1152c0cc5936a12248dec9c52201e44",
+      "native_capture": "evidence/functions/getUserAccess.native.dg",
+      "native_capture_sha256": "c2f295410eb04d81ab66ad526eed528ed1152c0cc5936a12248dec9c52201e44",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 57,
+      "native_string_literal_count": 57
+    },
+    {
+      "name": "getUserAccessLean",
+      "source": "creator/functions/getUserAccessLean.dg",
+      "source_sha256": "b0517136670917283554231be23eaca5399eeeba6bad3fa97c72853f91010684",
+      "native_capture": "evidence/functions/getUserAccessLean.native.dg",
+      "native_capture_sha256": "b0517136670917283554231be23eaca5399eeeba6bad3fa97c72853f91010684",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 56,
+      "native_string_literal_count": 56
+    },
+    {
+      "name": "setupPurchaseOrderNotifications",
+      "source": "creator/functions/setupPurchaseOrderNotifications.dg",
+      "source_sha256": "3bfc6ebf2337cd06091582f80eef0a10f86f585399b2b2ea7adb5d95de5ec0ce",
+      "native_capture": "setupPurchaseOrderNotifications.native.dg",
+      "native_capture_sha256": "a8eaeec7100636b577a31d2432be838377e2c87e9b0d93c78b3a31cca672430f",
+      "strict_code_tokens_equal": true,
+      "all_string_literals_equal": true,
+      "source_string_literal_count": 130,
+      "native_string_literal_count": 130
+    }
+  ],
+  "formatter_hardening": {
+    "functions": [
+      "poOutcomeNotificationStatus",
+      "poEmailActivity",
+      "poActorResponse",
+      "managePurchaseOrder"
+    ],
+    "preserved_predicates": [
+      "Sent or Skipped requires a send stamp",
+      "Retry capability requires real actor permission",
+      "Event alternatives remain inside exact Budget/context scope",
+      "Approved and Rejected evidence both require read authorization",
+      "Reallocation amendment and pending-component contract guards keep original short-circuit intent"
+    ]
+  },
+  "boundaries": {
+    "source_readback_only": true,
+    "live_email_or_retry_executed": false,
+    "production_publication_performed_by_this_verification": false,
+    "read_only_native_activity_execution": "Recorded separately by parent; this evidence verifies source, not runtime delivery."
+  }
+}

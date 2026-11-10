@@ -1,0 +1,19 @@
+{
+  "environment": "Development",
+  "function": "managePurchaseOrder",
+  "request": {
+    "action": "Activity",
+    "budgetId": "4410926000005122080",
+    "userAccessId": "4410926000005910066"
+  },
+  "response": {
+    "success": false,
+    "contract": "po-v1",
+    "writeState": "not-started",
+    "reallocationContract": "po-reallocation-v1",
+    "permissionDenied": true,
+    "error": "An unambiguous authenticated User Access identity is required."
+  },
+  "noWrites": true,
+  "noEmail": true
+}

@@ -1,0 +1,33 @@
+bool poEmailCanViewActivity(string budgetId, string userAccessId)
+{
+	allowed = false;
+	try 
+	{
+		if(!ifnull(budgetId,"").matches("^[1-9][0-9]*$") || !ifnull(userAccessId,"").matches("^[1-9][0-9]*$"))
+		{
+			return false;
+		}
+		person = User_Access[ID == userAccessId.toLong()];
+		budget = Add_Budget[ID == budgetId.toLong()];
+		if(person.count() != 1 || budget.count() != 1 || ifnull(person.User,"").toString().trim() == "")
+		{
+			return false;
+		}
+		if(person.User != zoho.loginuser && !(thisapp.environment.type == "Development" && zoho.loginuser == zoho.adminuser))
+		{
+			return false;
+		}
+		allowed = person.User == zoho.adminuser || person.Edit_All_Budgets == true;
+		for each  owner in budget.Budget_Owner
+		{
+			if(owner.ID == person.ID)
+			{
+				allowed = true;
+			}
+		}
+	}	catch (permissionError)
+	{
+		allowed = false;
+	}
+	return allowed;
+}

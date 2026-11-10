@@ -81,7 +81,7 @@ assert.equal(denied.found, false);
 assert.equal(denied.hasRow, false);
 assert.equal(denied.myId, '');
 for (const [, flag] of fields) assert.equal(denied[flag], false, `${flag} stays denied without an access row.`);
-const expectedRoster = rows => rows.map(row => ({id: row.ID, label: row.User, email: row.User, userName: row.User, approverEmail: (row.Approver_Email ?? '').trim(), fullName: (row.Full_Name ?? '').trim()}));
+const expectedRoster = rows => rows.filter(row => String(row.User ?? '').trim() !== '').map(row => ({id: row.ID, label: row.User, email: row.User, userName: row.User, approverEmail: (row.Approver_Email ?? '').trim(), fullName: (row.Full_Name ?? '').trim()}));
 assert.deepEqual(denied.users, expectedRoster(roster), 'Author identities and full names are returned even when the requesting actor has no access row.');
 assert.deepEqual(denied.users.map(({id, label, email}) => ({id, label, email})), roster.map(row => ({id: row.ID, label: row.User, email: row.User})), 'Existing roster email remains the Creator username; approval behavior must not change.');
 assert.deepEqual(Object.keys(denied.users[0]), ['id','label','email','userName','approverEmail','fullName'], 'Exactly three additive roster keys; no permission or owner keys are moved.');
@@ -96,6 +96,29 @@ assert.deepEqual(assertParity('unknown', nameCases).lean.value.users, expectedRo
 assert.deepEqual(assertParity('unknown', []).lean.value.users, []);
 assert.equal(assertParity('').lean.value.myId, actor.ID, 'Empty user preserves zoho.loginuser fallback.');
 assert.equal(assertParity(null).lean.value.myId, actor.ID, 'Null user preserves zoho.loginuser fallback.');
+
+// Real name/email-only User Access rows must not break a permission response
+// or become owner/approver choices in either full/lean endpoint or Dev wrapper.
+const notificationContacts=[
+  {ID:'4410926000004465010',User:null,Full_Name:'Null Login Contact',Approver_Email:'null.contact@example.test'},
+  {ID:'4410926000004465011',User:'',Full_Name:'Blank Login Contact',Approver_Email:'blank.contact@example.test'},
+  {ID:'4410926000004465012',Full_Name:'Missing Login Contact',Approver_Email:'missing.contact@example.test'},
+  {ID:'4410926000004465013',User:'   ',Full_Name:'Whitespace Login Contact',Approver_Email:'space.contact@example.test'}
+].map(contact=>({...contact,...Object.fromEntries(fields.map(([field])=>[field,true]))}));
+for(const dev of [false,true]){
+  const rows=[notificationContacts[0],actor,notificationContacts[1],roster[1],...notificationContacts.slice(2)];
+  const value=assertParity('fixture_owner',rows,'fixture_owner',proformas,dev).lean.value;
+  assert.equal(value.myId,actor.ID,'Contacts do not replace the exact matching native actor.');
+  assert.deepEqual(value.users,expectedRoster(roster),'Contacts are omitted while real roster IDs, order, names and legacy username keys remain exact.');
+  for(const [,flag]of fields)assert.equal(value[flag],false,'Permission flags from another contact row never leak into the actor.');
+  const contactRequest=assertParity('null.contact@example.test',rows,'fixture_owner',proformas,dev).lean.value;
+  assert.equal(contactRequest.found,false,'A notification email never authenticates its contact record.');
+  assert.equal(contactRequest.myId,'');
+  for(const [,flag]of fields)assert.equal(contactRequest[flag],false);
+  const noLoginRows=assertParity('unknown',notificationContacts,'fixture_owner',proformas,dev).lean.value;
+  assert.deepEqual(noLoginRows.users,[],'Contact-only inventory is a safe empty login roster, not a null dereference.');
+  assert.equal(noLoginRows.found,false);
+}
 
 for (const [field, flag] of fields) {
   const value = assertParity('fixture_owner', [{...actor, [field]: true}, roster[1]]).lean.value;
@@ -128,4 +151,4 @@ const large = assertParity('fixture_owner', roster, 'fixture_owner', manyForms);
 assert.ok(large.lean.raw.length < large.full.raw.length / 10, 'Lean payload excludes the large PF owner inventory.');
 assert.deepEqual(large.lean.value, assertParity('fixture_owner').lean.value, 'Unrelated PF inventory cannot affect lean permission results.');
 assert.equal(assertParity('fixture_owner', [{...actor,Edit_Delete_All_Modifications:true,Edit_All_Budgets:false}]).lean.value.modAdmin,false,'Retired modification grant never authorizes admin access');
-console.log('PASS: lean/full flag and additive username/email/full-name roster parity; preserved legacy roster keys/order/duplicates; missing/null/blank/unicode names; exact DEV alias; string IDs; read-only execution; no PF scan regardless of inventory.');
+console.log('PASS: lean/full flag and additive username/email/full-name roster parity; contact-only rows omitted without null errors or grants; preserved legacy roster keys/order/duplicates; missing/null/blank/unicode names; exact DEV alias; string IDs; read-only execution; no PF scan regardless of inventory.');

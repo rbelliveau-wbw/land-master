@@ -1,0 +1,20 @@
+// Candidate User_Access / Created or Edited / Validate action.
+// Append to current live validation; preserve unrelated checks.
+if(ifnull(input.User,"").toString().trim() != "")
+{
+    duplicateUsers = User_Access[User == input.User];
+    if(input.ID != null)
+    {
+        duplicateUsers = User_Access[(User == input.User) && (ID != input.ID)];
+    }
+    if(duplicateUsers.count() > 0)
+    {
+        alert "This Creator user already has a User Access record.";
+        cancel submit;
+    }
+}
+else if(input.Approval_Routing_Enabled == true)
+{
+    alert "A notification contact needs a Creator login before approval routing can be enabled.";
+    cancel submit;
+}

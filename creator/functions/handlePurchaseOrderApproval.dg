@@ -20,14 +20,15 @@ map handlePurchaseOrderApproval(map request)
 		if(environmentType == "Development" && zoho.loginuser == zoho.adminuser)
 		{
 			previewActor = User_Access[ID == request.get("userAccessId").toString().toLong()];
-			if(previewActor.count() == 1)
+			if(previewActor.count() == 1 && ifnull(previewActor.User,"").toString().trim() != "")
 			{
 				actorUser = previewActor.User;
 			}
 		}
 		access = User_Access[User == actorUser];
-		if(po.ID == null || access.count() != 1 || access.ID.toString() != request.get("userAccessId") || po.PO_Revision != request.get("expectedRevision"))
+		if(po.ID == null || ifnull(actorUser,"").toString().trim() == "" || access.count() != 1 || ifnull(access.User,"").toString().trim() == "" || access.ID.toString() != request.get("userAccessId") || po.PO_Revision != request.get("expectedRevision"))
 		{
+			result.put("permissionDenied",true);
 			result.put("error","PO revision or authenticated User Access identity changed.");
 			return result;
 		}
@@ -327,6 +328,14 @@ map handlePurchaseOrderApproval(map request)
 		result.put("snapshot",saved);
 		result.put("decisionRowId",rowId);
 		result.put("decision",wanted);
+		if(saved.get("approvalState") == "Approved" || saved.get("approvalState") == "Rejected")
+		{
+			// The saved decision/financial checks and lock release above are final.
+			// Mail is a separate outcome: its failure never replays that decision.
+			if(action != "CheckDecision" && changed) { notification = thisapp.sendPurchaseOrderOutcomeEmail(poId,"",access.ID.toString()); }
+			else { notification = thisapp.poOutcomeNotificationStatus(poId,access.ID.toString()); }
+			result.put("outcomeNotification",notification); saved.put("outcomeNotification",notification); result.put("snapshot",saved);
+		}
 	}	catch (decisionError)
 	{
 		result.put("writeState",if(changed || decisionLockId != 0,"unknown","not-started"));

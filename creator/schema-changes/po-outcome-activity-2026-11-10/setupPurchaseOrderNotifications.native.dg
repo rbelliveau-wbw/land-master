@@ -1,0 +1,349 @@
+map setupPurchaseOrderNotifications(string action)
+{
+	// Private one-time Development installer. Never bind a Custom API.
+	environmentType = thisapp.environment.type;
+	result = {"success":false,"contract":"po-notification-setup-v1","writeState":"not-started"};
+	lockId = 0;
+	wroteContacts = false;
+	settingsWriteStarted = false;
+	try 
+	{
+		if(environmentType != "Development" || zoho.loginuser != zoho.adminuser)
+		{
+			result.put("error","Only the authenticated application owner can run this setup in Development.");
+			return result;
+		}
+		if(action != "Check" && action != "Apply")
+		{
+			result.put("error","Choose Check or Apply.");
+			return result;
+		}
+		seeds = List();
+		seeds.add({"name":"Samuel Spears","email":"sspears@wbdevelopment.com"});
+		seeds.add({"name":"Sokha Sim","email":"ssim@wbdevelopment.com"});
+		seeds.add({"name":"Kimberly M. Singer","email":"kim.singer@wbdevelopment.com"});
+		seeds.add({"name":"Michael Wilson","email":"mwilson@wbdevelopment.com"});
+		// The first pass is entirely read-only. The Apply pass repeats every
+		// preparation check under the existing native unique configuration lock.
+		for each  stage in {"Prepare","Apply"}
+		{
+			settings = Settings[ID != 0];
+			if(settings.count() != 1)
+			{
+				result.put("error","Exactly one Settings record is required.");
+				break;
+			}
+			if(User_Access[ID != 0].count() > 1000)
+			{
+				result.put("error","The contact roster exceeds this setup's bounded review size.");
+				break;
+			}
+			contacts = List();
+			intended = List();
+			samId = "";
+			missing = 0;
+			invalid = "";
+			for each  seed in seeds
+			{
+				matches = 0;
+				foundId = "";
+				for each  person in User_Access[ID != 0]
+				{
+					if(ifnull(person.Approver_Email,"").toString().trim().toLowerCase() == seed.get("email"))
+					{
+						matches = matches + 1;
+						foundId = person.ID.toString();
+					}
+				}
+				if(matches > 1)
+				{
+					invalid = "More than one User Access record matches " + seed.get("email") + ". No records were changed by this setup.";
+				}
+				if(matches == 0)
+				{
+					missing = missing + 1;
+				}
+				if(matches == 1)
+				{
+					intended.add(foundId);
+				}
+				if(seed.get("email") == "sspears@wbdevelopment.com")
+				{
+					samId = foundId;
+				}
+				contacts.add({"name":seed.get("name"),"email":seed.get("email"),"id":foundId,"exists":matches == 1,"matches":matches});
+			}
+			approved = List();
+			rejected = List();
+			for each  selected in settings.PO_Approved_Recipients
+			{
+				selectedPerson = User_Access[ID == selected.ID];
+				if(selectedPerson.count() != 1)
+				{
+					invalid = "An approved recipient is unavailable. Review Settings before setup.";
+				}
+				else
+				{
+					approved.add(selectedPerson.ID.toString());
+				}
+			}
+			for each  selected in settings.PO_Rejected_Recipients
+			{
+				selectedPerson = User_Access[ID == selected.ID];
+				if(selectedPerson.count() != 1)
+				{
+					invalid = "A rejected recipient is unavailable. Review Settings before setup.";
+				}
+				else
+				{
+					rejected.add(selectedPerson.ID.toString());
+				}
+			}
+			if(approved.size() > 0)
+			{
+				if(missing > 0 || approved.size() != 4)
+				{
+					invalid = "Approved recipients contain an unexpected configuration. Setup will not overwrite it.";
+				}
+				for each  selectedId in approved
+				{
+					if(!intended.contains(selectedId))
+					{
+						invalid = "Approved recipients contain an unexpected configuration. Setup will not overwrite it.";
+					}
+				}
+			}
+			if(rejected.size() > 0)
+			{
+				if(rejected.size() != 1 || samId == "" || !rejected.contains(samId))
+				{
+					invalid = "Rejected recipients contain an unexpected configuration. Setup will not overwrite it.";
+				}
+			}
+			configurationState = "Empty";
+			if(approved.size() == 4 && rejected.size() == 1)
+			{
+				configurationState = "Configured";
+			}
+			else if(approved.size() > 0 || rejected.size() > 0)
+			{
+				configurationState = "Partially Configured";
+			}
+			if(invalid != "")
+			{
+				configurationState = "Conflict";
+			}
+			result.put("action",action);
+			result.put("settingsId",settings.ID.toString());
+			result.put("contacts",contacts);
+			result.put("missingCount",missing);
+			result.put("configurationState",configurationState);
+			result.put("approvedIds",approved);
+			result.put("rejectedIds",rejected);
+			result.put("setupLockPresent",Approval_Config_Lock[Lock_Key == "po-notification-setup"].count() > 0);
+			if(invalid != "")
+			{
+				result.put("error",invalid);
+				break;
+			}
+			if(action == "Check")
+			{
+				result.put("success",true);
+				return result;
+			}
+			if(stage == "Prepare")
+			{
+				// Native No Duplicate Values on Lock_Key owns this setup run.
+				lockId = insert into Approval_Config_Lock
+				[
+					Lock_Key="po-notification-setup"
+					Operation_Token="po-notification-setup"
+					Added_User=zoho.loginuser
+				];
+			}
+			else
+			{
+				approvedNative = List();
+				approvedIds = List();
+				rejectedNative = List();
+				rejectedIds = List();
+				created = List();
+				resolvedContacts = List();
+				for each  contact in contacts
+				{
+					currentMatches = 0;
+					currentId = 0;
+					// Recheck immediately before a possible contact insert.
+					for each  person in User_Access[ID != 0]
+					{
+						if(ifnull(person.Approver_Email,"").toString().trim().toLowerCase() == contact.get("email"))
+						{
+							currentMatches = currentMatches + 1;
+							currentId = person.ID;
+						}
+					}
+					if(currentMatches > 1)
+					{
+						result.put("error","A contact email became ambiguous. Check the contact list before another Apply.");
+						break;
+					}
+					wasCreated = false;
+					if(currentMatches == 0)
+					{
+						currentId = insert into User_Access
+						[
+							Full_Name=contact.get("name")
+							Approver_Email=contact.get("email")
+							Approval_Routing_Enabled=false
+							Added_User=zoho.loginuser
+						];
+						wroteContacts = true;
+						wasCreated = true;
+						created.add(currentId.toString());
+					}
+					exactPerson = User_Access[ID == currentId];
+					if(exactPerson.count() != 1)
+					{
+						result.put("error","The contact's native identity is unavailable. Check before another Apply.");
+						break;
+					}
+					approvedNative.add(exactPerson.ID);
+					approvedIds.add(exactPerson.ID.toString());
+					if(contact.get("email") == "sspears@wbdevelopment.com")
+					{
+						rejectedNative.add(exactPerson.ID);
+						rejectedIds.add(exactPerson.ID.toString());
+					}
+					resolvedContacts.add({"name":contact.get("name"),"email":contact.get("email"),"id":exactPerson.ID.toString(),"exists":true,"created":wasCreated});
+				}
+				result.put("contacts",resolvedContacts);
+				result.put("createdIds",created);
+				if(approvedNative.size() != 4 || rejectedNative.size() != 1)
+				{
+					break;
+				}
+				// Recheck duplicate identities before the Settings write, also
+				// covering another owner creating a contact outside this lock.
+				contactConflict = false;
+				for each  contact in resolvedContacts
+				{
+					exactMatches = 0;
+					for each  person in User_Access[ID != 0]
+					{
+						if(ifnull(person.Approver_Email,"").toString().trim().toLowerCase() == contact.get("email"))
+						{
+							exactMatches = exactMatches + 1;
+							if(person.ID.toString() != contact.get("id"))
+							{
+								contactConflict = true;
+							}
+						}
+					}
+					if(exactMatches != 1)
+					{
+						contactConflict = true;
+					}
+				}
+				if(contactConflict)
+				{
+					result.put("error","Contact identities changed during setup. Check duplicate emails before another Apply.");
+					break;
+				}
+				// Contact creation cannot authorize replacing concurrent edits.
+				currentSettings = Settings[ID == settings.ID];
+				if(currentSettings.count() != 1 || Settings[ID != 0].count() != 1)
+				{
+					result.put("error","The Settings singleton changed. Contact records were retained; no Settings were overwritten.");
+					break;
+				}
+				currentApproved = List();
+				currentRejected = List();
+				configurationConflict = false;
+				for each  selected in currentSettings.PO_Approved_Recipients
+				{
+					selectedPerson = User_Access[ID == selected.ID];
+					if(selectedPerson.count() != 1)
+					{
+						configurationConflict = true;
+					}
+					else
+					{
+						currentApproved.add(selectedPerson.ID.toString());
+					}
+				}
+				for each  selected in currentSettings.PO_Rejected_Recipients
+				{
+					selectedPerson = User_Access[ID == selected.ID];
+					if(selectedPerson.count() != 1)
+					{
+						configurationConflict = true;
+					}
+					else
+					{
+						currentRejected.add(selectedPerson.ID.toString());
+					}
+				}
+				if(currentApproved.size() > 0)
+				{
+					if(currentApproved.size() != 4)
+					{
+						configurationConflict = true;
+					}
+					for each  selectedId in currentApproved
+					{
+						if(!approvedIds.contains(selectedId))
+						{
+							configurationConflict = true;
+						}
+					}
+				}
+				if(currentRejected.size() > 0)
+				{
+					if(currentRejected.size() != 1 || !currentRejected.contains(rejectedIds.get(0)))
+					{
+						configurationConflict = true;
+					}
+				}
+				if(configurationConflict)
+				{
+					result.put("error","Recipient Settings changed during setup. Contact records were retained; no Settings were overwritten.");
+					break;
+				}
+				// Native assignments are the save acknowledgement. Do not
+				// automatically compare editable fields after that save.
+				settingsWriteStarted = true;
+				currentSettings.PO_Approved_Recipients=approvedNative;
+				currentSettings.PO_Rejected_Recipients=rejectedNative;
+				result.put("approvedIds",approvedIds);
+				result.put("rejectedIds",rejectedIds);
+				result.put("approvedCount",approvedNative.size());
+				result.put("rejectedCount",rejectedNative.size());
+				result.put("missingCount",0);
+				result.put("configurationState","Configured");
+				result.put("success",true);
+				result.put("writeState","verified");
+			}
+		}
+	}	catch (setupError)
+	{
+		result.put("error","Setup could not finish. Run Check before another Apply; existing contacts and permissions were preserved.");
+		result.put("writeState",if(wroteContacts || settingsWriteStarted,"unknown","not-started"));
+	}
+	if(result.get("success") != true && wroteContacts && !settingsWriteStarted)
+	{
+		result.put("writeState","partial");
+	}
+	if(lockId > 0)
+	{
+		try 
+		{
+			delete from Approval_Config_Lock[ID == lockId && Lock_Key == "po-notification-setup" && Operation_Token == "po-notification-setup"];
+			result.put("setupLockPresent",false);
+		}		catch (releaseError)
+		{
+			result.put("setupLockPresent",true);
+			result.put("warning","The setup lock needs owner review before another Apply.");
+		}
+	}
+	return result;
+}

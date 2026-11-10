@@ -1,0 +1,113 @@
+{
+  "created_at": "2026-11-10T16:29:15.877Z",
+  "validation": {
+    "command": "npm run validate",
+    "exit_code": 0,
+    "lifecycles": [
+      "prevalidate",
+      "validate",
+      "postvalidate"
+    ],
+    "new_suites": [
+      "scripts/test-po-notification-schema.mjs",
+      "scripts/test-po-outcome-email-backend.mjs",
+      "scripts/test-po-activity.mjs"
+    ],
+    "status": "passed-final-source",
+    "final_log": "C:\\Users\\R\\.codex\\worktrees\\po-outcome-activity\\land-master\\tmp\\po-reallocation-width-validate-2026-11-10.log",
+    "additional_current_coverage": [
+      "Private Development setup utility and exact native setup evidence",
+      "Actual generated report/profile capture",
+      "Settled Unknown result returns to readable history without replay",
+      "Formatter-neutral activity query scope, rejected-outcome privacy, sent stamps and financial guard intent",
+      "CSS-only Reallocation desktop width326px to374.9px: exact15% increase; all39 current release assets match source"
+    ]
+  },
+  "pages_build": {
+    "command": "npm run build:pages",
+    "exit_code": 0,
+    "environment_paths": 35
+  },
+  "releases": [
+    {
+      "widget": "budget-manager",
+      "candidate": "122.29.126",
+      "rollback": "122.29.123",
+      "source_sha256": "02f5898dedc6e9cb16ca5efd38cf4d7499e4568c112a791412ff40a2d86eacfb",
+      "files": 39,
+      "all_candidate_files_match_source": true,
+      "development_build_matches_candidate": true,
+      "production_build_matches_previous_release": true
+    },
+    {
+      "widget": "settings-manager",
+      "candidate": "1.6.9",
+      "rollback": "1.6.8",
+      "source_sha256": "9377663cf5cae165f9351030372c0cd58ba1a8035fa958221e87f89c8e9c885c",
+      "files": 21,
+      "all_candidate_files_match_source": true,
+      "development_build_matches_candidate": true,
+      "production_build_matches_previous_release": true
+    }
+  ],
+  "development_mapping": {
+    "proforma-manager": "1.80.142",
+    "budget-manager": "122.29.126",
+    "land-master": "8.17.11",
+    "contract-management": "1.62.59",
+    "tax-center": "19.17.36",
+    "milestone-gantt": "1.1.20",
+    "manage-lots": "0.13.19",
+    "settings-manager": "1.6.9",
+    "lot-sales-explorer": "1.7.0",
+    "forecast-manager": "1.9.1",
+    "crew-locations": "1.10.2"
+  },
+  "stage_and_production_mappings_unchanged": true,
+  "existing_immutable_releases_unchanged": true,
+  "synchronized_interaction_registry_copies": [
+    "widgets/budget-manager/src/app/interaction-surfaces.js",
+    "widgets/contract-management/src/app/interaction-surfaces.js",
+    "widgets/crew-locations/src/app/interaction-surfaces.js",
+    "widgets/forecast-manager/src/app/interaction-surfaces.js",
+    "widgets/land-master/src/app/interaction-surfaces.js",
+    "widgets/lot-sales-explorer/src/app/interaction-surfaces.js",
+    "widgets/manage-lots/src/app/interaction-surfaces.js",
+    "widgets/milestone-gantt/src/app/interaction-surfaces.js",
+    "widgets/proforma-manager/src/app/interaction-surfaces.js",
+    "widgets/settings-manager/src/app/interaction-surfaces.js",
+    "widgets/tax-center/src/app/interaction-surfaces.js"
+  ],
+  "publication": {
+    "git_commit": false,
+    "git_push": false,
+    "pages_published": false,
+    "creator_production_published": false,
+    "live_emails_sent": false,
+    "native_installation_and_readback": "Recorded separately; local validation does not establish native/end-user behavior."
+  },
+  "superseded_local_candidates": [
+    {
+      "widget": "budget-manager",
+      "version": "122.29.124",
+      "retained_immutable": true,
+      "replacement": "122.29.125"
+    },
+    {
+      "widget": "budget-manager",
+      "version": "122.29.125",
+      "retained_immutable": true,
+      "replacement": "122.29.126"
+    }
+  ],
+  "native_function_source_evidence": "function-native-verification.json",
+  "updated_at": "2026-11-10T17:09:25.101Z",
+  "width_followup": {
+    "document": "../../../docs/po-reallocation-width-2026-11-10.md",
+    "previous_px": 326,
+    "current_px": 374.9,
+    "increase_percent": 15,
+    "additional_creator_changes": false,
+    "verification": "Existing regression suites/full validation/Pages build; no live UI gate for this routine presentation adjustment"
+  }
+}

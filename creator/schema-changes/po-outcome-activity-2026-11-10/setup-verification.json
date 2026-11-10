@@ -1,0 +1,44 @@
+{
+  "environment": "Development",
+  "verified_on": "2026-11-10",
+  "status": "native-source-matched-explicit-apply-and-read-only-check-confirmed",
+  "function": "setupPurchaseOrderNotifications",
+  "source": "../../functions/setupPurchaseOrderNotifications.dg",
+  "source_sha256": "3bfc6ebf2337cd06091582f80eef0a10f86f585399b2b2ea7adb5d95de5ec0ce",
+  "native_capture": "setupPurchaseOrderNotifications.native.dg",
+  "native_capture_sha256": "a8eaeec7100636b577a31d2432be838377e2c87e9b0d93c78b3a31cca672430f",
+  "comparison": {
+    "method": "Remove whitespace/comments outside string literals and compare complete ordered code tokens plus exact ordered string literals. Parentheses are retained.",
+    "strict_code_tokens_equal": true,
+    "all_string_literals_equal": true,
+    "canonical_sha256": "b7da0fd259008c8aaacdc5ca1fa5009671ab9dafa8ce9db24b284203f31748ea",
+    "native_grouping_fix": "Both rejected-list predicates use nested branches. Final capture preserves exact grouping and braces; unsafe earlier flattened capture is superseded."
+  },
+  "execution": {
+    "actor": "Authenticated application owner in native Development function editor",
+    "apply_result": "setup-apply.native.json",
+    "read_only_check_after": "setup-check-after.native.json",
+    "settings_id": "4410926000000687647",
+    "configuration_state": "Configured",
+    "missing_count": 0,
+    "approved_count": 4,
+    "rejected_count": 1,
+    "setup_lock_present_after": false,
+    "created_contact_ids": ["4410926000005894715"]
+  },
+  "development_contacts": [
+    {"name":"Samuel Spears","email":"sspears@wbdevelopment.com","id":"4410926000005910064"},
+    {"name":"Sokha Sim","email":"ssim@wbdevelopment.com","id":"4410926000005910066"},
+    {"name":"Kimberly M. Singer","email":"kim.singer@wbdevelopment.com","id":"4410926000005910068"},
+    {"name":"Michael Wilson","email":"mwilson@wbdevelopment.com","id":"4410926000005894715"}
+  ],
+  "boundaries": {
+    "email_sent": false,
+    "creator_account_created": false,
+    "existing_contact_permissions_changed": false,
+    "construction_pm_assigned": false,
+    "production_changed": false,
+    "creator_published": false,
+    "live_po_outcome_or_retry_verified": false
+  }
+}

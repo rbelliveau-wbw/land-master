@@ -96,14 +96,19 @@ string getUserAccess(string user)
 	allRows = User_Access[ID != null];
 	for each  r in allRows
 	{
-		m = Map();
-		m.put("id",r.ID.toString());
-		m.put("label",r.User.toString());
-		m.put("email",r.User.toString());
-		m.put("userName",r.User.toString());
-		m.put("approverEmail",ifnull(r.Approver_Email,"").toString().trim());
-		m.put("fullName",ifnull(r.Full_Name,"").toString().trim());
-		userList.add(m);
+		// Name/email-only notification contacts are not login/owner choices.
+		// Settings notification pickers read their own authorized contact report.
+		if(ifnull(r.User,"").toString().trim() != "")
+		{
+			m = Map();
+			m.put("id",r.ID.toString());
+			m.put("label",r.User.toString());
+			m.put("email",r.User.toString());
+			m.put("userName",r.User.toString());
+			m.put("approverEmail",ifnull(r.Approver_Email,"").toString().trim());
+			m.put("fullName",ifnull(r.Full_Name,"").toString().trim());
+			userList.add(m);
+		}
 	}
 	// Return authoritative Pro Forma Owner IDs server-side.
 	proformaOwnerMap = Map();

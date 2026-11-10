@@ -10,9 +10,9 @@
 <script src="settings-controller.js"></script>
 <script src="workflow-log.js"></script>
 <link rel="stylesheet" href="workflow-log.css">
-<script src="approval-policy-domain.js?v=1.6.8"></script>
-<script src="approval-admin.js?v=1.6.8"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.6.8">
+<script src="approval-policy-domain.js?v=1.6.9"></script>
+<script src="approval-admin.js?v=1.6.9"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.6.9">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -250,17 +250,17 @@ td input,td select{padding:5px 8px}
 .settings-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-dialog h2{font-size:16px;margin:0}.settings-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
-<script src="success-feedback.js?v=1.6.8"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.6.8">
-<script src="interaction-motion.js?v=1.6.8"></script>
-<script src="interaction-surfaces.js?v=1.6.8"></script>
-<script src="number-edit-commit.js?v=1.6.8"></script>
-<script src="number-transitions.js?v=1.6.8"></script>
-<script src="number-surfaces.js?v=1.6.8"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.6.8">
-<link rel="stylesheet" href="settings-workspace.css?v=1.6.8">
-<link rel="stylesheet" href="settings-pickers.css?v=1.6.8">
-<script src="settings-pickers.js?v=1.6.8"></script>
+<script src="success-feedback.js?v=1.6.9"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.6.9">
+<script src="interaction-motion.js?v=1.6.9"></script>
+<script src="interaction-surfaces.js?v=1.6.9"></script>
+<script src="number-edit-commit.js?v=1.6.9"></script>
+<script src="number-transitions.js?v=1.6.9"></script>
+<script src="number-surfaces.js?v=1.6.9"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.6.9">
+<link rel="stylesheet" href="settings-workspace.css?v=1.6.9">
+<link rel="stylesheet" href="settings-pickers.css?v=1.6.9">
+<script src="settings-pickers.js?v=1.6.9"></script>
 </head>
 <body>
 
@@ -300,7 +300,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.6.8";
+var SMW_VERSION = "1.6.9";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -404,6 +404,13 @@ var GROUPS = [
       { n:"Multi_Line", l:"Multi Line", t:"text",
         hint:"Additional text retained from the native Budget settings." }
     ]},
+  { key:"purchase-orders", title:"Purchase Orders",
+    fields:[
+      { n:"PO_Approved_Recipients", l:"Approved Notification Recipients", t:"multi", src:"notificationContacts",
+        hint:"Final approval email · the territory's Construction PM is also included." },
+      { n:"PO_Rejected_Recipients", l:"Rejected Notification Recipients", t:"multi", src:"notificationContacts",
+        hint:"Rejection email · the territory's Construction PM is also included." }
+    ]},
   { key:"defaults", title:"Pro Forma Defaults", percentGrid:true,
     blurb:"Percentage defaults applied to new pro formas.",
     fields:[
@@ -481,6 +488,7 @@ var SETTINGS_SCREENS=[
   {key:'forecasting',title:'Forecasting',group:'Modules',icon:'chart',description:'Control the forecasting window and global unlocks.'},
   {key:'contracts',title:'Contracts & Legal',group:'Modules',icon:'document',description:'Legal notifications and new builder contract templates.'},
   {key:'budget',title:'Budget',group:'Modules',icon:'wallet',description:'Budget configuration and retained legacy settings.'},
+  {key:'purchase-orders',title:'Purchase Orders',group:'Modules',icon:'document',description:'Final approval and rejection notifications.'},
   {key:'defaults',title:'Pro Forma Defaults',group:'Modules',icon:'sliders',description:'Starting percentages for new pro formas.'},
   {key:'curve',title:'Construction Curves',group:'Modules',icon:'curve',description:'Distribute construction cost across each month.'},
   {key:'aireview',title:'AI Review',group:'AI & Data',icon:'spark',description:'Pro forma review criteria, provider and model.'},
@@ -892,6 +900,9 @@ function emailChips(f,v){
 }
 
 function optionsFor(src){
+  if(src==="notificationContacts") return S.users.filter(function(r){return validEmail(str(r.Approver_Email).trim());}).map(function(r){
+    return {id:str(r.ID),label:str(r.Full_Name)||str(r.Approver_Email),meta:str(r.Approver_Email)};
+  }).sort(function(a,b){return a.label.localeCompare(b.label);});
   if(src==="users") return S.users.map(function(r){
     return {id:str(r.ID),label:str(r.Full_Name)||relLabel(r.User)||("#"+r.ID),meta:str(r.Approver_Email)||"No email configured"};
   }).sort(function(a,b){return a.label.localeCompare(b.label);});
@@ -1321,6 +1332,7 @@ function fallbackDemo(){
     Approval_Reminder_Interval_Days:"3",Next_Approval_Reminder_Date:"08/29/2026",
     Open_Forecasting_Window:false,Unlock_All_Forecasts:false,
     Receive_Legal_Notifications:"rbelliveau@wbdevelopment.com,rharris@wbdevelopment.com",
+    PO_Approved_Recipients:[],PO_Rejected_Recipients:[],
     Builder_Approval_Template:[],Builder_Contract_Action_Template:[],
     COO_Approval_Threshold:"10000",Multi_Line:"",
     Capital_Cost:"",Points:"",Admin_Cost:"",Engineering_Markup:"",Engineering_Sub_Markup:"",

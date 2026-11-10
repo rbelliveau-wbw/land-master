@@ -1,0 +1,186 @@
+// Candidate native definition. Not evidence of installation.
+// Internal server-written evidence. No ordinary profile form/report grants.
+form Activity_Log
+{
+    displayname = "Activity Log"
+    success message = "Activity recorded"
+    Section
+    (
+        type = section
+        row = 1
+        column = 0
+        width = medium
+    )
+    must have unique Claim_Key
+    (
+        type = text
+        displayname = "Claim Key"
+        row = 1
+        column = 1
+        width = medium
+    )
+    must have Object_Type
+    (
+        type = text
+        displayname = "Object Type"
+        row = 1
+        column = 1
+        width = medium
+    )
+    must have Object_ID
+    (
+        type = text
+        displayname = "Object ID"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Context_Type
+    (
+        type = text
+        displayname = "Context Type"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Context_ID
+    (
+        type = text
+        displayname = "Context ID"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Process
+    (
+        type = text
+        row = 1
+        column = 1
+        width = medium
+    )
+    Event
+    (
+        type = text
+        row = 1
+        column = 1
+        width = medium
+    )
+    Operation_ID
+    (
+        type = text
+        displayname = "Operation ID"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Attempt_No
+    (
+        type = number
+        displayname = "Attempt Number"
+        maxchar = 9
+        row = 1
+        column = 1
+        width = medium
+    )
+    Status
+    (
+        type = picklist
+        values = {"Preparing","Sending","Sent","Failed","Unknown","Skipped"}
+        row = 1
+        column = 1
+        width = medium
+    )
+    Recipient_Email
+    (
+        type = email
+        displayname = "Recipient Email"
+        maxchar = 250
+        row = 1
+        column = 1
+        width = medium
+    )
+    Recipient_Name
+    (
+        type = text
+        displayname = "Recipient Name"
+        row = 1
+        column = 1
+        width = medium
+    )
+    Subject
+    (
+        type = text
+        row = 1
+        column = 1
+        width = medium
+    )
+    Started_At
+    (
+        type = datetime
+        displayname = "Started At"
+        timedisplayoptions = "hh:mm:ss"
+        alloweddays = 0,1,2,3,4,5,6
+        row = 1
+        column = 1
+        width = medium
+    )
+    Sent_At
+    (
+        type = datetime
+        displayname = "Sent At"
+        timedisplayoptions = "hh:mm:ss"
+        alloweddays = 0,1,2,3,4,5,6
+        row = 1
+        column = 1
+        width = medium
+    )
+    Error_Detail
+    (
+        type = textarea
+        displayname = "Error Detail"
+        height = 100px
+        row = 1
+        column = 1
+        width = medium
+    )
+    Snapshot
+    (
+        type = textarea
+        height = 100px
+        row = 1
+        column = 1
+        width = medium
+    )
+    Actor_ID
+    (
+        type = text
+        displayname = "Actor ID"
+        row = 1
+        column = 1
+        width = medium
+    )
+    actions
+    {
+        on add
+        {
+            submit
+            (
+                type = submit
+                displayname = "Submit"
+            )
+        }
+        on edit
+        {
+            update
+            (
+                type = submit
+                displayname = "Update"
+            )
+            cancel
+            (
+                type = cancel
+                displayname = "Cancel"
+            )
+        }
+    }
+}

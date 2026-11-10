@@ -4,22 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.123"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.126"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.123"></script>
-<script src="po-reallocation.js?v=122.29.123"></script>
-<script src="po-reallocation-ui.js?v=122.29.123"></script>
-<script src="po-grid.js?v=122.29.123"></script>
-<script src="po-controller.js?v=122.29.123"></script>
-<script src="po-progress.js?v=122.29.123"></script>
-<script src="po-ui.js?v=122.29.123"></script>
-<script src="request-attachments.js?v=122.29.123"></script>
-<script src="full-budget-export.js?v=122.29.123"></script>
-<script src="budget-snapshot-pdf.js?v=122.29.123"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.123">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.123">
+<script src="po-domain.js?v=122.29.126"></script>
+<script src="po-reallocation.js?v=122.29.126"></script>
+<script src="po-reallocation-ui.js?v=122.29.126"></script>
+<script src="po-grid.js?v=122.29.126"></script>
+<script src="po-controller.js?v=122.29.126"></script>
+<script src="po-progress.js?v=122.29.126"></script>
+<script src="po-activity.js?v=122.29.126"></script>
+<script src="po-ui.js?v=122.29.126"></script>
+<script src="request-attachments.js?v=122.29.126"></script>
+<script src="full-budget-export.js?v=122.29.126"></script>
+<script src="budget-snapshot-pdf.js?v=122.29.126"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.126">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.126">
+<link rel="stylesheet" href="po-activity.css?v=122.29.126">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1845,20 +1847,20 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.123">
-<script src="success-feedback.js?v=122.29.123"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.123">
-<script src="interaction-motion.js?v=122.29.123"></script>
-<script src="interaction-surfaces.js?v=122.29.123"></script>
-<script src="number-edit-commit.js?v=122.29.123"></script>
-<script src="number-transitions.js?v=122.29.123"></script>
-<script src="number-surfaces.js?v=122.29.123"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.123">
-<script src="budget-import-ledger.js?v=122.29.123"></script>
-<script src="budget-import-workspace.js?v=122.29.123"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.123">
-<script src="budget-requests-workspace.js?v=122.29.123"></script>
-<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.123">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.126">
+<script src="success-feedback.js?v=122.29.126"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.126">
+<script src="interaction-motion.js?v=122.29.126"></script>
+<script src="interaction-surfaces.js?v=122.29.126"></script>
+<script src="number-edit-commit.js?v=122.29.126"></script>
+<script src="number-transitions.js?v=122.29.126"></script>
+<script src="number-surfaces.js?v=122.29.126"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.126">
+<script src="budget-import-ledger.js?v=122.29.126"></script>
+<script src="budget-import-workspace.js?v=122.29.126"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.126">
+<script src="budget-requests-workspace.js?v=122.29.126"></script>
+<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.126">
 
 </head>
 <body>
@@ -2739,7 +2741,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.123", code:"BMW",
+  widget:"Budget Manager", version:"122.29.126", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -12954,6 +12956,18 @@ function poDevelopment(){
   return ["DEVELOPMENT","PRODUCTION"].indexOf(String(LMRuntime.current().environment||"").toUpperCase())>=0;
 }
 var purchaseOrderUI = null;
+var purchaseOrderActivity = null;
+function openPurchaseOrderActivity(id,trigger){
+  if(!requireBudgetRequestDetail()||!S.edBudget||S.edPhaseIdx==="all"||!poDevelopment())return;
+  if(!window.LMPOActivity){toastShow("PO Email Activity could not be loaded. Reload Budget Manager.");return;}
+  if(!purchaseOrderActivity)purchaseOrderActivity=LMPOActivity.create({
+    scope:function(bid){return S.view==="vEditor"&&S.edBudget&&String(S.edBudget.ID)===bid&&budgetDetailReady(bid)?budgetCreateScope("po-email-activity",bid)+JSON.stringify([S.myAccessId,S.perms||S.acc||null]):null;},
+    userAccessId:function(){return String(S.myAccessId||"");},phaseName:phaseName,
+    error:function(error){toastShow(shortErr(error));},
+    call:function(payload){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify(payload)}).then(unwrapBudgetManageResponse);}
+  });
+  return purchaseOrderActivity.open(S.edBudget,trigger,id||null).catch(function(error){toastShow(shortErr(error));});
+}
 function refreshPurchaseOrderRequestState(snapshot){
   if(typeof invalidateAllRequestsIndex==="function")invalidateAllRequestsIndex();
   var bid=String(snapshot.budgetId||""),token=budgetNavigationToken(),scope=budgetCreateScope("requests",bid),reads=[];
@@ -12995,6 +13009,7 @@ function getPurchaseOrderUI(){
   saveAttachments:function(model,snapshot){if(model.attachmentDraft&&model.attachmentDraft.entries.length)model.attachmentTab='files';return flushRequestAttachmentDraft(model,S.edBudget,{kind:'payment',id:snapshot.id,budgetId:snapshot.budgetId});},
   detachAttachments:function(card){if(requestAttachmentUI)requestAttachmentUI.unmount(card);},
   attachmentBusy:function(){return S.attachmentBusy;},
+  activity:function(model,trigger){return openPurchaseOrderActivity(model.id,trigger);},
   call:function(payload){return sdkRunBudgetFunction("managePurchaseOrder",{payload:JSON.stringify(payload)}).then(unwrapBudgetManageResponse);},
   saved:refreshPurchaseOrderRequestState
 });
@@ -14066,6 +14081,7 @@ function renderModPhasePanel(b) {
   var html = "<div class='mod-page'>";
   html += "<div class='mod-page-head'>" +
     "<div class='mod-page-title'>Requests<span class='request-rail-sort'>Newest First</span></div>" +
+    "<div class='request-rail-heading-actions'>"+(poDevelopment()?"<button class='btn po-email-activity-link' type='button' data-budget-po-activity><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' aria-hidden='true'><path d='M4 4h16v16H4zM8 8h8M8 12h8M8 16h5'/></svg>Email Activity</button>":"")+
     "<div class='request-menu export-dd-wrap'>" +
       "<button class='btn mod-page-add' type='button' id='requestMenuBtn' aria-expanded='false'>Request <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' style='width:13px;height:13px'><path d='M6 9l6 6 6-6'/></svg></button>" +
       "<div class='export-dd' id='requestMenu' style='display:none'>" +
@@ -14073,7 +14089,7 @@ function renderModPhasePanel(b) {
         "<button class='export-dd-row' type='button' data-request-kind='check'"+(canStartBudgetRequest('check',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M3 7h18v10H3zM3 10h18M7 14h4'/></svg><span class='export-dd-label'>Check Request</span></button>" +
         "<button class='export-dd-row' type='button' data-request-kind='wire'"+(canStartBudgetRequest('wire',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M4 5h16v14H4zM8 10h8M8 14h8'/></svg><span class='export-dd-label'>Wire Request</span></button>" +
         "<button class='export-dd-row' type='button' data-request-kind='purchase-order'"+(canStartBudgetRequest('purchase-order',b)?"":" disabled")+"><svg class='export-dd-icon' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' aria-hidden='true'><path d='M6 3h12v18H6zM9 8h6M9 12h6M9 16h4'/></svg><span class='export-dd-label'>Purchase Order</span></button>" +
-      "</div></div>" +
+      "</div></div></div>" +
   "</div>";
   html += renderRequestRailList(b) + "</div>";
   el.innerHTML = html;
@@ -14239,6 +14255,8 @@ function handleModDecision(modId, rowId, approve, notes) {
 $("modModalClose").addEventListener("click", closeModModal);
 $("modOverlay").addEventListener("click", function (e) { if (e.target === this) closeModModal(); });
 function handleBudgetRequestClick(e) {
+  var poActivity=e.target.closest("[data-budget-po-activity]");
+  if(poActivity){openPurchaseOrderActivity(null,poActivity);return;}
   var approvalPO=e.target.closest("[data-request-po-approvals]");
   if(approvalPO){openPOApprovalDetails(approvalPO.dataset.requestPoApprovals,approvalPO);return;}
   var downloadPO=e.target.closest("[data-request-po-download]");
@@ -14778,7 +14796,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.123",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.126",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

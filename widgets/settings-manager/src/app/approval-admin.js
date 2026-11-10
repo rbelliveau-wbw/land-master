@@ -35,7 +35,7 @@
     function territories(){return [{id:'',label:'All territories'}].concat(config.territories);}
     function departments(){return [{id:'',label:'All departments'}].concat(choices(['Development','Construction','Engineering','Surveying']));}
     function roleRows(){return config.roles.map(function(row){return {id:row.id,label:row.name+(row.active?'':' · Inactive')};});}
-    function userRows(){return config.users.map(function(row){return {id:row.id,label:row.name||row.user,detail:(row.approverEmail||'No approval email')+(row.routingEnabled?'':' · Routing disabled')};});}
+    function userRows(){return config.users.filter(function(row){return typeof row.user==='string'&&row.user.trim()!=='';}).map(function(row){return {id:row.id,label:row.name||row.user,detail:(row.approverEmail||'No approval email')+(row.routingEnabled?'':' · Routing disabled')};});}
     function scopeFields(data){return picker('Territory','territory',data.territory||'',territories())+picker('Department','department',data.department||'',departments());}
     function scopeLabel(data){var territory=config.territories.find(function(row){return row.id===data.territory;});return (territory?territory.label||territory.name||territory.id:data.territory||'All territories')+' · '+(data.department||'All departments');}
     function roleName(id){return (config.roles.find(function(role){return role.id===id;})||{}).name||'Choose role';}

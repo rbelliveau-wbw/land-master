@@ -128,7 +128,7 @@
       if (!S.live || S.demo || !S.ready || !S.rec || S.refreshing || S.curveBusy || S.loadBlocked || S.uncertain || S.curveUncertain) return false;
       if (field && !own(S.rec, field)) return false;
       const type = field && options.field(field);
-      return !(type && type.t === 'multi' && type.src && S.resources[type.src] !== 'ready');
+      return !(type && type.t === 'multi' && type.src && S.resources[type.src === 'notificationContacts' ? 'users' : type.src] !== 'ready');
     }
     function value(field) { return own(S.drafts, field) ? copy(S.drafts[field].value) : S.rec && S.rec[field]; }
     function queue(field, proposed) {
@@ -137,6 +137,21 @@
       let invalid = null;
       if (definition && definition.t === 'multi') {
         try { proposed = list(proposed); } catch (error) { invalid = error; }
+        if (!invalid && definition.src === 'notificationContacts') {
+          let previous = [];
+          try { previous = list(S.rec[field]); } catch (error) { invalid = error; }
+          for (const contactId of proposed) {
+            if (invalid) break;
+            // Retain already-saved unresolved IDs; only newly selected contacts
+            // must be present and have a usable notification address.
+            if (previous.includes(contactId)) continue;
+            const contacts = S.users.filter(row => id(row.ID) === contactId);
+            if (contacts.length !== 1 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(contacts[0].Approver_Email || '').trim())) {
+              invalid = problem('Choose a contact with a valid email address. The draft is retained.', null, 'rejected');
+              break;
+            }
+          }
+        }
       }
       if (definition && definition.t === 'money') {
         try { proposed = moneyText(proposed); } catch (error) { invalid = error; }

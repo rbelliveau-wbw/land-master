@@ -1,0 +1,3 @@
+// Internal Activity_Log / Deleted / Validate action.
+alert "Activity history cannot be deleted directly.";
+cancel delete;

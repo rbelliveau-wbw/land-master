@@ -1,6 +1,8 @@
 string sendPurchaseOrderEmail(string purchaseOrderId)
 {
 	environmentType = thisapp.environment.type;
+	activityId = 0;
+	mailStarted = false;
 	try
 	{
 		checked = thisapp.poApprovalBundle(purchaseOrderId);
@@ -31,6 +33,29 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		{
 			return "ERROR: PO approval state changed before notification.";
 		}
+		operation = "po-approval|" + purchaseOrderId + "|" + po.PO_Revision + "|" + approval.ID;
+		latestId = 0; nextAttempt = 1;
+		for each previous in Activity_Log[Operation_ID == operation && Event == "Approval Request Email"] { if(previous.ID > latestId) { latestId = previous.ID; } }
+		if(latestId > 0)
+		{
+			previous = Activity_Log[ID == latestId];
+			if(previous.Status == "Sent" && previous.Sent_At != null) { approval.Sent_Date=previous.Sent_At.toDate(); return "OK: Approval email already recorded."; }
+			if(previous.Status != "Failed") { return "ERROR: The prior approval email attempt needs a read-only delivery check. It was not resent."; }
+			nextAttempt = previous.Attempt_No + 1;
+		}
+		actorId = ""; nativeActor = User_Access[User == zoho.loginuser];
+		if(nativeActor.count() == 1) { actorId = nativeActor.ID.toString(); }
+		currentLock = PO_Phase_Lock[Phase_Key == po.Budget.toString()];
+		if(currentLock.count() == 1 && currentLock.Actor != null) { actorId = currentLock.Actor.toString(); }
+		emailAddress = ifnull(approval.Approver,"").trim().toLowerCase();
+		validEmailAddress = emailAddress.matches("^[^\\s@]+@[^\\s@]+[.][^\\s@]+$");
+		recipientName = ifnull(active.get("name"),"");
+		activityProof = {"revision":po.PO_Revision,"recipientKey":"approver-" + approval.ID,"approvalId":approval.ID.toString(),"userAccessId":active.get("userAccessId")};
+		activityEvent = {"operationId":operation,"recipientKey":"approver-" + approval.ID,"objectType":"Purchase Order","objectId":purchaseOrderId,"contextType":"Budget","contextId":po.Budget.toString(),"process":"PO Approval","event":"Approval Request Email","recipientEmail":if(validEmailAddress,emailAddress,null),"recipientName":recipientName,"subject":"Purchase Order Approval","snapshot":activityProof,"actorId":actorId};
+		claim = thisapp.activityEmailClaim(activityEvent,nextAttempt);
+		if(claim.get("claimed") != true) { return "ERROR: " + claim.get("error"); }
+		activityId = claim.get("id").toLong(); activity = Activity_Log[ID == activityId];
+		if(!validEmailAddress) { activity.Status="Failed"; activity.Error_Detail="The active approver has no valid email address. No email was sent."; return "ERROR: The active approver has no valid email address."; }
 		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		requestDate = "—";
@@ -63,6 +88,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		{
 			if(urlEnvironment != "development" && urlEnvironment != "stage")
 			{
+				activity.Status="Failed"; activity.Error_Detail="PO email environment is unavailable. No email was sent.";
 				return "ERROR: PO email environment is unavailable.";
 			}
 			appBase = appBase + "/environment/" + urlEnvironment;
@@ -73,7 +99,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		if(bundle.get("modifications").size() > 0)
 		{
 			elementBody = "<h3 style='font-size:15px;margin:18px 0 8px'>Proposed Budget Changes</h3><table style='width:100%;font-size:10px;border-collapse:collapse'><thead><tr>";
-			for each heading in {"Budget Item","Net Change","(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other"}
+			for each heading in {"Cost Code","Budget Item","Net Change","(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other"}
 			{
 				elementBody = elementBody + "<th style='padding:5px;border-bottom:1px solid #cbd5e1;text-align:right'>" + heading + "</th>";
 			}
@@ -82,9 +108,10 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			{
 				modItem = Budget_Item[ID == modification.get("budgetItemId").toLong()];
 				modItemName = ifnull(modItem.Item_Name,"Budget Item").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+				modCostCode = ifnull(modItem.Cost_Code,"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 				modNet = modification.get("amount").toDecimal();
 				if(modification.get("componentReallocation") == true && modification.get("modificationType") == "Decrease") { modNet = 0 - modNet; }
-				elementBody = elementBody + "<tr><td style='padding:5px'>" + modItemName + "</td><td style='padding:5px;text-align:right'>" + modNet.text("$#,##0.00") + "</td>";
+				elementBody = elementBody + "<tr><td style='padding:5px'>" + modCostCode + "</td><td style='padding:5px'>" + modItemName + "</td><td style='padding:5px;text-align:right'>" + modNet.text("$#,##0.00") + "</td>";
 				for each componentCode in {"1","2","3","4","5"}
 				{
 					modPart = null;
@@ -99,14 +126,15 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			elementBody = elementBody + "</tbody></table>";
 		}
 		elementBody = elementBody + "<h3 style='font-size:15px;margin:18px 0 8px'>Budget Element Details</h3><table style='width:100%;font-size:10px;border-collapse:collapse'><thead><tr>";
-		for each heading in {"Budget Item","Element","Final","Approved Mods","Modified Budget","Existing POs","Available","This PO","Remaining"}
+		for each heading in {"Cost Code","Budget Item","Element","Final","Approved Mods","Modified Budget","Existing POs","Available","This PO","Remaining"}
 		{
 			elementBody = elementBody + "<th style='padding:5px;border-bottom:1px solid #cbd5e1;text-align:right'>" + heading + "</th>";
 		}
 		elementBody = elementBody + "</tr></thead><tbody>";
 		for each element in thisapp.poElementExportRows(purchaseOrderId)
 		{
-			elementBody = elementBody + "<tr>";
+			costCode = ifnull(element.get("costCode"),"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			elementBody = elementBody + "<tr><td style='padding:5px;border-bottom:1px solid #e2e8f0'>" + costCode + "</td>";
 			elementIndex = 0;
 			for each value in element.get("values")
 			{
@@ -133,9 +161,13 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		workbook = thisapp.poExcelWorkbook(purchaseOrderId);
 		if(workbook.get("success") != true)
 		{
+			activity.Status="Failed"; activity.Error_Detail="The PO Excel attachment could not be generated. No email was sent.";
 			return "ERROR: PO Excel attachment could not be generated.";
 		}
 		excelFile = workbook.get("content").toFile(workbook.get("filename"));
+		activity.Subject=subjectLine;
+		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { activity.Status="Failed"; activity.Error_Detail="The approval changed before notification. No email was sent."; return "ERROR: PO approval state changed before notification."; }
+		activity.Status="Sending"; mailStarted = true;
 		sendmail
 		[
 			from :"Notifications@wbdevelopment.com"
@@ -144,14 +176,18 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			message :body
 			Attachments :file:excelFile
 		]
+		activity.Sent_At=zoho.currenttime;
 		approval.Sent_Date=zoho.currentdate;
 		if(approval.Sent_Date == null)
 		{
+			activity.Status="Unknown"; activity.Error_Detail="Email was submitted, but its approval delivery stamp could not be confirmed.";
 			return "ERROR: Email delivery stamp could not be verified.";
 		}
+		activity.Status="Sent";
 		return "OK: Combined PO approval email recorded.";
 	}	catch (emailError)
 	{
+		if(activityId > 0) { activity = Activity_Log[ID == activityId]; activity.Status=if(mailStarted,"Unknown","Failed"); activity.Error_Detail=if(mailStarted,"Email delivery could not be confirmed. Check delivery before any resend.","The notification could not be prepared. No email was sent."); }
 		return "ERROR: Combined approval email delivery could not be verified.";
 	}
 	return "ERROR: Combined approval email did not finish.";

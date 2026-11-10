@@ -1,0 +1,54 @@
+{
+  "success": true,
+  "contract": "po-notification-setup-v1",
+  "writeState": "verified",
+  "action": "Apply",
+  "settingsId": "4410926000000687647",
+  "contacts": [
+    {
+      "name": "Samuel Spears",
+      "email": "sspears@wbdevelopment.com",
+      "id": "4410926000005910064",
+      "exists": true,
+      "created": false
+    },
+    {
+      "name": "Sokha Sim",
+      "email": "ssim@wbdevelopment.com",
+      "id": "4410926000005910066",
+      "exists": true,
+      "created": false
+    },
+    {
+      "name": "Kimberly M. Singer",
+      "email": "kim.singer@wbdevelopment.com",
+      "id": "4410926000005910068",
+      "exists": true,
+      "created": false
+    },
+    {
+      "name": "Michael Wilson",
+      "email": "mwilson@wbdevelopment.com",
+      "id": "4410926000005894715",
+      "exists": true,
+      "created": true
+    }
+  ],
+  "missingCount": 0,
+  "configurationState": "Configured",
+  "approvedIds": [
+    "4410926000005910064",
+    "4410926000005910066",
+    "4410926000005910068",
+    "4410926000005894715"
+  ],
+  "rejectedIds": [
+    "4410926000005910064"
+  ],
+  "setupLockPresent": false,
+  "createdIds": [
+    "4410926000005894715"
+  ],
+  "approvedCount": 4,
+  "rejectedCount": 1
+}

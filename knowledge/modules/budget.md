@@ -1,3 +1,11 @@
+## Reallocation Panel Width — 122.29.126, November 10, 2026
+
+The desktop Reallocation panel is 15% wider: 326px → 374.9px. The PO and Summary
+share the remaining viewport width. This CSS-only adjustment has no form, field,
+function or Custom API changes and requires no additional Creator deployment.
+The release also retains the prepared PO email/activity work. See
+[verification and rollback](../../docs/po-reallocation-width-2026-11-10.md).
+
 ## Eagle Prairie PO Check — 122.29.123, November 10, 2026
 
 Live line totals, grouped balances and temporary signed/zero-net allocation
@@ -2697,4 +2705,47 @@ grouped paste, malformed separators, Manual/Calculated parity and scoped edits.
 Rollback: restore Budget widget production mapping to 122.29.102 and rebuild Pages;
 retain the permanent Creator widget URL. The Construction element data backfill
 is a separate operation and is not performed by this widget change.
+
+## PO Outcome Notifications And Email Activity — November 10, 2026
+
+Final Approved POs notify the Settings approved-recipient list plus the saved
+territory's **Construction PM**; Rejected POs use the rejected list plus that
+PM. Initial fixed lists are Sam/Sokha/Kim/Mike and Sam respectively. Settings
+stores User Access references, including name/email-only contacts without a
+Creator login or approval authority. Construction PM is a single native
+Territory lookup, not an added approval step.
+
+Outcome mail is separate from the active-approver request. It has a compact
+cost-code/PO-total summary and grand total, with no workbook
+attachment. Existing Pending approver mail keeps its Excel attachment. The
+verified final decision and financial state stay saved when mail needs
+attention. Terminal progress claims notifications sent only from matching
+versioned outcome evidence and successful native send stamps; API success alone
+does not establish mail success.
+
+Phase Requests and saved PO details expose **Email Activity**. The reusable
+`Activity_Log` stores generic object/context IDs and every email/retry attempt.
+The view shows dated recipients/statuses and scoped older pages, with expanded
+subject/errors. Sent records Creator's accepted send request, not recipient
+delivery/read. Only a latest confirmed Failed outcome can be retried; unknown
+replies retain read-only Check Status through close/reopen. An exact interrupted
+plan can resume only recipients that have never been claimed. Reads, refreshes
+and opening Activity never send or replay a decision.
+
+Settled results, including Unknown, have Back To Activity. This returns to
+readable history and performs only a scoped refresh. Closing/reopening also
+returns to history, retaining unresolved targets as Check-only per recipient;
+other confirmed Failed rows remain usable. A second row action or refreshed
+event object cannot discard the first unresolved request.
+
+Read through existing authenticated `Manage_Purchase_Order` Activity, not a new
+raw-report grant. RetryOutcomeEmail and CheckOutcomeEmail retain exact
+PO/Budget/actor/revision/attempt scope, stable recipient identity, native unique
+claims and existing approval/financial guards. Email-only User Access rows
+cannot impersonate an authenticated user, including Development preview.
+
+See [the feature contract](../../docs/po-outcome-notifications-2026-11-10.md) for
+schema/functions, contacts, DTOs, retry predicates, checks and rollback.
+Source/local checks are available; native installation/publication, desktop
+evidence and exact release/promotion versions remain pending until recorded.
 

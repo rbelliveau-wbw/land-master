@@ -1,0 +1,21 @@
+{
+  "environment": "Development",
+  "function": "managePurchaseOrder",
+  "source": "final-hardened",
+  "request": {
+    "action": "Activity",
+    "budgetId": "4410926000005122080",
+    "userAccessId": "4410926000004487016"
+  },
+  "response": {
+    "success": true,
+    "contract": "po-v1",
+    "activityContract": "po-activity-v1",
+    "writeState": "not-started",
+    "events": [],
+    "hasMore": false,
+    "nextCursor": ""
+  },
+  "noWrites": true,
+  "noEmail": true
+}

@@ -1,0 +1,17 @@
+// Candidate replacement of only User: remove "must have".
+// Keep Full_Name and Approver_Email mandatory and all permission defaults.
+User
+(
+    type = picklist
+    module = users
+    displayformat = [username]
+    description
+    [
+        type = tooltip
+        message = "Optional Creator login. Leave blank for a name-and-email notification contact. A contact without a login cannot use the application or approve requests."
+    ]
+    row = 1
+    column = 1
+    width = medium
+    personal data = true
+)

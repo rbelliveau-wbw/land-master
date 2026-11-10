@@ -1,0 +1,139 @@
+{
+  "kind": "local-source-and-fixture-audit",
+  "audited_on": "2026-11-10",
+  "scope": "Read-only source/release comparison and isolated offline execution; not native Creator installation or end-user verification.",
+  "desktop_visual_inspection": {
+    "status": "verified-by-parent-CUA",
+    "results": [
+      "Approved email actual renderer: navy/green layout, concise cost-code totals and escaped vendor text verified.",
+      "Activity actual module: long recipient details, Failed Retry progress and appended Sent attempt, Unknown Check-only result, Back To Activity/history restoration, Close/reopen, and Older Activity page verified.",
+      "Settings recipient pickers render email-only contact choices and both notification lists. Preview server retains startup-captured footer version; released Settings source and immutable candidate are1.6.9."
+    ],
+    "screenshots": [
+      "po-approved-email-final-preview.png",
+      "po-activity-log-preview.png",
+      "po-settings-recipient-preview.png"
+    ],
+    "data_kind": "Isolated sample data; no native email attempts or delivery claims."
+  },
+  "fixture_server": {
+    "command": "node scripts/serve-po-email-fixtures.mjs 32195 <writable-preview-output-directory>",
+    "approved_email": "http://127.0.0.1:32195/approved-email.html",
+    "budget_activity": "http://127.0.0.1:32195/activity.html",
+    "settings": "http://127.0.0.1:32195/settings/",
+    "native_sdk_or_api_calls": false,
+    "live_messages_sent": false
+  },
+  "actual_outcome_renderer": {
+    "source": "creator/functions/renderPurchaseOrderOutcomeEmail.dg",
+    "generator": "scripts/preview-po-outcome-email.mjs",
+    "execution_adapter": "compileDelugePO from scripts/test-po-test-cfo-backend.mjs",
+    "offline_execution": "passed",
+    "phase": "Eagle Prairie / Phase 01",
+    "vendor_escape_case": "A Greater Austin <Development> & Construction",
+    "cost_code_totals": [
+      {
+        "code": "5100",
+        "cents": 9250000
+      },
+      {
+        "code": "5200",
+        "cents": 6386250
+      },
+      {
+        "code": "6100",
+        "cents": 3077000
+      }
+    ],
+    "grand_total_cents": 18713250,
+    "amount_and_escaping_assertions": "passed",
+    "workbook_attachment": false,
+    "view_link": "Local sample anchor only; no native navigation is needed for visual inspection."
+  },
+  "activity_fixture": {
+    "uses_actual_deployable_module_and_styles": true,
+    "cases": [
+      "Sent retry",
+      "Failed recipient",
+      "Unknown attempt",
+      "Long contact name/email",
+      "Pending approval request attempt",
+      "Older cursor page",
+      "Not Started outcome",
+      "Lost retry reply followed by read-only Check"
+    ],
+    "contact_user_shapes": "Native-shaped string IDs and Full_Name/Approver_Email with blank User; API rows use the exact activity DTO.",
+    "browser_results": "Parent directly verified read/retry/check/progress/history/pagination. Unknown offers Check Status, never Retry. Settled result returns through Back To Activity; close/reopen restores history."
+  },
+  "settings_fixture": {
+    "uses_actual_settings_widget_and_assets": true,
+    "native_sdk_replaced_by": "Existing isolated installFixture from scripts/test-settings-workspace.mjs",
+    "cases": [
+      "Approved/rejected recipient lists",
+      "Three email-only contacts",
+      "Native multiselect lookup IDs"
+    ],
+    "browser_results": "Parent directly inspected both recipient pickers and contact-only choices; no live saves or sends."
+  },
+  "independent_release_recheck": {
+    "method": "Recursive byte comparison of every src/app file with candidate; widget.html maps to index.html. Compared current source hashes, widget config and release metadata. Inspected deploy/environments.json diff against HEAD.",
+    "results": [
+      {
+        "widget": "budget-manager",
+        "candidate": "122.29.126",
+        "source_files": 39,
+        "mismatches": [],
+        "source_sha256": "02f5898dedc6e9cb16ca5efd38cf4d7499e4568c112a791412ff40a2d86eacfb",
+        "config_and_release_metadata_match": true
+      },
+      {
+        "widget": "settings-manager",
+        "candidate": "1.6.9",
+        "source_files": 21,
+        "mismatches": [],
+        "source_sha256": "9377663cf5cae165f9351030372c0cd58ba1a8035fa958221e87f89c8e9c885c",
+        "config_and_release_metadata_match": true
+      }
+    ],
+    "development_mapping": {
+      "budget-manager": "122.29.126",
+      "settings-manager": "1.6.9"
+    },
+    "production_mapping": {
+      "budget-manager": "122.29.123",
+      "settings-manager": "1.6.8"
+    },
+    "stage_and_production_mapping_diff": "unchanged",
+    "existing_immutable_releases_modified": false,
+    "superseded_local_candidate": {
+      "widget": "budget-manager",
+      "version": "122.29.124",
+      "retained_unchanged": true
+    },
+    "final_full_validation": "passed",
+    "final_pages_build": "passed: 35 environment paths"
+  },
+  "source_review": {
+    "recipient_retry_reconciliation": "Stable recipientKey, including corrected addresses; no fallback to another recipient's Sent result.",
+    "unknown_replies": "Settled results offer Back To Activity. Close/reopen restores readable history while exact unresolved operations persist per target across refresh and other recipient actions; affected targets stay Check-only and no send is replayed.",
+    "interrupted_plan": "Exact plan/revision and backend canResumeEmail grant; only recipients with no prior claim.",
+    "scope": "Budget/actor/environment/permission changes cancel private display; denial responses clear/close it.",
+    "pagination": "Exact string cursor, up to 50 returned scan rows with sentinel; relationship filtering can yield an empty visible page with Older available.",
+    "copy_export": "Not part of requested scope; no Copy Log/clipboard implementation was added.",
+    "pending_deployable_UI_issue_identified": false
+  },
+  "final_checks": {
+    "focused_activity_progress_controller_requests": "passed",
+    "widget_javascript": "passed",
+    "design_document_links": "passed",
+    "git_diff_check": "passed"
+  },
+  "native_verification": "Recorded separately in ../native-install-progress.json; these fixture rows remain sample-only.",
+  "reallocation_width_followup": {
+    "previous_px": 326,
+    "current_px": 374.9,
+    "increase_percent": 15,
+    "checks": "Exact one-value stylesheet change from125; full validation and Pages build passed",
+    "desktop_visual_inspection": "Not repeated for this routine CSS-only adjustment; earlier Activity/email/settings screenshots remain sample evidence for those unchanged components."
+  }
+}

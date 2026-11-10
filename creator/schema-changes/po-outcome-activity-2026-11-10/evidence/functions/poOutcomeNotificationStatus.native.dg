@@ -1,0 +1,139 @@
+map poOutcomeNotificationStatus(string purchaseOrderId, string userAccessId)
+{
+	result = {"contract":"po-outcome-email-v1","state":"Not Started","emailSent":false,"canRetryEmail":false,"events":List(),"message":"Outcome notification has not started."};
+	try 
+	{
+		po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
+		if(po.count() != 1 || (po.PO_Approval_State != "Approved" && po.PO_Approval_State != "Rejected"))
+		{
+			return result;
+		}
+		operation = "po-outcome|" + purchaseOrderId + "|" + po.PO_Revision + "|" + po.PO_Approval_State;
+		result.put("id",purchaseOrderId);
+		result.put("budgetId",po.Budget.toString());
+		result.put("revision",po.PO_Revision);
+		result.put("outcome",po.PO_Approval_State);
+		planKey = "plan|" + zoho.encryption.sha256(operation);
+		plan = Activity_Log[Claim_Key == planKey && Object_ID == purchaseOrderId && Context_ID == po.Budget.toString()];
+		events = List();
+		failed = 0;
+		unknown = 0;
+		sent = 0;
+		preparing = 0;
+		missing = 0;
+		intended = 0;
+		if(plan.count() == 1)
+		{
+			captured = plan.Snapshot.toMap();
+			result.put("planId",plan.ID.toString());
+			for each  rawRecipient in captured.get("recipients")
+			{
+				recipient = rawRecipient.toString().toMap();
+				intended = intended + 1;
+				latestId = 0;
+				for each  candidate in Activity_Log[Operation_ID == operation && Event == po.PO_Approval_State + " Email"]
+				{
+					proof = candidate.Snapshot.toMap();
+					if(proof.get("recipientKey") == recipient.get("recipientKey") && candidate.ID > latestId)
+					{
+						latestId = candidate.ID;
+					}
+				}
+				if(latestId == 0)
+				{
+					preparing = preparing + 1;
+					missing = missing + 1;
+				}
+				else
+				{
+					projected = thisapp.poEmailActivityRow(latestId.toString(),userAccessId);
+					events.add(projected);
+					sentStatus = projected.get("status") == "Sent" || projected.get("status") == "Skipped";
+					if(sentStatus && projected.get("sentAt") != "")
+					{
+						sent = sent + 1;
+					}
+					else if(projected.get("status") == "Failed")
+					{
+						failed = failed + 1;
+					}
+					else if(projected.get("status") == "Unknown" || projected.get("status") == "Sending")
+					{
+						unknown = unknown + 1;
+					}
+					else
+					{
+						preparing = preparing + 1;
+					}
+				}
+			}
+		}
+		else
+		{
+			latestId = 0;
+			for each  configurationAttempt in Activity_Log[Operation_ID == operation && Event == po.PO_Approval_State + " Email"]
+			{
+				if(configurationAttempt.ID > latestId)
+				{
+					latestId = configurationAttempt.ID;
+				}
+			}
+			if(latestId > 0)
+			{
+				events.add(thisapp.poEmailActivityRow(latestId.toString(),userAccessId));
+				failed = 1;
+				intended = 1;
+			}
+		}
+		state = "Not Started";
+		message = "Outcome notification has not started.";
+		if(intended > 0 && sent == intended)
+		{
+			state = "Sent";
+			message = "Outcome emails sent to all recipients.";
+		}
+		else if(unknown > 0)
+		{
+			state = "Unknown";
+			message = "The PO decision is saved. Some email attempts need a delivery check; they cannot be resent automatically.";
+		}
+		else if(failed > 0 && sent > 0)
+		{
+			state = "Partial";
+			message = "The PO decision is saved. Some recipients still need notification.";
+		}
+		else if(failed > 0)
+		{
+			state = "Failed";
+			message = "The PO decision is saved. Outcome notification needs attention.";
+		}
+		else if(preparing > 0)
+		{
+			state = "Preparing";
+			message = "The PO decision is saved. Outcome notification is being checked.";
+		}
+		result.put("state",state);
+		result.put("emailSent",state == "Sent");
+		result.put("events",events);
+		result.put("message",message);
+		result.put("operationId",operation);
+		result.put("revision",po.PO_Revision);
+		result.put("sentCount",sent);
+		result.put("recipientCount",intended);
+		result.put("missingCount",missing);
+		result.put("canResumeEmail",missing > 0 && thisapp.poEmailCanRetry(purchaseOrderId,userAccessId));
+		retryNeeded = failed > 0 || missing > 0 || state == "Not Started";
+		retryAllowed = false;
+		if(retryNeeded)
+		{
+			retryAllowed = thisapp.poEmailCanRetry(purchaseOrderId,userAccessId);
+		}
+		result.put("canRetryEmail",retryAllowed);
+	}	catch (statusError)
+	{
+		result.put("state","Unknown");
+		result.put("message","The PO decision is saved, but outcome notification status is unavailable.");
+		result.put("canRetryEmail",false);
+	}
+	return result;
+}

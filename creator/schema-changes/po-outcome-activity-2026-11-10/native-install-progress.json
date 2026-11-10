@@ -1,0 +1,442 @@
+{
+  "change": "po-outcome-activity-2026-11-10",
+  "status": "development-native-implementation-verified-hosted-release-prepared",
+  "prepared_on": "2026-11-10",
+  "evidence_policy": "Native observations recorded by the parent agent in the authenticated Development builder/runtime. Offline previews, local releases, native execution, external publication and task deployment are distinguished.",
+  "source_package": "README.md",
+  "source_candidates": "change.json",
+  "local_release_evidence": "release-validation.json",
+  "local_fixture_evidence": "evidence/local-fixture-audit.json",
+  "development": {
+    "last_native_readback_at": "2026-11-10T16:29:17.254Z",
+    "application_version": "Development editable workspace; external Stage 9.174 observed separately",
+    "schema": [
+      {
+        "target": "User_Access.User",
+        "expected": "Optional native User dropdown; no administrator autofill",
+        "observed": "Native form builder Mandatory unchecked and saved. Four notification contacts read back with empty User.",
+        "status": "verified-development",
+        "evidence": [
+          "evidence/po-native-contacts-readback.json"
+        ]
+      },
+      {
+        "target": "User_Access.Full_Name and Approver_Email",
+        "expected": "Required; contact lookup display uses name/email",
+        "observed": "Required fields retained. All four contacts have name/email and every visible permission/routing checkbox false.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      },
+      {
+        "target": "User_Access validation",
+        "source": "User_Access.validate.dg",
+        "expected": "Blank-login contacts permitted; login duplicate checks only when nonblank; blank User cannot enable approval routing; existing permissions/workflows preserved",
+        "observed": "Validate User Access Contacts, Created or Edited / Validations on form submission, saved with one enabled action. Existing Retire Modification Permission retained.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      },
+      {
+        "target": "Territory.Construction_PM",
+        "source": "Territory.Construction_PM.field.ds",
+        "expected": "Construction PM; single optional User_Access lookup",
+        "observed": "Native Territory builder independently read back Construction PM / Construction_PM, single optional User Access Lookup, Drop Down, Full Name - Approver Email display.",
+        "status": "verified-development",
+        "evidence": [
+          "evidence/po-territory-construction-pm.png"
+        ]
+      },
+      {
+        "target": "Settings.PO_Approved_Recipients",
+        "source": "Settings.PO_Recipients.fields.ds",
+        "expected": "Optional multiselect User_Access lookup",
+        "observed": "Native optional Multi Select lookup independently verified; explicit installer saved four approved contacts.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      },
+      {
+        "target": "Settings.PO_Rejected_Recipients",
+        "source": "Settings.PO_Recipients.fields.ds",
+        "expected": "Optional multiselect User_Access lookup",
+        "observed": "Native optional Multi Select lookup independently verified; explicit installer saved Sam only.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      },
+      {
+        "target": "Activity_Log",
+        "source": "Activity_Log.form.ds",
+        "expected": "Generic object/context pairs, process/event, operation/attempt, recipients, timestamps/status/error/snapshot/actor",
+        "observed": "Created in native builder; all 18 planned fields independently read back with object/context identity, process/event and delivery/audit metadata.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      },
+      {
+        "target": "Activity_Log.Claim_Key",
+        "expected": "Required plus native No Duplicate Values",
+        "observed": "Native Field Properties independently verified Mandatory and No Duplicate Values checked.",
+        "status": "verified-development",
+        "evidence": [
+          "evidence/po-activity-log-native-fields.png"
+        ]
+      },
+      {
+        "target": "Activity_Log validation and delete guard",
+        "sources": [
+          "Activity_Log.validate.dg",
+          "Activity_Log.delete.dg"
+        ],
+        "expected": "Direct native mutations rejected; authenticated server helpers own evidence",
+        "observed": "Validate Activity Log (Created or Edited / Validations on form submission) and Protect Activity Log Delete (Deleted / Validations on record deletion), each saved with one enabled action.",
+        "status": "verified-development",
+        "evidence": [
+          "setup-verification.json"
+        ]
+      }
+    ],
+    "reports_and_permissions": [
+      {
+        "candidate": "Activity_Log_Report",
+        "observed_link_name": "Activity_Log_Report",
+        "expected": "Admin inspection; ordinary direct read/add/edit/delete/export denied",
+        "observed": "Application IDE confirms Activity Log Report and native builder target. All nine ordinary profiles show add/view/edit/delete/more unchecked for the form. Runtime report was inaccessible under the observed -MySelf- preview; no direct profile grants were added. Budget UI uses scoped authenticated helpers.",
+        "status": "internal-generated-report-restricted",
+        "evidence": [
+          "activity-profile-permissions.native.json"
+        ]
+      },
+      {
+        "candidate": "All_Settings",
+        "expected": "Both recipient fields available; singleton/criteria/native permissions preserved",
+        "observed": "Native Settings fields and singleton recipient assignments verified by builder and installer Check. Hosted SDK save roundtrip remains a publication check.",
+        "status": "native-fields-and-values-verified",
+        "evidence": [
+          "setup-check-after.native.json"
+        ]
+      },
+      {
+        "candidate": "User_Access_Report",
+        "expected": "ID, Full_Name, Approver_Email and optional User retain existing scope; no broad new roster grant",
+        "observed": "Native report contains all four exact name/email contact identities with blank User and all visible permission/routing flags false. Existing scope was preserved.",
+        "status": "verified-development",
+        "evidence": [
+          "evidence/po-native-contacts-readback.json"
+        ]
+      },
+      {
+        "candidate": "Budget activity end-user access",
+        "expected": "Editors/owners see authorized Budget history; submitters/captured approvers see related POs only; notification contacts have no login powers",
+        "observed": "Local access regressions passed. Native managePurchaseOrder Activity read for an exact existing budget and nonblank-login owner-scoped demo actor returned po-activity-v1 with no writes. Hosted UI/API endpoint transport not exercised.",
+        "status": "native-function-read-verified",
+        "evidence": [
+          "evidence/po-native-activity-read.json",
+          "evidence/local-fixture-audit.json"
+        ]
+      }
+    ],
+    "functions": {
+      "source_directory": "../../functions/",
+      "definition_of_verified": "Exact current source saved and compiled in native Development, then safely read back. Local offline translator checks alone do not satisfy this.",
+      "items": [
+        {
+          "name": "activityEmailClaim",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/activityEmailClaim.native.dg"
+          ]
+        },
+        {
+          "name": "renderPurchaseOrderOutcomeEmail",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/renderPurchaseOrderOutcomeEmail.native.dg"
+          ]
+        },
+        {
+          "name": "buildPurchaseOrderOutcomeEmail",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/buildPurchaseOrderOutcomeEmail.native.dg"
+          ]
+        },
+        {
+          "name": "poEmailCanRetry",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poEmailCanRetry.native.dg"
+          ]
+        },
+        {
+          "name": "poEmailCanViewActivity",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poEmailCanViewActivity.native.dg"
+          ]
+        },
+        {
+          "name": "poEmailCanReadPO",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poEmailCanReadPO.native.dg"
+          ]
+        },
+        {
+          "name": "poEmailActivityRow",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poEmailActivityRow.native.dg"
+          ]
+        },
+        {
+          "name": "poOutcomeNotificationStatus",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poOutcomeNotificationStatus.native.dg"
+          ]
+        },
+        {
+          "name": "poOutcomeEmailReady",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poOutcomeEmailReady.native.dg"
+          ]
+        },
+        {
+          "name": "sendPurchaseOrderOutcomeEmail",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/sendPurchaseOrderOutcomeEmail.native.dg"
+          ]
+        },
+        {
+          "name": "poEmailActivity",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poEmailActivity.native.dg"
+          ]
+        },
+        {
+          "name": "sendPurchaseOrderEmail",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/sendPurchaseOrderEmail.native.dg"
+          ]
+        },
+        {
+          "name": "handlePurchaseOrderApproval",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/handlePurchaseOrderApproval.native.dg"
+          ]
+        },
+        {
+          "name": "managePurchaseOrder",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-literals-and-three-documented-nonsemantic-formatter-deltas",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/managePurchaseOrder.native.dg"
+          ]
+        },
+        {
+          "name": "poActorResponse",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/poActorResponse.native.dg"
+          ]
+        },
+        {
+          "name": "getUserAccess",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/getUserAccess.native.dg"
+          ]
+        },
+        {
+          "name": "getUserAccessLean",
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "evidence/functions/getUserAccessLean.native.dg"
+          ]
+        },
+        {
+          "name": "setupPurchaseOrderNotifications",
+          "private_no_public_api": true,
+          "status": "compiled-and-reopened-development",
+          "source_match": "exact-code-tokens-and-literals",
+          "native_compilation": true,
+          "evidence": [
+            "function-native-verification.json",
+            "setupPurchaseOrderNotifications.native.dg"
+          ]
+        }
+      ],
+      "evidence": "function-native-verification.json"
+    },
+    "api_readback": {
+      "existing_api": "Manage_Purchase_Order_DEV",
+      "new_public_api_required": false,
+      "structured_activity_contract": "po-activity-v1 observed through native managePurchaseOrder Execute; public API transport not invoked",
+      "exact_budget_actor_scope": "Exact existing Budget 4410926000005122080 and Demo User3 4410926000004487016; no ID coercion",
+      "outcome_check_is_read_only": "Local actual-source regressions; native Activity read performed without sending mail",
+      "status": "native-function-read-verified-api-transport-not-run",
+      "evidence": [
+        "evidence/po-native-activity-read.json"
+      ]
+    },
+    "configuration": {
+      "private_setup_source": "../../functions/setupPurchaseOrderNotifications.dg",
+      "Check_result": "setup-check-after.native.json",
+      "Apply_result": "setup-apply.native.json",
+      "contacts_reused_or_created": [
+        {
+          "name": "Samuel Spears",
+          "email": "sspears@wbdevelopment.com",
+          "id": "4410926000005910064",
+          "exists": true,
+          "matches": 1
+        },
+        {
+          "name": "Sokha Sim",
+          "email": "ssim@wbdevelopment.com",
+          "id": "4410926000005910066",
+          "exists": true,
+          "matches": 1
+        },
+        {
+          "name": "Kimberly M. Singer",
+          "email": "kim.singer@wbdevelopment.com",
+          "id": "4410926000005910068",
+          "exists": true,
+          "matches": 1
+        },
+        {
+          "name": "Michael Wilson",
+          "email": "mwilson@wbdevelopment.com",
+          "id": "4410926000005894715",
+          "exists": true,
+          "matches": 1
+        }
+      ],
+      "approved_recipient_ids": [
+        "4410926000005894715",
+        "4410926000005910064",
+        "4410926000005910066",
+        "4410926000005910068"
+      ],
+      "rejected_recipient_ids": [
+        "4410926000005910064"
+      ],
+      "construction_pm_assignments": [],
+      "construction_pm_rule": "Assign explicitly by Territory; never infer from VP/Dev Mgr or a matching name.",
+      "status": "configured-and-read-back-development",
+      "evidence": [
+        "setup-verification.json",
+        "setup-apply.native.json",
+        "setup-check-after.native.json",
+        "evidence/po-native-contacts-readback.json"
+      ]
+    },
+    "end_user_verification": {
+      "blank_User_contact_creation": true,
+      "contact_has_no_authentication_or_approval_powers": "All visible native flags false. Actual owner-only Development preview using Sokha notification-contact identity returned permissionDenied:true and writeState:not-started; no email or financial writes.",
+      "settings_recipient_roundtrip": "Native installer write acknowledgement and subsequent explicit read-only Check verified4/1; hosted SDK transport not run",
+      "activity_access_and_retry_scope": "Source regressions and local actual UI fixture verified; native exact-budget Activity read verified",
+      "unknown_send_has_no_blind_resend": "Local actual UI fixture and regressions: Unknown is Check-only; Back To Activity and close/reopen restore history",
+      "live_test_message": "not-sent",
+      "note": "Do not infer inbox delivery from Sent_At or run real production mail merely to test publication.",
+      "evidence": [
+        "setup-verification.json",
+        "evidence/po-native-contacts-readback.json",
+        "evidence/po-native-activity-read.json",
+        "evidence/local-fixture-audit.json",
+        "evidence/po-activity-log-preview.png",
+        "evidence/po-native-contact-denied.json"
+      ]
+    }
+  },
+  "production": {
+    "read_only_sam_provenance": "contacts.json#required_existing_person.provenance",
+    "production_record_changed_by_that_read": false,
+    "creator_publication": {
+      "status": "not-performed-by-this-task",
+      "application_version": "Production9.173 observed; externally created Stage9.174 seen during temporary editor lock",
+      "verified_at": "2026-11-10T16:11:26Z",
+      "evidence": []
+    },
+    "contact_and_recipient_setup": {
+      "status": "not-performed",
+      "evidence": []
+    },
+    "targeted_read_only_api_check": {
+      "status": "not-performed",
+      "evidence": []
+    },
+    "live_message_send": {
+      "status": "not-performed",
+      "evidence": []
+    }
+  },
+  "remaining_native_work": [
+    "Assign Construction PM explicitly on the appropriate Territories; no PM assignments were supplied or inferred.",
+    "Publish/promote the reviewed Creator changes and hosted widget releases through the normal user-controlled release process.",
+    "After publication, configure Production contacts/defaults through native User Access and Settings, then perform a targeted read-only hosted check. No real email was sent for testing."
+  ]
+}

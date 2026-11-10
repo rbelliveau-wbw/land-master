@@ -37,6 +37,29 @@ Do not reinterpret the native Multi_Line field. Preserve AI instructions,
 provider and model values. Additional Fields keeps unknown record fields
 available without pretending their purpose is known.
 
+## Purchase Order Notifications — November 10, 2026
+
+Place **Purchase Orders** in Modules after Budget. Use the existing searchable
+multi-select people picker for **Approved Notification Recipients** and
+**Rejected Notification Recipients**, with Full Name and email visible. Both
+bind directly to the corresponding Settings lookup lists through the existing
+autosave controller. Preserve mounted field nodes, drafts, exact string IDs,
+inline save/recovery feedback and the shared screen-selection motion.
+
+These are notification contacts, including User Access rows whose User is
+blank. Require a valid email for a new selection; do not require an application
+login or approval-routing flag. Retain already-saved unresolved selections for
+review instead of pruning or rewriting them on load. A failed roster read
+disables the dependent picker while preserving the draft and saved IDs. Keep
+unknown native replies under the existing no-replay/recheck contract.
+
+Assign **Construction PM** on the existing native Territory form. It is one
+optional person, included by the server in final PO outcome notifications.
+Do not duplicate it as an approval-role assignment or imply that receiving a
+notification gives approval or application access. Keep native schema and
+publication readiness separate from the frontend screen. Installation evidence
+is tracked in the [schema package](../../creator/schema-changes/po-outcome-activity-2026-11-10/README.md).
+
 User direction October 23, 2026: place the existing `Current_Batch` field in
 Automation beside `Next_Workflow_Run`, and omit it from Additional Fields.
 Accept whole numbers 0–4 only; retain rejected drafts and the existing native

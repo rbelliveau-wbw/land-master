@@ -36,6 +36,7 @@
       tab('.tier-filter-bar','.cfpill','#mx');
       panels.push({selector:'#vBudgets,#vRequests,#vEditor,#vApprovals,#vImports'});
       list('#allRequestsGroups','.request-rail-group[data-request-key]',n=>n.dataset.requestKey,'all-requests',{visibility:true,resize:true});
+      list('.po-activity-list','[data-po-activity-id]',row=>row.dataset.poActivityId,()=>M.key('po-email-activity',state().edBudget?.ID||'',state().myAccessId||''),{resize:true});
       list('#mx','tr.irow[data-iid],tr.irow[data-budget-item-ids],tr.budget-element-row[data-element-key]',row=>row.dataset.elementKey||row.dataset.iid||row.dataset.budgetItemIds,()=>state().edBudget?.ID||options.project?.()?.key,{visibility:true});
       list('#projList','.proj-card[data-project-key]',row=>row.dataset.projectKey,'projects');
       list('#importsTableWrap','.il-line[data-import-ledger-key]',row=>row.dataset.importLedgerKey,()=>M.key('import-ledger',state().importUI?.subdivision||''),{visibility:true,resize:true});

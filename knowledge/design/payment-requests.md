@@ -184,6 +184,10 @@ the existing signed amounts/permissions. Show numbered element names such as
 **(1) Labor**. Its title bar has the shared **Show $0** sliding pill; follow the
 [empty-row definition](empty-row-filters.md) without rebuilding live inputs.
 
+On the three-panel desktop workspace, Reallocation is 374.9px wide, 15% wider
+than the previous 326px pane. Keep the workspace within its viewport, with the
+PO and Summary sharing the remaining width and their existing scroll behavior.
+
 Keep budget context to the left of the PO total: Available and Remaining or
 Modification on the first line. Editable drafts use the server's read-only route
 preview with ordered approver pills. Hide this forecast panel when the current

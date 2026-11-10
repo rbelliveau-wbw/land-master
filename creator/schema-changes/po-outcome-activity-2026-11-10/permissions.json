@@ -1,0 +1,30 @@
+{
+  "status": "development-profile-rows-read-back-no-grants-added",
+  "Activity_Log": {
+    "ordinary_profiles": {"view":false,"add":false,"edit":false,"delete":false,"view_all":false,"modify_all":false,"export":false},
+    "all_generated_reports": "Same deny rule, including the observed Activity_Log_Report. Do not infer safe permissions from a generated report's name.",
+    "admin": "Read-only inspection through report; native direct form saves/deletes rejected by validation.",
+    "server": "Native authenticated Deluge helpers own insertion and attempt state updates. No generic client write-log API.",
+    "native_profile_readback": {
+      "environment": "Development",
+      "verified_on": "2026-11-10",
+      "capture": "activity-profile-permissions.native.json",
+      "observed_form_component_id": "4410926000005894481",
+      "profile_count": 9,
+      "visible_controls_per_profile": ["add","view","edit","delete","more"],
+      "all_visible_controls_checked": false,
+      "permission_changes_made": false,
+      "limit": "The capture proves the five visible Activity Log controls are unchecked on all nine profile rows. It is not an end-user runtime authorization or email-delivery test."
+    }
+  },
+  "notification_contacts": {
+    "User": null,
+    "Approval_Routing_Enabled": false,
+    "permission_grants": [],
+    "profiles": [],
+    "login_and_approval": "A row without native User is a notification contact only. Name/email matching never authenticates it or elevates it into approval routing."
+  },
+  "budget_activity": "Existing authenticated budget/PO visibility determines read access; existing PO retry authorization determines email retry access. The caller cannot select another budget's object/event by swapping IDs.",
+  "Settings": "Preserve existing Settings editor access and native update rules; no new broad report/roster permission.",
+  "Territory": "Preserve existing Territory edit access; Construction PM notification assignment grants no application or approval permission."
+}

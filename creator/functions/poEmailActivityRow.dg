@@ -1,0 +1,49 @@
+map poEmailActivityRow(string activityId, string userAccessId)
+{
+	result = Map();
+	try
+	{
+		entry = Activity_Log[ID == activityId.toLong() && Object_Type == "Purchase Order" && Context_Type == "Budget" && Process == "PO Approval"];
+		if(entry.count() != 1) { return result; }
+		proof = Map(); if(ifnull(entry.Snapshot,"") != "") { proof = entry.Snapshot.toMap(); }
+		effectiveStatus = entry.Status; effectiveStamp = entry.Sent_At; effectiveError = ifnull(entry.Error_Detail,"");
+		if(ifnull(proof.get("deliveryClaimKey"),"") != "" && entry.Status != "Failed" && entry.Status != "Sent")
+		{
+			sharedDelivery = Activity_Log[Claim_Key == proof.get("deliveryClaimKey") && Operation_ID == entry.Operation_ID && Recipient_Email == entry.Recipient_Email && Status == "Sent" && Sent_At != null];
+			if(sharedDelivery.count() == 1) { effectiveStatus = "Skipped"; effectiveStamp = sharedDelivery.Sent_At; effectiveError = "This address already has a confirmed sent email for this outcome."; }
+		}
+		latest = true;
+		for each newer in Activity_Log[Operation_ID == entry.Operation_ID && Event == entry.Event && ID > entry.ID]
+		{
+			newerProof = newer.Snapshot.toMap();
+			if(newerProof.get("recipientKey") == proof.get("recipientKey")) { latest = false; }
+		}
+		if(proof.get("recipientKey") == "configuration")
+		{
+			configurationPlanKey = "plan|" + zoho.encryption.sha256(entry.Operation_ID);
+			if(Activity_Log[Claim_Key == configurationPlanKey].count() > 0) { latest = false; }
+		}
+		po = Payment_Request[ID == entry.Object_ID.toLong() && Budget == entry.Context_ID.toLong() && Request_Type == "Purchase Order"];
+		canRetry = false; retryAction = "";
+		if(latest && entry.Status == "Failed" && po.count() == 1 && po.PO_Revision == proof.get("revision") && thisapp.poEmailCanRetry(entry.Object_ID,userAccessId))
+		{
+			if((entry.Event == "Approved Email" && po.PO_Approval_State == "Approved") || (entry.Event == "Rejected Email" && po.PO_Approval_State == "Rejected")) { canRetry = true; retryAction = "RetryOutcomeEmail"; }
+			if(entry.Event == "Approval Request Email" && po.PO_Approval_State == "Pending")
+			{
+				bundle = thisapp.poApprovalBundle(entry.Object_ID);
+				if(bundle.get("success") == true && bundle.get("bundle").get("active").get("id") == proof.get("approvalId"))
+				{
+					person = User_Access[ID == userAccessId.toLong()];
+					if(bundle.get("bundle").get("active").get("userAccessId") == userAccessId || bundle.get("bundle").get("submitterId") == userAccessId || person.User == zoho.adminuser) { canRetry = true; retryAction = "RetryEmail"; }
+				}
+			}
+		}
+		startedAt = ""; sentAt = "";
+		if(entry.Started_At != null) { startedAt = entry.Started_At.toString("yyyy-MM-dd'T'HH:mm:ssXXX"); }
+		if(effectiveStamp != null) { sentAt = effectiveStamp.toString("yyyy-MM-dd'T'HH:mm:ssXXX"); }
+		result = {"id":entry.ID.toString(),"objectId":entry.Object_ID,"budgetId":entry.Context_ID,"event":entry.Event,"operationId":entry.Operation_ID,"revision":ifnull(proof.get("revision"),""),"approvalId":ifnull(proof.get("approvalId"),""),"attemptNo":entry.Attempt_No,"status":effectiveStatus,"recipientEmail":ifnull(entry.Recipient_Email,""),"recipientName":ifnull(entry.Recipient_Name,""),"subject":ifnull(entry.Subject,""),"startedAt":startedAt,"sentAt":sentAt,"error":effectiveError,"canRetry":canRetry,"retryAction":retryAction};
+		result.put("recipientKey",ifnull(proof.get("recipientKey"),""));
+	}
+	catch(readError) { result = Map(); }
+	return result;
+}

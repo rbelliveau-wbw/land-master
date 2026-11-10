@@ -1,0 +1,179 @@
+map buildPurchaseOrderOutcomeEmail(string purchaseOrderId)
+{
+	environmentType = thisapp.environment.type;
+	result = {"success":false};
+	try 
+	{
+		po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
+		if(po.count() != 1 || (po.PO_Approval_State != "Approved" && po.PO_Approval_State != "Rejected"))
+		{
+			result.put("error","A final PO approval or rejection is required.");
+			return result;
+		}
+		checked = thisapp.poApprovalBundle(purchaseOrderId);
+		if(checked.get("success") != true)
+		{
+			result.put("error",checked.get("error"));
+			return result;
+		}
+		settings = Settings[ID != 0];
+		if(settings.count() != 1)
+		{
+			result.put("error","Purchase Order notification settings are unavailable.");
+			return result;
+		}
+		people = settings.PO_Approved_Recipients;
+		if(po.PO_Approval_State == "Rejected")
+		{
+			people = settings.PO_Rejected_Recipients;
+		}
+		if(people == null || people.size() == 0)
+		{
+			result.put("error","Configure the Purchase Order outcome notification recipients in Settings.");
+			return result;
+		}
+		recipients = List();
+		addresses = List();
+		for each  selected in people
+		{
+			person = User_Access[ID == selected.ID];
+			if(person.count() != 1)
+			{
+				result.put("error","A selected PO notification contact is unavailable. Review Settings before retrying.");
+				return result;
+			}
+			address = "";
+			name = "Notification Contact";
+			if(person.count() == 1)
+			{
+				address = ifnull(person.Approver_Email,"").trim().toLowerCase();
+				name = ifnull(person.Full_Name,"").toString().trim();
+			}
+			if(name == "")
+			{
+				name = address;
+			}
+			if(address == "" || !addresses.contains(address))
+			{
+				recipients.add({"recipientKey":"person-" + person.ID,"userAccessId":person.ID.toString(),"name":name,"email":address,"source":"person"});
+				if(address != "")
+				{
+					addresses.add(address);
+				}
+			}
+		}
+		territoryName = "";
+		if(po.Budget.Subdivision1 != null)
+		{
+			territoryName = ifnull(po.Budget.Subdivision1.Territory,"").toString().trim();
+		}
+		territory = Territory[Territory_Name == territoryName];
+		pmId = "";
+		pmEmail = "";
+		pmName = "Construction PM";
+		if(territory.count() == 1 && territory.Construction_PM != null)
+		{
+			pm = User_Access[ID == territory.Construction_PM];
+			if(pm.count() == 1)
+			{
+				pmId = pm.ID.toString();
+				pmEmail = ifnull(pm.Approver_Email,"").trim().toLowerCase();
+				pmName = ifnull(pm.Full_Name,"Construction PM").toString().trim();
+			}
+		}
+		if(pmEmail == "" || !addresses.contains(pmEmail))
+		{
+			recipients.add({"recipientKey":"construction-pm","userAccessId":pmId,"name":pmName,"email":pmEmail,"source":"construction-pm","territory":territoryName});
+		}
+		// Group all PO elements under the established Budget Item base cost code.
+		// Fall back to the captured line code without guessing suffix patterns.
+		// Keep exact integer cents; modifications are not added to PO spend.
+		codeTotals = Map();
+		codeNames = Map();
+		codes = List();
+		grandCents = 0;
+		lineCount = 0;
+		for each  line in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
+		{
+			amount = thisapp.poCurrencyString(ifnull(line.Final_Amount_Exact,"").toString());
+			if(amount == "")
+			{
+				result.put("error","A PO line amount is unavailable for the notification.");
+				return result;
+			}
+			cents = amount.replaceAll("[.]","").toLong();
+			code = ifnull(line.Budget_Item.Cost_Code,"").toString().trim();
+			if(code == "")
+			{
+				code = ifnull(line.Cost_Code,"").toString().trim();
+			}
+			if(code == "")
+			{
+				code = "Unassigned";
+			}
+			if(!codes.contains(code))
+			{
+				codes.add(code);
+				codeTotals.put(code,0);
+				codeNames.put(code,ifnull(line.Budget_Item.Item_Name,"").toString());
+			}
+			codeTotals.put(code,codeTotals.get(code).toLong() + cents);
+			grandCents = grandCents + cents;
+			lineCount = lineCount + 1;
+		}
+		if(lineCount == 0 || lineCount != po.PO_Line_Count || grandCents != po.PO_Amount_Exact.replaceAll("[.]","").toLong())
+		{
+			result.put("error","PO cost-code totals do not match the saved Purchase Order.");
+			return result;
+		}
+		phase = ifnull(po.Budget.Budget_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		vendor = ifnull(po.Vendor.Vendor_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		outcome = po.PO_Approval_State;
+		lowerOutcome = outcome.toLowerCase();
+		amountDisplay = po.PO_Amount_Exact.toDecimal().text("$#,##0.00");
+		appBase = "https://creatorapp.zoho.com/wbdevelopment";
+		environmentName = environmentType.toString().trim().toLowerCase();
+		if(environmentName != "production")
+		{
+			if(environmentName != "development" && environmentName != "stage")
+			{
+				result.put("error","The PO email environment is unavailable.");
+				return result;
+			}
+			appBase = appBase + "/environment/" + environmentName;
+		}
+		url = appBase + "/land-master/#Page:Budget_Management1?budgetId=" + po.Budget.toString() + "&amp;purchaseOrderId=" + purchaseOrderId;
+		codeRows = List();
+		for each  code in codes
+		{
+			codeRows.add({"code":code,"cents":codeTotals.get(code).toString()});
+		}
+		subject = "Purchase Order " + outcome + " · " + ifnull(po.Budget.Budget_Name,"").replaceAll("[\\r\\n]"," ") + " · " + amountDisplay;
+		if(environmentName == "development")
+		{
+			subject = "[DEV TEST] " + subject;
+		}
+		if(checked.get("bundle").get("poTestCFO") != null)
+		{
+			subject = "[PO TEST] " + subject;
+		}
+		result = {"success":true,"recipients":recipients,"subject":subject,"outcome":outcome,"revision":po.PO_Revision,"budgetId":po.Budget.toString(),"objectId":purchaseOrderId,"amount":po.PO_Amount_Exact,"phaseName":ifnull(po.Budget.Budget_Name,""),"vendorName":ifnull(po.Vendor.Vendor_Name,""),"costCodes":codeRows,"url":url};
+		// Four UTF-8 bytes per character is a conservative bound even for
+		// non-BMP names. Never persist a silently truncated native Snapshot.
+		if(result.toString().length() > 16000)
+		{
+			result = {"success":false,"error":"The complete cost-code notification exceeds its safe audit size. Review the PO before sending."};
+			return result;
+		}
+		rendered = thisapp.renderPurchaseOrderOutcomeEmail(result);
+		if(rendered.get("success") != true)
+		{
+			return rendered;
+		}
+		result.put("body",rendered.get("body"));
+	}	catch (buildError)
+	{
+		result.put("error","The outcome email could not be prepared. No email was sent.");
+	}
+	return result;
+}
