@@ -52,11 +52,35 @@ contract; they do not imply that the two first-tab layouts are identical.
 
 This is a Creator backend change only. There is no new widget release or
 environment mapping; the current Production widget releases stay in place.
-PMP commits to main and monitors CI. Creator publication remains user-controlled.
-Publish these three functions together, since the shared row adds one value
-and both consumers need the matching heading. Previously delivered emails and
+PMP committed the implementation to main as `0c65c606`; CI passed. The owner
+subsequently explicitly authorized Creator promotion. The three functions were
+published together, since the shared row adds one value and both consumers need
+the matching heading. Previously delivered emails and
 downloaded files are unchanged. Verification does not submit POs, approve
 financial changes, or send test approval emails.
+
+## Creator Publication — 9.179
+
+On November 10, 2026, **PO Current Bud Mod And Remaining** was published as
+Creator **9.179** through Stage and then Production. The package contained
+exactly `poElementExportRows`, `poExcelWorkbook` and
+`sendPurchaseOrderEmail`. The final Environments page showed both environments
+at 9.179 and No changes available. The native first-tab layout was retained.
+
+A read-only Production Manage_Purchase_Order Download call on an existing
+Rejected PO returned success, the `po-v1` contract, exact string identities and
+a complete workbook containing Current Bud Mod. Its 15 element rows were
+converted to XLSX and reopened locally; every Remaining value equals Available
++ Current Bud Mod − This PO, and the settled PO adds zero Current Bud Mod.
+Positive/negative pending changes remain covered by the earlier source tests;
+no live financial submission or approval email was performed.
+
+The browser download action still displayed **PO Excel File Unavailable** even
+though the native response was successful and the returned workbook parsed
+correctly. Browser download completion is therefore not verified. No extra
+native or widget changes were made based on that client failure. Exact response,
+local workbook, verification JSON and deployment screenshot remain in local
+task artifacts; private record data is not included in the repository.
 
 ## Rollback
 
