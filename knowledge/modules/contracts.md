@@ -1,3 +1,26 @@
+## Optional Request Actions — November 10, 2026
+
+Legal requests may be submitted with zero actions for the time being. Contract
+Management 1.62.61 removes the minimum-one-action check from `ncConfirm`.
+Checked templates still populate the editable checklist at creation; submitters
+may remove all rows, and authorized users may add actions after creation or
+during review. This does not move template seeding automatically to approval.
+Added rows must still have titles, and required request fields, template-read
+availability, permissions, Proposed status, review and approver defaults retain
+their existing behavior. No placeholder action is created for an empty list.
+
+Regression: `scripts/test-contract-create-progress.mjs` exercises confirmation
+and actual create/setup with zero actions for submit-only and edit users,
+preserved approver defaults, no action child writes, blank-row validation and
+required request fields. Existing attachment regressions cover mounted upload
+feedback, pending duplicate-entry locks, lost replies and successful native FILE
+responses with missing optional metadata. The attachment implementation is
+unchanged; these checks do not reproduce Tara's intermittent report.
+
+Forms/fields remain Contract and optional Contract_Actions children. No function,
+Custom API, permission or Creator code deployment changes are needed. Production
+rollback: map Contract Management to 1.62.59; Development previously used 1.62.60.
+
 ## Pro Forma / Project Column — November 6, 2026
 
 The main report replaces Subdivision with **Pro Forma / Project**. Acquisition

@@ -3,6 +3,32 @@ import {ready,drain,deferred,ID,SUB,ACCESS,NEW} from './test-contract-sdk-v2-fou
 const writes=h=>h.calls.filter(call=>['add','update','delete'].includes(call.method));
 function draft(h){h.c.S.nc={type:'DA',project:'',parent:'',sub:[SUB],wbw:[],builder:'',name:'Creation progress fixture',territory:'Austin',status:'Proposed',acts:[{title:'Captured action',sort:1}],seedSource:'default',owners:[ACCESS],lotIds:[],ppf:{},totalLots:'',emPerLot:'',initLots:'',initDays:'',contLots:'',contDays:''};return h.c.S.nc;}
 const visible=h=>{assert.equal(h.node('contractSaveOverlay').hidden,false);assert.ok(h.c.document.body.children.some(node=>node.inert));assert.ok(h.c.ContractSetupUI.progress()?.open);};
+// A request can start without actions; approver defaults and Proposed routing remain.
+for(const ctPropose of [false,true]){
+ const h=await ready({realDOM:true,accessFlags:{ctEdit:!ctPropose,ctPropose}}),v=draft(h);
+ v.acts=[];Object.assign(h.c.S.actions[0],{Contract_Template:'Builder'});
+ const expectedApprovers=h.c.ncApproverSeed().length;
+ let pending;const submit=h.c.ncSubmit;h.c.ncSubmit=(...args)=>(pending=submit(...args));
+ h.c.ncOpen();h.c.ncConfirm();assert.ok(h.c.document.getElementById('cfOk'),'zero actions reaches the normal confirmation');
+ assert.equal(writes(h).length,0,'confirmation alone never writes');
+ h.c.confirmProceed();await drain();const result=await pending;assert.equal(result.error,null);
+ assert.equal(writes(h).filter(call=>call.method==='add'&&call.config.form_name==='Contract').length,1);
+ assert.equal(writes(h).filter(call=>call.config.form_name==='Contract_Actions').length,0,'no placeholder action is created');
+ const parent=h.reports.All_Contracts1.find(row=>row.ID===NEW);assert.equal(parent.Status,'Proposed');
+ assert.equal(h.c.actionsFor(NEW).length,0);assert.equal(h.c.currentActionText(NEW),'');
+ assert.equal(h.c.approvalsFor(NEW).length,expectedApprovers,'existing approver defaults are retained with zero actions');
+ assert.equal(h.c.ContractSetupUI.close(),true);
+}
+{
+ const h=await ready({realDOM:true}),v=draft(h);v.acts=[{title:'   '}];Object.assign(h.c.S.actions[0],{Contract_Template:'Builder'});
+ h.c.ncOpen();h.c.ncConfirm();assert.equal(h.c.document.getElementById('cfOk'),null,'an added blank action still needs a title or removal');
+ assert.equal(writes(h).length,0);assert.match(h.node('banners').innerHTML,/Give every action a title/);
+}
+{
+ const h=await ready({realDOM:true}),v=draft(h);v.acts=[];v.name='';Object.assign(h.c.S.actions[0],{Contract_Template:'Builder'});
+ h.c.ncOpen();h.c.ncConfirm();assert.equal(h.c.document.getElementById('cfOk'),null);assert.equal(writes(h).length,0,'required request fields remain enforced');
+}
+console.log('PASS actionless Legal creation through confirmation for editors and submitters; empty row and required request-field validation retained.');
 {
  const h=await ready({realDOM:true}),gate=deferred(),native=h.api.addRecords;draft(h);h.api.addRecords=config=>gate.promise.then(()=>native(config));
  let pending,sends=0;const submit=h.c.ncSubmit;h.c.ncSubmit=(...args)=>{sends++;return pending=submit(...args);};
