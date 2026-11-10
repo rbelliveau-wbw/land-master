@@ -1,0 +1,28 @@
+{
+  "environment": "Development",
+  "date": "2026-11-10",
+  "status": "saved-compiled-reopened-verified",
+  "functions": [
+    "sendPurchaseOrderEmail",
+    "sendPurchaseOrderOutcomeEmail"
+  ],
+  "method": "Changed exactly one validator in each current native source; saved, navigated away, reopened and compared every code token and string literal.",
+  "allTokensMatch": true,
+  "productionPublished": false,
+  "liveEmailSent": false,
+  "repositorySourceTokensMatch": true,
+  "files": [
+    {
+      "name": "sendPurchaseOrderEmail",
+      "source": "creator/functions/sendPurchaseOrderEmail.dg",
+      "source_sha256": "7dfe084e0c898d2dcbbca1108879dde6d2de668653850e431f3d19dfa981ae5f",
+      "native_sha256": "04b8365de26afdcb4a6f50fb633b043ceb257c05662a7154325b58a8b9ded71a"
+    },
+    {
+      "name": "sendPurchaseOrderOutcomeEmail",
+      "source": "creator/functions/sendPurchaseOrderOutcomeEmail.dg",
+      "source_sha256": "be3696a20378fa174a4dfcd9d33d7b4960abda1828ccf553103b1c5c871536fe",
+      "native_sha256": "c4bf456d420a17570ce0f5a64e35ae3e41eb8ebabe48adcd7c56c8773aad2c7a"
+    }
+  ]
+}

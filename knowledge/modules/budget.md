@@ -13,8 +13,9 @@ Budget Manager 122.29.131 reloads the saved PO and balances when returning from
 a rejected decision, restoring persisted reallocation reasons before enabling
 Save Draft / Resubmit PO. Both PO mail functions reuse the existing explicit
 native email validator so valid addresses containing s are accepted. No grants,
-forms, fields or API registrations change. Email fixes require Creator
-publication; the widget candidate does not promote Production. See
+forms, fields or API registrations change. Both email functions are saved,
+compiled and reopened-source verified in Creator Development for user publication.
+The widget Production mapping is promoted at the user's request. See
 [verification and rollback](../../docs/po-rejection-resubmit-email-2026-11-10.md).
 
 ## PO Net Budget Approval Rule — November 10, 2026

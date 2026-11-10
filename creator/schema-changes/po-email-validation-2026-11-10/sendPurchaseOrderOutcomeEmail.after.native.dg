@@ -1,0 +1,288 @@
+map sendPurchaseOrderOutcomeEmail(string purchaseOrderId, string activityId, string userAccessId)
+{
+	// Private terminal-notification source; this is not a public writable API.
+	// Outcome notices contain the concise code totals and saved-PO link only.
+	try 
+	{
+		po = Payment_Request[ID == purchaseOrderId.toLong() && Request_Type == "Purchase Order"];
+		if(po.count() != 1 || (po.PO_Approval_State != "Approved" && po.PO_Approval_State != "Rejected"))
+		{
+			return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+		}
+		operation = "po-outcome|" + purchaseOrderId + "|" + po.PO_Revision + "|" + po.PO_Approval_State;
+		planKey = "plan|" + zoho.encryption.sha256(operation);
+		selectedKey = "";
+		expectedAttempt = 1;
+		if(activityId != "")
+		{
+			resumePlan = Activity_Log[ID == activityId.toLong() && Claim_Key == planKey && Object_ID == purchaseOrderId && Context_ID == po.Budget.toString()];
+			if(resumePlan.count() == 1)
+			{
+				beforeResume = thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+				if(beforeResume.get("canResumeEmail") != true)
+				{
+					return beforeResume;
+				}
+			}
+			else
+			{
+				selected = Activity_Log[ID == activityId.toLong() && Object_ID == purchaseOrderId && Context_ID == po.Budget.toString() && Operation_ID == operation && Event == po.PO_Approval_State + " Email" && Status == "Failed"];
+				if(selected.count() != 1 || thisapp.poEmailCanRetry(purchaseOrderId,userAccessId) != true)
+				{
+					return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+				}
+				selectedProof = selected.Snapshot.toMap();
+				selectedKey = selectedProof.get("recipientKey");
+				expectedAttempt = selected.Attempt_No + 1;
+				latest = thisapp.poEmailActivityRow(activityId,userAccessId);
+				if(latest.get("canRetry") != true)
+				{
+					return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+				}
+			}
+		}
+		for each  deletionLock in PO_Phase_Lock[Phase_Key == po.Budget.toString()]
+		{
+			if(ifnull(deletionLock.Operation_Token,"").startsWith("delete-"))
+			{
+				return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+			}
+		}
+		plan = Activity_Log[Claim_Key == planKey];
+		if(plan.count() == 0)
+		{
+			content = thisapp.buildPurchaseOrderOutcomeEmail(purchaseOrderId);
+			if(content.get("success") != true)
+			{
+				configurationProof = {"revision":po.PO_Revision,"recipientKey":"configuration","outcome":po.PO_Approval_State,"source":"configuration"};
+				configurationEvent = {"operationId":operation,"recipientKey":"configuration","objectType":"Purchase Order","objectId":purchaseOrderId,"contextType":"Budget","contextId":po.Budget.toString(),"process":"PO Approval","event":po.PO_Approval_State + " Email","recipientName":"Notification Settings","subject":"Purchase Order " + po.PO_Approval_State,"snapshot":configurationProof,"actorId":userAccessId};
+				configurationClaim = thisapp.activityEmailClaim(configurationEvent,expectedAttempt);
+				if(configurationClaim.get("claimed") == true)
+				{
+					configurationRow = Activity_Log[ID == configurationClaim.get("id").toLong()];
+					configurationRow.Status="Failed";
+					configurationRow.Error_Detail=content.get("error");
+				}
+				return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+			}
+			content.remove("body");
+			try 
+			{
+				planId = insert into Activity_Log
+				[
+					Claim_Key=planKey
+					Object_Type="Purchase Order"
+					Object_ID=purchaseOrderId
+					Context_Type="Budget"
+					Context_ID=po.Budget.toString()
+					Process="PO Approval"
+					Event=po.PO_Approval_State + " Email Plan"
+					Operation_ID=operation
+					Attempt_No=0
+					Status="Preparing"
+					Subject=content.get("subject")
+					Started_At=zoho.currenttime
+					Snapshot=content.toString()
+					Actor_ID=userAccessId
+					Added_User=zoho.loginuser
+				];
+			}			catch (planClaimError)
+			{
+			}
+			plan = Activity_Log[Claim_Key == planKey];
+		}
+		if(plan.count() != 1)
+		{
+			return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+		}
+		captured = plan.Snapshot.toMap();
+		if(captured.get("revision") != po.PO_Revision || captured.get("outcome") != po.PO_Approval_State || captured.get("budgetId") != po.Budget.toString() || captured.get("objectId") != purchaseOrderId)
+		{
+			return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+		}
+		ready = thisapp.poOutcomeEmailReady(purchaseOrderId);
+		preparationError = "";
+		if(ready.get("success") != true)
+		{
+			preparationError = ifnull(ready.get("error"),"The saved PO could not be checked for notification.");
+		}
+		rendered = thisapp.renderPurchaseOrderOutcomeEmail(captured);
+		if(rendered.get("success") != true)
+		{
+			preparationError = ifnull(rendered.get("error"),"The captured outcome email could not be rendered.");
+		}
+		for each  rawRecipient in captured.get("recipients")
+		{
+			recipient = rawRecipient.toString().toMap();
+			key = recipient.get("recipientKey");
+			if(selectedKey == "" || selectedKey == "configuration" || selectedKey == key)
+			{
+				existingId = 0;
+				for each  existing in Activity_Log[Operation_ID == operation && Event == po.PO_Approval_State + " Email"]
+				{
+					existingProof = existing.Snapshot.toMap();
+					if(existingProof.get("recipientKey") == key && existing.ID > existingId)
+					{
+						existingId = existing.ID;
+					}
+				}
+				eligible = existingId == 0;
+				nextAttempt = 1;
+				if(existingId > 0 && selectedKey == key)
+				{
+					existing = Activity_Log[ID == existingId];
+					eligible = existing.ID.toString() == activityId && existing.Status == "Failed" && existing.Attempt_No + 1 == expectedAttempt;
+					nextAttempt = expectedAttempt;
+				}
+				if(eligible)
+				{
+					address = ifnull(recipient.get("email"),"");
+					name = ifnull(recipient.get("name"),"");
+					personId = ifnull(recipient.get("userAccessId"),"");
+					if(selectedKey == key)
+					{
+						if(personId == "" && recipient.get("source") == "construction-pm")
+						{
+							territory = Territory[Territory_Name == recipient.get("territory")];
+							if(territory.count() == 1 && territory.Construction_PM != null)
+							{
+								personId = territory.Construction_PM.toString();
+							}
+						}
+						if(personId.matches("^[1-9][0-9]*$"))
+						{
+							person = User_Access[ID == personId.toLong()];
+							if(person.count() == 1)
+							{
+								address = ifnull(person.Approver_Email,"").trim().toLowerCase();
+								name = ifnull(person.Full_Name,name).toString();
+							}
+						}
+					}
+					deliveryKey = "delivery|" + zoho.encryption.sha256(operation + "|" + address);
+					proof = {"revision":po.PO_Revision,"recipientKey":key,"source":recipient.get("source"),"userAccessId":personId,"outcome":po.PO_Approval_State,"planId":plan.ID.toString(),"territory":ifnull(recipient.get("territory"),""),"deliveryClaimKey":deliveryKey};
+					validAddress = address.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+([.][A-Za-z0-9-]+)+$");
+					event = {"operationId":operation,"recipientKey":key,"objectType":"Purchase Order","objectId":purchaseOrderId,"contextType":"Budget","contextId":po.Budget.toString(),"process":"PO Approval","event":po.PO_Approval_State + " Email","recipientEmail":if(validAddress,address,null),"recipientName":name,"subject":captured.get("subject"),"snapshot":proof,"actorId":userAccessId};
+					claim = thisapp.activityEmailClaim(event,nextAttempt);
+					if(claim.get("claimed") == true)
+					{
+						attempt = Activity_Log[ID == claim.get("id").toLong()];
+						if(!validAddress)
+						{
+							attempt.Status="Failed";
+							attempt.Error_Detail="A valid email is required. Check the contact or Territory Construction PM assignment.";
+						}
+						else if(preparationError != "")
+						{
+							attempt.Status="Failed";
+							attempt.Error_Detail=preparationError;
+						}
+						else
+						{
+							delivery = Activity_Log[Claim_Key == deliveryKey];
+							if(delivery.count() == 1 && delivery.Status == "Sent" && delivery.Sent_At != null)
+							{
+								attempt.Status="Skipped";
+								attempt.Sent_At=delivery.Sent_At;
+								attempt.Error_Detail="This address already has a confirmed sent email for this outcome.";
+							}
+							else
+							{
+								current = Payment_Request[ID == po.ID && Budget == po.Budget && PO_Revision == captured.get("revision") && PO_Approval_State == captured.get("outcome")];
+								if(current.count() != 1)
+								{
+									attempt.Status="Failed";
+									attempt.Error_Detail="The saved PO outcome changed before email. No email was sent.";
+								}
+								else
+								{
+									ownsDelivery = false;
+									try 
+									{
+										// A second native unique claim owns the normalized address,
+										// independently of contact IDs. Concurrent corrected contacts
+										// sharing an address can never both cross the send boundary.
+										deliveryId = insert into Activity_Log
+										[
+											Claim_Key=deliveryKey
+											Object_Type="Purchase Order"
+											Object_ID=purchaseOrderId
+											Context_Type="Budget"
+											Context_ID=po.Budget.toString()
+											Process="PO Approval"
+											Event=po.PO_Approval_State + " Email Address Claim"
+											Operation_ID=operation
+											Attempt_No=nextAttempt
+											Status="Sending"
+											Recipient_Email=address
+											Recipient_Name=name
+											Subject=captured.get("subject")
+											Started_At=zoho.currenttime
+											Snapshot=proof.toString()
+											Actor_ID=userAccessId
+											Added_User=zoho.loginuser
+										];
+										ownsDelivery = true;
+									}									catch (deliveryClaimError)
+									{
+									}
+									if(!ownsDelivery)
+									{
+										attempt.Status="Unknown";
+										attempt.Error_Detail="Another attempt owns this address. Check its delivery status; no duplicate email was sent.";
+									}
+									else
+									{
+										delivery = Activity_Log[ID == deliveryId];
+										attempt.Status="Sending";
+										try 
+										{
+											sendmail
+											[
+												from :"Notifications@wbdevelopment.com"
+												to :address
+												subject :captured.get("subject")
+												message :rendered.get("body")
+											]
+											delivery.Sent_At=zoho.currenttime;
+											delivery.Status="Sent";
+											attempt.Sent_At=delivery.Sent_At;
+											attempt.Status="Sent";
+										}										catch (sendError)
+										{
+											attempt.Status="Unknown";
+											if(delivery.Status != "Sent" || delivery.Sent_At == null)
+											{
+												delivery.Status="Unknown";
+											}
+											attempt.Error_Detail="Email delivery could not be confirmed. Check delivery before any resend.";
+											delivery.Error_Detail=attempt.Error_Detail;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		status = thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+		planState = status.get("state");
+		if(planState == "Partial")
+		{
+			planState = "Failed";
+		}
+		if(planState == "Sent" || planState == "Failed" || planState == "Unknown" || planState == "Preparing")
+		{
+			plan.Status=planState;
+		}
+		if(status.get("emailSent") == true)
+		{
+			plan.Sent_At=zoho.currenttime;
+		}
+		return status;
+	}	catch (outcomeError)
+	{
+	}
+	return thisapp.poOutcomeNotificationStatus(purchaseOrderId,userAccessId);
+}

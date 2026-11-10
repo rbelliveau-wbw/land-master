@@ -1,6 +1,6 @@
 # PO Rejection Review And Email Validation
 
-Budget Manager candidate **122.29.131** reloads the saved PO when Review PO
+Budget Manager **122.29.131** reloads the saved PO when Review PO
 returns from a rejected approval decision. Existing Get and Balances readers
 restore saved reallocation amounts, reasons and reservations before enabling
 Save Draft / Resubmit PO. Read failures retain Unavailable / Retry. No decision,
@@ -26,10 +26,15 @@ immutable release and Development mapping; Budget and approval-progress guides.
 No forms, fields or Custom API registrations change. Existing
 Manage_Purchase_Order and Handle_Purchase_Order_Approval contracts remain.
 
-The button fix needs the widget release. Email validation requires saving and
-publishing both changed functions in Creator. Production is not promoted by
-this task. Native compilation and inbox delivery remain unverified; no live
-email-send test was performed.
+The Production widget mapping is promoted to 122.29.131 at the user's explicit
+request. Both email functions are saved and compiled in Creator Development.
+After navigating away and reopening each function, every code token and string
+literal matched its repository source, including main's Current Bud Mod packet
+changes. Native before/after captures, verification and a screenshot are under
+`creator/schema-changes/po-email-validation-2026-11-10/`.
+
+Creator publication remains for the user. No Production Creator publication,
+business-record write, email retry or live email-send test was performed.
 
 ## Regression And Rollback
 
@@ -43,6 +48,8 @@ outcome/request, duplicate-send and retry checks.
 Verification passed: focused PO reallocation UI/save and outcome-email backend
 regressions, full `npm run validate` (using bundled Python),
 `npm run build:pages`, and `git diff --check`.
+The full checks passed again after combining current main and the Production
+mapping. Native saved-source matches were verified separately from local tests.
 
 Rollback the widget mapping to **122.29.130** and rebuild Pages. Restore the two
 mail functions from the prior commit independently; retain Activity Log history,
