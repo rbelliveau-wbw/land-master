@@ -31,8 +31,11 @@ For Pro Forma users with Edit All Proformas, known incomplete Offer details
 become a Send Anyway confirmation instead of a submission blocker. Explain
 blank/incomplete approval emails/PDFs, Offer acreage/estimated price and Legal
 submission/PSA/LOI documents in readable 14px text. Keep the independent send
-grant and every other submission guard; never treat unavailable reads as
-confirmed incomplete data. The native function resolves the signed-in grant.
+grant and every other submission guard. Deferred reads do not disable Edit All
+users' entry action: clicking loads complete references first, then shows the
+actual warning. Failed, superseded or denied reads cannot submit. Restore the
+originating list/editor before confirmation so Cancel leaves a usable screen.
+The native function resolves the signed-in grant.
 Keep the approval header in a positioned layer above the route and its numbered
 steps so the tooltip remains readable on hover and keyboard focus.
 

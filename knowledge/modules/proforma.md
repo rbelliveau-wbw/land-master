@@ -1,3 +1,31 @@
+## Cold Approval Menu Fix — 1.80.144, November 10, 2026
+
+Edit All Proformas users with send access now have an enabled Send For Approvals
+action before the deferred Offer reference data loads. Pending reads are a
+preparation state, not confirmed incomplete data. Clicking still loads the full
+actor-bound reference snapshot before checking actual completeness, resolving
+the route or showing Send Anyway. Failed/denied/superseded reads cannot submit.
+The list or editor is restored before confirmation; Cancel no longer leaves the
+loading screen behind. Correct the menu's malformed aria-disabled quote and
+handle the normal list state where the editor has no model during cleanup.
+
+Changed: widget HTML/config, manifest, release/environment mapping, lazy-startup
+and Settings-routing regressions, this guide and approval-progress guide. This
+follow-up adds no forms, fields, functions or API arguments. It uses the
+Start_Proforma_Approval_Chain Edit All exception from 1.80.143. The user explicitly
+authorized publishing that Creator change on November 10. Regression executes
+the actual cold main-list button and deferred native read boundaries, held and
+denied reads, both list/editor return paths, real warning/Cancel and zero writes
+before confirmation. Existing permission, archive/history and routing tests stay.
+Run npm run validate and npm run build:pages. Widget rollback: 1.80.143; that
+restores the cold-menu issue, so prefer a forward fix. No real approval email is
+sent as a test.
+
+Creator Production is already at 9.181, with no pending Development changes.
+Its version-history comparison includes Start_Proforma_Approval_Chain, and the
+new side matches the repository body ignoring Creator whitespace. No additional
+Creator publication is required for 1.80.144.
+
 ## Incomplete Offer Approval Exception — 1.80.143, November 10, 2026
 
 Users with both Edit All Proformas and Send Pro Formas for Approvals may

@@ -156,6 +156,11 @@ for(const state of [{started:true},{complete:true}]){offerTest.state=state;asser
 offerTest.state=null;
 assert.equal(offerTest.proformaSendApprovalsGate({...offerPf,Archive:true}).can,false);
 offerTest.S.ed={id:offerPf.ID,model:offerPf,dirty:true};assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false);
-offerTest.S.ed=null;offerTest.readiness={ready:false,unavailable:true,issues:['Loading Offer details']};assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false,'unavailable reference data is not treated as an incomplete Offer');
+offerTest.S.ed=null;offerTest.readiness={ready:false,unavailable:true,issues:['Loading Offer details']};
+assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,true,'Edit All users can open the action before deferred Offer details load');
+assert.equal(offerTest.proformaSendApprovalsGate(offerPf).offerOverride,false,'pending reads are not described as confirmed incomplete data');
+assert.equal(offerTest.proformaSendApprovalsGate(offerPf).offerCheckPending,true);
+offerTest.permissions={sendApprovals:false,editAll:true};assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false,'pending Offer details cannot grant send access');
+offerTest.permissions={sendApprovals:true,editAll:false};assert.equal(offerTest.proformaSendApprovalsGate({...offerPf,mine:true}).can,false,'ordinary senders retain the completeness gate');
 console.log('Incomplete Offer warning: list/editor access, plain-language dependencies, Send Anyway, cancellation, independent grants and existing blockers passed.');
 assert.equal(live.widget.PFTransport.snapshot().reviews.length,0,'failed read-only route preview cannot lock writes as an unknown mutation');assert.equal(live.widget.PFTransport.snapshot().ledger.length,0);

@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.143"></script>
-<script src="pf-save-audit.js?v=1.80.143"></script>
-<script src="pf-input-rules.js?v=1.80.143"></script>
-<script src="pf-input-validation.js?v=1.80.143"></script>
-<script src="pf-progress.js?v=1.80.143"></script>
+<script src="pf-save-verification.js?v=1.80.144"></script>
+<script src="pf-save-audit.js?v=1.80.144"></script>
+<script src="pf-input-rules.js?v=1.80.144"></script>
+<script src="pf-input-validation.js?v=1.80.144"></script>
+<script src="pf-progress.js?v=1.80.144"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.143">
-<script src="interaction-motion.js?v=1.80.143"></script>
-<script src="interaction-surfaces.js?v=1.80.143"></script>
-<script src="number-edit-commit.js?v=1.80.143"></script>
-<script src="number-transitions.js?v=1.80.143"></script>
-<script src="number-views.js?v=1.80.143"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.143">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.144">
+<script src="interaction-motion.js?v=1.80.144"></script>
+<script src="interaction-surfaces.js?v=1.80.144"></script>
+<script src="number-edit-commit.js?v=1.80.144"></script>
+<script src="number-transitions.js?v=1.80.144"></script>
+<script src="number-views.js?v=1.80.144"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.144">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.143"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.143">
-<script src="comments.js?v=1.80.143"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.143">
+<script src="budget-transfer-ui.js?v=1.80.144"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.144">
+<script src="comments.js?v=1.80.144"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.144">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1845,7 +1845,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.143"></script>
+<script src="success-feedback.js?v=1.80.144"></script>
 </head>
 <body>
 
@@ -2260,7 +2260,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.143";
+var PFW_VERSION="1.80.144";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -4568,9 +4568,10 @@ function proformaSendApprovalsGate(pfOrId){
   if(S.ed&&String(S.ed.id||"")===id&&(S.ed.dirty||S.ed.loiDirty)) reasons.push("Save your unsaved changes first");
   var readiness=proformaApprovalReadiness(id);
   var offerOverride=!!p.editAll&&!readiness.ready&&!readiness.unavailable;
-  if(!readiness.ready&&!offerOverride){ loiFixable=true; readiness.issues.forEach(function(x){ reasons.push(x); }); }
+  var offerCheckPending=!!p.editAll&&!!readiness.unavailable;
+  if(!readiness.ready&&!offerOverride&&!offerCheckPending){ loiFixable=true; readiness.issues.forEach(function(x){ reasons.push(x); }); }
 
-  return {can:reasons.length===0, reasons:reasons, loiFixable:loiFixable, state:state, offerOverride:offerOverride};
+  return {can:reasons.length===0, reasons:reasons, loiFixable:loiFixable, state:state, offerOverride:offerOverride, offerCheckPending:offerCheckPending};
 }
 function sendApprovalsWhyText(gate){
   if(gate.can) return "";
@@ -4584,7 +4585,10 @@ function sendApprovalsWhyIcon(gate){
     +esc(sendApprovalsWhyText(gate))+'</span></span>';
 }
 function runStartProformaApproval(pfId){
-  if(!pfReferencesReady())return pfReferenceAction(function(){return runStartProformaApproval(pfId);});
+  if(!pfReferencesReady()){
+    var returnView=S.view;
+    return pfReferenceAction(function(){showView(returnView||"vList");if(returnView==="vList")renderList();setStatus("Ready");return runStartProformaApproval(pfId);});
+  }
   var id=String(pfId||"");if(!id||S.approvalSettingsPending||S.approvalBusy||pfApprovalProgress)return;
   var rec=(S.proformas||[]).find(function(r){return String(r.ID)===id;})||((S.ed&&S.ed.model&&String(S.ed.model.ID)===id)?S.ed.model:null);
   var gate=proformaSendApprovalsGate(rec||id);
@@ -4606,7 +4610,7 @@ function runStartProformaApproval(pfId){
   }).catch(function(error){
     auditLog("error","Settings approval route unavailable",{proformaId:id,error:errMeta(error)});
     return uiConfirm({tone:"danger",kicker:false,title:"Approval route unavailable",message:String(error&&error.message||"Check Settings → Approvals and refresh the route."),okLabel:"Close",cancelLabel:false});
-  }).then(function(){if(S.approvalSettingsPending===id)S.approvalSettingsPending=null;if(!pfApprovalProgress)setApprovalBusy(false);if(S.ed&&String(S.ed.model.ID)===id)renderApprovalPane();});
+  }).then(function(){if(S.approvalSettingsPending===id)S.approvalSettingsPending=null;if(!pfApprovalProgress)setApprovalBusy(false);if(S.ed&&S.ed.model&&String(S.ed.model.ID)===id)renderApprovalPane();});
 }
 
 function runProformaApprovalAction(pfId,approvalId,action,note){
@@ -6024,7 +6028,7 @@ function renderList(){
           +'<button type="button" class="pf-row-menu-item" data-act="export" data-actid="'+esc(r.ID)+'" title="Export PDF, Excel, or LOI/Contract Word document"><svg viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>Export</button>'
           +(perms().sendCostsToBudgets?'<button type="button" class="pf-row-menu-item" data-act="budget-transfer" data-actid="'+esc(r.ID)+'"><svg viewBox="0 0 24 24"><path d="M4 6h12M12 2l4 4-4 4M20 18H8M12 14l-4 4 4 4"/></svg>Send Costs to Budgets</button>':'')
           +(canDuplicatePf(r)?'<button type="button" class="pf-row-menu-item" data-act="duplicate" data-actid="'+esc(r.ID)+'" title="Open a new Pro Forma pre-filled from this one. Nothing is written until you save."><svg viewBox="0 0 24 24"><rect x="8" y="8" width="14" height="14" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>Duplicate</button>':'')
-          +(canSendProformaApprovalsFor(r)?'<button type="button" class="pf-row-menu-item'+(apprGate.can?'':' is-off')+'" data-act="send-approvals" data-actid="'+esc(r.ID)+'" aria-disabled="'+(apprGate.can?'false':'true')+(apprGate.can?' title="Send this Pro Forma through the approval chain."':'')+'><svg viewBox="0 0 24 24"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4z"></path></svg>Send For Approvals'+sendApprovalsWhyIcon(apprGate)+'</button>':'')
+          +(canSendProformaApprovalsFor(r)?'<button type="button" class="pf-row-menu-item'+(apprGate.can?'':' is-off')+'" data-act="send-approvals" data-actid="'+esc(r.ID)+'" aria-disabled="'+(apprGate.can?'false':'true')+'"'+(apprGate.can?' title="Send this Pro Forma through the approval chain."':'')+'><svg viewBox="0 0 24 24"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4z"></path></svg>Send For Approvals'+sendApprovalsWhyIcon(apprGate)+'</button>':'')
           +(perms().aiReview?'<button type="button" class="pf-row-menu-item" data-act="ai-review" data-actid="'+esc(r.ID)+'" title="AI review of this Pro Forma"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg>AI Review</button>':'')
           +(canSubmitLOI?'<button type="button" class="pf-row-menu-item" data-act="loi" data-actid="'+esc(r.ID)+'" title="'+esc(loiSubmitTooltip(r,loiState))+'"'+(loiBusy?' disabled':'')+'><svg viewBox="0 0 24 24"><path d="M22 2 11 13"></path><path d="m22 2-7 20-4-9-9-4z"></path></svg>'+(loiBusy?'Submitting…':'Submit to Legal')+'</button>':'')
           +(rowCanManage?'<span class="pf-row-menu-sep"></span><button type="button" class="pf-row-menu-item" data-manage="'+(archived?'restore':'archive')+'" data-manageid="'+esc(r.ID)+'"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"></path><path d="M3 4h18v3H3z"></path><path d="M9 11h6"></path></svg>'+(archived?'Restore':'Archive')+'</button><button type="button" class="pf-row-menu-item danger" data-manage="delete" data-manageid="'+esc(r.ID)+'"><svg viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path><path d="M10 11v5M14 11v5"></path></svg>Delete</button>':'')
