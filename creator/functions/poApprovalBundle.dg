@@ -10,11 +10,14 @@ map poApprovalBundle(string purchaseOrderId)
 			return result;
 		}
 		selectedId = 0;
+		selectedAddedTime = zoho.currenttime;
+		// Creator IDs can be allocated out of creation order across record ranges.
 		for each  candidate in Approval_Route_Snapshot[Workflow == "Purchase Order" && Record_ID == purchaseOrderId]
 		{
-			if(candidate.ID > selectedId)
+			if(selectedId == 0 || candidate.Added_Time > selectedAddedTime || (candidate.Added_Time == selectedAddedTime && candidate.ID > selectedId))
 			{
 				selectedId = candidate.ID;
+				selectedAddedTime = candidate.Added_Time;
 			}
 		}
 		if(selectedId == 0)
