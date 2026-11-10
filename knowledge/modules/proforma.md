@@ -1,3 +1,43 @@
+## Incomplete Offer Approval Exception — 1.80.143, November 10, 2026
+
+Users with both Edit All Proformas and Send Pro Formas for Approvals may
+submit an incomplete Offer for approvals from the list menu or Approvals tab.
+The shared gate permits only known incomplete Offer data; unavailable reference
+reads, unsaved edits, archive and existing approval history retain their guards.
+Send With Incomplete Offer? explains that approval emails/PDFs may have missing
+buyer/seller/property details, Offer acreage/estimated price may be incomplete,
+and Legal submission or PSA/LOI documents may be blocked or incomplete. Cancel
+performs no write; Send Anyway uses the unchanged Settings route and progress.
+Complete Offers retain the ordinary confirmation. No permission is inferred
+from ownership or approval-editing access alone.
+
+The existing Start_Proforma_Approval_Chain Custom API/function bypasses only its
+Purchasing Company and linked Seller/Property completeness checks when the
+signed-in User_Access.Edit_All_Proformas is true. It does not trust a client flag.
+Independent send access, ownership scope, immutable route intent, approval
+history, duplicate-send protection, Check/Repair and delivery predicates remain.
+LOI submission, financial calculations, email content, PDF generation and Writer
+behavior are unchanged. No forms or fields are added or changed; existing
+Add_Pro_Forma.Purchasing_Company, Builder and Property fields are read as before.
+
+Changed files: Proforma widget HTML/config, widget manifest, immutable release,
+Development/Production mappings, Start_Proforma_Approval_Chain.dg, both Settings
+routing regression suites, their package validation entry, this module guide and the approval progress guide.
+Focused regressions cover every required missing Seller/Property field and buyer,
+non-owner Edit All users, false/null/missing grants, client-flag spoofing,
+cancel/confirm, shared list/editor gates, ordinary/complete Offer behavior,
+history/replay and unchanged send/delivery. Run npm run validate and
+npm run build:pages. The native-body fixture tests control flow locally; Creator
+compilation and real submissions remain separate live checks. No real approval
+email is sent for verification.
+
+**Creator deployment required:** save/compile the updated function in Development,
+then the user publishes it to Production under PMP. Until that publication the
+new widget may show Send Anyway, but the old native function still rejects an
+incomplete Offer. No new endpoint, argument or widget URL is needed. Rollback:
+restore the prior function body and promote widget 1.80.142 in
+[environment mappings](../../deploy/environments.json).
+
 ## Acquisition Contract Source Lookup — November 6, 2026
 
 Send to Legal already passes the exact Pro Forma ID to

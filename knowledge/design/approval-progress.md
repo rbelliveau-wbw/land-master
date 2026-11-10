@@ -17,6 +17,12 @@ This is Robby's preferred interaction for sending, advancing, rejecting, and com
 The Pro Forma Send for Approvals tooltip directs users to complete the Offer:
 "Complete all required fields in the Offer section before sending for approval."
 Once its deferred options load, retain the specific missing-field reasons.
+For Pro Forma users with Edit All Proformas, known incomplete Offer details
+become a Send Anyway confirmation instead of a submission blocker. Explain
+blank/incomplete approval emails/PDFs, Offer acreage/estimated price and Legal
+submission/PSA/LOI documents in readable 14px text. Keep the independent send
+grant and every other submission guard; never treat unavailable reads as
+confirmed incomplete data. The native function resolves the signed-in grant.
 Keep the approval header in a positioned layer above the route and its numbered
 steps so the tooltip remains readable on hover and keyboard focus.
 

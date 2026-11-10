@@ -247,109 +247,114 @@ map Start_Proforma_Approval_Chain(string proformaId)
 			response.put("repairError",repairError);
 			return response;
 		}
-		if(pf.Purchasing_Company == null)
+		// Only the signed-in Edit All Proformas grant bypasses Offer completeness.
+		// Send permission, ownership scope, routes, history and delivery guards still apply.
+		if(accessRow.Edit_All_Proformas != true)
 		{
-			response.put("success",false);
-			response.put("message","Select a Purchasing Company before sending this Pro Forma for approvals.");
-			return response;
-		}
-		sellerRows = Builder[Proforma == proformaIdLong];
-		if(sellerRows.count() == 0)
-		{
-			response.put("success",false);
-			response.put("message","Add at least one fully completed Seller record before sending this Pro Forma for approvals.");
-			return response;
-		}
-		incompleteSellers = List();
-		for each  sellerRow in sellerRows
-		{
-			missingSellerFields = List();
-			if(ifnull(sellerRow.Builder_Name,"").toString().trim() == "")
+			if(pf.Purchasing_Company == null)
 			{
-				missingSellerFields.add("Seller Name");
+				response.put("success",false);
+				response.put("message","Select a Purchasing Company before sending this Pro Forma for approvals.");
+				return response;
 			}
-			if(ifnull(sellerRow.Email,"").toString().trim() == "")
+			sellerRows = Builder[Proforma == proformaIdLong];
+			if(sellerRows.count() == 0)
 			{
-				missingSellerFields.add("Email");
+				response.put("success",false);
+				response.put("message","Add at least one fully completed Seller record before sending this Pro Forma for approvals.");
+				return response;
 			}
-			if(ifnull(sellerRow.Phone_Number,"").toString().trim() == "")
+			incompleteSellers = List();
+			for each  sellerRow in sellerRows
 			{
-				missingSellerFields.add("Phone");
+				missingSellerFields = List();
+				if(ifnull(sellerRow.Builder_Name,"").toString().trim() == "")
+				{
+					missingSellerFields.add("Seller Name");
+				}
+				if(ifnull(sellerRow.Email,"").toString().trim() == "")
+				{
+					missingSellerFields.add("Email");
+				}
+				if(ifnull(sellerRow.Phone_Number,"").toString().trim() == "")
+				{
+					missingSellerFields.add("Phone");
+				}
+				if(ifnull(sellerRow.Street_Address,"").toString().trim() == "")
+				{
+					missingSellerFields.add("Street Address");
+				}
+				if(ifnull(sellerRow.City_State_ZIP,"").toString().trim() == "")
+				{
+					missingSellerFields.add("City, State ZIP");
+				}
+				if(missingSellerFields.size() > 0)
+				{
+					sellerLabel = if(ifnull(sellerRow.Builder_Name,"").toString().trim() == "","Seller " + sellerRow.ID.toString(),sellerRow.Builder_Name.toString());
+					incompleteSellers.add(sellerLabel + " needs " + missingSellerFields.toString(", "));
+				}
 			}
-			if(ifnull(sellerRow.Street_Address,"").toString().trim() == "")
+			if(incompleteSellers.size() > 0)
 			{
-				missingSellerFields.add("Street Address");
+				response.put("success",false);
+				response.put("message","Complete the Seller record(s): " + incompleteSellers.toString("; "));
+				return response;
 			}
-			if(ifnull(sellerRow.City_State_ZIP,"").toString().trim() == "")
+			propertyRows = Property[Proforma == proformaIdLong];
+			if(propertyRows.count() == 0)
 			{
-				missingSellerFields.add("City, State ZIP");
+				response.put("success",false);
+				response.put("message","Add at least one fully completed Property record before sending this Pro Forma for approvals.");
+				return response;
 			}
-			if(missingSellerFields.size() > 0)
+			incompleteProperties = List();
+			for each  propertyRow in propertyRows
 			{
-				sellerLabel = if(ifnull(sellerRow.Builder_Name,"").toString().trim() == "","Seller " + sellerRow.ID.toString(),sellerRow.Builder_Name.toString());
-				incompleteSellers.add(sellerLabel + " needs " + missingSellerFields.toString(", "));
+				missingPropertyFields = List();
+				if(ifnull(propertyRow.Common_Name,"").toString().trim() == "")
+				{
+					missingPropertyFields.add("Common Name");
+				}
+				if(ifnull(propertyRow.Property_ID,"").toString().trim() == "")
+				{
+					missingPropertyFields.add("CAD / Property ID");
+				}
+				if(ifnull(propertyRow.County,"").toString().trim() == "")
+				{
+					missingPropertyFields.add("County");
+				}
+				if(ifnull(propertyRow.City,"").toString().trim() == "")
+				{
+					missingPropertyFields.add("City");
+				}
+				if(propertyRow.Acres == null || propertyRow.Acres <= 0)
+				{
+					missingPropertyFields.add("Acres");
+				}
+				if(ifnull(propertyRow.TerraVault_URL,"").toString().trim() == "")
+				{
+					missingPropertyFields.add("TerraVault URL");
+				}
+				if(propertyRow.Seller == null)
+				{
+					missingPropertyFields.add("Seller");
+				}
+				if(propertyRow.Company1 == null)
+				{
+					missingPropertyFields.add("Purchasing Company");
+				}
+				if(missingPropertyFields.size() > 0)
+				{
+					propertyLabel = if(ifnull(propertyRow.Common_Name,"").toString().trim() == "","Property " + propertyRow.ID.toString(),propertyRow.Common_Name.toString());
+					incompleteProperties.add(propertyLabel + " needs " + missingPropertyFields.toString(", "));
+				}
 			}
-		}
-		if(incompleteSellers.size() > 0)
-		{
-			response.put("success",false);
-			response.put("message","Complete the Seller record(s): " + incompleteSellers.toString("; "));
-			return response;
-		}
-		propertyRows = Property[Proforma == proformaIdLong];
-		if(propertyRows.count() == 0)
-		{
-			response.put("success",false);
-			response.put("message","Add at least one fully completed Property record before sending this Pro Forma for approvals.");
-			return response;
-		}
-		incompleteProperties = List();
-		for each  propertyRow in propertyRows
-		{
-			missingPropertyFields = List();
-			if(ifnull(propertyRow.Common_Name,"").toString().trim() == "")
+			if(incompleteProperties.size() > 0)
 			{
-				missingPropertyFields.add("Common Name");
+				response.put("success",false);
+				response.put("message","Complete the Property record(s): " + incompleteProperties.toString("; "));
+				return response;
 			}
-			if(ifnull(propertyRow.Property_ID,"").toString().trim() == "")
-			{
-				missingPropertyFields.add("CAD / Property ID");
-			}
-			if(ifnull(propertyRow.County,"").toString().trim() == "")
-			{
-				missingPropertyFields.add("County");
-			}
-			if(ifnull(propertyRow.City,"").toString().trim() == "")
-			{
-				missingPropertyFields.add("City");
-			}
-			if(propertyRow.Acres == null || propertyRow.Acres <= 0)
-			{
-				missingPropertyFields.add("Acres");
-			}
-			if(ifnull(propertyRow.TerraVault_URL,"").toString().trim() == "")
-			{
-				missingPropertyFields.add("TerraVault URL");
-			}
-			if(propertyRow.Seller == null)
-			{
-				missingPropertyFields.add("Seller");
-			}
-			if(propertyRow.Company1 == null)
-			{
-				missingPropertyFields.add("Purchasing Company");
-			}
-			if(missingPropertyFields.size() > 0)
-			{
-				propertyLabel = if(ifnull(propertyRow.Common_Name,"").toString().trim() == "","Property " + propertyRow.ID.toString(),propertyRow.Common_Name.toString());
-				incompleteProperties.add(propertyLabel + " needs " + missingPropertyFields.toString(", "));
-			}
-		}
-		if(incompleteProperties.size() > 0)
-		{
-			response.put("success",false);
-			response.put("message","Complete the Property record(s): " + incompleteProperties.toString("; "));
-			return response;
 		}
 		rows = Budget_Approvals[Proforma == proformaIdLong] sort by Sort_Order;
 		// A lost API response must not restart an already delivered chain.

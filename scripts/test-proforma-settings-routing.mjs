@@ -121,4 +121,41 @@ for(const mode of ['Check','Repair','Start','StartSettings'])assert.equal(transp
 const {ready}=await import('./fixtures/proforma-sdk-v2-harness.mjs');
 const live=await ready({invoke:cfg=>cfg.api_name.replace(/_DEV$/,'')==='Start_Proforma_Approval_Chain'?{code:3000,result:JSON.stringify({success:false,message:'Native route reason'})}:undefined});
 await assert.rejects(live.widget.sdkInvoke({api_name:'Start_Proforma_Approval_Chain',payload:{proformaId:JSON.stringify({id:pf.ID,mode:'Check',settingsPreview:true})}}));
+
+// The shared list/editor gate offers an explicit warning before the same send.
+const offerPf={...pf,mine:false};
+const offerTest=vm.createContext({
+ S:{proformas:[offerPf],approvals:[],ed:null},permissions:{sendApprovals:true,editAll:true},
+ perms:()=>offerTest.permissions,userOwnsPf:rec=>rec.mine,boolValue:v=>v===true,
+ proformaApprovalState:()=>offerTest.state||{started:false,complete:false},
+ proformaApprovalReadiness:()=>offerTest.readiness||{ready:false,issues:['Select a Purchasing Company','Add at least one Seller record','Add at least one Property record']},
+ pfReferencesReady:()=>true,proformaApprovalSettingsKey:rec=>rec.ID,
+ loadProformaApprovalSettings:()=>Promise.resolve(snapshot),setApprovalBusy:value=>{offerTest.S.approvalBusy=value;},
+ pfApprovalProgress:null,auditLog(){},errMeta:e=>e,renderApprovalPane(){},
+ confirmations:[],sent:[],answer:false,
+ uiConfirm:options=>{offerTest.confirmations.push(options);return Promise.resolve(offerTest.answer);},
+ executeStartProformaApproval:(id,settings)=>offerTest.sent.push({id,settings})
+});
+vm.runInContext([fn('proformaSendApprovalsGate'),fn('runStartProformaApproval')].join('\n'),offerTest);
+assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,true);
+assert.equal(offerTest.proformaSendApprovalsGate(offerPf.ID).can,true,'list and editor share the exception');
+await offerTest.runStartProformaApproval(offerPf.ID);
+assert.equal(offerTest.sent.length,0,'Cancel does not submit');
+const warning=offerTest.confirmations[0];assert.equal(warning.title,'Send With Incomplete Offer?');assert.equal(warning.okLabel,'Send Anyway');
+assert.match(warning.list.join(' '),/emails and PDFs/);assert.match(warning.list.join(' '),/acreage and estimated price/);assert.match(warning.list.join(' '),/Legal submission and PSA\/LOI/);
+assert.deepEqual(Array.from(warning.steps),['VP — waco-vp@example.com','COO — coo@example.com']);
+offerTest.answer=true;await offerTest.runStartProformaApproval(offerPf.ID);assert.equal(offerTest.sent.length,1);assert.equal(offerTest.sent[0].id,offerPf.ID);
+offerTest.readiness={ready:true,issues:[]};offerTest.confirmations=[];await offerTest.runStartProformaApproval(offerPf.ID);
+assert.equal(offerTest.confirmations[0].okLabel,'Send For Approvals');assert.equal(offerTest.confirmations[0].list.length,0,'complete Offers retain ordinary confirmation');
+offerTest.readiness=null;
+for(const permissions of [{sendApprovals:true,editAll:false},{sendApprovals:false,editAll:true},{sendApprovals:true,apprAll:true}]){
+ offerTest.permissions=permissions;assert.equal(offerTest.proformaSendApprovalsGate({...offerPf,mine:true}).can,false,'editing approvals or ownership cannot bypass missing Offer details or send access');
+}
+offerTest.permissions={sendApprovals:true,editAll:true};
+for(const state of [{started:true},{complete:true}]){offerTest.state=state;assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false);}
+offerTest.state=null;
+assert.equal(offerTest.proformaSendApprovalsGate({...offerPf,Archive:true}).can,false);
+offerTest.S.ed={id:offerPf.ID,model:offerPf,dirty:true};assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false);
+offerTest.S.ed=null;offerTest.readiness={ready:false,unavailable:true,issues:['Loading Offer details']};assert.equal(offerTest.proformaSendApprovalsGate(offerPf).can,false,'unavailable reference data is not treated as an incomplete Offer');
+console.log('Incomplete Offer warning: list/editor access, plain-language dependencies, Send Anyway, cancellation, independent grants and existing blockers passed.');
 assert.equal(live.widget.PFTransport.snapshot().reviews.length,0,'failed read-only route preview cannot lock writes as an unknown mutation');assert.equal(live.widget.PFTransport.snapshot().ledger.length,0);

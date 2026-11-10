@@ -140,3 +140,36 @@ h=runtime({approvals:rows});const changed=clone(legacyIntent);changed.expectedEx
 // User identity still needs a routing email; allow a submitter recipient with stale Deny.
 h=runtime({userUpdates:[{ID:'11',User:'owner'}],owner:{...creatorOwner,ID:'11',Approval_Routing_Enabled:true,Approver_Email:'first@example.com'},extraTables:{Add_Pro_Forma:[{ID,Owner:[{ID:'11'}],Territory:'North',Status:'Draft',Lock_Inputs:false}]}});result=h.run();assert.equal(result.success,true,JSON.stringify(result));assert.equal(result.route[0].userAccessId,'11');
 h=runtime({policies:[{...policy,Adapter_Enabled:false}]});result=h.run(submission);assert.equal(result.success,true,JSON.stringify(result));
+
+// Offer completeness is optional only for the authenticated Edit All grant.
+// Exercise the whole actual initiation body, including route capture and mail.
+const offerAdmin={...creatorOwner,Edit_All_Proformas:true};
+const goodOffer=runtime().snapshot();
+const missingOffers=[
+ {offer:false},
+ {extraTables:{Add_Pro_Forma:[{...goodOffer.Add_Pro_Forma[0],Purchasing_Company:null}]}},
+ {extraTables:{Builder:[]}},
+ {extraTables:{Property:[]}},
+ ...['Builder_Name','Email','Phone_Number','Street_Address','City_State_ZIP'].map(field=>({extraTables:{Builder:[{...goodOffer.Builder[0],[field]:''}]}})),
+ ...['Common_Name','Property_ID','County','City','TerraVault_URL','Seller','Company1'].map(field=>({extraTables:{Property:[{...goodOffer.Property[0],[field]:null}]}})),
+ {extraTables:{Property:[{...goodOffer.Property[0],Acres:0}]}}
+];
+for(const missing of missingOffers){
+ h=runtime(missing);result=h.run({...submission,editAll:true,allowIncompleteOffer:true});
+ assert.equal(result.success,false,'caller-supplied flags cannot grant an exception');assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);
+ h=runtime({...missing,owner:offerAdmin,mine:false});result=h.run(submission);
+ assert.equal(result.success,true,JSON.stringify({missing,result,diagnostics:h.diagnostics}));
+ assert.equal(h.snapshot().Add_Pro_Forma[0].Status,'Pending Approval');assert.equal(h.snapshot().Add_Pro_Forma[0].Lock_Inputs,true);
+ assert.deepEqual(h.snapshot().Budget_Approvals.map(row=>row.Status),['Pending','Not Sent']);assert.equal(h.emails.length,1);
+ assert.equal(h.run({id:ID,mode:'Check'}).emailSent,true,'normal delivery reconciliation still works');
+ h.run(submission);assert.equal(h.emails.length,1,'repeat submissions still cannot send twice');
+}
+for(const grant of [false,null,undefined]){
+ h=runtime({offer:false,owner:{...creatorOwner,Edit_All_Proformas:grant}});result=h.run(submission);
+ assert.equal(result.success,false);assert.equal(h.writes.length,0);
+}
+h=runtime({offer:false,owner:{...offerAdmin,Send_Pro_Formas_for_Approvals:false}});result=h.run(submission);
+assert.equal(result.success,false);assert.match(result.message,/permission/);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);
+h=runtime({offer:false,owner:offerAdmin,approvals:[{...rows[0],Status:'Approved'},rows[1]]});result=h.run(submission);
+assert.equal(result.success,false);assert.match(result.message,/history/);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);
+console.log('Incomplete Offer initiation: signed-in Edit All exception, ordinary-user requirements, independent send grant, normal routing/delivery and duplicate/history guards passed.');
