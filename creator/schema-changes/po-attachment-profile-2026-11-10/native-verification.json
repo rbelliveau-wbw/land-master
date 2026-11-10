@@ -1,0 +1,37 @@
+{
+  "verified_on": "2026-11-10",
+  "environment": "Development",
+  "method": "Authenticated agent-owned browser: native compiler Save/Update, independent source reopen and token comparison, read-only Execute",
+  "function": {
+    "name": "createBudgetAttachmentRecord",
+    "source_sha256": "306d464628a76693602291d01e31c4aec46f1bfb3d3ab59e6d9e0fe2b9e137c8",
+    "native_readback_sha256": "bdece66c33e9fb78f5c0107bae2a559e815129426f36e0d25eb7e6d41f6a39c8",
+    "exact_tokens_match": true
+  },
+  "workflow": {
+    "name": "Construction Attachment Validation",
+    "link_name": "Construction_Attachment_V",
+    "source_sha256": "8fc839bea4272066de86f1d339f1918adb676572dcbfdaebcba19db90f338ca9",
+    "native_readback_sha256": "627ac4f9b31c2e0e54980ff19679927a44c3c5b0ad9cc27305795e1b68275d54",
+    "exact_tokens_match": true,
+    "existing_action_count": 1
+  },
+  "profile": {
+    "name": "Construction Budgeting",
+    "existing_attachment_add": true,
+    "profile_permissions_changed": false
+  },
+  "native_checks": {
+    "capabilities": {
+      "ok": true,
+      "canWrite": false,
+      "canAttachPO": true
+    },
+    "same_budget_po_validate": true,
+    "budget_only_validate": false,
+    "writes_started": false
+  },
+  "native_file_transfer_tested": false,
+  "creator_production_promoted": false,
+  "rollback_widget": "122.29.127"
+}

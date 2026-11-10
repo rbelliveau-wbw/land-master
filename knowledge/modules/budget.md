@@ -2724,6 +2724,18 @@ Rollback: restore Budget widget production mapping to 122.29.102 and rebuild Pag
 retain the permanent Creator widget URL. The Construction element data backfill
 is a separate operation and is not performed by this widget change.
 
+## Construction Budgeting PO Attachments — November 10, 2026
+
+Budget 122.29.128 permits this native profile to add attachments to every PO,
+regardless of owner or status, while Budget access remains read-only. Reuses the
+existing attachment API, actor resolver, file queue, renderer and FILE path.
+Both native permission checks were compiled and reopened in Development; native
+Capabilities/Validate and desktop sample checks passed. Actual native FILE
+transfer has not been exercised. Creator promotion is required for the function
+and existing Attachment validation workflow. No new fields or profile grant.
+Regression and rollback to 122.29.127 are documented in
+[the attachment fix](../../docs/po-attachment-profile-2026-11-10.md).
+
 ## PO Outcome Notifications And Email Activity — November 10, 2026
 
 Final Approved POs notify the Settings approved-recipient list plus the saved

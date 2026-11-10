@@ -83,7 +83,7 @@ const exportSource=source('exportBudgetSnapshot');
 const exportGuard=compileDelugePO(exportSource.slice(0,exportSource.indexOf('{')+1)+'\n'+exportSource.slice(exportSource.indexOf('// An export persists'),exportSource.indexOf('/********* MANUAL BUDGET EXPORT ENTRY POINT'))+'\nreturn "ALLOW";\n}');
 const statusProgram=compileDelugePO(source('syncBudgetApprovalStatus'));
 const manageProgram=compileDelugePO(source('manageBudget'));
-const attachmentProgram=compileDelugePO(source('createBudgetAttachmentRecord'));
+const attachmentProgram=compileDelugePO(source('constructionReviewActor'))+';thisapp.constructionReviewActor=constructionReviewActor;'+compileDelugePO(source('createBudgetAttachmentRecord'));
 const creationPrefix=source('createBudgetFromSubdivision').slice(0,source('createBudgetFromSubdivision').indexOf('\t\tsubdivisionKey ='))+'\nreturn "ALLOW";\n} catch(testError) { return "ERROR: Guard failed."; }\nreturn "ERROR: Guard ended.";\n}';
 const creationProgram=compileDelugePO(creationPrefix);
 function surfaceFixture(options={}){
@@ -96,11 +96,11 @@ function surfaceCall(rr,name,action='archive'){
 const staleBudgetGrants={...allGrants,Edit_All_Budgets:true,Edit_Owned_Budgets:true,Delete_Archive_Budgets:true};
 for(const name of ['sendApprovalEmail','exportBudgetSnapshot','syncBudgetApprovalStatus','manageBudget','createBudgetFromSubdivision','createBudgetAttachmentRecord']){
   for(const options of [{profile:'Construction Budgeting'},{profileFailure:true}]){
-    r=surfaceFixture({actor:staleBudgetGrants,...options});const before=r.tables(),writes=r.c.writes;const result=surfaceCall(r,name,name==='createBudgetAttachmentRecord'?'Create':'archive');assert.match(result,/read-only|could not be verified|do not have permission/i,name+' denies Const before writes: '+result);assert.deepEqual(r.tables(),before);assert.equal(r.c.writes,writes);assert.deepEqual(Array.from(r.c.effects),[]);
+    r=surfaceFixture({actor:staleBudgetGrants,...options});const before=r.tables(),writes=r.c.writes;const result=surfaceCall(r,name,name==='createBudgetAttachmentRecord'?'Create':'archive');assert.match(result,/read-only|could not be verified|do not have permission|only add attachments to Purchase Orders/i,name+' denies Const before writes: '+result);assert.deepEqual(r.tables(),before);assert.equal(r.c.writes,writes);assert.deepEqual(Array.from(r.c.effects),[]);
   }
 }
 for(const profile of ['Construction Budgeting','Dev/Land Acq - Proforma & Budgets']){
-  r=surfaceFixture({actor:staleBudgetGrants,profile});const response=JSON.parse(surfaceCall(r,'createBudgetAttachmentRecord','Capabilities'));assert.equal(response.ok,true);assert.equal(response.canWrite,profile!=='Construction Budgeting','Capabilities truthfully describes read-only scope');assert.equal(r.c.writes,0);
+  r=surfaceFixture({actor:staleBudgetGrants,profile});const response=JSON.parse(surfaceCall(r,'createBudgetAttachmentRecord','Capabilities'));assert.equal(response.ok,true);assert.equal(response.canWrite,profile!=='Construction Budgeting','Capabilities truthfully describes read-only scope');assert.equal(response.canAttachPO,profile==='Construction Budgeting','PO uploads remain separate from Budget writes');assert.equal(r.c.writes,0);
 }
 for(const name of ['sendApprovalEmail','exportBudgetSnapshot']){
   r=surfaceFixture();assert.equal(surfaceCall(r,name),'ALLOW','Other native caller behavior is unchanged');

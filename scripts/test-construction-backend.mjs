@@ -211,6 +211,14 @@ for(const workflow of currentWorkflows.values()){
   assert.equal(capture.nativeScriptActionCount,1,`${workflow.link}: one native script action`);
   assert.equal(capture.scripts.length,1,`${workflow.link}: capture must include every native script action`);
   let historicalSource=read(workflow.source);
+  if(workflow.link==='Construction_Attachment_V'){
+    // User-authorized all-PO append access is verified independently. Remove
+    // only its exact new prefix/branch to retain this historical Construction
+    // capture comparison and all its original cross-parent restrictions.
+    const poPrefix=read('creator/schema-changes/po-attachment-profile-2026-11-10/PO_Attachment_Validation.prefix.dg').trimEnd()+'\n';
+    assert.equal(historicalSource.split(poPrefix).length-1,1);
+    historicalSource=historicalSource.replace(poPrefix,'').replace('if(constructionBudgetingProfile && purchaseOrderAttachment != true)','if(constructionBudgetingProfile)');
+  }
   if(workflow.link==='Field_Validations_Contrac'){
     // This independent capture predates the separately audited City and rejection
     // additions. Preserve its original native body; do not claim it proves them.

@@ -497,6 +497,7 @@ for(const options of [{createError:new Error('Child created but response lost')}
   assert.match(pane.innerHTML,/data-delete-budget-attachment='0'[^>]* disabled/,'mounted row Delete stays disabled while a file request is pending');
   c.S.attachmentUploadReview={attachmentId};c.S.attachmentBusy=false;
   let handler,chooser=0,rechecks=0;c.document={addEventListener:(_event,callback) => {handler=callback;}};
+  c.requestAttachmentSurface=()=>null; // This isolated check uses the Budget file surface.
   c.$=() => ({click:() => chooser++});c.recheckBudgetAttachmentUpload=() => rechecks++;
   const start=source.indexOf('document.addEventListener("click", function(e){',source.indexOf('/* Budget attachment controls */'));
   vm.runInContext(source.slice(start,source.indexOf('\n});',start)+4),c);

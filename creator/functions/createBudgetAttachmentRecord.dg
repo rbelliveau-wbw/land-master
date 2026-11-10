@@ -46,23 +46,26 @@ string createBudgetAttachmentRecord(string budgetId)
 			response.put("message","Budget not found.");
 			return response.toString();
 		}
-		actorUser = zoho.loginuser;
-		if(thisapp.environment.type == "Development" && zoho.loginuser == zoho.adminuser && p.get("userAccessId") != null)
+		// Reuse the proven native Development View-as resolver; it never changes
+		// a Stage/Production caller's authenticated identity.
+		resolvedActor = thisapp.constructionReviewActor(ifnull(p.get("userAccessId"),"").toString());
+		if(resolvedActor.get("ok") != true)
 		{
-			actorId = p.get("userAccessId").toString();
-			if(!actorId.matches("[1-9][0-9]*"))
+			response.put("message","Authenticated User Access is required.");
+			return response.toString();
+		}
+		actorUser = ifnull(resolvedActor.get("user"),"").toString();
+		access = User_Access[User == actorUser];
+		validActor = actorUser.trim() != "" && access.count() == 1;
+		if(validActor)
+		{
+			validActor = ifnull(access.User,"").toString().trim() != "";
+			if(p.get("userAccessId") != null)
 			{
-				response.put("message","User Access identity is required.");
-				return response.toString();
-			}
-			previewActor = User_Access[ID == actorId.toLong()];
-			if(previewActor.count() == 1)
-			{
-				actorUser = previewActor.User;
+				validActor = validActor && p.get("userAccessId") == access.ID.toString();
 			}
 		}
-		access = User_Access[User == actorUser];
-		if(access.count() != 1 || (p.get("userAccessId") != null && p.get("userAccessId") != access.ID.toString()))
+		if(validActor != true)
 		{
 			response.put("message","Authenticated User Access is required.");
 			return response.toString();
@@ -78,6 +81,7 @@ string createBudgetAttachmentRecord(string budgetId)
 				}
 			}
 		}
+		canAttachPO = false;
 		if(actorUser != zoho.adminuser)
 		{
 			try
@@ -85,6 +89,8 @@ string createBudgetAttachmentRecord(string budgetId)
 				if(thisapp.permissions.profileForUser(actorUser) == "Construction Budgeting")
 				{
 					canWrite = false;
+					// This profile may append files to any PO, never Budget-only files.
+					canAttachPO = true;
 				}
 			}			catch (profileError)
 			{
@@ -93,12 +99,13 @@ string createBudgetAttachmentRecord(string budgetId)
 		}
 		response.put("budgetId",bid);
 		response.put("canWrite",canWrite);
+		response.put("canAttachPO",canAttachPO);
 		if(action == "Capabilities")
 		{
 			response.put("ok",true);
 			return response.toString();
 		}
-		if(!canWrite)
+		if(!canWrite && !canAttachPO)
 		{
 			response.put("message","You do not have permission to change this Budget's attachments.");
 			return response.toString();
@@ -112,6 +119,7 @@ string createBudgetAttachmentRecord(string budgetId)
 		}
 		requestLink = null;
 		modificationLink = null;
+		poTarget = false;
 		if(requestId != "")
 		{
 			if(!requestId.matches("[1-9][0-9]*"))
@@ -126,6 +134,7 @@ string createBudgetAttachmentRecord(string budgetId)
 				return response.toString();
 			}
 			requestLink = request.ID;
+			poTarget = request.Request_Type == "Purchase Order";
 		}
 		if(modificationId != "")
 		{
@@ -141,6 +150,19 @@ string createBudgetAttachmentRecord(string budgetId)
 				return response.toString();
 			}
 			modificationLink = modification.ID;
+		}
+		if(!canWrite)
+		{
+			canAppendPO = false;
+			if(canAttachPO && poTarget)
+			{
+				canAppendPO = action == "Create" || action == "Validate";
+			}
+			if(!canAppendPO)
+			{
+				response.put("message","This profile can only add attachments to Purchase Orders.");
+				return response.toString();
+			}
 		}
 		response.put("paymentRequestId",requestId);
 		response.put("modificationId",modificationId);

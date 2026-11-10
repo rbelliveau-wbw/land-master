@@ -210,3 +210,10 @@ caps/joins and explicit 16px view box geometry, matching the adjacent controls.
 Closing the workspace must not redraw a detached copy of it. The shared motion
 engine retains the real opening fade and immediate host close/focus behavior;
 no exit clone may flash after Close, Escape or backdrop dismissal.
+
+Upload-only profile grants stay separate from general attachment management.
+Budget 122.29.128 permits Construction Budgeting to append to any PO using a
+trusted native capability and exact PO/Budget context. Load that capability for
+unsaved PO drafts before enabling local file selection. Keep Delete and Link
+Budget File behind their existing general grant; preserve pending/unknown locks.
+See [scope and native verification](../../docs/po-attachment-profile-2026-11-10.md).

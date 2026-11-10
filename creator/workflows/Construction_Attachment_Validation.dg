@@ -7,7 +7,38 @@ if(storedAttachment.count() > 0)
 	attachmentParentId = storedAttachment.Contract1;
 }
 constructionBudgetingProfile = thisapp.permissions.isUserInProfile("Construction Budgeting");
-if(constructionBudgetingProfile)
+// Construction Budgeting can append files to any Purchase Order.
+// Preserve all Construction-contract guards and immutable attachment parents.
+purchaseOrderAttachment = false;
+if(constructionBudgetingProfile && input.Payment_Request != null && input.Contract1 == null)
+{
+	if(input.Budget == null || input.Contract1 != null || input.Pro_Forma != null || input.Budget_Modification != null)
+	{
+		alert "A PO attachment must belong only to its Purchase Order and Budget.";
+		cancel submit;
+	}
+	poAttachmentParent = Payment_Request[ID == input.Payment_Request && Budget == input.Budget && Request_Type == "Purchase Order"];
+	if(poAttachmentParent.count() != 1)
+	{
+		alert "The Purchase Order does not belong to this Budget.";
+		cancel submit;
+	}
+	if(storedAttachment.count() > 0)
+	{
+		if(storedAttachment.Budget != input.Budget || storedAttachment.Payment_Request != input.Payment_Request || storedAttachment.Contract1 != null || storedAttachment.Pro_Forma != null || storedAttachment.Budget_Modification != null)
+		{
+			alert "An attachment cannot be moved to another record.";
+			cancel submit;
+		}
+		if(storedAttachment.File_field1 != null && storedAttachment.Added_User != zoho.loginuser)
+		{
+			alert "Add a new attachment instead of replacing another user's file.";
+			cancel submit;
+		}
+	}
+	purchaseOrderAttachment = true;
+}
+if(constructionBudgetingProfile && purchaseOrderAttachment != true)
 {
 	if(input.Budget != null || input.Pro_Forma != null || input.Payment_Request != null || input.Budget_Modification != null)
 	{

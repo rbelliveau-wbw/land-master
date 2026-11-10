@@ -113,5 +113,22 @@
   "creator_promotion": "User promotes Development changes",
   "custom_api_changes": "None; existing endpoint names and arguments remain unchanged",
   "widget_release": "122.29.56",
-  "rollback_widget": "122.29.54"
+  "rollback_widget": "122.29.54",
+  "po_attachment_permission": {
+    "profile": "Construction Budgeting",
+    "verified_on": "2026-11-10",
+    "scope": "Add new files to all Purchase Orders, any creator, Budget owner or status",
+    "capability": "canAttachPO",
+    "function": "createBudgetAttachmentRecord",
+    "workflow": "Construction_Attachment_V",
+    "general_budget_access": "Read-only",
+    "excluded": [
+      "Budget-only file uploads",
+      "Check/Wire/Modification files",
+      "Associate",
+      "Delete",
+      "Replace another user populated file"
+    ],
+    "creator_promotion": "User promotes saved Development function and workflow"
+  }
 }
