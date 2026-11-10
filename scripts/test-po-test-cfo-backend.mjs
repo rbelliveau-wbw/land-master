@@ -134,10 +134,11 @@ const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_D
 // Actual native element data selection/math is tested separately, so inject its
 // documented readonly DTO here without changing these older approval fixtures.
 r=runtime({extraTables:emailTables});
-vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),costCode:'0032<&',values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?55:0,index===4?10:100]})));};`,r.c);
+vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),costCode:'0032<&',values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?25:0,index===4?55:0,index===4?35:100]})));};`,r.c);
 assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
 for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.content.includes(label));}
 assert.match(r.c.mails[0].message,/Cost Code/);assert.equal((r.c.mails[0].message.match(/0032&lt;&amp;/g)||[]).length,5,'preserve the independently captured native Cost Code column on every element row');
+assert.match(r.c.mails[0].message,/Current Bud Mod/);assert.match(r.c.mails[0].message,/Available \+ Current Bud Mod − This PO = Remaining/);
 assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.content,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
 assert.equal(r.c.mails[0].to,testCFO.email);assert.equal(r.c.mails.length,1);assert.equal(r.tables().PO_Item[0].Cost_Element,'5','outbound labels never change stored picklist codes');
 await verifyPODownload({...r.run('poExcelWorkbook','51'),id:'51',budgetId:'61'});

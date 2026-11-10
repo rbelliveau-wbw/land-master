@@ -48,8 +48,36 @@ runtime.tables.Budget_Item.push({ID:24,Budget_Category:12,Item_Name:'Unknown tot
 runtime.tables.Budget_Import_Item[0].Cost=601;assert.equal(call('budgetElementExportRows',21)[0].values[2],null,'newer Imports cannot impersonate saved Unapproved');runtime.tables.Budget_Import_Item[0].Cost=600;
 runtime.tables.Budget_Modification.push({ID:43,Budget_Item:21,Status:'Approved',Amount:10});assert.equal(call('budgetElementExportRows',21)[0].values[4],null,'legacy modification allocation remains unknown');runtime.tables.Budget_Modification.pop();
 vm.runInContext(`var scopedBalanceCalls=[];thisapp.poBudgetBalances=function(){throw Error('PO export must not calculate the entire phase');};thisapp.poBudgetBalancesForItems=function(budgetId,items){scopedBalanceCalls.push({budgetId,items});return {success:true,balances:[{budgetItemId:'21',unallocatedIssuedCents:'0',unallocatedModificationCents:'0',componentBalances:['1','2','3','4','5'].map(costElement=>({costElement,finalCents:'10000',modCents:'0',issuedCents:costElement==='5'?'5000':'0'}))}]};};`,runtime);
-rows=call('poElementExportRows','51');assert.equal(rows.length,5);assert.deepEqual(rows[4].values,['Road & <scope>','(5) Other',100,0,100,30,70,20,50],'saved own PO is excluded once from Existing POs');
+rows=call('poElementExportRows','51');assert.equal(rows.length,5);assert.deepEqual(rows[4].values,['Road & <scope>','(5) Other',100,0,100,30,70,0,20,50],'saved own PO is excluded once from Existing POs');
 assert.deepEqual(plain(runtime.scopedBalanceCalls),[{budgetId:'61',items:['21']}],'Export derives its exact scope from persisted current-revision lines');
+// Current Bud Mod is scoped to the verified captured PO, with signed element
+// transfers, unknown legacy allocations and approved/rejected double-count guards.
+const poRecord=runtime.tables.Payment_Request[0];
+poRecord.PO_Approval_State='Pending';
+vm.runInContext(`var currentExportMods=[];thisapp.poApprovalBundle=function(){return {success:true,bundle:{modifications:currentExportMods}};};`,runtime);
+for(const [type,normalized,actual] of [
+  ['Increase',[-75,0,0,100,0],[-75,0,0,100,0]],
+  ['Increase',[-100,0,0,100,0],[-100,0,0,100,0]],
+  ['Decrease',[125,0,0,-100,0],[-125,0,0,100,0]]
+]){
+  runtime.currentExportMods=[{budgetItemId:'21',status:'Submitted',componentReallocation:true,modificationType:type,components:Object.fromEntries(normalized.map((v,i)=>[String(i+1),String(v)]))}];
+  vm.runInContext('currentExportMods=JSON.parse(JSON.stringify(currentExportMods));',runtime);
+  rows=call('poElementExportRows','51');
+  assert.deepEqual(rows.map(row=>row.values[7]),actual,'Current Bud Mod follows global '+type+' direction once');
+  assert.deepEqual(rows.map(row=>row.values[9]),[100+actual[0],100,100,100+actual[3],50],'Remaining includes signed current change and excludes own commitment once');
+}
+runtime.currentExportMods=[{budgetItemId:'21',status:'Submitted',components:{'1':'0','2':'0','3':'0','4':'0','5':'25'}}];
+vm.runInContext('currentExportMods=JSON.parse(JSON.stringify(currentExportMods));',runtime);
+rows=call('poElementExportRows','51');assert.equal(rows[4].values[7],25);assert.equal(rows[4].values[9],75,'Legacy automatic shortfall with explicit components is included');
+runtime.currentExportMods[0].components=null;
+assert.ok(call('poElementExportRows','51').every(row=>row.values[7]===null&&row.values[9]===null),'Unknown captured allocation does not fabricate Current Bud Mod or Remaining');
+vm.runInContext(`thisapp.poApprovalBundle=function(){return {success:false,error:'Changed bundle'};};`,runtime);
+assert.ok(call('poElementExportRows','51').every(row=>row.values[7]===null&&row.values[9]===null),'Unverified bundle cannot produce a known Remaining');
+for(const state of ['Approved','Rejected','Not Configured']){
+  poRecord.PO_Approval_State=state;rows=call('poElementExportRows','51');
+  assert.ok(rows.every(row=>row.values[7]===0));assert.equal(rows[4].values[9],50,'Settled/no-bundle changes are never added a second time');
+}
+delete poRecord.PO_Approval_State;
 const html=runtime.budgetElementExportHtml(21);assert.match(html,/\(1\) Labor/);assert.match(html,/\$100\.1234/);assert.match(html,/—/);
 
 const front=vm.createContext({});vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/full-budget-export.js','utf8'),front);vm.runInContext(fs.readFileSync('widgets/land-master/src/app/vendor/xlsx.full.min.js','utf8'),front);

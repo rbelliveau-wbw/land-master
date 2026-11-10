@@ -36,6 +36,8 @@ export async function verifyPODownload(native){
   if(native.content.includes('(1) Labor')){
     assert.ok(round.SheetNames.includes('Budget Elements'));
     const values=c.XLSX.utils.sheet_to_json(round.Sheets['Budget Elements'],{header:1});
+    assert.deepEqual(Array.from(values[0]),['Budget Item','Element','Final','Approved Mods','Modified Budget','Existing POs','Available','Current Bud Mod','This PO','Remaining']);
+    for(const row of values.slice(1))if(row[6]!=null&&row[7]!=null&&row[8]!=null&&row[9]!=null)assert.ok(Math.abs(row[9]-(row[6]+row[7]-row[8]))<0.000001,'XLSX Remaining includes Current Bud Mod');
     for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'])assert.ok(values.some(row=>row.includes(label)),label);
   }
   if(process.env.LM_PO_DOWNLOAD_FIXTURE)fs.writeFileSync(process.env.LM_PO_DOWNLOAD_FIXTURE,bytes);

@@ -270,6 +270,15 @@ See [the PO feature contract](../../docs/po-outcome-notifications-2026-11-10.md)
 for native claims, activity DTO/actions, configuration, verification and
 rollback. Native publication and release evidence remain separately recorded.
 
+### PO Packet Budget Element Details
+
+The email and workbook show Current Bud Mod between Available and This PO.
+Remaining includes that PO's captured pending signed element change: Available
++ Current Bud Mod − This PO. Keep approved changes in Approved Mods only and
+unknown allocations unavailable. Use readable 14px email table text and the
+same shared native row producer in both outputs. These read-only display
+changes do not advance approvals, send mail or change progress behavior.
+
 ### Legacy PO Rule Migration
 
 An existing PO policy whose saved route differs from the fixed VP → CFO → conditional COO route exposes Save Rule in its editor. Opening is read-only; Save Rule uses the existing audited save progress and retains the exact published policy ID, scope and enabled state. Already normalized rules retain ordinary inline saves.

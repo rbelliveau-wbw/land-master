@@ -134,8 +134,13 @@ map poExcelWorkbook(string purchaseOrderId)
 		{
 			excelXml = excelXml + "</Table></Worksheet>";
 		}
-		excelXml = excelXml + "<Worksheet ss:Name='Budget Elements'><Table ss:DefaultRowHeight='18'><Row ss:StyleID='Header'>";
-		for each heading in {"Budget Item","Element","Final","Approved Mods","Modified Budget","Existing POs","Available","This PO","Remaining"}
+		excelXml = excelXml + "<Worksheet ss:Name='Budget Elements'><Table ss:DefaultRowHeight='18'><Column ss:Width='180'/><Column ss:Width='110'/>";
+		for each moneyColumn in {"Final","Approved Mods","Modified Budget","Existing POs","Available","Current Bud Mod","This PO","Remaining"}
+		{
+			excelXml = excelXml + "<Column ss:Width='100'/>";
+		}
+		excelXml = excelXml + "<Row ss:StyleID='Header'>";
+		for each heading in {"Budget Item","Element","Final","Approved Mods","Modified Budget","Existing POs","Available","Current Bud Mod","This PO","Remaining"}
 		{
 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + heading + "</Data></Cell>";
 		}

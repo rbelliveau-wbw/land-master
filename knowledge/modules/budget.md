@@ -1,3 +1,12 @@
+## Current Bud Mod In PO Packets — November 10, 2026
+
+Approval email Budget Element Details and workbook Budget Elements include
+Current Bud Mod before This PO. Remaining = Available + Current Bud Mod − This
+PO. The shared native reader uses only this captured PO's pending signed
+changes; approved changes are counted once in Approved Mods. Unknown captured
+allocations keep Remaining unavailable. See [implementation, native installation,
+verification and rollback](../../docs/po-current-bud-mod-2026-11-10.md).
+
 ## PO Net Budget Approval Rule — November 10, 2026
 
 Every new PO requires VP → CFO. Add COO when signed net changes across all
