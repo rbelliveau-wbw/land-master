@@ -466,3 +466,17 @@ Rollback is the prior Production widget; no Creator promotion is required.
 ## Routine success feedback — October 6, 2026
 
 Record editor success pills use object-specific text. Table fields, searchable lookup changes and Property project inline saves retain green verification and add grouped confirmations. Takedown schedule recovery uses schedule-specific wording. Persistent statuses and batch surfaces remain. See [the shared design guide](../design/success-feedback.md) for sizing, wording, inline preservation and reuse. This rollout is frontend only and adds no forms, fields, backend functions, Custom APIs or verification requests.
+
+## County Picker — 8.17.12, November 10, 2026
+
+County choices in Land & Projects use the existing picker search and display
+alphabetically, including retained saved values. Single select still replaces the
+previous value and closes immediately; clearing, required fields and existing
+change/save handlers remain unchanged. Only the displayed option array is sorted;
+native option indexes and authoritative location choices are preserved. This
+frontend change affects existing County controls, not forms, fields, permissions,
+functions or Custom APIs. No Creator deployment is required.
+
+Regression: existing picker checks and full validation/Pages build; verify County
+search, alphabetical choices, single selection and unchanged other pickers.
+Rollback: Land Master frontend 8.17.11.

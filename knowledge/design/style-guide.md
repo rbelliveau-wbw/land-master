@@ -718,3 +718,7 @@ custom Category, Territory and Project pickers scope both. Retain the Quiet
 Workspace shell, Forecasts navy/pale-blue palette, Title Case labels and separate
 GP/HCSS columns. Omit a carousel and second issue rail. Financial definitions and
 native access live in [the module release](../../docs/insights-budget-exceptions-2026-11-09.md).
+
+Land & Projects County choices display alphabetically in the existing searchable
+picker. County record fields remain single select; search does not add multiple
+selection or change native values and save handlers.
