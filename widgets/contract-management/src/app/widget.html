@@ -1985,16 +1985,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.59"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.59">
-<script src="interaction-motion.js?v=1.62.59"></script>
-<script src="interaction-surfaces.js?v=1.62.59"></script>
-<script src="number-edit-commit.js?v=1.62.59"></script>
-<script src="number-transitions.js?v=1.62.59"></script>
-<script src="number-surfaces.js?v=1.62.59"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.59">
-<link rel="stylesheet" href="report-layout.css?v=1.62.59">
-<link rel="stylesheet" href="construction-board.css?v=1.62.59">
+<script src="success-feedback.js?v=1.62.60"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.60">
+<script src="interaction-motion.js?v=1.62.60"></script>
+<script src="interaction-surfaces.js?v=1.62.60"></script>
+<script src="number-edit-commit.js?v=1.62.60"></script>
+<script src="number-transitions.js?v=1.62.60"></script>
+<script src="number-surfaces.js?v=1.62.60"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.60">
+<link rel="stylesheet" href="report-layout.css?v=1.62.60">
+<link rel="stylesheet" href="construction-board.css?v=1.62.60">
 </head>
 <body>
 
@@ -2043,7 +2043,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.59", pageSize: 200, maxPages: 25,
+  version: "1.62.60", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -8556,18 +8556,70 @@ function doDeleteVersion(vid,cid){
 }
 
 function createContractAttachmentRecord(cid){
-  cid=contractId(cid);if(!cid||!contractReady()||!canAddContractAttachments(cid))return Promise.reject(new Error('A current editable Contract and complete native data are required.'));
-  var key=contractAttachmentKey('create',cid),reviews=S.attachmentReviews||(S.attachmentReviews={});if(reviews[key])return Promise.reject(reviews[key].error||new Error('Attachment create is still pending.'));
-  var attempt={key:key,kind:'create',phase:'native',cid:cid,id:'',scope:contractMutationScope(),status:'pending'};reviews[key]=attempt;contractControls();
-  var create=invokeContractAttachmentApi('createAttachment',{contractId:cid},attempt).catch(function(error){
-    // This specific Custom API denial occurs before its insert. In Development
-    // View as, the native form writer uses the impersonated user's permissions.
-    if(LMRuntime.current().environment!=='DEVELOPMENT'||!constructionMode()||!constructionAccess()||error.message!=='Construction request access is required to add attachments.'||attempt.scope!==contractMutationScope())throw error;
-    return createRecord(CFG.forms.version,{Contract1:cid,Email_Attachment:'true'});
-  });
-  return contractMutationDeadline(attempt,create,'native').then(function(body){attempt.id=contractId(body.attachmentId)||contractConfirmedId(body);if(!attempt.id)throw new Error('An attachment ID is required before uploading the file.');if(attempt.scope!==contractMutationScope())throw new Error('Creator session changed during attachment creation.');return {ID:attempt.id,Contract1:{ID:cid}};}).then(function(row){
-    S.contractAttachmentParents=S.contractAttachmentParents||{};S.contractAttachmentParents[attempt.id]={cid:cid,scope:attempt.scope};delete reviews[key];contractControls();return attempt.id;
-  }).catch(function(error){throw contractAttachmentError(attempt,error);});
+  cid=contractId(cid);
+  if(!cid||!contractReady()||!canAddContractAttachments(cid)){
+    return Promise.reject(new Error('A current editable Contract and complete native data are required.'));
+  }
+
+  var key=contractAttachmentKey('create',cid);
+  var reviews=S.attachmentReviews||(S.attachmentReviews={});
+  if(reviews[key]){
+    return Promise.reject(reviews[key].error||new Error('Attachment create is still pending.'));
+  }
+
+  var attempt={
+    key:key,kind:'create',phase:'native',cid:cid,id:'',
+    scope:contractMutationScope(),status:'pending'
+  };
+  reviews[key]=attempt;
+  contractControls();
+
+  var create=invokeContractAttachmentApi('createAttachment',{contractId:cid},attempt)
+    .catch(function(error){
+      // This exact Development View-as denial happens before the API inserts.
+      if(LMRuntime.current().environment!=='DEVELOPMENT'||
+         !constructionMode()||!constructionAccess()||
+         !error||error.message!=='Construction request access is required to add attachments.'||
+         attempt.scope!==contractMutationScope()){
+        throw error;
+      }
+
+      // Use the existing app date format; retain native form validation/workflows.
+      var payload={
+        Contract1:cid,
+        Date_field1:toZoho(todayInput()),
+        Email_Attachment:'true'
+      };
+
+      // The native result supersedes the earlier, definite Custom API denial.
+      attempt.response=null;
+      return createRecord(CFG.forms.version,payload).then(function(response){
+        attempt.response=response;
+        return response;
+      },function(nativeError){
+        attempt.response=nativeError&&(nativeError.response||nativeError.raw)||nativeError;
+        throw nativeError;
+      });
+    });
+
+  return contractMutationDeadline(attempt,create,'native')
+    .then(function(body){
+      attempt.id=contractId(body&&body.attachmentId)||contractConfirmedId(body);
+      if(!attempt.id){
+        throw new Error('An attachment ID is required before uploading the file.');
+      }
+      if(attempt.scope!==contractMutationScope()){
+        throw new Error('Creator session changed during attachment creation.');
+      }
+      S.contractAttachmentParents=S.contractAttachmentParents||{};
+      S.contractAttachmentParents[attempt.id]={cid:cid,scope:attempt.scope};
+      delete reviews[key];
+      contractControls();
+      return attempt.id;
+    })
+    .catch(function(error){
+      throw contractAttachmentError(attempt,error);
+    });
 }
 
 function recheckContractAttachment(key,kind){

@@ -6,15 +6,35 @@ const PATH='1690000000000_fixture.pdf',OTHER=(BigInt(NEW)+200n).toString();
 for(const environment of ['development','stage','production']){
  const h=await ready({pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:environment==='production'?'':'/environment/'+environment,loginUser:'preview-actor@example.test'})});
  h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
- const native=h.api.invokeCustomApi;let calls=0;
+ const native=h.api.invokeCustomApi,nativeAdd=h.api.addRecords;let calls=0;
+ h.api.addRecords=config=>{
+  if(config.form_name==='Attachment'){
+   const data=config.payload.data;
+   if(!data.Date_field1)return Promise.resolve({code:3002,error:{Date_field1:'Enter a value for Date'}});
+   assert.equal(data.Date_field1,h.c.toZoho(h.c.todayInput()),'native Attachment create supplies the required Date in the app format');
+  }
+  return nativeAdd(config);
+ };
  h.api.invokeCustomApi=config=>config.api_name.replace(/_(DEV|STAGE)$/,'')===h.c.CFG.customApis.createAttachment?(calls++,Promise.resolve({code:3000,details:{output:JSON.stringify({ok:false,message:'Construction request access is required to add attachments.'})}})):native(config);
  if(environment==='development'){
   assert.equal(await h.c.createContractAttachmentRecord(ID),NEW);assert.equal(h.calls.filter(call=>call.method==='add').length,1);assert.equal(h.c.contractHasReviews(),false);
-  const row=h.reports.All_Attachments[0];assert.equal(row.Contract1,ID);assert.equal(row.Email_Attachment,'true');
+  const row=h.reports.All_Attachments[0];assert.equal(row.Contract1,ID);assert.equal(row.Email_Attachment,'true');assert.equal(row.Date_field1,h.c.toZoho(h.c.todayInput()));
  }else{
   await assert.rejects(h.c.createContractAttachmentRecord(ID),/Construction request access is required/);assert.equal(h.calls.filter(call=>call.method==='add').length,0,'Production/Stage never use the Development View-as writer');
  }
  assert.equal(calls,1);
+}
+{
+ const h=await ready({pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:'/environment/development',loginUser:'preview-actor@example.test'})});
+ h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
+ const native=h.api.invokeCustomApi,response={code:3002,error:{Date_field1:'Native Date validation rejected'}};let writes=0;
+ h.api.invokeCustomApi=config=>config.api_name.replace(/_(DEV|STAGE)$/,'')===h.c.CFG.customApis.createAttachment?Promise.resolve({code:3000,details:{output:JSON.stringify({ok:false,message:'Construction request access is required to add attachments.'})}}):native(config);
+ h.api.addRecords=async()=>{writes++;return response;};
+ await assert.rejects(h.c.createContractAttachmentRecord(ID));
+ const attempt=Object.values(h.c.S.attachmentReviews)[0];
+ assert.equal(attempt.response,response,'the native fallback response supersedes the earlier owner denial');
+ assert.equal(attempt.error.response,response,'diagnostics retain the actual native failure');
+ await assert.rejects(h.c.createContractAttachmentRecord(ID));assert.equal(writes,1,'a failed/unknown create is never blindly replayed');
 }
 function install(h,{email=true,uploadEnvelope,afterUpload}={}){
  const native=h.api.invokeCustomApi,calls={create:0,upload:0};

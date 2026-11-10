@@ -1570,3 +1570,25 @@ log is not a directly accessible profile report. Creator fields, unique claims,
 validation, profile/report checks and three environment API bindings must be
 installed separately from the hosted widget. See [implementation, native
 installation, permissions, regressions and rollback](../../docs/construction-rejection-2026-11-06.md).
+
+## Development Attachment Date — 1.62.60, November 10, 2026
+
+The Construction Development View-as fallback now supplies Attachment.Date_field1
+using the existing todayInput/toZoho helpers. The form requires Date; the previous
+parent/email-only payload failed native validation before the upload could begin.
+The native fallback response supersedes the earlier definite Custom API owner
+denial so failures retain their actual evidence. Missing child replies keep the
+existing no-replay guard and now report the missing attachment ID without a null
+property error.
+
+The exact Development-only, Construction-only denial gate, native form workflows,
+actor/parent/complete locks, file upload path, Legal and Production/Stage behavior
+remain. No field permissions, forms, Creator functions or Custom API contracts
+change. This release changes only the Development mapping; Creator publication
+is not required.
+
+Regression: native mandatory-Date rejection fixture, successful dated View-as
+create, actual native failure retention, duplicate/lost reply guards, existing
+attachment/file tests, repository validation and Pages build. Native acceptance
+requires widget PDF upload, refresh persistence and opening the saved PDF.
+Rollback: Development Contract Management to 1.62.59; leave Production unchanged.
