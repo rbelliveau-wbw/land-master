@@ -34,7 +34,9 @@
   function render() {
     list.replaceChildren();
     var query = search.value.trim().toLowerCase(), group = null, showDisabled = active.getAttribute('data-show-disabled') === '1';
-    Array.from(active.options).forEach(function (option) {
+    var options = Array.from(active.options);
+    if (label(active) === 'County') options.sort(function (a, b) { return a.textContent.localeCompare(b.textContent, undefined, {sensitivity:'base'}); });
+    options.forEach(function (option) {
       if (!option.value || (!showDisabled && option.disabled) || option.textContent.toLowerCase().indexOf(query) < 0) return;
       if (option.parentElement.tagName === 'OPTGROUP' && group !== option.parentElement) {
         group = option.parentElement;
@@ -102,7 +104,7 @@
     if (select.disabled) return;
     initMenu(); if (active === select) return close(true); close(false); active = select;
     search.value = ''; search.placeholder = 'Search ' + label(select) + '…';
-    var searchable = select.multiple || select.getAttribute('data-ftype') === 'lookup';
+    var searchable = select.multiple || select.getAttribute('data-ftype') === 'lookup' || label(select) === 'County';
     menu.querySelector('.lm-picker-head').hidden = !searchable;
     menu.classList.toggle('lm-picker-single', !select.multiple);
     list.setAttribute('aria-label', label(select)); list.setAttribute('aria-multiselectable', String(select.multiple));

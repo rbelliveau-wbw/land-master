@@ -12,9 +12,9 @@ The release combines the reviewed
 [PO outcome notifications and activity](po-outcome-notifications-2026-11-10.md),
 the [15% wider Reallocation panel](po-reallocation-width-2026-11-10.md), and main's
 already-published [compact ledger and element display](po-compact-element-fit-2026-11-10.md).
-The final integration base is `0295b92d0b94b09d7466f76576e5c5b36a0d0e1a`.
-Independent Contracts source/releases and their existing environment mappings are
-preserved.
+The final integration base is `7c725a28e0055c269662e42d453e7ad032bfbca4`.
+Independent Contracts source/releases, the Land County picker update and their
+existing environment mappings are preserved.
 
 Published Budget **122.29.124** is retained byte-for-byte. An unrelated unpublished
 notification candidate had used the same number; its original snapshot is archived

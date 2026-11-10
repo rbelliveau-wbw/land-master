@@ -53,7 +53,7 @@
   "development_mapping": {
     "proforma-manager": "1.80.142",
     "budget-manager": "122.29.127",
-    "land-master": "8.17.11",
+    "land-master": "8.17.12",
     "contract-management": "1.62.65",
     "tax-center": "19.17.36",
     "milestone-gantt": "1.1.20",
@@ -122,7 +122,7 @@
   "production_mapping": {
     "proforma-manager": "1.80.142",
     "budget-manager": "122.29.127",
-    "land-master": "8.17.11",
+    "land-master": "8.17.12",
     "contract-management": "1.62.61",
     "tax-center": "19.17.36",
     "milestone-gantt": "1.1.20",
@@ -145,5 +145,6 @@
       "to": "1.6.9"
     }
   ],
-  "integration_base": "0295b92d0b94b09d7466f76576e5c5b36a0d0e1a"
+  "integration_base": "7c725a28e0055c269662e42d453e7ad032bfbca4",
+  "integration_followup": "Preserved concurrent Land8.17.12 County update; targeted startup/repo checks and Pages rebuild after merge; full GitHub CI gates deployment."
 }
