@@ -103,7 +103,7 @@ const p=vm.createContext({model:{budgetId:budget.ID,editable:false,loadState:'lo
   card:{querySelector:()=>previewNode},allocationRows:()=>[{verified:true,available:100n,shortfall:0n,remaining:99n,pending:0n}],
   overlay:{querySelector:()=>forecastBox},deleteReview:false,esc:value=>String(value??''),money:v=>v,root:{LMPO:u.LMPO},
   setTimeout:fn=>{const id=++previewTimerId;previewTimers.set(id,fn);return id;},clearTimeout:id=>previewTimers.delete(id),
-  call:async payload=>{previewCalls.push(payload);return {contract:'po-v1',success:true,approvalPreview:{roles:[{role:'CFO',order:1,name:'Test CFO',email:'cfo@example.com'}]}};}
+  call:async payload=>{previewCalls.push(payload);return {contract:'po-v1',success:true,approvalPreview:{roles:[{role:'VP',order:1,name:'Territory VP',email:'vp@example.com'},{role:'CFO',order:2,name:'Test CFO',email:'cfo@example.com'}]}};}
 });
 for(const name of ['canAmend','canCompose','readOnly','patchContext','approverCount','patchApprovers','bundleHtml'])vm.runInContext(helper(ui,name),p);
 editor=false;creation=true;p.patchContext();
@@ -112,7 +112,7 @@ assert.equal(p.approverCount(),'…','Tab refreshes preserve the checking count 
 assert.equal(forecastBox.hidden,false,'An authorized new PO still shows its real pending forecast');assert.match(forecastBody.innerHTML,/Checking approvers/);
 await previewTimers.get(p.previewTimer)();previewTimers.clear();
 assert.equal(previewCalls.length,1);assert.equal(previewCalls[0].action,'PreviewApprovals');assert.equal(previewCalls[0].amount,'0.01');
-assert.equal(p.model.previewState,'loaded');assert.equal(p.model.previewRoles[0].email,'cfo@example.com');
+assert.equal(p.model.previewState,'loaded');assert.equal(p.model.previewRoles[1].email,'cfo@example.com');assert.equal(previewCalls[0].netBudgetChange,'0.00');
 assert.equal(forecastBox.hidden,false);assert.match(forecastBody.innerHTML,/Test CFO/);assert.doesNotMatch(forecastBody.innerHTML,/Checking approvers/);
 p.patchContext();assert.equal(previewTimers.size,0,'Unchanged preview context does not duplicate a completed lookup');
 Object.assign(p.model,{id:'90071992547409936',canEditDraft:true,previewKey:''});p.patchContext();

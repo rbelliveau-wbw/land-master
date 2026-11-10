@@ -24,8 +24,8 @@ next=clone(config);next.roles[0].active=false;assert.throws(()=>api.resolve(next
 for(const users of [[],[{...config.users[0],user:''}],[{...config.users[0],user:null}],[config.users[0],config.users[0]]]){next=clone(config);next.users=users;assert.throws(()=>api.resolve(next,context),/unroutable/);}
 next=clone(config);next.policies[0].selfApproval='Allow';assert.equal(api.resolve(next,context).selfApproval,'Allow');
 next=clone(config);delete next.policies[0].steps[0].poTestCFO;
-const normal=api.resolve(next,context);assert.equal(normal.route[0].userAccessId,'12');assert.equal('poTestCFO' in normal.route[0],false);assert.equal(api.resolve(next,{...context,submitterId:'12'}).route[0].userAccessId,'12');
-next.assignments[0].userAccessId=test.userAccessId;assert.throws(()=>api.resolve(next,context),/unroutable/,'General routing remains disabled outside the test');
+next.policies[0].workflow='Budget';const normal=api.resolve(next,{...context,workflow:'Budget'});assert.equal(normal.route[0].userAccessId,'12');assert.equal('poTestCFO' in normal.route[0],false);assert.equal(api.resolve(next,{...context,workflow:'Budget',submitterId:'12'}).route[0].userAccessId,'12');
+next.assignments[0].userAccessId=test.userAccessId;assert.throws(()=>api.resolve(next,{...context,workflow:'Budget'}),/unroutable/,'General routing remains disabled outside the test');
 next=clone(config);next.policies[0].steps[0].poTestCFO.email='later@example.com';assert.equal(result.route[0].poTestCFO.email,'test@example.com','Captured test scope is detached');
 
 // Historical routes retain their captured safeguards; new configuration has no
@@ -40,9 +40,9 @@ const uiOptions={scope:()=> 'frontend-fixture',call:async request=>{sent=clone(r
 const ui=c.LMApprovalAdmin.create(uiOptions);
 const savedConfig=clone(config),policyDraft=ui.policyData(clone(config.policies[0]));ui.fixture({config:savedConfig,editing:'Policies',draft:policyDraft});
 assert.equal(policyDraft.steps[0].poTestCFO,undefined);assert.equal('companyId' in policyDraft,false);assert.deepEqual(clone(savedConfig.policies[0].steps[0].poTestCFO),test,'Reading config never alters saved history');
-let html=ui.editor();assert.match(html,/CFO/);assert.match(html,/Without budget modifications/);assert.match(html,/With attached budget modifications/);assert.doesNotMatch(html,/Test CFO|Budget ID|Test settings|Maximum test amount|data-ap-test|Company/);
+let html=ui.editor();assert.match(html,/CFO/);assert.match(html,/Every Purchase Order/);assert.match(html,/Net Budget Increase/);assert.doesNotMatch(html,/Test CFO|Budget ID|Test settings|Maximum test amount|data-ap-test|Company/);
 const previewDraft={...clone(context)};delete previewDraft.budgetId;ui.fixture({config:savedConfig,editing:'Preview',draft:previewDraft});assert.doesNotMatch(ui.editor(),/Test budget|Budget ID|Company|Effective date/);
-const globalConfig=clone(config);globalConfig.policies[0]=ui.policyData(globalConfig.policies[0]);for(const row of globalConfig.assignments){delete row.companyId;delete row.effectiveFrom;delete row.effectiveTo;}
+const globalConfig=clone(config);globalConfig.policies[0]=ui.policyData(globalConfig.policies[0]);globalConfig.policies[0].workflow='Budget';previewDraft.workflow='Budget';for(const row of globalConfig.assignments){delete row.companyId;delete row.effectiveFrom;delete row.effectiveTo;}
 for(const companyId of ['31','99'])for(const amount of ['0.01','55.01','1000000.00']){
   const routed=api.resolve(globalConfig,{...previewDraft,companyId,territory:'Any territory',amount});assert.equal(routed.route.length,1);assert.equal(routed.route[0].userAccessId,'12');assert.equal(routed.route[0].reason,'Required step');assert.equal(routed.route[0].poTestCFO,undefined);
 }

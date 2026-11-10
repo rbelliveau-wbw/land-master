@@ -2,13 +2,13 @@
   "slug": "settings-manager",
   "name": "Settings Manager",
   "module": "settings",
-  "version": "1.6.9",
+  "version": "1.6.11",
   "description": "Settings workspace with left navigation, dedicated screens and integrated approval administration.",
   "source_entry": "widgets/settings-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/settings-manager/src/plugin-manifest.json",
   "baseline_zip": null,
   "html_title": "Land Master Settings",
-  "source_sha256": "9377663cf5cae165f9351030372c0cd58ba1a8035fa958221e87f89c8e9c885c",
+  "source_sha256": "d9aa59a094ffbeb0084ddcc2ad514686473728b1a6ce1fff90b3ae7e6d6aa16d",
   "plugin_manifest": {
     "service": "CREATOR",
     "locale": [

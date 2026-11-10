@@ -63,7 +63,19 @@ map resolveApprovalRoute(map context)
 			}
 		}
 		route = List(); excluded = List(); stepKeys = List(); expectedOrder = 0;
-		cfoSteps = 0;
+		cfoSteps = 0; poTestEvidence = false;
+        for each poEvidenceStep in steps { if(poEvidenceStep.get("poTestCFO") != null) { poTestEvidence = true; } }
+        if(policy.Workflow == "Purchase Order" && poTestEvidence != true)
+        {
+            netText = ifnull(context.get("netBudgetChange"),"").toString(); typedNet = {"value":context.get("netBudgetChange")};
+            if(!typedNet.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"[-]?[0-9]+([.][0-9]{1,2})?\"[ ]*[}][ ]*")) { result.put("error","Net budget change must be an exact signed currency string."); return result; }
+            netSign = 1; if(netText.startsWith("-")) { netSign = -1; netText = netText.subString(1,netText.length()); }
+            netMagnitude = thisapp.poCurrencyString(netText);
+            if(netMagnitude == "") { result.put("error","Net budget change exceeds supported currency capacity."); return result; }
+            amount = netSign * netMagnitude.replaceAll("[.]","").toLong();
+            amountText = context.get("netBudgetChange");
+            if(steps.size() != 3) { result.put("error","Purchase Orders require VP → CFO, then COO at a net budget increase of $10,000 or more."); return result; }
+        }
 		for each step in steps
 		{
 			expectedOrder = expectedOrder+1;
@@ -76,8 +88,13 @@ map resolveApprovalRoute(map context)
 			{
 				poRole = Approval_Role[ID == step.get("roleId").toString().toLong()];
 				if(poRole.ID == null) { result.put("error","PO approver role was not found."); return result; }
-				if(poRole.Role_Name == "CFO") { cfoSteps=cfoSteps+1; if(condition != "Always" || step.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result; } }
-				else { if(condition != "Budget modification attached") { result.put("error","Additional PO approvers are used only when the PO creates budget modifications."); return result; } }
+                if(poTestEvidence != true)
+                {
+                    requiredRole = "VP"; if(expectedOrder == 2) { requiredRole = "CFO"; } if(expectedOrder == 3) { requiredRole = "COO"; }
+                    requiredCondition = "Always"; if(expectedOrder == 3) { requiredCondition = "At or above"; }
+                    if(poRole.Role_Name != requiredRole || condition != requiredCondition || step.get("enabled") != true || (expectedOrder == 3 && step.get("threshold") != "10000.00")) { result.put("error","Purchase Orders require VP → CFO, then COO at a net budget increase of $10,000 or more."); return result; }
+                }
+                if(poRole.Role_Name == "CFO") { cfoSteps=cfoSteps+1; }
 			}
 			if(policy.Workflow == "Pro Forma" || policy.Workflow == "Contract")
 			{
@@ -94,7 +111,7 @@ map resolveApprovalRoute(map context)
 				threshold = thresholdText.replaceAll("[.]","").toLong();
 				if(condition == "Above" && amount <= threshold) { applies = false; }
 				if(condition == "At or above" && amount < threshold) { applies = false; }
-				reason = amountText+" is "+condition.toLowerCase()+" "+thresholdText;
+				reason = amountText+" is "+condition.toLowerCase()+" "+thresholdText; if(policy.Workflow == "Purchase Order") { reason = "Net budget change "+reason; }
 			}
 			else if(condition == "Budget modification attached")
 			{

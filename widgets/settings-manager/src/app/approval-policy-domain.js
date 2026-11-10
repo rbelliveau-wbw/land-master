@@ -5,6 +5,13 @@
   function id(value){if(typeof value!=="string"||!/^\d+$/.test(value))fail("Identity must be a Creator ID string.");return value;}
   function cents(value){if(typeof value!=="string"||!/^\d+(?:\.\d{1,2})?$/.test(value))fail("Amount must be an exact currency string.");var p=value.split("."),n=BigInt(p[0]+(p[1]||"").padEnd(2,"0"));if(n>999999999999999n)fail("Currency exceeds Max Digits 16.");return n;}
   function currency(value){var n=cents(value);return String(n/100n)+'.'+String(n%100n).padStart(2,'0');}
+  function signedCents(value){if(typeof value!=="string"||!/^[-]?\d+(?:\.\d{1,2})?$/.test(value))fail("Net budget change must be an exact signed currency string.");return value[0]==='-'?-cents(value.slice(1)):cents(value);}
+  function poPolicy(policy,roles){
+    if(policy.steps.some(function(step){return step.poTestCFO!=null;}))return; // Historical test evidence; publication remains forbidden.
+    var names=['VP','CFO','COO'];
+    if(policy.steps.length!==3)fail('Purchase Orders require VP → CFO, then COO at a net budget increase of $10,000 or more.');
+    policy.steps.forEach(function(step,index){var matches=roles.filter(function(role){return role.id===step.roleId;});if(matches.length!==1||matches[0].name!==names[index]||!step.enabled||step.condition!==(index===2?'At or above':'Always')||index===2&&step.threshold!=='10000.00')fail('Purchase Orders require VP → CFO, then COO at a net budget increase of $10,000 or more.');});
+  }
   // Explicit precedence: territory+department > territory > department > all.
   function rank(row,ctx){if(row.territory&&row.territory!==ctx.territory||row.department&&row.department!==ctx.department)return -1;return (row.territory?4:0)+(row.department?2:0);}
   function choose(rows,ctx,label){var matches=rows.map(function(row){return {row:row,rank:rank(row,ctx)};}).filter(function(x){return x.rank>=0;});if(!matches.length)fail("Missing "+label+" for this scope.");var best=Math.max.apply(null,matches.map(function(x){return x.rank;})),selected=matches.filter(function(x){return x.rank===best;});if(selected.length!==1)fail("Ambiguous "+label+" at the same override precedence.");return selected[0].row;}
@@ -20,21 +27,22 @@
         if(typeof test.email!=="string"||!/^[^\s@,;<>\"]+@[^\s@,;<>\"]+\.[^\s@,;<>\"]+$/.test(test.email)||test.allowSelfApproval!==true)fail("Test CFO needs one email and explicit scoped self-approval.");
         var maximum=cents(test.maxAmount);if(maximum<=0n||maximum>5500n)fail("Test CFO maximum must be positive and at most 55.00.");
       }
-    });if(policy.workflow==='Purchase Order'){var required=policy.steps.filter(function(step){return step.condition==='Always'&&step.enabled===true;});if(required.length!==1)fail('Exactly one enabled CFO must approve every purchase order.');policy.steps.forEach(function(step){if(step.condition!=='Always'&&step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});}return policy;
+    });return policy;
   }
   function resolve(config,ctx){
     id(ctx.submitterId);var amount=["Pro Forma","Contract"].includes(ctx.workflow)?0n:cents(ctx.amount);
     var policy=choose(config.policies.filter(function(p){return p.workflow===ctx.workflow&&p.status==="Published";}),ctx,"published policy");
     validatePolicy(policy);if(policy.enabled!==true)fail("Applicable published policy is disabled.");
-    if(policy.workflow==='Purchase Order'){var cfoRoles=config.roles.filter(function(role){return role.name==='CFO';}),cfoSteps=policy.steps.filter(function(step){return cfoRoles.some(function(role){return role.id===step.roleId;});});if(cfoSteps.length!==1||cfoSteps[0].condition!=='Always'||cfoSteps[0].enabled!==true)fail('Exactly one enabled CFO must approve every purchase order.');policy.steps.forEach(function(step){if(step!==cfoSteps[0]&&step.condition!=='Budget modification attached')fail('Additional PO approvers are used only when the PO creates budget modifications.');});}
+    if(policy.workflow==='Purchase Order')poPolicy(policy,config.roles);
+    var net=policy.workflow==='Purchase Order'&&!policy.steps.some(function(step){return step.poTestCFO!=null;})?signedCents(ctx.netBudgetChange):amount;
     var route=[],excluded=[];
     policy.steps.forEach(function(step){
       var linked=step.condition==="Budget modification attached";
       if(linked&&typeof ctx.hasBudgetModification!=="boolean")fail("Linked PO budget modification context is required.");
-      var threshold=step.condition==="Above"||step.condition==="At or above"?cents(step.threshold):null,applies=step.enabled&&(linked?ctx.hasBudgetModification:threshold===null||step.condition==="Above"&&amount>threshold||step.condition==="At or above"&&amount>=threshold);
+      var basis=policy.workflow==='Purchase Order'?net:amount;
+      var threshold=step.condition==="Above"||step.condition==="At or above"?cents(step.threshold):null,applies=step.enabled&&(linked?ctx.hasBudgetModification:threshold===null||step.condition==="Above"&&basis>threshold||step.condition==="At or above"&&basis>=threshold);
       if(!applies){excluded.push({key:step.key,reason:!step.enabled?"Disabled":linked?"No budget modification is linked to this PO":step.condition+" threshold is not met"});return;}
       var roles=config.roles.filter(function(r){return r.id===step.roleId;});if(roles.length!==1||roles[0].active!==true)fail("Missing, ambiguous or inactive role for step "+step.order+".");
-      if(policy.workflow==='Purchase Order'&&(roles[0].name==='CFO'?(step.condition!=='Always'||!step.enabled):step.condition!=='Budget modification attached'))fail('CFO is always required; other PO roles apply only to budget modifications.');
       var assignment,test=step.poTestCFO,assignments;
       if(test){
         if(roles[0].name!=="CFO")fail("Test CFO must use the active CFO role.");
@@ -61,7 +69,7 @@
       (assignments||[assignment]).forEach(function(assignment){
       if(assignment.active!==true)fail("Assignment for "+roles[0].name+" is inactive.");if(assignment.id!=='')id(assignment.id);id(assignment.userAccessId);
       var users=config.users.filter(function(u){return u.id===assignment.userAccessId;});if(users.length!==1||!users[0].user||!test&&(users[0].routingEnabled!==true||typeof users[0].approverEmail!=="string"||!/^\S+@\S+\.\S+$/.test(users[0].approverEmail)))fail("Missing, inactive or unroutable approver for "+roles[0].name+".");
-      var resolved={order:route.length+1,policyStepOrder:step.order,key:assignments&&assignments.length>1?step.key+'-'+assignment.userAccessId:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":currency(ctx.amount)+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
+      var resolved={order:route.length+1,policyStepOrder:step.order,key:assignments&&assignments.length>1?step.key+'-'+assignment.userAccessId:step.key,roleId:step.roleId,role:roles[0].name,assignmentId:assignment.id,userAccessId:assignment.userAccessId,name:users[0].name||'',email:test?test.email:users[0].approverEmail,reason:test?"PO test CFO":step.condition==="Always"?"Required step":linked?"A budget modification is linked to this PO":(policy.workflow==='Purchase Order'?"Net budget change "+ctx.netBudgetChange:currency(ctx.amount))+" is "+step.condition.toLowerCase()+" "+currency(step.threshold)};
       if(test)resolved.poTestCFO=test;route.push(resolved);
       });
     });
@@ -70,5 +78,5 @@
     return JSON.parse(JSON.stringify({policyId:policy.id,context:ctx,route:route,excluded:excluded,selfApproval:"Allow"}));
   }
   function assertPublish(candidate,policies){validatePolicy(candidate);if(candidate.steps.some(function(step){return step.poTestCFO!=null;}))fail("Budget-specific CFO test overrides are no longer supported. Configure the CFO assignment for all budgets.");policies.forEach(function(p){if(p.id!==candidate.id&&p.status==="Published"&&p.workflow===candidate.workflow&&(p.territory||"")===(candidate.territory||"")&&(p.department||"")===(candidate.department||""))fail("A published policy already exists in this scope. Edit that policy.");});return candidate;}
-  root.LMApprovalPolicy={resolve:resolve,validatePolicy:validatePolicy,assertPublish:assertPublish,currency:currency};
+  root.LMApprovalPolicy={resolve:resolve,validatePolicy:validatePolicy,assertPublish:assertPublish,currency:currency,signedCents:signedCents,validatePO:poPolicy};
 })(typeof globalThis!=="undefined"?globalThis:this);

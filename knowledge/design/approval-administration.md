@@ -103,15 +103,15 @@ emails, numbered roles and inclusion/exclusion reasons in Test route. Compare
 server routing with the same configuration snapshot before displaying a verified
 route.
 
-Purchase Orders use two scenarios: **Without budget modifications** requires CFO;
-**With attached budget modifications** shows the complete ordered route,
-including the mandatory CFO. Label the chain **One approver at a time**.
-Drag grips place modification roles before or
-after CFO. The requested route is VP → CFO → COO; without a new modification,
-only CFO remains. Other roles apply only when the server's modification plan is nonempty. A
-budget overrun covered by existing pending modifications does not add roles.
-There are no PO amount thresholds or condition/order pickers. Add/remove extra
-approvers in display order. Collapse optional territory/department scope.
+Purchase Orders always require **VP → CFO**. Add **COO** after CFO when the net
+budget increase across every cost code and element is **$10,000 or more**.
+Show **Net Change Below $10,000** and **Net Increase $10,000 Or More** in the
+rule list. The editor shows Every Purchase Order and the inclusive COO
+scenario. Keep this mandatory sequence fixed, without PO drag, disable,
+remove, or extra-role controls. Zero and decreases require VP → CFO. Use the
+signed net modification amount, not the header amount or gross movement.
+Collapse optional territory/department scope. See [the current rule and
+deployment contract](../../docs/po-net-approval-routing-2026-11-10.md).
 Historical Test CFO scope remains only in captured evidence and read-only
 receipt recovery, not the normal editor. In every shared-policy workflow, VP
 resolves directly from the document's Territory.VP, and Dev Mgr resolves every
@@ -120,8 +120,8 @@ Identify those Territory sources in the UI. Reject
 ambiguous or unroutable recipients. Self-approval follows the rule below. The user
 guarantees distinct people in each policy, so no
 duplicate-person mode, merging or repeated-role machinery is provided. Preview
-uses the same configuration as the server and one PO creates modifications
-checkbox. No new forms or Custom APIs are needed.
+uses the same configuration as the server and a signed Net Budget Change ($)
+input for POs. No new forms or Custom APIs are needed.
 
 Scope precedence for every workflow is Territory + Department, then Territory,
 then Department, then All territories and departments. Match scope before
@@ -155,8 +155,8 @@ Change History. Omit the workflow-order explanatory heading on the rule list.
 Each approver occupies one compact horizontal row: drag grip, numbered step,
 role and applicable condition fields, Enabled, and a red square trash icon.
 Use Legal-style insertion lines, dragged opacity and stable-key FLIP animation;
-Alt+Up/Down offers keyboard reordering. The required PO CFO can move but cannot
-be disabled or removed. Removing a row animates the remaining rows.
+Alt+Up/Down offers keyboard reordering in configurable workflows. PO roles keep
+their fixed sequence. Removing editable rows animates the remaining rows.
 
 New rules are active by default. Hide the activation checkbox during creation;
 Save Rule first saves the native Draft and then publishes its verified record

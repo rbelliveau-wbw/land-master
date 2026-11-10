@@ -14,7 +14,8 @@ function compile(source){
   source=source.replace(/\{("(?:\\.|[^"\\])*")\}/g,'[$1]');
   source=source.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,fields)=>
     `insertRecord("${form}", delugeMap(${fields.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)=(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}))`);
-  return translate(source).js.replace(/catch\((\w+)\)\s*\{/g,'catch($1) { diagnostics.push($1.message);');
+  // Native long multiplication stays exact in this BigInt-based adapter.
+  return translate(source).js.replace('netSign * netMagnitude','BigInt(netSign) * netMagnitude').replace(/catch\((\w+)\)\s*\{/g,'catch($1) { diagnostics.push($1.message);');
 }
 const executable=names.map(name=>compile(sources[name])+`;thisapp.${name}=${name};`).join('\n');
 const ID='9007199254740993';
@@ -99,7 +100,7 @@ const wacoUsers=[...users,{ID:'13',User:'dev-one',Full_Name:'Dev One',Approver_E
 const wacoTerritory={ID:'71',Territory_Name:'Waco',VP:[{ID:'11'},{ID:'11'}],Dev_Mgr:[{ID:'13'},{ID:'14'},{ID:'13'}]};
 const wacoTables={User_Access:wacoUsers,Approval_Role:[{ID:'1',Role_Name:'VP',Active:true},{ID:'2',Role_Name:'CFO',Active:true},{ID:'3',Role_Name:'Dev Mgr',Active:true}],Approval_Role_Assignment:[{ID:'21',Role:'1',Person:'15',Active:true,Territory_Key:'Waco',Department_Key:''},{ID:'22',Role:'2',Person:'12',Active:true,Territory_Key:'',Department_Key:''},{ID:'23',Role:'3',Person:'15',Active:true,Territory_Key:'Waco',Department_Key:''}],Territory:[wacoTerritory],Add_Pro_Forma:[{ID,Owner:[{ID:'19'}],Territory:'Waco',Status:'Draft',Lock_Inputs:false,Purchasing_Company:'31'}]};
 const wacoSteps=[{key:'vp',order:1,roleId:'1',condition:'Always',enabled:true},{key:'dev-mgr',order:2,roleId:'3',condition:'Always',enabled:true},{key:'cfo',order:3,roleId:'2',condition:'Always',enabled:true}];
-for(const workflow of ['Pro Forma','Budget','Budget Modification','Contract','Purchase Order']){
+for(const workflow of ['Pro Forma','Budget','Budget Modification','Contract']){
   const policySteps=wacoSteps.map(step=>({...step,condition:workflow==='Purchase Order'&&step.roleId!=='2'?'Budget modification attached':'Always'}));
   const scopedPolicy={...policy,Workflow:workflow,Territory_Key:'Waco',Steps_JSON:JSON.stringify(policySteps)};
   const context={workflow,recordId:workflow==='Pro Forma'?ID:'61',budgetId:'61',territory:'Waco',department:workflow==='Budget'?'Development':'',submitterId:'19',amount:'100.00',hasBudgetModification:true,hasBudgetOverrun:true,submissionRevision:'territory-capture-001'};
@@ -117,6 +118,14 @@ for(const workflow of ['Pro Forma','Budget','Budget Modification','Contract','Pu
   for(const territoryUpdate of [{VP:[]},{VP:[{ID:'11'},{ID:'15'}]},{Dev_Mgr:[]},{Dev_Mgr:[{ID:'999'}]}]){h=runtime({policies:[scopedPolicy],extraTables:{...wacoTables,Territory:[{...wacoTerritory,...territoryUpdate}]}});result=h.runNative('resolveApprovalRoute',context);const bothContractVPs=workflow==='Contract'&&territoryUpdate.VP?.length===2;assert.equal(result.success,bothContractVPs,JSON.stringify({workflow,territoryUpdate,result}));if(bothContractVPs){assert.deepEqual(result.snapshot.route.map(step=>step.userAccessId),['11','15','13','14','12']);assert.deepEqual(result.snapshot.route.map(step=>step.key),['vp-11','vp-15','dev-mgr-13','dev-mgr-14','cfo']);assert.deepEqual(result.snapshot.route.map(step=>step.policyStepOrder),[1,1,2,2,3]);}assert.equal(h.writes.length,0);}
   if(workflow==='Contract'){h=runtime({policies:[scopedPolicy],extraTables:{...wacoTables,Territory:[{...wacoTerritory,VP:[{ID:'11'},{ID:'15'}]}],User_Access:wacoUsers.map(person=>person.ID==='15'?{...person,Approval_Routing_Enabled:false}:person)}});result=h.runNative('resolveApprovalRoute',context);assert.equal(result.success,false,'An inactive second Contract VP blocks the native route');assert.equal(h.writes.length,0);}
   for(const personId of ['11','13','14']){h=runtime({policies:[scopedPolicy],extraTables:{...wacoTables,User_Access:wacoUsers.map(person=>person.ID===personId?{...person,Approval_Routing_Enabled:false}:person)}});result=h.runNative('resolveApprovalRoute',context);assert.equal(result.success,false,workflow+' requires every selected Territory approver');assert.equal(h.writes.length,0);}
+}
+// PO now has its own fixed VP/CFO/conditional-COO policy; VP still comes from Territory.
+for(const netBudgetChange of ['0.00','9999.00','10000.00']){
+ const tables={...wacoTables,Approval_Role:[...wacoTables.Approval_Role,{ID:'4',Role_Name:'COO',Active:true}],Approval_Role_Assignment:[...wacoTables.Approval_Role_Assignment,{ID:'24',Role:'4',Person:'15',Active:true,Territory_Key:'',Department_Key:''}]};
+ const steps=[wacoSteps[0],{...wacoSteps[2],order:2},{key:'coo',order:3,roleId:'4',condition:'At or above',threshold:'10000.00',enabled:true}];
+ const poPolicy={...policy,Workflow:'Purchase Order',Territory_Key:'Waco',Steps_JSON:JSON.stringify(steps)};
+ h=runtime({policies:[poPolicy],extraTables:tables});result=h.runNative('resolveApprovalRoute',{workflow:'Purchase Order',territory:'Waco',department:'',submitterId:'19',amount:'500000.00',netBudgetChange});
+ assert.equal(result.success,true,JSON.stringify(result));assert.deepEqual(result.snapshot.route.map(step=>step.userAccessId),netBudgetChange==='10000.00'?['11','12','15']:['11','12']);assert.equal(h.writes.length,0);
 }
 const budgetStart=fs.readFileSync('creator/functions/startApprovalChain.dg','utf8');assert.match(budgetStart,/policyTerritory = ifnull\(budgetRec.Subdivision1.Territory/,'Budget route context uses its assigned Subdivision Territory');
 const exportSource=fs.readFileSync('creator/exports/Land_Master_2026-10-11-development.ds','utf8');for(const field of ['Edit_All_Pro_Forma_Approvals','Edit_Owned_Pro_Forma_Approvals','Edit_Owned_Proformas','Edit_All_Proformas','Send_Pro_Formas_for_Approvals'])assert.match(exportSource,new RegExp('\\b'+field+'\\b'));

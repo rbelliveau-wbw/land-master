@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {runtime,payload} from './test-po-reallocation-backend.mjs';
 
 function submitted(options){const r=runtime(),p=payload(options),saved=r.call(p);assert.equal(saved.success,true,JSON.stringify(saved));return {r,p,saved};}
-function approve(h,index=0){const {r,p,saved}=h,user=index===0?'normal-cfo':'vp',actor=index===0?'12':'19';r.c.zoho.loginuser=user;return r.run('handlePurchaseOrderApproval',{action:'Approve',id:saved.snapshot.id,budgetId:'61',approvalId:saved.snapshot.approvalBundle.rows[index].id,expectedRevision:p.token,note:'',userAccessId:actor});}
+function approve(h,index=0){const {r,p,saved}=h,role=saved.snapshot.approvalBundle.rows[index].role,[user,actor]={VP:['vp','19'],CFO:['normal-cfo','12'],COO:['coo','20']}[role];r.c.zoho.loginuser=user;return r.run('handlePurchaseOrderApproval',{action:'Approve',id:saved.snapshot.id,budgetId:'61',approvalId:saved.snapshot.approvalBundle.rows[index].id,expectedRevision:p.token,note:'',userAccessId:actor});}
 function business(r){return Object.fromEntries(['Payment_Request','PO_Item','Budget_Modification','Budget_Approvals','Approval_Route_Snapshot','Budget_Item','Budget_Category','Add_Budget'].map(name=>[name,r.tables()[name]]));}
 function deniedFinal(h){const before=business(h.r),rollups=h.r.c.rollups,out=approve(h,1);assert.equal(out.success,false,JSON.stringify(out));assert.equal(out.writeState,'not-started');assert.match(out.error,/no longer funds|availability|unavailable/);assert.deepEqual(business(h.r),before,'failed financial preflight cannot record a decision or modify its captured financial records');assert.equal(h.r.c.rollups,rollups);assert.equal(h.r.tables().PO_Phase_Lock.length,0,'known prewrite refusal releases its own decision lock');return out;}
 
@@ -31,8 +31,8 @@ h=submitted();assert.equal(approve(h).success,true);h.r.c.tables.Budget_Item[0].
 
 // Notification retry remains available to its assigned approver without
 // general budget editing, even when a later final approval would be refused.
-h=submitted();assert.equal(approve(h).success,true);h.r.c.tables.Budget_Item[0].Labor_Budget=4999;h.r.c.tables.Budget_Item[0].Materials_Budget=9001;h.r.c.zoho.loginuser='vp';h.r.c.tables.Budget_Approvals[1].Sent_Date=null;
-const retried=h.r.run('handlePurchaseOrderApproval',{action:'RetryEmail',id:h.saved.snapshot.id,budgetId:'61',approvalId:h.saved.snapshot.approvalBundle.rows[1].id,expectedRevision:h.p.token,note:'',userAccessId:'19'});assert.equal(retried.success,true,JSON.stringify(retried));assert.equal(retried.snapshot.approvalState,'Pending');assert.equal(h.r.tables().Budget_Modification[0].Status,'Submitted');
+h=submitted();assert.equal(approve(h).success,true);h.r.c.tables.Budget_Item[0].Labor_Budget=4999;h.r.c.tables.Budget_Item[0].Materials_Budget=9001;h.r.c.zoho.loginuser='normal-cfo';h.r.c.tables.User_Access.find(user=>user.ID===12).Edit_All_Budgets=false;h.r.c.tables.Budget_Approvals[1].Sent_Date=null;
+const retried=h.r.run('handlePurchaseOrderApproval',{action:'RetryEmail',id:h.saved.snapshot.id,budgetId:'61',approvalId:h.saved.snapshot.approvalBundle.rows[1].id,expectedRevision:h.p.token,note:'',userAccessId:'12'});assert.equal(retried.success,true,JSON.stringify(retried));assert.equal(retried.snapshot.approvalState,'Pending');assert.equal(h.r.tables().Budget_Modification[0].Status,'Submitted');
 
 // An unrelated item's unknown historic element allocation is outside this
 // final-decision scope; selected items and changed elements remain the gate.

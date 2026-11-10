@@ -923,7 +923,7 @@ string managePurchaseOrder(string payload)
 			{
 				territory = ifnull(budget.Subdivision1.Territory,"");
 			}
-			previewContext = {"workflow":"Purchase Order","budgetId":budgetId,"territory":territory,"department":"","submitterId":access.ID.toString(),"amount":previewAmount,"hasBudgetModification":p.get("hasBudgetModification"),"hasBudgetOverrun":p.get("hasBudgetOverrun")};
+			previewContext = {"workflow":"Purchase Order","budgetId":budgetId,"territory":territory,"department":"","submitterId":access.ID.toString(),"amount":previewAmount,"netBudgetChange":p.get("netBudgetChange"),"hasBudgetModification":p.get("hasBudgetModification"),"hasBudgetOverrun":p.get("hasBudgetOverrun")};
 			previewRoute = thisapp.resolveApprovalRoute(previewContext);
 			if(previewRoute.get("success") != true)
 			{
@@ -1390,6 +1390,27 @@ string managePurchaseOrder(string payload)
 					}
 				}
 			}
+            netBudgetChangeCents = 0;
+            for each netPlan in modificationPlan
+            {
+                planCents = netPlan.get("amount").replaceAll("[.]","").toLong();
+                if(netPlan.get("modificationType") == "Decrease") { planCents = 0 - planCents; }
+                netBudgetChangeCents = netBudgetChangeCents + planCents;
+            }
+            if(netBudgetChangeCents > 999999999999999 || netBudgetChangeCents < -999999999999999) { result.put("error","Net budget change exceeds supported currency capacity."); }
+            netSign = ""; netMagnitude = netBudgetChangeCents; if(netMagnitude < 0) { netSign = "-"; netMagnitude = 0 - netMagnitude; }
+            netDigits = netMagnitude.toString(); if(netDigits.length() == 1) { netDigits = "00"+netDigits; } if(netDigits.length() == 2) { netDigits = "0"+netDigits; }
+            netBudgetChange = netSign+netDigits.subString(0,netDigits.length()-2)+"."+netDigits.subString(netDigits.length()-2,netDigits.length());
+            if(amendPending == true)
+            {
+                priorRuleCapture = Approval_Route_Snapshot[ID == priorBundle.get("snapshotId").toLong()];
+                priorRuleContext = priorRuleCapture.Context_JSON.toMap();
+                if(priorRuleContext.get("poApprovalRule") == "net-change-v1")
+                {
+                    priorRuleNet = priorRuleContext.get("netBudgetChange").replaceAll("[.]","").toLong();
+                    if((priorRuleNet >= 1000000 && netBudgetChangeCents < 1000000) || (priorRuleNet < 1000000 && netBudgetChangeCents >= 1000000)) { result.put("error","This edit changes whether COO approval is required. Reject and resubmit the PO for a new approval route."); }
+                }
+            }
 			if(amendPending != true)
 			{
 				territory = "";
@@ -1397,7 +1418,7 @@ string managePurchaseOrder(string payload)
 				{
 					territory = ifnull(budget.Subdivision1.Territory,"");
 				}
-				context = {"workflow":"Purchase Order","budgetId":budgetId,"territory":territory,"department":"","submitterId":access.ID.toString(),"amount":p.get("amount"),"hasBudgetModification":modificationPlan.size() > 0,"hasBudgetOverrun":budgetExceeded};
+				context = {"workflow":"Purchase Order","budgetId":budgetId,"territory":territory,"department":"","submitterId":access.ID.toString(),"amount":p.get("amount"),"netBudgetChange":netBudgetChange,"poApprovalRule":"net-change-v1","hasBudgetModification":modificationPlan.size() > 0,"hasBudgetOverrun":budgetExceeded};
 				resolved = thisapp.resolveApprovalRoute(context);
 				if(resolved.get("success") != true)
 				{
@@ -1425,9 +1446,9 @@ string managePurchaseOrder(string payload)
 							additionalFound = true;
 						}
 					}
-					if(cfoFound != true)
+					if(cfoFound != true || resolvedSteps.size() < 2 || resolvedSteps.get(0).get("role") != "VP" || resolvedSteps.get(1).get("role") != "CFO")
 					{
-						result.put("error","Every PO must include CFO approval.");
+						result.put("error","Every PO requires VP → CFO approval.");
 					}
 					if(modificationPlan.size() > 0 && additionalFound != true)
 					{
@@ -1657,6 +1678,7 @@ string managePurchaseOrder(string payload)
 				retainedContext.put("modifications",modifications);
 				retainedContext.put("hasBudgetModification",modifications.size() > 0);
 				retainedContext.put("hasBudgetOverrun",budgetExceeded);
+                retainedContext.put("netBudgetChange",netBudgetChange);
 				retainedRoute = priorCapture.Route_JSON.toMap();
 				retainedRoute.put("context",retainedContext);
 				// Copy the captured route and exact execution IDs. Never reset decisions or send mail.

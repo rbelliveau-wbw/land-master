@@ -23,9 +23,9 @@ const config={
   {id:'43',roleId:'12',userAccessId:'150',active:false,territory:'23',department:'Construction'}
  ],
  policies:[{id:'51',workflow:'Purchase Order',status:'Published',enabled:true,selfApproval:'Deny',territory:'',department:'',adapterEnabled:false,steps:[
-  {key:'vp',roleId:'11',order:1,condition:'Budget modification attached',enabled:true},
+  {key:'vp',roleId:'11',order:1,condition:'Always',enabled:true},
   {key:'cfo',roleId:'12',order:2,condition:'Always',enabled:true},
-  {key:'coo',roleId:'13',order:3,condition:'Budget modification attached',enabled:true}
+  {key:'coo',roleId:'13',order:3,condition:'At or above',threshold:'10000.00',enabled:true}
  ]},{id:'52',workflow:'Budget Modification',status:'Published',enabled:true,selfApproval:'Allow',territory:'',department:'',adapterEnabled:true,steps:[
   {key:'mod-cfo',roleId:'12',order:1,condition:'Always',threshold:'',enabled:true},
   {key:'mod-coo',roleId:'13',order:2,condition:'Above',threshold:'10000.00',enabled:true}

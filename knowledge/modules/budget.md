@@ -1,3 +1,12 @@
+## PO Net Budget Approval Rule — November 10, 2026
+
+Every new PO requires VP → CFO. Add COO when signed net changes across all
+cost codes and elements total $10,000 or more. Zero, decreases, and increases
+below $10,000 follow VP → CFO. The server derives the net from its validated
+modification plan; header amount and gross transfers do not control the
+threshold. Existing captured approvals remain unchanged. See [implementation,
+installation, verification and rollback](../../docs/po-net-approval-routing-2026-11-10.md).
+
 ## PO Notifications PMP — 122.29.127, November 10, 2026
 
 The integrated hosted release combines PO outcome email/activity, the 15% wider

@@ -150,12 +150,15 @@ string manageApprovalPolicies(string payload)
 				stepEnabledKnown=configuredStep.get("enabled") == true || configuredStep.get("enabled") == false;
 				if(configuredRole.ID == null || configuredRole.Active != true || configuredStep.get("order") != stepOrder || !ifnull(configuredStep.get("key"),"").toString().matches("[A-Za-z0-9-]{1,80}") || configuredKeys.contains(configuredStep.get("key")) || stepEnabledKnown != true) { result.put("error","Approvers need active roles, unique keys and sequential order."); return result.toString(); }
 				configuredKeys.add(configuredStep.get("key")); condition=configuredStep.get("condition"); workflow=testPolicyData.get("workflow");
-				if(workflow == "Purchase Order")
+				if(workflow == "Purchase Order" && action != "Reconcile")
 				{
-					if(configuredRole.Role_Name == "CFO") { configuredCFO=configuredCFO+1; if(condition != "Always" || configuredStep.get("enabled") != true) { result.put("error","CFO must approve every purchase order."); return result.toString(); } }
-					else { if(condition != "Budget modification attached") { result.put("error","Additional PO approvers are used only when the PO creates budget modifications."); return result.toString(); } }
+                    requiredRole = "VP"; if(stepOrder == 2) { requiredRole = "CFO"; } if(stepOrder == 3) { requiredRole = "COO"; }
+                    requiredCondition = "Always"; if(stepOrder == 3) { requiredCondition = "At or above"; }
+                    if(testPolicySteps.size() != 3 || configuredRole.Role_Name != requiredRole || condition != requiredCondition || configuredStep.get("enabled") != true || (stepOrder == 3 && configuredStep.get("threshold") != "10000.00")) { result.put("error","Purchase Orders require VP → CFO, then COO at a net budget increase of $10,000 or more."); return result.toString(); }
+                    if(configuredRole.Role_Name == "CFO") { configuredCFO=configuredCFO+1; }
 				}
-				else if(workflow == "Pro Forma" || workflow == "Contract") { if(condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains."); return result.toString(); } }
+				else if(workflow == "Purchase Order" && action == "Reconcile") { configuredCFO=configuredCFO+1; }
+                else if(workflow == "Pro Forma" || workflow == "Contract") { if(condition != "Always") { result.put("error","Pro Forma and Contract use straight approval chains."); return result.toString(); } }
 				else if(condition != "Always" && condition != "Above" && condition != "At or above") { result.put("error","Unsupported approver condition."); return result.toString(); }
 				if(condition == "Above" || condition == "At or above")
 				{
