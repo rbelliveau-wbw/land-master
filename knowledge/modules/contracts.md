@@ -1615,3 +1615,20 @@ create, actual native failure retention, duplicate/lost reply guards, existing
 attachment/file tests, repository validation and Pages build. Native acceptance
 requires widget PDF upload, refresh persistence and opening the saved PDF.
 Rollback: Development Contract Management to 1.62.59; leave Production unchanged.
+
+## Native Attachment Content Strings — 1.62.63, November 10, 2026
+
+Native FILE.readFile may return the file content as a string. The SDK read
+adapter now distinguishes that documented byte payload from record/API
+envelopes, preserving actual JSON-encoded Creator failures, empty-content
+rejection, binary bytes and current actor/child checks. This repairs inline PDF
+preview and Download when the existing preview Custom API is unavailable in
+Development View as. No file bytes, permission checks, field permissions or
+Creator functions change.
+
+Regression: actual-source binary content-string read and high-byte preservation,
+PDF viewer fallback after Custom API denial, encoded native error rejection,
+empty replies, existing attachment lifecycle tests, full repository validation
+and Pages build. Live acceptance uses the saved QA PDF after a fresh load.
+Development only; Production is not promoted by this release. No Creator deployment is required.
+Rollback Development to 1.62.61 (upload works; prior preview limitation returns).
