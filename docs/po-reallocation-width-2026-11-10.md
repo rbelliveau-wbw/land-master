@@ -24,4 +24,6 @@ from 122.29.125 only in the requested width value. This presentation edit adds n
 live SDK or financial-write test and does not repeat a desktop UI gate.
 
 For this width adjustment alone, roll back to immutable Budget 122.29.125.
-Production remains mapped to 122.29.123 until an explicit production promotion.
+The later [PMP integration](po-notifications-pmp-2026-11-10.md) promotes
+122.29.127, retaining main's separately published124 ledger improvements.
+For the complete promoted feature rollback, use Budget122.29.124 and Settings1.6.8.

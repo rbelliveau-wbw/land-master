@@ -1,3 +1,11 @@
+## PO Notifications PMP — 122.29.127, November 10, 2026
+
+The integrated hosted release combines PO outcome email/activity, the 15% wider
+Reallocation pane and main's compact ledger/element display. Production promotion
+retains the published 122.29.124 and all independent Contracts updates. Creator
+promotion remains separate. See the
+[promotion and rollback record](../../docs/po-notifications-pmp-2026-11-10.md).
+
 ## Reallocation Panel Width — 122.29.126, November 10, 2026
 
 The desktop Reallocation panel is 15% wider: 326px → 374.9px. The PO and Summary
@@ -5,6 +13,16 @@ share the remaining viewport width. This CSS-only adjustment has no form, field,
 function or Custom API changes and requires no additional Creator deployment.
 The release also retains the prepared PO email/activity work. See
 [verification and rollback](../../docs/po-reallocation-width-2026-11-10.md).
+
+## Compact PO Elements and Fitted Ledger — 122.29.124, November 10, 2026
+
+The closed PO ELEM field shows only 1–5; its existing dropdown and tooltip retain
+the numbered element names. Narrower Cost Code/ELEM columns and a fitted grid
+keep every field, Total and row action inside the PO without horizontal scrolling
+in Row and Spreadsheet modes. Narrow desktop windows put side panels below the
+PO. Codes, native values and all calculations remain unchanged. No Creator
+update is required. See
+[changes, verification and rollback](../../docs/po-compact-element-fit-2026-11-10.md).
 
 ## Eagle Prairie PO Check — 122.29.123, November 10, 2026
 

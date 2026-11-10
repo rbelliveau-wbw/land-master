@@ -93,7 +93,8 @@
         "widgets/contract-management/src/app/widget.html"
       ],
       "matching_creator_function": "getContractAttachmentPreview",
-      "confidence": "inferred-name-match"
+      "confidence": "inferred-name-match",
+      "notes": "Development 2026-11-10: approved Construction View-as preview reuses constructionReviewActor through a JSON object in the existing string contractId argument. Exact parent/attachment and existing actor permissions remain enforced. Plain ID calls remain compatible; actor envelopes are rejected outside Development. Saved/reloaded in Creator Development; no Production/Stage promotion."
     },
     {
       "name": "Get_Proforma_Attachment_Preview",

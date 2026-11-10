@@ -6,12 +6,13 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 // Execute the checked-in Deluge bodies against native-shaped fixtures. This is
 // offline behavioral coverage, not a substitute for Creator compilation/UI QA.
 const CID='90071992547419991', OP='construction-review-operation-0001', OTHER='construction-review-operation-0002';
-const names=['hasConstructionPermission','PF_Packet_Escape','constructionReviewActor','constructionReviewSnapshot','buildConstructionRejectionNotification','sendConstructionRejectionNotification','manageConstructionReview'];
+const names=['hasConstructionPermission','PF_Packet_Escape','constructionReviewActor','constructionReviewSnapshot','buildConstructionRejectionNotification','sendConstructionRejectionNotification','manageConstructionReview','getContractAttachmentPreview'];
 const sources=Object.fromEntries(names.map(name=>[name,fs.readFileSync('creator/functions/'+name+'.dg','utf8')]));
 function runtime(options={}){
  const fixtures={
   Contract:[{ID:CID,Work_Module:options.module??'Construction',Status:options.status??'Proposed',Contract_Name:'Arroyo <Ranch> & Phase 05\nMUD Bid',Added_User:options.submitter??'jking_wbdevelopment84',Construction_Rejection_Operation:'',Project:'90071992547419992',Subdivision1:['90071992547419993']}],
   User_Access:[{ID:'4410926000003608012',User:'samuel_wbw',Full_Name:'Samuel <Spears>',Edit_All_Construction_Requests:options.edit??false,Submit_Construction_Requests:options.submit??false,Approver_Email:'sam@example.test'},...(options.noSubmitterAccess?[]:[{ID:'4410926000004465004',User:options.submitter??'jking_wbdevelopment84',Approver_Email:options.recipient??'jking@example.test'}])],
+  Attachment:[{ID:'90071992547419994',Contract1:CID,File_field1:{actualname:'native.pdf',base64:'JVBERi0xLjcKZml4dHVyZQ=='}}],
   Project:[{ID:'90071992547419992',Project_Name:'Arroyo Project'}],Subdivision:[{ID:'90071992547419993',Subdivision_Name:'Phase <05>'}],Construction_Review_Log:[],Comment_Log:[]
  };
  const c=vm.createContext({fixtures:JSON.stringify(fixtures),options:JSON.stringify(options),console});
@@ -22,7 +23,7 @@ function runtime(options={}){
  Array.prototype.add=function(v){this.push(v);};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.size=Array.prototype.count=function(){return this.length;};Array.prototype.get=function(i){return this[i]??null;};
  String.prototype.toMap=function(){return JSON.parse(this);};String.prototype.toLong=function(){return this.toString();};String.prototype.len=function(){return this.length;};String.prototype.matches=function(pattern){return new RegExp(pattern).test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};Number.prototype.toLong=function(){return Math.trunc(this);};
  function stamp(epoch=1234567890){return {toLong(){return epoch;},toString(){return 'Nov 6, 2026 · 10:30 AM';}};}
- var zoho={loginuser:options.nativeActor??'samuel_wbw',adminuser:'wbdevelopment',currenttime:stamp()},thisapp={environment:{type:options.environment??'Production'},permissions:{profileForUser(){return options.profile??'Construction Budgeting';}}};
+ var zoho={loginuser:options.nativeActor??'samuel_wbw',adminuser:'wbdevelopment',currenttime:stamp(),encryption:{base64Encode(file){return file.base64;}}},thisapp={environment:{type:options.environment??'Production'},permissions:{profileForUser(){return options.profile??'Construction Budgeting';},isUserInProfile(name){return name===(options.profile??'Construction Budgeting');}}};
  tables.Contract[0].Modified_Time=options.noModified?null:stamp();
  function record(row){return new Proxy(row,{get(o,k){return o[k]??null;},set(o,k,v){if(options.failStatus&&k==='Status')throw Error('Status failure');o[k]=v;if(k==='Construction_Rejection_Operation'){o.Modified_Time=stamp(1234567891);if(hook)hook('marker',o);}return true;}});}
  function query(form,predicate,sort){let rows=Array.from(tables[form]??[],record).filter(predicate);if(sort)rows.sort((a,b)=>a[sort]-b[sort]);return new Proxy(rows,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;},set(a,k,v){if(k in a||!a.length){a[k]=v;return true;}a[0][k]=v;return true;}});}
@@ -30,7 +31,7 @@ function runtime(options={}){
  function sendMail(from,to,subject,message){if(options.failMail)throw Error('Ambiguous mail exception');mails.push({from,to,subject,body:message});if(hook)hook('mail',mails.at(-1));}
  `,c);
  for(const name of names){
-  let source=sources[name];
+  let source=sources[name].replace(/\.length\(\)/g,'.len()'); // Deluge string length versus JavaScript's numeric property.
   source=source.replace(/(\w+)\s*=\s*insert into\s+(\w+)\s*\[([\s\S]*?)\];/g,(_,v,form,body)=>`${v} = insertNative('${form}',{\n${body.trim().split(/\r?\n/).map(line=>line.trim()).filter(Boolean).map(line=>{const m=line.match(/^(\w+)\s*=(.*)$/);if(!m)throw Error('Unsupported native insert line '+line);return m[1]+':'+m[2];}).join(',\n')}\n});`);
   source=source.replace(/sendmail\s*\[([\s\S]*?)\]/g,(_,body)=>'sendMail('+['from','to','subject','message'].map(k=>body.match(new RegExp('^\\s*'+k+'\\s*:(.*)$','m'))[1]).join(',')+');');
   const code=translate(source).js;
@@ -130,4 +131,27 @@ for(const extra of [{userAccessId:4410926000003608012},{userAccessId:'999999'},{
 }
 for(const source of Object.values(sources)){assert.doesNotMatch(source,/\bwhile\s*\(|containsKey\(/);assert.match(source,/\n[ \t]+return [^\n]+;\r?\n[ \t]*}\s*$/,'typed helpers retain an unconditional outer fallback return');}
 assert.doesNotMatch(sources.manageConstructionReview,/thisapp\.postRecordComment\(/,'rejection cannot emit general owner comment mail');
+function previewFixture(options={}){
+ const h=runtime(options);
+ h.eval("var previewReads=0;thisapp.permissions.profileForUser=function(user){return user==='samuel_wbw'?(options.profile??'Construction Budgeting'):'Read';};zoho.encryption.base64Encode=function(file){previewReads++;return file.base64;};");
+ const preview=(parent=CID,id='90071992547419994')=>JSON.parse(h.eval('getContractAttachmentPreview('+JSON.stringify(parent)+','+JSON.stringify(id)+')'));
+ return {...h,preview};
+}
+const devPreviewRequest=JSON.stringify({contractId:CID,userAccessId:'4410926000003608012'});
+{
+ const h=previewFixture({environment:'Development',nativeActor:'wbdevelopment'});
+ assert.equal(h.preview().ok,false,'owner-context Dev denial remains without an explicit View-as identity');
+ const r=h.preview(devPreviewRequest);assert.equal(r.ok,true,r.message);assert.equal(r.contractId,CID);assert.equal(r.attachmentId,'90071992547419994');assert.equal(r.base64,'JVBERi0xLjcKZml4dHVyZQ==','service returns exact stored bytes');
+ assert.equal(h.tables.Comment_Log.length,0);assert.equal(h.mails.length,0);assert.equal(h.eval('inserts.length'),0,'preview performs no writes');
+}
+for(const environment of ['Stage','Production']){
+ const h=previewFixture({environment});assert.equal(h.preview(devPreviewRequest).ok,false,'demo actor envelopes are Dev only');assert.equal(h.eval('previewReads'),0);assert.equal(h.preview().ok,true,'plain parent-ID callers retain native identity behavior');
+}
+for(const options of [{environment:'Development',nativeActor:'wbdevelopment',profile:'Read'},{environment:'Development',nativeActor:'wbdevelopment',module:'Legal'},{environment:'Development',nativeActor:'ordinary-unprivileged-user'}]){
+ const h=previewFixture(options);assert.equal(h.preview(devPreviewRequest).ok,false,JSON.stringify(options));assert.equal(h.eval('previewReads'),0,'no bytes before native identity, module and permission checks');
+}
+for(const request of [JSON.stringify({contractId:CID,userAccessId:'missing'}),JSON.stringify({contractId:CID,userAccessId:'4410926000003608999'}),JSON.stringify({contractId:'90071992547419990',userAccessId:'4410926000003608012'})]){
+ const h=previewFixture({environment:'Development',nativeActor:'wbdevelopment'});assert.equal(h.preview(request).ok,false);assert.equal(h.eval('previewReads'),0,'invalid actor or parent cannot encode a file');
+}
+console.log('Construction preview backend: exact saved bytes, reused Dev owner-only View-as resolver, native actor/parent/module permissions, Production/Stage compatibility and zero writes passed (offline).');
 console.log('Construction rejection backend: native-shaped identities, immutable notes, profile gates, string IDs, safe mail retries, and concurrent reviewer/send claims passed (offline; native compilation still required).');

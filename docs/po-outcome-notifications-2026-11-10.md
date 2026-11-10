@@ -238,16 +238,19 @@ path.
 
 | Widget | Candidate | Development Rollback |
 | --- | --- | --- |
-| Budget Manager | `122.29.126` | `122.29.123` |
+| Budget Manager | `122.29.127` | `122.29.124` |
 | Settings Manager | `1.6.9` | `1.6.8` |
 
-These immutable candidate directories are prepared locally. Development maps
-to the new candidates; Stage and Production mappings are unchanged. No commit,
-push, Pages publication or Creator Production publication is implied by these
-local files. The superseded local Budget `122.29.124` and `122.29.125` candidates
-are retained unchanged. `122.29.126` also includes the requested
-[15% wider Reallocation panel](po-reallocation-width-2026-11-10.md).
-Native installation and readback evidence are recorded separately.
+PMP maps Development and Production to these immutable releases; Stage and all
+other widget mappings retain current main. The integrated Budget 122.29.127
+preserves published 122.29.124's compact ledger and the requested
+[15% wider Reallocation panel](po-reallocation-width-2026-11-10.md). Local
+notification candidates 122.29.125 and 122.29.126 remain immutable. The earlier
+unpublished notification candidate numbered124 is archived locally; it never
+replaces main's distinct published124 release. See the
+[PMP integration and rollback record](po-notifications-pmp-2026-11-10.md).
+Creator publication remains the user's action. Native installation/readback and
+hosted build evidence are recorded separately; CI is monitored after the push.
 
 The new PO suites run automatically through the `postvalidate` lifecycle after
 the existing repository checks. `npm run validate` passed its complete

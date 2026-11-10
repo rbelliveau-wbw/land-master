@@ -3,6 +3,11 @@
 
 Legal and Construction task management, with token-based LOI legal review.
 
+Release `1.62.61` allows Legal requests to be submitted with zero actions.
+Existing templates remain editable at creation; request validation, review and
+approver defaults are unchanged. Frontend only; no Creator publication is needed.
+Production rollback: `1.62.59`.
+
 Release `1.62.56` replaces the Subdivision list column with **Pro Forma / Project**.
 Acquisition rows edit their Pro Forma inline; other rows edit Project, and Lot
 rows append the selected subdivision record codes. Existing scope, ownership,

@@ -13,8 +13,8 @@
       "scripts/test-po-outcome-email-backend.mjs",
       "scripts/test-po-activity.mjs"
     ],
-    "status": "passed-final-source",
-    "final_log": "C:\\Users\\R\\.codex\\worktrees\\po-outcome-activity\\land-master\\tmp\\po-reallocation-width-validate-2026-11-10.log",
+    "status": "passed-final-integrated-pmp-source",
+    "final_log": "C:\\Users\\R\\.codex\\worktrees\\po-outcome-activity\\land-master\\tmp\\po-pmp-validate-2026-11-10.log",
     "additional_current_coverage": [
       "Private Development setup utility and exact native setup evidence",
       "Actual generated report/profile capture",
@@ -31,13 +31,13 @@
   "releases": [
     {
       "widget": "budget-manager",
-      "candidate": "122.29.126",
-      "rollback": "122.29.123",
-      "source_sha256": "02f5898dedc6e9cb16ca5efd38cf4d7499e4568c112a791412ff40a2d86eacfb",
+      "candidate": "122.29.127",
+      "rollback": "122.29.124",
+      "source_sha256": "f2b21f3b2180afa82415b972a709a6d63b1cf37ea589b440a7074ca6624eb929",
       "files": 39,
       "all_candidate_files_match_source": true,
       "development_build_matches_candidate": true,
-      "production_build_matches_previous_release": true
+      "production_build_matches_candidate": true
     },
     {
       "widget": "settings-manager",
@@ -47,14 +47,14 @@
       "files": 21,
       "all_candidate_files_match_source": true,
       "development_build_matches_candidate": true,
-      "production_build_matches_previous_release": true
+      "production_build_matches_candidate": true
     }
   ],
   "development_mapping": {
     "proforma-manager": "1.80.142",
-    "budget-manager": "122.29.126",
+    "budget-manager": "122.29.127",
     "land-master": "8.17.11",
-    "contract-management": "1.62.59",
+    "contract-management": "1.62.65",
     "tax-center": "19.17.36",
     "milestone-gantt": "1.1.20",
     "manage-lots": "0.13.19",
@@ -63,7 +63,7 @@
     "forecast-manager": "1.9.1",
     "crew-locations": "1.10.2"
   },
-  "stage_and_production_mappings_unchanged": true,
+  "stage_and_production_mappings_unchanged": false,
   "existing_immutable_releases_unchanged": true,
   "synchronized_interaction_registry_copies": [
     "widgets/budget-manager/src/app/interaction-surfaces.js",
@@ -79,29 +79,38 @@
     "widgets/tax-center/src/app/interaction-surfaces.js"
   ],
   "publication": {
-    "git_commit": false,
+    "git_commit": true,
     "git_push": false,
     "pages_published": false,
     "creator_production_published": false,
     "live_emails_sent": false,
-    "native_installation_and_readback": "Recorded separately; local validation does not establish native/end-user behavior."
+    "state": "pre-push-build-evidence; final GitHub CI/Pages results reported after push",
+    "creator_promotion": "User-owned; not part of PMP"
   },
   "superseded_local_candidates": [
     {
       "widget": "budget-manager",
       "version": "122.29.124",
-      "retained_immutable": true,
-      "replacement": "122.29.125"
+      "kind": "unpublished-notification-snapshot",
+      "source_sha256": "6eb1392636353a42d76fdd188be48e3416203315b25d787d590167c0f8b168c4",
+      "archived_outside_repository": true,
+      "published_same_number_release_preserved": true
     },
     {
       "widget": "budget-manager",
       "version": "122.29.125",
       "retained_immutable": true,
-      "replacement": "122.29.126"
+      "replacement": "122.29.127"
+    },
+    {
+      "widget": "budget-manager",
+      "version": "122.29.126",
+      "retained_immutable": true,
+      "replacement": "122.29.127"
     }
   ],
   "native_function_source_evidence": "function-native-verification.json",
-  "updated_at": "2026-11-10T17:09:25.101Z",
+  "updated_at": "2026-11-10T17:34:33.629Z",
   "width_followup": {
     "document": "../../../docs/po-reallocation-width-2026-11-10.md",
     "previous_px": 326,
@@ -109,5 +118,32 @@
     "increase_percent": 15,
     "additional_creator_changes": false,
     "verification": "Existing regression suites/full validation/Pages build; no live UI gate for this routine presentation adjustment"
-  }
+  },
+  "production_mapping": {
+    "proforma-manager": "1.80.142",
+    "budget-manager": "122.29.127",
+    "land-master": "8.17.11",
+    "contract-management": "1.62.61",
+    "tax-center": "19.17.36",
+    "milestone-gantt": "1.1.20",
+    "manage-lots": "0.13.19",
+    "settings-manager": "1.6.9",
+    "lot-sales-explorer": "1.7.0",
+    "forecast-manager": "1.9.1",
+    "crew-locations": "1.10.2"
+  },
+  "stage_mapping_unchanged": true,
+  "production_mapping_changes": [
+    {
+      "widget": "budget-manager",
+      "from": "122.29.124",
+      "to": "122.29.127"
+    },
+    {
+      "widget": "settings-manager",
+      "from": "1.6.8",
+      "to": "1.6.9"
+    }
+  ],
+  "integration_base": "0295b92d0b94b09d7466f76576e5c5b36a0d0e1a"
 }

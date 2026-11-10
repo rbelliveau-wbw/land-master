@@ -47,8 +47,37 @@ for(const envelope of [{code:3000,data:{filename:'fixture.pdf',filepath:'native_
 {
  const h=await ready(),f=files(h),id=await h.c.createContractAttachmentRecord(ID);h.c.LMRuntime.apply({envUrlFragment:'',loginUser:'other-actor@example.test'});await assert.rejects(h.c.sdkUploadVersionFile(id,{name:'fixture.pdf'}));await assert.rejects(h.c.sdkReadVersionFile(id));await assert.rejects(h.c.updateRecord(ID,{Contract_Name:'No stale-snapshot write'},h.c.CFG.reports.contracts));assert.equal(f.calls.filter(call=>['uploadFile','readFile'].includes(call.method)).length,0);assert.equal(h.calls.filter(call=>call.method==='update').length,0);assert.equal(h.c.canEdit(),false);
 }
-for(const envelope of [{code:3000,data:{content:'%PDF-1.7',status:'failure'}},{code:3000,data:{content:'%PDF-1.7'},result:[{code:2898}]},{code:2899,data:{content:'%PDF-1.7'}}]){
+{
+ const h=await ready({realDOM:true}),f=files(h),id=await h.c.createContractAttachmentRecord(ID),content='%PDF-1.7\n'+String.fromCharCode(128,255)+'\nfixture';
+ f.setReadResponse(content);
+ const response=await h.c.sdkReadVersionFile(id),blob=await h.c.fileResponseToBlob(response,'application/pdf');
+ assert.equal(response,content,'the documented native readFile content string is not a record-read envelope');
+ assert.deepEqual(Array.from(new Uint8Array(await blob.arrayBuffer())),Array.from(content,x=>x.charCodeAt(0)),'binary string high bytes are retained exactly');
+ h.reports.All_Attachments[0].File_field1={filepath:'native_fixture.pdf'};h.c.S.versions=structuredClone(h.reports.All_Attachments);
+ const custom=f.nativeCreate;
+ h.api.invokeCustomApi=config=>config.api_name===h.c.CFG.customApis.attachmentPreview?Promise.resolve({code:3000,details:{output:JSON.stringify({ok:false,message:'You do not have access to this attachment.'})}}):custom(config);
+ h.c.previewVersion(id);await drain();
+ assert.ok(h.c.document.getElementById('cmPdfFrame'),'native string fallback opens the actual PDF viewer when the preview API denies access');
+}
+for(const envelope of [{code:3000,data:{content:'%PDF-1.7',status:'failure'}},{code:3000,data:{content:'%PDF-1.7'},result:[{code:2898}]},{code:2899,data:{content:'%PDF-1.7'}},JSON.stringify({code:2898,message:'Denied read'}),JSON.stringify({code:3000,data:{error:'Denied file'}}),'']){
  const h=await ready(),f=files(h),id=await h.c.createContractAttachmentRecord(ID);f.setReadResponse(envelope);await assert.rejects(h.c.sdkReadVersionFile(id),'failed native FILE envelopes cannot be converted to plausible file bytes');
+}
+{
+ const h=await ready(),bytes=new Uint8Array([37,80,68,70,45,128,255]);
+ const foreignBlob={get [Symbol.toStringTag](){return 'Blob';},type:'application/pdf',arrayBuffer:async()=>bytes.buffer};
+ const blob=await h.c.fileResponseToBlob(foreignBlob,'application/pdf');
+ assert.deepEqual(Array.from(new Uint8Array(await blob.arrayBuffer())),Array.from(bytes),'cross-frame native Blob bytes retain their binary representation');
+}
+for(const env of ['', 'development', 'stage']){
+ const h=await ready({realDOM:true,pageParams:{workMode:'construction'},accessFlags:{constructionSubmit:true,constructionEditAll:true},initialize:()=>({envUrlFragment:env?'/environment/'+env:'',loginUser:'preview-actor@example.test'})}),f=files(h);
+ h.c.S.contracts[0].Work_Module='Construction';h.reports.All_Contracts1[0].Work_Module='Construction';
+ const id=await h.c.createContractAttachmentRecord(ID),row=h.reports.All_Attachments[0];
+ row.File_field1={filepath:'1794323647620880_saved.pdf'};h.c.S.versions=structuredClone(h.reports.All_Attachments);
+ await h.c.getVersionPdfBase64(row);await h.c.getVersionBlob(row,'application/pdf');
+ const calls=f.calls.filter(call=>call.method==='attachmentPreview');assert.equal(calls.length,2);
+ for(const call of calls){assert.equal(call.config.payload.attachmentId,id);if(env==='development')assert.deepEqual(JSON.parse(call.config.payload.contractId),{contractId:ID,userAccessId:String(h.c.S.myAccessId)});else assert.equal(call.config.payload.contractId,ID,'Stage/Production keep the plain parent-ID API contract');}
+ if(env==='development'){h.c.LMRuntime.apply({envUrlFragment:'/environment/development',loginUser:'another-actor@example.test'});assert.equal(h.c.contractAttachmentPreviewArgs(row).contractId,ID,'stale access snapshots cannot select a demo actor');}
+ assert.equal(f.calls.filter(call=>['uploadFile','deleteAttachment'].includes(call.method)).length,0);
 }
 {
  const h=await ready({realDOM:true}),f=files(h),gate=deferred(),native=f.nativeUpload;

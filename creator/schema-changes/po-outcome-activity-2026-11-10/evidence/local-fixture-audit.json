@@ -80,10 +80,10 @@
     "results": [
       {
         "widget": "budget-manager",
-        "candidate": "122.29.126",
+        "candidate": "122.29.127",
         "source_files": 39,
         "mismatches": [],
-        "source_sha256": "02f5898dedc6e9cb16ca5efd38cf4d7499e4568c112a791412ff40a2d86eacfb",
+        "source_sha256": "f2b21f3b2180afa82415b972a709a6d63b1cf37ea589b440a7074ca6624eb929",
         "config_and_release_metadata_match": true
       },
       {
@@ -96,19 +96,19 @@
       }
     ],
     "development_mapping": {
-      "budget-manager": "122.29.126",
+      "budget-manager": "122.29.127",
       "settings-manager": "1.6.9"
     },
     "production_mapping": {
-      "budget-manager": "122.29.123",
-      "settings-manager": "1.6.8"
+      "budget-manager": "122.29.127",
+      "settings-manager": "1.6.9"
     },
-    "stage_and_production_mapping_diff": "unchanged",
+    "stage_and_production_mapping_diff": "Stage unchanged; only Budget and Settings Production promoted",
     "existing_immutable_releases_modified": false,
     "superseded_local_candidate": {
-      "widget": "budget-manager",
       "version": "122.29.124",
-      "retained_unchanged": true
+      "unpublished_snapshot_archived_outside_repository": true,
+      "published_same_number_release_preserved": true
     },
     "final_full_validation": "passed",
     "final_pages_build": "passed: 35 environment paths"

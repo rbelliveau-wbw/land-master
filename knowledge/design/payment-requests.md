@@ -140,6 +140,13 @@ characters). The viewport-bounded editor height stays stable after row changes,
 with internal scrolling. Keep 9px padding above ledger headers and below the last
 row, 6px above the first editable row beneath the column titles, and 2px between
 subsequent rows. Omit the Line items/count heading. Retain 250-line guards.
+November 10: fit the entire nine-column ledger inside the PO card in both Row
+and Spreadsheet modes. Use the compact number-only ELEM field and narrower Cost
+Code column; preserve complete codes and item names in tooltips. Use a flexible
+shared header/row grid without the old fixed ledger minimum. Keep Total and row
+actions visible; do not merely mask an overflowing matrix. With Reallocation
+visible, desktop windows at 1500px or narrower put the PO above the side panels
+so its fields remain usable. Keep existing vertical scrollers and pane timing.
 Closing the PO workspace must remove its card, Summary and backdrop together and
 restore focus immediately. Mark the composite overlay `data-lm-motion-exit="none"`
 so shared motion never redraws a detached, differently sized or styled copy on
@@ -242,7 +249,11 @@ precision. Grouped pasted numbers must have valid thousands separators.
 
 Use the full labels **(1) Labor**, **(2) Materials**, **(3) Equipment**,
 **(4) Subcontractor**, and **(5) Other** in PO and standalone Modification
-pickers, selected values, detail rows, downloads and approval mail. Keep the
+choices, detail rows, downloads and approval mail. November 10 exception: the
+closed PO ledger ELEM field shows only its number (1–5), with the full label in
+its tooltip. Its expanded picker keeps all five numbered names and the existing
+keyboard selection/focus behavior. Other selected element displays retain the
+full label. Keep the
 stored PO element identifiers as strings 1–5. Five options need a compact
 single-select without a search field; preserve keyboard selection, focus and
 the existing draft/read-only/pending gates.

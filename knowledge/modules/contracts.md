@@ -1,3 +1,26 @@
+## Optional Request Actions — November 10, 2026
+
+Legal requests may be submitted with zero actions for the time being. Contract
+Management 1.62.61 removes the minimum-one-action check from `ncConfirm`.
+Checked templates still populate the editable checklist at creation; submitters
+may remove all rows, and authorized users may add actions after creation or
+during review. This does not move template seeding automatically to approval.
+Added rows must still have titles, and required request fields, template-read
+availability, permissions, Proposed status, review and approver defaults retain
+their existing behavior. No placeholder action is created for an empty list.
+
+Regression: `scripts/test-contract-create-progress.mjs` exercises confirmation
+and actual create/setup with zero actions for submit-only and edit users,
+preserved approver defaults, no action child writes, blank-row validation and
+required request fields. Existing attachment regressions cover mounted upload
+feedback, pending duplicate-entry locks, lost replies and successful native FILE
+responses with missing optional metadata. The attachment implementation is
+unchanged; these checks do not reproduce Tara's intermittent report.
+
+Forms/fields remain Contract and optional Contract_Actions children. No function,
+Custom API, permission or Creator code deployment changes are needed. Production
+rollback: map Contract Management to 1.62.59; Development previously used 1.62.60.
+
 ## Pro Forma / Project Column — November 6, 2026
 
 The main report replaces Subdivision with **Pro Forma / Project**. Acquisition
@@ -1570,3 +1593,95 @@ log is not a directly accessible profile report. Creator fields, unique claims,
 validation, profile/report checks and three environment API bindings must be
 installed separately from the hosted widget. See [implementation, native
 installation, permissions, regressions and rollback](../../docs/construction-rejection-2026-11-06.md).
+
+## Development Attachment Date — 1.62.60, November 10, 2026
+
+The Construction Development View-as fallback now supplies Attachment.Date_field1
+using the existing todayInput/toZoho helpers. The form requires Date; the previous
+parent/email-only payload failed native validation before the upload could begin.
+The native fallback response supersedes the earlier definite Custom API owner
+denial so failures retain their actual evidence. Missing child replies keep the
+existing no-replay guard and now report the missing attachment ID without a null
+property error.
+
+The exact Development-only, Construction-only denial gate, native form workflows,
+actor/parent/complete locks, file upload path, Legal and Production/Stage behavior
+remain. No field permissions, forms, Creator functions or Custom API contracts
+change. This release changes only the Development mapping; Creator publication
+is not required.
+
+Regression: native mandatory-Date rejection fixture, successful dated View-as
+create, actual native failure retention, duplicate/lost reply guards, existing
+attachment/file tests, repository validation and Pages build. Native acceptance
+requires widget PDF upload, refresh persistence and opening the saved PDF.
+Rollback: Development Contract Management to 1.62.59; leave Production unchanged.
+
+## Native Attachment Content Strings — 1.62.63, November 10, 2026
+
+Native FILE.readFile may return the file content as a string. The SDK read
+adapter now distinguishes that documented byte payload from record/API
+envelopes, preserving actual JSON-encoded Creator failures, empty-content
+rejection, binary bytes and current actor/child checks. Native testing confirmed
+upload persistence but revealed a further unreadable SDK object response; 1.62.64
+adds the authenticated export fallback below. No file bytes, permission checks, field permissions or
+Creator functions change.
+
+Regression: actual-source binary content-string read and high-byte preservation,
+PDF viewer fallback after Custom API denial, encoded native error rejection,
+empty replies, existing attachment lifecycle tests, full repository validation
+and Pages build. Live acceptance uses the saved QA PDF after a fresh load.
+Development only; Production is not promoted by this release. No Creator deployment is required.
+Rollback Development to 1.62.61 (upload works; prior preview limitation returns).
+
+## Development Attachment Export Fallback — 1.62.64, November 10, 2026
+
+The native Creator viewer opened the saved QA PDF (36 pages), while FILE.readFile
+returned unreadable content in Development View as. Read conversion now accepts
+cross-frame Blob/File objects without altering bytes. For Construction Development
+only, the existing preview API's exact owner-context denial plus an unreadable SDK
+reply permits Budget Manager's proven authenticated Creator export route. A fresh
+scoped report read must confirm the exact child and parent first. Real native
+permission denials, inaccessible parents, changed actors and Production/Stage do
+not use this fallback. PDF signature validation rejects sign-in/error HTML. Safe
+native response diagnostics record types/keys only, never file content.
+
+No forms, fields, field permissions, Creator functions or Custom API contracts
+change. Only the Development release mapping changes; no Creator publication is
+required. Regressions cover native binary strings and cross-frame Blob bytes,
+exact scoped authenticated export URL, HTML rejection, parent/actor changes,
+native permission denial, Stage/Production exclusion and zero upload/delete replay.
+Full repository validation and Pages build precede native PDF acceptance testing.
+Rollback Development to 1.62.63; upload remains working with the earlier preview
+limitation. Preserve independently promoted Production releases.
+
+Live acceptance of 1.62.64 found a 297,453-character SDK string that cannot retain
+the PDF's binary bytes, plus a browser-blocked export fetch. That export fallback
+is removed in 1.62.65; it is not the accepted preview solution.
+
+## Development Preview Actor — 1.62.65, November 10, 2026
+
+With explicit user approval, getContractAttachmentPreview now reuses the already
+deployed constructionReviewActor resolver for Development Construction preview.
+The widget passes its current authenticated User Access ID inside the existing
+string contractId argument, alongside the exact parent ID. The resolver permits
+View-as selection only for the native owner in Development; ordinary callers
+retain their own identity. The backend then checks the exact attachment/parent,
+Construction module and existing hasConstructionPermission grants before encoding
+the saved file. No grants or field permissions change. Plain ID requests retain
+their existing behavior, and actor envelopes are rejected outside Development.
+
+The approved function was saved in Creator Development and independently reloaded;
+its tokenized body matches the checked-in patch. The Custom API signature and
+binding remain unchanged. Production/Stage Creator functions are not promoted.
+Development frontend 1.62.65 sends this context for both Preview and Download;
+other modules/environments retain the plain parent-ID payload. The failed export
+fallback is removed; unknown/binary SDK formats are not guessed into PDF bytes.
+
+Regression: actual-source payloads for Preview/Download in all three environments,
+stale actor exclusion, translated native function tests for exact saved base64,
+owner-only Dev actor selection, denied users, wrong parent/module, Stage/Production
+compatibility, no preview writes, full validation and Pages build. Native final
+acceptance requires opening the uploaded QA PDF through the widget after reload.
+Rollback: Development frontend to 1.62.63 and restore the backed-up Development
+getContractAttachmentPreview body; upload remains functional. Production stays at
+its independently promoted version.

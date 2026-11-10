@@ -39,8 +39,11 @@
     {
       "name": "getContractAttachmentPreview",
       "source": "creator/functions/getContractAttachmentPreview.dg",
-      "evidence": "creator/schema-changes/construction-page-access-2026-10-20/getContractAttachmentPreview.after.dg",
-      "savedAndReloaded": true
+      "evidence": "creator/schema-changes/construction-attachment-preview-2026-11-10/getContractAttachmentPreview.after.dg",
+      "savedAndReloaded": true,
+      "previousEvidence": "creator/schema-changes/construction-page-access-2026-10-20/getContractAttachmentPreview.after.dg",
+      "verifiedOn": "2026-11-10",
+      "notes": "User-approved Dev preview actor patch, saved and independently reloaded. Tokenized native body matches source. Reuses existing constructionReviewActor; Production and Stage are not promoted."
     }
   ],
   "workflows": [
