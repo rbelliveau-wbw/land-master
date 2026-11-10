@@ -109,7 +109,7 @@ map sendPurchaseOrderOutcomeEmail(string purchaseOrderId, string activityId, str
 					}
 					deliveryKey = "delivery|" + zoho.encryption.sha256(operation + "|" + address);
 					proof = {"revision":po.PO_Revision,"recipientKey":key,"source":recipient.get("source"),"userAccessId":personId,"outcome":po.PO_Approval_State,"planId":plan.ID.toString(),"territory":ifnull(recipient.get("territory"),""),"deliveryClaimKey":deliveryKey};
-					validAddress = address.matches("^[^\\s@]+@[^\\s@]+[.][^\\s@]+$");
+					validAddress = address.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+([.][A-Za-z0-9-]+)+$");
 					event = {"operationId":operation,"recipientKey":key,"objectType":"Purchase Order","objectId":purchaseOrderId,"contextType":"Budget","contextId":po.Budget.toString(),"process":"PO Approval","event":po.PO_Approval_State + " Email","recipientEmail":if(validAddress,address,null),"recipientName":name,"subject":captured.get("subject"),"snapshot":proof,"actorId":userAccessId};
 					claim = thisapp.activityEmailClaim(event,nextAttempt);
 					if(claim.get("claimed") == true)

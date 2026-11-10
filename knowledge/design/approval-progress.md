@@ -1,5 +1,15 @@
 # Approval progress pattern
 
+## PO Rejection Review — November 10, 2026
+
+Review PO after a saved rejection reloads the exact saved PO through the
+existing Get and Balances readers. Restore its persisted reallocation reasons
+and reservation before exposing committing controls. A decision response and
+the pre-decision editor are insufficient to reconstruct an editable plan.
+This read does not repeat Reject or send notifications; failed reads keep the
+existing Unavailable / Retry behavior. The PO email helpers use the established
+explicit native email validator; retry and unknown-send guards are unchanged.
+
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
 This is Robby's preferred interaction for sending, advancing, rejecting, and completing approvals in Land Master. Read this document **before designing or changing an approval flow in any module**, including a new module. The module's business rules determine who approves and what is finalized; this document defines how the user sees and safely recovers from that work.

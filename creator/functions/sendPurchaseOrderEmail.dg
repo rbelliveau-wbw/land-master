@@ -48,7 +48,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		currentLock = PO_Phase_Lock[Phase_Key == po.Budget.toString()];
 		if(currentLock.count() == 1 && currentLock.Actor != null) { actorId = currentLock.Actor.toString(); }
 		emailAddress = ifnull(approval.Approver,"").trim().toLowerCase();
-		validEmailAddress = emailAddress.matches("^[^\\s@]+@[^\\s@]+[.][^\\s@]+$");
+		validEmailAddress = emailAddress.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+([.][A-Za-z0-9-]+)+$");
 		recipientName = ifnull(active.get("name"),"");
 		activityProof = {"revision":po.PO_Revision,"recipientKey":"approver-" + approval.ID,"approvalId":approval.ID.toString(),"userAccessId":active.get("userAccessId")};
 		activityEvent = {"operationId":operation,"recipientKey":"approver-" + approval.ID,"objectType":"Purchase Order","objectId":purchaseOrderId,"contextType":"Budget","contextId":po.Budget.toString(),"process":"PO Approval","event":"Approval Request Email","recipientEmail":if(validEmailAddress,emailAddress,null),"recipientName":recipientName,"subject":"Purchase Order Approval","snapshot":activityProof,"actorId":actorId};

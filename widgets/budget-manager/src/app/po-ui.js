@@ -289,6 +289,11 @@
     function useBalances(result){model.balances=result.balances;model.balanceState=result.state;model.reallocationContract=result.reallocationContract||null;if(result.error)error(result.error);}
     async function refresh(){var own=generation,read=++balanceGeneration;model.previewKey='';model.balanceState='loading';render();var result=await readBalances();if(!current()||generation!==own||read!==balanceGeneration)return;useBalances(result);render();}
     function reviewSnapshot(run){
+      // Reload the saved plan after rejection instead of reopening the decision
+      // response with the editor's pre-decision reallocation state.
+      if(run.decision&&run.snapshot&&run.snapshot.approvalState==='Rejected'){
+        progress=false;return get(run.snapshot.id);
+      }
       var own=generation,read=++balanceGeneration;
       Object.assign(model,{canEditDraft:false,canEditInFlight:false,reallocation:null},run.snapshot);model.loadId=run.snapshot.id;model.reservedLines=run.snapshot.commitmentState==='Reserved'?run.snapshot.lines.map(function(l){return Object.assign({},l);}):[];progress=false;model.previewKey='';model.balanceState='loading';model.loadState=run.reviewBalances?'loaded':'loading';
       function reveal(result){if(!current()||own!==generation||read!==balanceGeneration)return;useBalances(result);model.loadState='loaded';render();}

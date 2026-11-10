@@ -7,6 +7,16 @@ changes; approved changes are counted once in Approved Mods. Unknown captured
 allocations keep Remaining unavailable. See [implementation, native installation,
 verification and rollback](../../docs/po-current-bud-mod-2026-11-10.md).
 
+## PO Rejection Review — November 10, 2026
+
+Budget Manager 122.29.131 reloads the saved PO and balances when returning from
+a rejected decision, restoring persisted reallocation reasons before enabling
+Save Draft / Resubmit PO. Both PO mail functions reuse the existing explicit
+native email validator so valid addresses containing s are accepted. No grants,
+forms, fields or API registrations change. Email fixes require Creator
+publication; the widget candidate does not promote Production. See
+[verification and rollback](../../docs/po-rejection-resubmit-email-2026-11-10.md).
+
 ## PO Net Budget Approval Rule — November 10, 2026
 
 Every new PO requires VP → CFO. Add COO when signed net changes across all

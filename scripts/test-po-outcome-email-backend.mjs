@@ -7,6 +7,17 @@ import {compileDelugePO} from './test-po-test-cfo-backend.mjs';
 // record fixtures. No network, Creator mutations or real email sends occur.
 const names=['activityEmailClaim','poEmailCanRetry','poEmailCanViewActivity','poEmailCanReadPO','poEmailActivityRow','renderPurchaseOrderOutcomeEmail','buildPurchaseOrderOutcomeEmail','poOutcomeEmailReady','poOutcomeNotificationStatus','sendPurchaseOrderOutcomeEmail','poEmailActivity','sendPurchaseOrderEmail','poActorResponse'];
 const sources=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
+// Deluge regex strings must use the already native-verified Construction
+// validator. The JS adapter unescapes strings differently and hid the old
+// whitespace-escape failure on addresses containing s.
+const nativeValidator=fs.readFileSync('creator/functions/buildConstructionRejectionNotification.dg','utf8').match(/recipient\.matches\(("(?:\\.|[^"\\])*")\)/)[1];
+for(const name of ['sendPurchaseOrderEmail','sendPurchaseOrderOutcomeEmail']){
+ const validator=sources[name].match(/(?:emailAddress|address)\.matches\(("(?:\\.|[^"\\])*")\)/)[1];
+ assert.equal(validator,nativeValidator,name+' reuses the proven native email validator');
+ const pattern=new RegExp(JSON.parse(validator));
+ for(const address of ['sspears@wbdevelopment.com','ssim@wbdevelopment.com','kim.singer@wbdevelopment.com','mwilson@wbdevelopment.com','jking@wbdevelopment.com','sam+po@example.test'])assert.equal(pattern.test(address),true,address);
+ for(const address of ['', 'sam', 'sam@example', 'sam @example.com', 'sam@example.com\n', 'sam@example.com;other@example.com'])assert.equal(pattern.test(address)&&!/[\r\n]/.test(address),false,address);
+}
 function compile(source){
  source=source.replace(/Activity_Log\[([^\]]+)\] sort by ID desc range from 0 to 50/g,(_,criteria)=>{const membership=criteria.replace(/\b([A-Za-z_]\w*)\s+in\s+([A-Za-z_]\w*)/g,'$2.contains(row.$1)');return `query('Activity_Log',row=>${membership.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2')},'ID',true,0,50)`;});
  return compileDelugePO(source);
