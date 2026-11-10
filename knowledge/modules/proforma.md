@@ -27,14 +27,20 @@ Focused regressions cover every required missing Seller/Property field and buyer
 non-owner Edit All users, false/null/missing grants, client-flag spoofing,
 cancel/confirm, shared list/editor gates, ordinary/complete Offer behavior,
 history/replay and unchanged send/delivery. Run npm run validate and
-npm run build:pages. The native-body fixture tests control flow locally; Creator
-compilation and real submissions remain separate live checks. No real approval
+npm run build:pages. The native-body fixture tests control flow locally; real submissions remain
+separate live checks. No real approval
 email is sent for verification.
 
-**Creator deployment required:** save/compile the updated function in Development,
-then the user publishes it to Production under PMP. Until that publication the
+**Creator Development saved November 10:** the editor matched the prior function
+before editing. The updated body saved without a compiler error; closing and
+reopening the function confirmed it matches the repository source (ignoring
+Creator whitespace formatting). Production Creator publication remains user-owned
+under PMP. Until that publication the
 new widget may show Send Anyway, but the old native function still rejects an
-incomplete Offer. No new endpoint, argument or widget URL is needed. Rollback:
+incomplete Offer. CI and Pages passed for 89617f60; the agent-owned browser confirmed Production
+assets stamped 1.80.143. The warning UI, Cancel and Send Anyway were checked in
+a desktop fixture using the actual gate, handler, confirmation and styles.
+No new endpoint, argument or widget URL is needed. Rollback:
 restore the prior function body and promote widget 1.80.142 in
 [environment mappings](../../deploy/environments.json).
 
