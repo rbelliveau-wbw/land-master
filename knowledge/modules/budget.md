@@ -1,3 +1,13 @@
+## Compact PO Elements and Fitted Ledger — 122.29.124, November 10, 2026
+
+The closed PO ELEM field shows only 1–5; its existing dropdown and tooltip retain
+the numbered element names. Narrower Cost Code/ELEM columns and a fitted grid
+keep every field, Total and row action inside the PO without horizontal scrolling
+in Row and Spreadsheet modes. Narrow desktop windows put side panels below the
+PO. Codes, native values and all calculations remain unchanged. No Creator
+update is required. See
+[changes, verification and rollback](../../docs/po-compact-element-fit-2026-11-10.md).
+
 ## Eagle Prairie PO Check — 122.29.123, November 10, 2026
 
 Live line totals, grouped balances and temporary signed/zero-net allocation
