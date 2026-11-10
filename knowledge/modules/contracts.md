@@ -1621,9 +1621,9 @@ Rollback: Development Contract Management to 1.62.59; leave Production unchanged
 Native FILE.readFile may return the file content as a string. The SDK read
 adapter now distinguishes that documented byte payload from record/API
 envelopes, preserving actual JSON-encoded Creator failures, empty-content
-rejection, binary bytes and current actor/child checks. This repairs inline PDF
-preview and Download when the existing preview Custom API is unavailable in
-Development View as. No file bytes, permission checks, field permissions or
+rejection, binary bytes and current actor/child checks. Native testing confirmed
+upload persistence but revealed a further unreadable SDK object response; 1.62.64
+adds the authenticated export fallback below. No file bytes, permission checks, field permissions or
 Creator functions change.
 
 Regression: actual-source binary content-string read and high-byte preservation,
@@ -1632,3 +1632,24 @@ empty replies, existing attachment lifecycle tests, full repository validation
 and Pages build. Live acceptance uses the saved QA PDF after a fresh load.
 Development only; Production is not promoted by this release. No Creator deployment is required.
 Rollback Development to 1.62.61 (upload works; prior preview limitation returns).
+
+## Development Attachment Export Fallback — 1.62.64, November 10, 2026
+
+The native Creator viewer opened the saved QA PDF (36 pages), while FILE.readFile
+returned an unreadable object in Development View as. Read conversion now accepts
+cross-frame Blob/File objects without altering bytes. For Construction Development
+only, the existing preview API's exact owner-context denial plus an unreadable SDK
+reply permits Budget Manager's proven authenticated Creator export route. A fresh
+scoped report read must confirm the exact child and parent first. Real native
+permission denials, inaccessible parents, changed actors and Production/Stage do
+not use this fallback. PDF signature validation rejects sign-in/error HTML. Safe
+native response diagnostics record types/keys only, never file content.
+
+No forms, fields, field permissions, Creator functions or Custom API contracts
+change. Only the Development release mapping changes; no Creator publication is
+required. Regressions cover native binary strings and cross-frame Blob bytes,
+exact scoped authenticated export URL, HTML rejection, parent/actor changes,
+native permission denial, Stage/Production exclusion and zero upload/delete replay.
+Full repository validation and Pages build precede native PDF acceptance testing.
+Rollback Development to 1.62.63; upload remains working with the earlier preview
+limitation. Preserve independently promoted Production releases.
