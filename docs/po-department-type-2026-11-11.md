@@ -8,8 +8,8 @@ existing `Deparment` field. Surveying and unknown departments are excluded.
 All existing finalization, template, cost-code and modified-budget rules remain.
 
 The selected value is sent as `department` and stored in the existing
-`Payment_Request.Department` picklist. No schema or Custom API registration is
-added. `poSnapshot` returns the choice. Previously untyped records remain
+`Payment_Request.Department` picklist. No schema or widget Custom API registration
+change is required. `poSnapshot` returns the choice. Previously untyped records remain
 readable and show "PO type needs review"; saving requires a valid choice and
 matching items. Changing type never silently deletes existing lines: remove
 incompatible lines first. Spreadsheet paste/fill uses the filtered picker rows;
@@ -53,6 +53,15 @@ and the new owner-only `backfillPurchaseOrderDepartments` maintenance function.
 Existing APIs `Manage_Purchase_Order` and `Manage_Purchase_Order_DEV` keep their
 registrations and `po-v1` response contract. Both Creator publication and the
 immutable hosted widget promotion are required.
+
+The four scoped native functions were compiled in Development and published
+through Stage to Production as Creator 9.183 on November 11, 2026. The native
+Development read-only preview found seven eligible blank departments and no
+exceptions. Production backfill execution is tracked separately from publication.
+
+Hosted release 122.29.133 integrates current main's shared deletion-reconciliation
+runtime; 122.29.132 remains an immutable candidate and was not promoted. Full
+`npm run validate` and `npm run build:pages` passed for the integrated release.
 
 Rollback: hosted widget 122.29.131 plus the captured prechange native copies for
 the three existing functions. Preserve backfilled Department values; do not undo
