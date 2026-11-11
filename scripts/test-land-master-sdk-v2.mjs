@@ -89,6 +89,18 @@ await context.deleteRecord('externalMapping',id);assert.equal(deleteReads.length
 response={code:3000,result:[{code:2899,message:'Denied'}]};
 await assert.rejects(context.deleteRecord('externalMapping',id),e=>String(e.code)==='2899');
 assert.equal(deleteReads.length,1,'Explicit failures cannot be converted into success by absence');
+// Actual Development native response: the deleted ID is rounded as a number.
+// Keep the captured string in both DELETE criteria and the recovery query.
+{
+ const captured='4410926000005950006';response={result:[{code:3000,data:{ID:4410926000005950000},message:'Record Deleted Successfully'}],code:3000};
+ const priorCalls=calls.length,priorReads=deleteReads.length;
+ assert.equal(await context.deleteRecord('externalMapping',captured),response);
+ assert.equal(calls.length,priorCalls+1,'Numeric-ID reconciliation never sends another delete');
+ assert.equal(calls.at(-1).args.payload.criteria,'(ID == '+captured+')');
+ assert.equal(deleteReads.length,priorReads+1);assert.equal(deleteReads.at(-1).criteria,'(ID == '+captured+')');assert.equal(deleteReads.at(-1).fresh,true);
+ assert.notEqual(deleteReads.at(-1).criteria,'(ID == '+String(response.result[0].data.ID)+')','The rounded reply ID is never used as a destination');
+ assert.equal(deleteAudit.at(-1).detail.response,response,'Retain the observed native reply for diagnostics');
+}
 context.LMData.readAll=async()=>{throw new Error('Read unavailable');};response={code:3000};
 await assert.rejects(context.deleteRecord('externalMapping',id),e=>e.noReplay&&e.uncertain,'A failed reconciliation cannot report a deletion as saved');
 const custom={api_name:'Get_Land_Master_Choices_DEV',http_method:'GET'};response={code:3000,result:{City:[]}};await context.invokeErrorApi(custom);assert.equal(calls.at(-1).args,custom);assert.equal(requests.at(-1),'custom:Get_Land_Master_Choices_DEV');

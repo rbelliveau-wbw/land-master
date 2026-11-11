@@ -9,6 +9,17 @@ for(const response of [{code:3000,data:{ID}},{code:3000,result:[{code:3000,data:
 }
 const ids=Array.from({length:200},(_,index)=>(BigInt(ID)+BigInt(index)).toString()),batch={code:3000,result:ids.map(ID=>({code:3000,data:{ID}}))};
 assert.equal(await confirmDeletion(batch,ids,()=>{throw Error('Exact 200-ID acknowledgement must not reread');}),batch);
+// Captured from the successful Development deletion on November 11, 2026:
+// Creator returned the record ID as an unsafe number, losing its final digits.
+{
+  const captured='4410926000005950006',response={result:[{code:3000,data:{ID:4410926000005950000},message:'Record Deleted Successfully'}],code:3000};
+  assert.equal(Number.isSafeInteger(response.result[0].data.ID),false);
+  assert.notEqual(String(response.result[0].data.ID),captured);
+  let reads=0;
+  assert.equal(await confirmDeletion(response,[captured],targets=>{reads++;assert.deepEqual(Array.from(targets),[captured],'Absence recovery must keep the original exact string ID');return true;}),response);
+  assert.equal(reads,1,'Unsafe numeric native IDs require identity recovery');
+  await assert.rejects(confirmDeletion(response,[captured],()=>false),error=>error.noReplay&&error.uncertain&&error.raw===response,'A rounded acknowledgement is insufficient while the exact target still exists');
+}
 for(const response of [{code:3000},{code:3000,result:[]},{code:3000,data:{ID:Number(ID)}},{code:3000,data:{ID:OTHER}},{code:3000,result:[{code:3000,data:{ID}},{code:3000,data:{ID}}]}]){
   let reads=0;
   assert.equal(await confirmDeletion(response,[ID],captured=>{reads++;assert.deepEqual(Array.from(captured),[ID]);return true;}),response);
