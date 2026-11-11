@@ -1,5 +1,14 @@
 # Creator data helper
 
+`LMData.confirmDeletion(response, ids, verifyAbsent)` confirms exact string-ID
+delete acknowledgements without another read. A resolved `code:3000` reply with
+no explicit failure but an ambiguous ID envelope invokes the caller's fresh,
+captured-ID absence check once. Only `true` confirms deletion. Native failures,
+retained records and failed reads preserve the response and reject without
+repeating a write. Land mappings, Settings curves and Pro Forma child deletes
+share this contract; ordinary create/update validators are unchanged. See
+[native evidence and rollback](../docs/native-delete-reconciliation-2026-11-11.md).
+
 ## Number transitions
 
 `number-transitions.js/css` implement the repository Sliding push contract.

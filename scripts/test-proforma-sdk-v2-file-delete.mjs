@@ -39,8 +39,19 @@ console.log('PASS PF native Attachment create fallback: exact scalar/object pare
 {
  let sends=0;const h=await ready({invoke:(config,storage)=>{if(/^Create_Proforma_Attachment_Record/.test(config.api_name)){sends++;storage.All_Attachments.push({ID:OTHER,Pro_Forma:ID,File_field1:''});throw new Error('Applied child create response lost');}}});h.widget.S.attachmentPfId=ID;h.widget.S.attachmentsByPf[ID]=[];await h.widget.uploadPfAttachments([file],h.widget.pfAttachmentActionContext(false));assert.equal(sends,1);assert.equal(h.widget.PFTransport.workflow(),null);assert.equal(h.widget.PFTransportUI.close(),false);assert.equal(h.widget.uploadPfAttachments([file],h.widget.pfAttachmentActionContext(false)),false);assert.equal(h.calls.filter(x=>x.method==='upload'||x.method==='create').length,0,'lost child reply never falls back or uploads to guessed child');assert.equal(await h.widget.PFTransport.recheck(h.widget.PFTransport.snapshot().reviews[0].key),false);
 }
+// A complete exact-ID acknowledgement needs no redundant post-delete ID read.
+// The final parent-scope check remains required before rebuilding children.
 {
- let denied=true;const h=await ready({count:config=>denied&&config.report_name==='All_Attachments'&&/\bID ==/.test(config.criteria||'')?{code:3000,result:{records_count:'0'},details:{code:2898,error:'Denied delete verification'}}:undefined});h.storage.All_Attachments=[attachment(h)];await assert.rejects(h.widget.deleteAllByCriteria('All_Attachments','Pro_Forma == '+ID),e=>e.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);denied=false;assert.equal(await h.widget.PFTransport.recheck(h.widget.PFTransport.snapshot().reviews[0].key),true);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);
+ const h=await ready({count:config=>config.report_name==='All_Attachments'&&/\bID ==/.test(config.criteria||'')?{code:2898,message:'Exact-ID reads unavailable'}:undefined});
+ h.storage.All_Attachments=[attachment(h)];await h.widget.deleteAllByCriteria('All_Attachments','Pro_Forma == '+ID);
+ assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);
+ assert.equal(h.calls.filter(x=>['count','records'].includes(x.method)&&/\bID ==/.test(x.config.criteria||'')).length,0);
+ assert.ok(h.calls.some(x=>x.method==='count'&&x.config.criteria==='Pro_Forma == '+ID),'Collection rebuild still checks the full child scope');
+}
+// An incomplete resolved-success reply must recover using exact-ID absence.
+// Denial blocks success until an explicit read-only recovery is possible.
+{
+ let denied=true;const h=await ready({remove:(_config,apply)=>{apply();return {code:3000};},count:config=>denied&&config.report_name==='All_Attachments'&&/\bID ==/.test(config.criteria||'')?{code:3000,result:{records_count:'0'},details:{code:2898,error:'Denied delete verification'}}:undefined});h.storage.All_Attachments=[attachment(h)];await assert.rejects(h.widget.deleteAllByCriteria('All_Attachments','Pro_Forma == '+ID),e=>e.noReplay);assert.equal(h.widget.PFTransport.snapshot().reviews.length,1);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);denied=false;assert.equal(await h.widget.PFTransport.recheck(h.widget.PFTransport.snapshot().reviews[0].key),true);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);
 }
 {
  const h=await ready({remove:(cfg,apply)=>{apply();throw new Error('Delete reply lost');}});h.storage.All_Attachments=[attachment(h)];await assert.rejects(h.widget.deleteAllByCriteria('All_Attachments','Pro_Forma == '+ID),e=>e.noReplay);await assert.rejects(h.widget.deleteAllByCriteria('All_Attachments','Pro_Forma == '+ID),e=>e.noReplay);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);assert.equal(await h.widget.PFTransport.recheck(h.widget.PFTransport.snapshot().reviews[0].key),true);assert.equal(h.calls.filter(x=>x.method==='delete').length,1);

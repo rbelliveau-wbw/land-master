@@ -63,5 +63,11 @@ for(const raw of [{code:3000,data:{ID},details:{code:2899,error:'Denied'}},{code
 {
  const h=await ready(),m=h.widget.newModel();assert.deepEqual(Array.from(h.widget.FORK_CHILD_LISTS),['purchaseInstallments','saleInstallments','pidMud','items','curve','lotMix','phaseSales']);m.ID=ID;m.Name='Fixture';m.Owner=ACCESS;for(const key of h.widget.FORK_CHILD_LISTS)m[key]=[{ID:OTHER,marker:key}];const before=clone(m),copy=h.widget.forkModel(m);assert.deepEqual(clone(m),before);assert.equal(copy.ID,null);for(const key of h.widget.FORK_CHILD_LISTS){assert.equal(copy[key][0].ID,null);assert.notEqual(copy[key][0],m[key][0]);}
 }
+for(const malformed of [{code:3000},{code:3000,result:[]}]){
+ const h=await ready({storage:{Proforma_Item_Report:[{ID:OTHER,Pro_Forma_Const:{ID},Template_Item:false}]},remove:(_config,apply)=>{apply();return malformed;}});
+ await h.widget.PFTransport.remove('Proforma_Item_Report','(Pro_Forma_Const == '+ID+')');
+ assert.equal(h.storage.Proforma_Item_Report.length,0);assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);
+ assert.equal(h.calls.filter(call=>call.method==='delete').length,1,'An incomplete native success reconciles exact missing children without replay');
+}
 assert.doesNotMatch(source,/ZOHO\.CREATOR\.(?:API|init)\b/);assert.doesNotMatch(source,/addEventListener\(["']beforeunload/);
 console.log('PASS PF SDK2 whole actual IIFE startup/full access/core cursor completeness/strict native writes/retained uncertainty and seven fork collections. Broader Save/FILE/native gates remain pending.');

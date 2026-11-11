@@ -1,3 +1,9 @@
+## Native Delete Reconciliation November 11 2026
+
+Resolved native delete replies with an ambiguous acknowledgement are recovered
+using fresh captured-ID absence checks. Explicit Creator errors still fail and
+no delete is automatically replayed. See [scope, verification and rollback](../../docs/native-delete-reconciliation-2026-11-11.md).
+
 ## Cold Approval Menu Fix — 1.80.144, November 10, 2026
 
 Edit All Proformas users with send access now have an enabled Send For Approvals

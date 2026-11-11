@@ -116,7 +116,17 @@
         if (kind === 'add') return api.addRecords({form_name:target, payload:{data:payload}});
         if (kind === 'delete') return api.deleteRecords({report_name:target, payload:{criteria:'(ID == '+recordId+')'}});
         return api.updateRecordById({report_name:target, id:recordId, payload:{data:payload}});
-      }).then(response => confirmed(response, kind === 'add' ? '' : recordId), error => {
+      }).then(async response => {
+        if (kind !== 'delete') return confirmed(response, kind === 'add' ? '' : recordId);
+        await root.LMData.confirmDeletion(response,[recordId],async () => {
+          assertSession(captured);
+          const remaining=await read(target,'(ID == '+recordId+')');
+          assertSession(captured);
+          return remaining.length===0;
+        });
+        assertSession(captured);
+        return {id:recordId,response};
+      }, error => {
         if (error.outcome) throw error;
         const code = root.LMData.code(error);
         throw problem(error.message || 'The write outcome is unknown. Recheck before another write.', error, code && code !== '3000' ? 'rejected' : 'unknown');
@@ -362,7 +372,8 @@
           }
           const result = await mutate(kind === 'edit' ? 'update' : kind, operation.id, operation.values, kind === 'add' ? C.curveForm : C.curveReport);
           if (kind === 'add') operation.id = result.id;
-          await verifyCurve(operation);
+          if (kind === 'delete') { assertCurve(operation); S.curve=S.curve.filter(row=>row.ID!==operation.id); }
+          else await verifyCurve(operation);
           delete S.curveDrafts[draftKey]; S.curveUncertain = null; notify('curve-saved', operation); return true;
         } catch (error) { operation.error = error.message; operation.outcome = error.outcome || 'unknown'; S.curveUncertain = operation; notify('curve-error', error); throw error; }
         finally { S.curveBusy = false; curvePromise = null; notify('settled'); }
