@@ -18,7 +18,7 @@ The reader now selects the Purchase Order snapshot with the greatest `Added_Time
 
 The function compiled and saved in native Creator Development and was selectively staged in V9.182. GitHub CI passed for source commit `10fb6ce34514adc8c52e42db817fccdd5ec387ef`.
 
-Production publication and the final live PO read remain pending at the time of this note. Do not treat staging or GitHub CI as proof that the production reader has changed.
+V9.182 was published to Production on November 10, 2026, and the targeted live PO reopened successfully. The Approvers tab showed exactly the two retained approval steps with their prior decisions; the unnecessary COO step was absent. The rejected PO remained available for resubmission without submitting it during verification. Its three saved lines, linked reallocation and attachment count remained visible. The temporary owner-only repair Custom API was disabled after verification.
 
 Regression scenarios:
 
