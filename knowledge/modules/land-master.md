@@ -1,3 +1,12 @@
+## Same-company Property Transfers — 8.17.15, November 11, 2026
+
+Property Transfers allow identical From and To companies for every transfer
+type. The different-company validation is removed entirely. Full/Partial
+validation and ownership behavior remain unchanged. The native workflow needs the same surgical removal and user-owned Creator
+promotion; preserve its newer Development ownership logic. The live edit was
+not applied.
+see [release, regression and rollback notes](../../docs/property-transfers-2026-10-14.md).
+
 ## Native Delete Reconciliation November 11 2026
 
 Resolved native delete replies with an ambiguous acknowledgement are recovered

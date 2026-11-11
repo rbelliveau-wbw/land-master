@@ -12,7 +12,7 @@ There are no attachments. Draft, Pending, Completed, and Cancelled are supported
 Full transfers clear their optional partial amount and unit. Partial transfers
 require a positive amount of up to four decimal places and either Percentage or
 Acres; percentage must be below 100 and known acreage must exceed the partial area.
-From and To companies must differ. Effective date is separate from Creator's
+From and To companies may be the same for every transfer type. Effective date is separate from Creator's
 automatic Added_User, Added_Time, Modified_User, and Modified_Time audit fields.
 
 The Property modal groups every existing editable field into Property & location,
@@ -74,3 +74,36 @@ in this refinement; no additional Creator promotion is required. The original
 Property Transfer backend promotion remains user-owned. Verify fixed-choice
 menus, keyboard selection/Escape, optional Clear, record lookup search, and
 multi-select controls. Roll back this refinement to widget release `8.16.0`.
+
+## Same-company Property Transfers — 8.17.15, November 11, 2026
+
+Every transfer type allows the same From_Company and To_Company for Full and
+Partial records in every supported status. Required lookups, effective date and partial amount validation remain.
+No ownership or external-inactivity rules change.
+
+Changed files: property-workspace.js, widget HTML/config/manifest, the transfer
+regression script, Validate_Property_Transfe.dg, module notes, immutable release
+and environment mappings. Property_Transfer fields involved: Transfer_Type,
+From_Company and To_Company. No standalone functions, Custom APIs or schema changes.
+
+Creator deployment is required: remove only the company-equality alert/cancel
+block from Validate Property Transfer on Property_Transfer, then promote through
+Creator. Do not replace the live script wholesale with the historical repository
+copy: read-only Development inspection on November 11 found a newer guarded
+ownership flow calling planPropertyTransferOwnership. Preserve that flow and all
+other validations. Development already exempts Plat Recordation; the widget's
+unconditional guard caused the reported block. The repository workflow change
+removes the corresponding guard from its historical source only.
+
+The attempted Development edit was rejected by automatic approval review as
+outside PMP's repository/widget authorization. No Creator save was performed.
+The user must apply/promote this surgical workflow edit or explicitly authorize
+the Development edit separately. Until applied, Creator can still reject
+same-company transfers of other types. No native save behavior is claimed tested.
+
+Regression: same-company Full/Partial transfers across all types and statuses, different
+companies for every type, partial amount and
+existing native save/history protections. Full repository validation and Pages
+build are required before PMP. No live transfer records are created for testing.
+Rollback: map Land Master to 8.17.13 and redeploy Pages; restore the previous
+workflow condition if rolling back the Creator change. Preserve saved history.

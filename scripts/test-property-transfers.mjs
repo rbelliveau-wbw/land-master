@@ -9,8 +9,13 @@ const ui=c.LMPropertyWorkspace,P='90071992547409931',C1='90071992547409932',C2='
 const properties=[{ID:P,Company1:{ID:C1},Acres:'241.5000'}];
 const valid={Property:P,From_Company:C1,To_Company:C2,Transfer_Date:'2026-10-14',Transfer_Type:'Plat Recordation',Status:'Pending',Transfer_Scope:'Full'};
 for(const type of ui.types)for(const status of ui.statuses)assert.equal(ui.validateTransfer({...valid,Transfer_Type:type,Status:status},properties),null);
+for(const type of ui.types)for(const status of ui.statuses)for(const scope of ['Full','Partial']) {
+  const result=ui.validateTransfer({...valid,Transfer_Type:type,Status:status,To_Company:C1,Transfer_Scope:scope,Amount_Unit:'Percentage',Amount_Transferred:'25'},properties);
+  assert.equal(result,null,`Same-company ${type} / ${status} / ${scope}`);
+}
+assert.equal(ui.validateTransfer({...valid,To_Company:C1,Transfer_Scope:'Partial',Amount_Unit:'Percentage',Amount_Transferred:'100'},properties).field,'Amount_Transferred');
 for(const [patch,field] of [
-  [{To_Company:C1},'To_Company'],[{Property:90071992547409930},'Property'],[{Transfer_Date:'2026-02-29'},'Transfer_Date'],[{Transfer_Type:'Other'},'Transfer_Type'],[{Status:'Complete'},'Status'],
+  [{Property:90071992547409930},'Property'],[{Transfer_Date:'2026-02-29'},'Transfer_Date'],[{Transfer_Type:'Other'},'Transfer_Type'],[{Status:'Complete'},'Status'],
   [{Transfer_Scope:'Partial'},'Amount_Unit'],[{Transfer_Scope:'Partial',Amount_Unit:'Acres',Amount_Transferred:'0'},'Amount_Transferred'],
   [{Transfer_Scope:'Partial',Amount_Unit:'Percentage',Amount_Transferred:'100'},'Amount_Transferred'],[{Transfer_Scope:'Partial',Amount_Unit:'Acres',Amount_Transferred:'241.5'},'Amount_Transferred'],
   [{Transfer_Scope:'Partial',Amount_Unit:'Percentage',Amount_Transferred:'25.12345'},'Amount_Transferred']
@@ -29,6 +34,7 @@ assert.doesNotMatch(ui.auditHTML({Added_User:'<script>alert(1)</script>'}),/<scr
 assert.match(source,/'propertyTransfer','Property Transfer'/);
 assert.match(source,/id:"transfers",label:"Property Transfers"/);
 const workflow=fs.readFileSync('creator/workflows/Validate_Property_Transfe.dg','utf8');
+assert.doesNotMatch(workflow,/input\.From_Company\s*==\s*input\.To_Company|companies must be different/i,'Native validation permits the same company for all types');
 assert.doesNotMatch(workflow,/\.Company1\s*=|update |insert into|delete from/,'Transfer validation never mutates ownership');
 assert.match(workflow,/input\.Amount_Transferred = null/);
 

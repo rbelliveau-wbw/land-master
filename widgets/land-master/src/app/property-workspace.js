@@ -40,7 +40,6 @@
     var required = ['Property','From_Company','To_Company','Transfer_Date','Transfer_Type','Status','Transfer_Scope'];
     for (var key of required) if (!String(values[key] || '').trim()) return {field:key,message:'Complete the required transfer fields.'};
     for (var key of ['Property','From_Company','To_Company']) if (typeof values[key] !== 'string' || (!demo && !/^\d+$/.test(values[key]))) return {field:key,message:'Select a valid record.'};
-    if (values.From_Company === values.To_Company) return {field:'To_Company',message:'From Company and To Company must be different.'};
     if (!parseDate(values.Transfer_Date)) return {field:'Transfer_Date',message:'Enter a valid effective date as MM/DD/YYYY.'};
     if (!TYPES.includes(values.Transfer_Type)) return {field:'Transfer_Type',message:'Select a transfer type.'};
     if (!STATUSES.includes(values.Status)) return {field:'Status',message:'Select a status.'};

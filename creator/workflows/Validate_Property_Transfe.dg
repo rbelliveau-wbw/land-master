@@ -1,9 +1,5 @@
 // Property transfers record history only. Ownership remains a manual edit.
-if(input.From_Company == input.To_Company)
-{
-	alert "From Company and To Company must be different.";
-	cancel submit;
-}
+// From and To may be the same company for every transfer type.
 if(input.Transfer_Scope == "Partial")
 {
 	if(input.Amount_Unit == null || (input.Amount_Unit != "Percentage" && input.Amount_Unit != "Acres"))
