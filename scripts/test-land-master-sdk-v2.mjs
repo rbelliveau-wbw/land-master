@@ -10,9 +10,11 @@ assert.match(source,/<script src="creator-data\.js"><\/script>/);
 assert.doesNotMatch(source,/CREATOR\.API|CREATOR\.init\(|buildEnvelopes|tryEnvelopes|buildAddEnvelopes|tryAddEnvelopes/);
 
 const calls=[],requests=[];
+const deletionAdapter=vm.createContext({});
+vm.runInContext(fs.readFileSync('shared/creator-data.js','utf8'),deletionAdapter);
 let response={code:3000,result:[{code:3000,data:{ID:'90071992547409931'}}]};
 const context=vm.createContext({S:{liveSDK:true,demo:false},CFG:{reportCandidates:{All_Lots_All_Fields:['All_Lots_All_Fields','All_Active_Lots']}},diag(){},
-  LMData:{request:async(task,fn)=>{requests.push(task);return fn();},code:value=>String(value?.code||'')},
+  auditOnly(){},LMData:{request:async(task,fn)=>{requests.push(task);return fn();},code:value=>String(value?.code||''),confirmDeletion:(...args)=>deletionAdapter.LMData.confirmDeletion(...args),readAll:async()=>[{ID:'90071992547409931'}]},
   ZOHO:{CREATOR:{DATA:{addRecords:async args=>{calls.push({method:'add',args});return response;},updateRecordById:async args=>{calls.push({method:'update',args});return response;},deleteRecords:async args=>{calls.push({method:'delete',args});return response;},invokeCustomApi:async args=>{calls.push({method:'custom',args});return response;}}}},
   reportForType:type=>type==='externalMapping'?'All_External_System_Mappings':undefined});
 context.window=context;
@@ -72,6 +74,35 @@ for(const malformed of [{code:3000,data:{ID:'90071992547409932'}},{code:3000,res
   for(const action of [()=>context.updateRecord(id,data,'All_Lots_All_Fields'),()=>context.deleteRecord('externalMapping',id)])await assert.rejects(action(),error=>error.noReplay===true&&error.response===malformed);
   assert.equal(calls.length,requestCount+2,'Wrong/multiple record confirmations never replay or mark the intended row saved');
 }
+const deleteReads=[],deleteAudit=[];
+context.LMData.readAll=async options=>{deleteReads.push(options);return [];};
+context.auditOnly=(label,detail)=>deleteAudit.push({label,detail});
+response={code:3000};before=calls.length;
+assert.equal(await context.deleteRecord('externalMapping',id),response);
+assert.equal(calls.length,before+1,'Ambiguous acknowledgement never replays a delete');
+assert.equal(deleteReads.length,1);
+assert.equal(deleteReads[0].reportName,'All_External_System_Mappings');
+assert.equal(deleteReads[0].criteria,'(ID == '+id+')');assert.equal(deleteReads[0].fresh,true);
+assert.equal(deleteAudit[0].detail.response,response,'Reconciliation retains native diagnostic evidence');
+response={code:3000,result:[{code:3000,data:{ID:id}}]};
+await context.deleteRecord('externalMapping',id);assert.equal(deleteReads.length,1,'Exact native acknowledgement needs no additional read');
+response={code:3000,result:[{code:2899,message:'Denied'}]};
+await assert.rejects(context.deleteRecord('externalMapping',id),e=>String(e.code)==='2899');
+assert.equal(deleteReads.length,1,'Explicit failures cannot be converted into success by absence');
+// Actual Development native response: the deleted ID is rounded as a number.
+// Keep the captured string in both DELETE criteria and the recovery query.
+{
+ const captured='4410926000005950006';response={result:[{code:3000,data:{ID:4410926000005950000},message:'Record Deleted Successfully'}],code:3000};
+ const priorCalls=calls.length,priorReads=deleteReads.length;
+ assert.equal(await context.deleteRecord('externalMapping',captured),response);
+ assert.equal(calls.length,priorCalls+1,'Numeric-ID reconciliation never sends another delete');
+ assert.equal(calls.at(-1).args.payload.criteria,'(ID == '+captured+')');
+ assert.equal(deleteReads.length,priorReads+1);assert.equal(deleteReads.at(-1).criteria,'(ID == '+captured+')');assert.equal(deleteReads.at(-1).fresh,true);
+ assert.notEqual(deleteReads.at(-1).criteria,'(ID == '+String(response.result[0].data.ID)+')','The rounded reply ID is never used as a destination');
+ assert.equal(deleteAudit.at(-1).detail.response,response,'Retain the observed native reply for diagnostics');
+}
+context.LMData.readAll=async()=>{throw new Error('Read unavailable');};response={code:3000};
+await assert.rejects(context.deleteRecord('externalMapping',id),e=>e.noReplay&&e.uncertain,'A failed reconciliation cannot report a deletion as saved');
 const custom={api_name:'Get_Land_Master_Choices_DEV',http_method:'GET'};response={code:3000,result:{City:[]}};await context.invokeErrorApi(custom);assert.equal(calls.at(-1).args,custom);assert.equal(requests.at(-1),'custom:Get_Land_Master_Choices_DEV');
 assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false,'no-argument GET calls must omit query_params');
 const audit={api_name:'Report_Proforma_Widget_Error_DEV',http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify({subject:'test',body:'example'})}};await context.invokeErrorApi(audit);assert.equal(calls.at(-1).args,audit);assert.equal(JSON.parse(calls.at(-1).args.payload.payload).subject,'test');assert.equal(Object.hasOwn(calls.at(-1).args,'query_params'),false);

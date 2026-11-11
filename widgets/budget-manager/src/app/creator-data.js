@@ -80,6 +80,32 @@
   }
   function responseFailed(value){return !value||typeof value!=='object'||Array.isArray(value)||scanEnvelope(value,false).failed;}
   function failureCode(value){return scanEnvelope(value,true).code;}
+  // A delete may commit without returning the documented record-ID envelope.
+  // Only resolved-success ambiguity may use a fresh exact-ID absence check.
+  async function confirmDeletion(response,ids,verifyAbsent){
+    const own=(value,key)=>Object.prototype.hasOwnProperty.call(value,key),targets=Array.isArray(ids)?ids.slice():[];
+    function unconfirmed(cause){const error=new Error(cause&&cause.message||'Creator did not confirm the record change.');const native=failureCode(cause||response);if(native&&native!=='3000')error.code=native;error.raw=response;error.response=response;error.cause=cause||response;error.noReplay=true;error.uncertain=true;return error;}
+    if(!targets.length||targets.length>200||targets.some(value=>typeof value!=='string'||!/^\d+$/.test(value))||new Set(targets).size!==targets.length)throw unconfirmed();
+    if(!response||typeof response!=='object'||Array.isArray(response)||String(response.code)!=='3000')throw unconfirmed(response);
+    const queue=[response],seen=new Set();let malformed=false;
+    for(let index=0;index<queue.length&&index<4096;index++){
+      let value=queue[index];if(typeof value==='string'){if(!/^[{[]/.test(value.trim()))continue;try{value=JSON.parse(value);}catch(ignore){malformed=true;continue;}}
+      if(!value||typeof value!=='object')continue;if(seen.has(value))continue;seen.add(value);
+      if(Array.isArray(value)){queue.push(...value.slice(0,201));continue;}
+      if(value.code!=null&&String(value.code)!=='3000'||value.error||value.success===false||/^(error|failed|failure)$/i.test(String(value.status||'').trim()))throw unconfirmed(value);
+      for(const key of ['result','data','details','response','output','responseText','cause','errors'])if(own(value,key))queue.push(value[key]);
+    }
+    if(queue.length>=4096)throw unconfirmed();
+    const hasResult=own(response,'result'),results=hasResult?response.result:[response],acknowledged=new Set();
+    const exact=!malformed&&!(hasResult&&own(response,'data'))&&Array.isArray(results)&&results.length===targets.length&&results.every(entry=>{
+      if(!entry||typeof entry!=='object'||Array.isArray(entry)||String(entry.code)!=='3000'||own(entry,'result')||!entry.data||typeof entry.data!=='object'||Array.isArray(entry.data))return false;
+      const record=entry.data.ID;if(typeof record!=='string'||!targets.includes(record)||acknowledged.has(record))return false;acknowledged.add(record);return true;
+    });
+    if(exact)return response;
+    if(typeof verifyAbsent!=='function')throw unconfirmed();
+    try{if(await verifyAbsent(targets.slice())===true)return response;}catch(cause){const error=unconfirmed();error.verificationError=cause;throw error;}
+    throw unconfirmed();
+  }
   // Diagnostics only. Never use text to decide whether a write succeeded or may replay.
   function failureMessage(value){
     const queue=[value],seen=new Set(),messages=[];
@@ -179,6 +205,6 @@
     return promise;
   }
   root.LMPerf=Object.freeze({mark,start,end,timed,snapshot});
-  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,responseFailed,failureCode,failureMessage,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;if(options&&Number.isInteger(options.maxRequestsPerMinute)&&options.maxRequestsPerMinute>=0&&options.maxRequestsPerMinute<=50)maxRequestsPerMinute=options.maxRequestsPerMinute;if(options&&typeof options.readRetryOnThrottle==='boolean')readRetryOnThrottle=options.readRetryOnThrottle;pump();}});
+  root.LMData=Object.freeze({readAll,request,invalidate,code,failure,responseFailed,failureCode,failureMessage,confirmDeletion,configure(options){if(options&&Number.isInteger(options.concurrency)&&options.concurrency>0&&options.concurrency<=6)concurrency=options.concurrency;if(options&&Number.isInteger(options.maxRequestsPerMinute)&&options.maxRequestsPerMinute>=0&&options.maxRequestsPerMinute<=50)maxRequestsPerMinute=options.maxRequestsPerMinute;if(options&&typeof options.readRetryOnThrottle==='boolean')readRetryOnThrottle=options.readRetryOnThrottle;pump();}});
   mark('adapter:ready');
 })(typeof window==='undefined'?globalThis:window);

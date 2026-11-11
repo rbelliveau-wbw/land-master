@@ -1,3 +1,9 @@
+## Native Delete Reconciliation November 11 2026
+
+Resolved native delete replies with an ambiguous acknowledgement are recovered
+using fresh captured-ID absence checks. Explicit Creator errors still fail and
+no delete is automatically replayed. See [scope, verification and rollback](../../docs/native-delete-reconciliation-2026-11-11.md).
+
 ## Native Create Replies — 8.17.11, November 5, 2026
 
 General record creation accepts a resolved native reply unless Creator reports

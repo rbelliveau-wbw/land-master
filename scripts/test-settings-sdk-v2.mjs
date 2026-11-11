@@ -350,4 +350,10 @@ for(const field of ['COO_Approval_Threshold','Engineering_Markup']){
   assert.match(inline,/key:'purchase-orders',title:'Purchase Orders'/,'Notifications have their own Modules screen');
 }
 
+for(const malformed of [{code:3000},{code:3000,result:[]}]){
+  const h=await ready(),native=h.api.deleteRecords;h.api.deleteRecords=async config=>{await native(config);return malformed;};
+  await h.widget.controller.curveOperation('delete',B,{});
+  assert.equal(h.widget.state.curve.length,0);assert.equal(h.widget.state.curveUncertain,null);
+  assert.equal(h.calls.filter(call=>call.method==='delete').length,1,'A committed native delete with incomplete acknowledgement is never sent twice');
+}
 console.log('PASS: Settings whole-IIFE SDK2/native counted reads, singleton atomic reload, immutable retained autosave drafts and exact fresh scalar/multi-ID/currency verification, strict Curve CRUD/parent verification, contact-only PO recipients, no mutation replay and guarded native handshake.');
