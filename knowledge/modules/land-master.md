@@ -3,8 +3,8 @@
 Property Transfers allow identical From and To companies for every transfer
 type. The different-company validation is removed entirely. Full/Partial
 validation and ownership behavior remain unchanged. The native workflow needs the same surgical removal and user-owned Creator
-promotion; preserve its newer Development ownership logic. The live edit was
-not applied.
+promotion; preserve its newer Development ownership logic. Development was saved/reopened after separate user authorization; Creator
+Stage/Production promotion remains pending.
 see [release, regression and rollback notes](../../docs/property-transfers-2026-10-14.md).
 
 ## Native Delete Reconciliation November 11 2026

@@ -95,11 +95,13 @@ other validations. Development already exempts Plat Recordation; the widget's
 unconditional guard caused the reported block. The repository workflow change
 removes the corresponding guard from its historical source only.
 
-The attempted Development edit was rejected by automatic approval review as
-outside PMP's repository/widget authorization. No Creator save was performed.
-The user must apply/promote this surgical workflow edit or explicitly authorize
-the Development edit separately. Until applied, Creator can still reject
-same-company transfers of other types. No native save behavior is claimed tested.
+The user separately authorized the Development edit on November 11. The native
+workflow compiled/saved, was reopened after a page reload, and its full editor
+text exactly matched the captured original with only the company-equality block
+replaced by a comment. The guarded ownership tail was retained exactly. No
+transfer records were created/edited and native record-save behavior was not
+tested. Stage/Production Creator promotion remains user-owned; until promoted,
+those environments can still reject same-company transfers of other types.
 
 Regression: same-company Full/Partial transfers across all types and statuses, different
 companies for every type, partial amount and
