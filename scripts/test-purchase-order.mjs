@@ -18,7 +18,7 @@ const ctx=vm.createContext({});
 vm.runInContext(await readFile(new URL('../widgets/budget-manager/src/app/po-domain.js',import.meta.url),'utf8'),ctx);
 const PO=ctx.LMPO;
 const line={key:'line-one',budgetItemId:'9007199254740993',description:'Roadwork',uom:'LF',costCode:'C_SH01-3225-5',costElement:'5',pricingMode:'Calculated',quantity:'1.005',unitPrice:'1.00',finalAmount:'1.01'};
-const payload={budgetId:'9007199254740994',vendorId:'9007199254740995',amount:'2.02',lines:[line,{...line,key:'line-two'}]};
+const payload={budgetId:'9007199254740994',department:'Development',vendorId:'9007199254740995',amount:'2.02',lines:[line,{...line,key:'line-two'}]};
 assert.equal(PO.multiply('1.005','1.00'),'1.01');
 assert.equal(PO.multiply('3','0.10'),'0.30');
 assert.equal(PO.currency(PO.money('9999999999999.99')),'9999999999999.99');

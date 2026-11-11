@@ -1,3 +1,12 @@
+## Required PO Type — November 11, 2026
+
+The existing PO header requires Construction or Development before item
+selection. Persist the choice in `Payment_Request.Department`; Construction
+allows Construction, Development allows Development and Engineering. Native
+validation checks every item before PO/financial writes. Existing blank-type POs
+stay readable; the owner-approved backfill fills clear current-item matches and
+flags exceptions. See [implementation, regression and rollback](../../docs/po-department-type-2026-11-11.md).
+
 ## Current Bud Mod In PO Packets — November 10, 2026
 
 Approval email Budget Element Details and workbook Budget Elements include

@@ -11,6 +11,12 @@ map poValidatePayload(string payload)
 			return result;
 		}
 		p = payload.toMap();
+		poDepartments = {"Construction","Development"};
+		if(!poDepartments.contains(p.get("department")))
+		{
+			result.put("error","Choose a PO type: Construction or Development.");
+			return result;
+		}
 		action = ifnull(p.get("action"),"");
 		if(action != "Save" && action != "Submit")
 		{

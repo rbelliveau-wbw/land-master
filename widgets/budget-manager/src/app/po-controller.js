@@ -36,7 +36,7 @@
     if(snapshot.status!==status||snapshot.commitmentState!==commitment||snapshot.approvalState!==approval)throw new Error("PO state was not verified.");
     if(wanted.id&&snapshot.id!==wanted.id)throw new Error("Another PO was returned.");
     if(snapshot.budgetId!==wanted.budgetId)throw new Error("Another Budget was returned.");
-    if(compareFields)for(var key of ["vendorId","amount","requestDate","dateNeeded"])if(snapshot[key]!==wanted[key])throw new Error("Header "+key+" was not verified.");
+    if(compareFields)for(var key of ["department","vendorId","amount","requestDate","dateNeeded"])if(snapshot[key]!==wanted[key])throw new Error("Header "+key+" was not verified.");
     if(wanted.preserveApproval===true){
       var retained=snapshot.approvalBundle;
       if(!retained||!Array.isArray(retained.rows)||!Array.isArray(wanted.retainedApprovalIds)||retained.rows.length!==wanted.retainedApprovalIds.length||retained.rows.some(function(row,i){return row.id!==wanted.retainedApprovalIds[i];})||retained.rows.filter(function(row){return row.status==='Pending';}).length!==1||retained.rows.some(function(row){return !['Approved','Pending','Not Sent'].includes(row.status);}))throw new Error('Retained approval identities were not verified.');

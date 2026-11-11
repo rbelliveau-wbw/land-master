@@ -4,7 +4,8 @@ import vm from 'node:vm';
 const source=fs.readFileSync('widgets/budget-manager/src/app/po-ui.js','utf8');
 const ctx=vm.createContext({vendorDialog:null,fitDialog(){}});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),ctx);ctx.root=ctx;
-ctx.model={budgetId:'1001',vendorId:'9001',amount:'999.99',requestDate:'2026-10-09',dateNeeded:'2026-10-20',vendors:[{ID:'9001'}],lines:[{key:'one',budgetItemId:'2001',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'two',budgetItemId:'2001',description:'Testing',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'2.02'}]};
+ctx.model={budgetId:'1001',department:'Development',vendorId:'9001',amount:'999.99',requestDate:'2026-10-09',dateNeeded:'2026-10-20',vendors:[{ID:'9001'}],lines:[{key:'one',budgetItemId:'2001',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Calculated',quantity:'1',unitPrice:'1.01',finalAmount:'1.01'},{key:'two',budgetItemId:'2001',description:'Testing',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'2.02'}]};
+ctx.itemRows=()=>ctx.model.lines.map(line=>({id:line.budgetItemId,department:'Development'}));
 let deleteAllowed=true;ctx.options={userAccessId:()=> '8001',canDelete:()=>deleteAllowed};ctx.lineCode=()=> 'C_SH01-3225-5';ctx.uid=()=> 'new-key';ctx.progress=false;ctx.visualBusy=false;ctx.current=()=>true;ctx.readOnly=()=>false;ctx.dateValid=()=>true;ctx.mountProgress=()=>{};ctx.error=message=>{throw new Error(message);};ctx.controller={begin:async payload=>{ctx.savedPayload=payload;}};
 const totals=source.slice(source.indexOf('    function totals()'),source.indexOf('    function itemRows('));
 vm.runInContext(totals,ctx);
@@ -116,7 +117,7 @@ for(const gridMode of ['row','excel']){
   type('description','Updated text');assert.equal(first.pricingMode,'Calculated');assert.equal(first.finalAmount,'18.45');
 }
 type('finalAmount','77.77');
-entry.LMPO.validate({budgetId:'1001',vendorId:'9001',amount:'2577.77',lines:entry.model.lines},true);
+entry.LMPO.validate({budgetId:'1001',department:'Development',vendorId:'9001',amount:'2577.77',lines:entry.model.lines},true);
 const prior=JSON.stringify(entry.model),updates=summaryUpdates+totalUpdates;
 editable=false;fields.quantity.value='20';entry.input({target:fields.quantity});assert.equal(JSON.stringify(entry.model),prior,'readonly native input events cannot switch pricing mode');
 editable=true;entry.progress=true;entry.input({target:fields.quantity});assert.equal(JSON.stringify(entry.model),prior,'pending writes prohibit pricing changes');
@@ -155,7 +156,8 @@ for(const [name,value] of [['quantity','1,234.500000'],['unitPrice','1,000.01'],
 // Exercise the real picker handler, including selecting another Budget Item
 // after custom text was entered. The separate Item Name remains derived.
 const selection=vm.createContext({vendorDialog:null,deleteReview:false,popover:null,progress:false,visualBusy:false,current:()=>true,readOnly:()=>false,closePopover(){},render(){}});
-selection.model={lines:[{key:'blank',budgetItemId:'',description:'',costElement:''},{key:'custom',budgetItemId:'2001',description:'User-entered scope',costElement:'4'}]};
+selection.model={department:'Development',lines:[{key:'blank',budgetItemId:'',description:'',costElement:''},{key:'custom',budgetItemId:'2001',description:'User-entered scope',costElement:'4'}]};
+selection.itemRows=()=>[{id:'2002',department:'Development'}];
 vm.runInContext(source.slice(source.indexOf('    function click(event)'),source.indexOf('    async function open(')),selection);
 for(const key of ['blank','custom']){const target={dataset:{poPick:'budgetItemId',key,value:'2002'},hasAttribute:()=>false};selection.click({target:{closest:selector=>selector==='button,input[data-po-date]'?target:null}});}
 assert.equal(selection.model.lines[0].description,'');assert.equal(selection.model.lines[0].costElement,'');assert.equal(selection.model.lines[1].description,'User-entered scope');assert.equal(selection.model.lines[1].costElement,'4');

@@ -59,13 +59,13 @@ assert.equal(c.canCreatePurchaseOrder(budget),false,'Edit Owned still observes B
 let creation=true,editor=false,vendorCreates=0;
 const calls=[];
 const u=vm.createContext({model:{budgetId:budget.ID,editable:false,loadState:'loaded',status:'Draft',approvalState:'Not Configured',
-  vendorId:'90071992547409934',vendors:[{ID:'90071992547409934',Vendor_Name:'Existing Vendor'}],requestDate:'2026-10-26',dateNeeded:'2026-11-01',
+  department:'Development',vendorId:'90071992547409934',vendors:[{ID:'90071992547409934',Vendor_Name:'Existing Vendor'}],requestDate:'2026-10-26',dateNeeded:'2026-11-01',
   revision:'',reservedLines:[],lines:[{key:'one',budgetItemId:'90071992547409935',description:'Survey',uom:'EA',costElement:'5',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'15.25'}],
   balanceState:'loaded',balances:[{budgetItemId:'90071992547409935',availableCents:'2000',pendingModificationCents:'0'}]},
   options:{canCreate:()=>creation,canEdit:()=>editor,canDelete:()=>editor,canEditInFlight:()=>editor,canCreateVendor:()=>editor,userAccessId:()=>c.S.myAccessId,createVendor:()=>{vendorCreates++;}},
   current:()=>true,progress:false,visualBusy:false,uid:()=> 'local-test-token',mountProgress(){},lineCode:()=> 'C_CB01-3130-5',error:m=>{throw Error(m);},
   allocationRows:()=>[{budgetItemId:'90071992547409935',verified:true,available:2000n,pending:0n}],controller:{begin:async p=>{calls.push(p);}}
-});u.root=u;
+});u.root=u;u.itemRows=()=>u.model.lines.map(line=>({id:line.budgetItemId,department:'Development'}));
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),u);
 for(const name of ['canAmend','canCompose','readOnly','canDelete','canCreateVendor','dateValid','totals','save'])vm.runInContext(helper(ui,name),u);
 assert.equal(u.readOnly(),false,'Create-only user can compose a new PO');

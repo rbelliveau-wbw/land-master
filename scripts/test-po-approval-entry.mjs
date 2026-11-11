@@ -13,7 +13,7 @@ function body(name){
   return ui.slice(start,end?end.index:ui.length);
 }
 const clone=value=>JSON.parse(JSON.stringify(value));
-const snapshot={id:'4410926000005902006',budgetId:'4410926000002289002',vendorId:'4410926000005077036',amount:'100.00',description:'',requestDate:'2026-11-09',dateNeeded:'2026-11-11',revision:'saved-pending-revision',status:'Submitted',commitmentState:'Reserved',approvalState:'Pending',canEditInFlight:true,
+const snapshot={id:'4410926000005902006',budgetId:'4410926000002289002',department:'Development',vendorId:'4410926000005077036',amount:'100.00',description:'',requestDate:'2026-11-09',dateNeeded:'2026-11-11',revision:'saved-pending-revision',status:'Submitted',commitmentState:'Reserved',approvalState:'Pending',canEditInFlight:true,
   lines:[{ID:'4410926000005902042',key:'line-one',budgetItemId:'4410926000002289050',description:'Curb & gutter',costElement:'4',uom:'LF',costCode:'C_EP01-3240-4',pricingMode:'Calculated',quantity:'10',unitPrice:'10.00',finalAmount:'100.00'}],
   approvalBundle:{modifications:[],rows:[{id:'4410926000005902100',order:1,role:'CFO',userAccessId:'4410926000003608012',status:'Pending',notes:''}],active:{id:'4410926000005902100',userAccessId:'4410926000003608012',notes:''},canApprove:true,canRetryEmail:true,emailSent:true}};
 

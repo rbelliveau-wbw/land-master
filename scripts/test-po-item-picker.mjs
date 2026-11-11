@@ -9,14 +9,14 @@ assert.ok(start>=0&&end>start,'Exercise the actual PO picker implementation');
 const context=vm.createContext({});
 vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),context);
 context.root=context;
-context.model={balanceState:'loaded',reservedLines:[],balances:[
+context.model={department:'Development',balanceState:'loaded',reservedLines:[],balances:[
   {budgetItemId:'9007199254740993',finalCents:'10000',modCents:'500',issuedCents:'7500',availableCents:'3000'},
   {budgetItemId:'2',finalCents:'10000',modCents:'-10000',issuedCents:'0',availableCents:'0'},
   {budgetItemId:'3',finalCents:'0',modCents:'1',issuedCents:'0',availableCents:'1'},
   {budgetItemId:'4',finalCents:'-10000',modCents:'0',issuedCents:'0',availableCents:'-10000'},
   {budgetItemId:'5',finalCents:'10000',modCents:'0',issuedCents:'10000',availableCents:'0'}
 ]};
-context.options={items:()=>[
+context.options={itemDepartment:()=> 'Development',items:()=>[
   {ID:'9007199254740993',Item_Name:'Survey',Budget_Code:'CB01-3225'},
   {ID:'2',Item_Name:'Zero revised'},
   {ID:'3',Item_Name:'Approved modification only'},

@@ -1,0 +1,82 @@
+map backfillPurchaseOrderDepartments(string afterId,bool apply)
+{
+	result = {"success":false,"contract":"po-department-backfill-v1","applied":apply};
+	rows = List();
+	try
+	{
+		if(zoho.loginuser != zoho.adminuser) { result.put("error","Only the application owner may backfill PO types."); return result; }
+		if(afterId == "") { afterId = "0"; }
+		if(!afterId.matches("[0-9]+")) { result.put("error","An exact cursor ID is required."); return result; }
+		cursor = afterId;
+		updated = 0; eligible = 0; exceptions = 0; existing = 0;
+		for each po in Payment_Request[Request_Type == "Purchase Order" && ID > afterId.toLong()] sort by ID range from 0 to 99
+		{
+			cursor = po.ID.toString();
+			row = {"id":cursor,"budgetId":ifnull(po.Budget,"").toString(),"department":ifnull(po.Department,"")};
+			if(ifnull(po.Department,"") != "")
+			{
+				row.put("status","already-set"); existing = existing+1;
+			}
+			else
+			{
+				revision = ifnull(po.PO_Revision,"");
+				itemIds = List(); types = List(); invalid = false; reason = "";
+				if(revision != "")
+				{
+					for each line in PO_Item[Purchase_Order == po.ID && Revision == revision] sort by Line_Order
+					{
+						if(line.Budget_Item == null) { invalid = true; }
+						else { itemIds.add(line.Budget_Item.toString()); }
+					}
+					if(itemIds.size() != ifnull(po.PO_Line_Count,0)) { invalid = true; reason = "Incomplete active revision"; }
+				}
+				else if(po.Budget_Item != null) { itemIds.add(po.Budget_Item.toString()); }
+				if(itemIds.size() == 0) { invalid = true; reason = "No current budget items"; }
+				for each itemId in itemIds.distinct()
+				{
+					item = Budget_Item[ID == itemId.toLong() && Budget == po.Budget];
+					department = ifnull(item.Department,"");
+					if(department == "")
+					{
+						category = Budget_Category[ID == item.Budget_Category && Budget == po.Budget];
+						department = ifnull(category.Deparment,"");
+					}
+					itemType = "";
+					if(department == "Construction") { itemType = "Construction"; }
+					if(department == "Development" || department == "Engineering") { itemType = "Development"; }
+					if(item.ID == null || itemType == "") { invalid = true; reason = "Missing or unsupported item department"; }
+					else if(!types.contains(itemType)) { types.add(itemType); }
+				}
+				if(types.size() > 1) { invalid = true; reason = "Mixed Construction and Development items"; }
+				if(po.Budget == null) { invalid = true; reason = "Missing budget"; }
+				if(po.Budget != null && PO_Phase_Lock[Phase_Key == po.Budget.toString()].count() > 0) { invalid = true; reason = "PO phase has an active operation"; }
+				if(invalid || types.size() != 1)
+				{
+					row.put("status","needs-review"); row.put("reason",reason); exceptions = exceptions+1;
+				}
+				else
+				{
+					inferred = types.get(0); row.put("proposedDepartment",inferred); eligible = eligible+1;
+					row.put("status","eligible");
+					if(apply)
+					{
+						currentPO = Payment_Request[ID == po.ID];
+						if(ifnull(currentPO.Department,"") == "" && ifnull(currentPO.PO_Revision,"") == revision && currentPO.Budget == po.Budget)
+						{
+							currentPO.Department=inferred;
+							row.put("status","updated"); updated = updated+1;
+						}
+						else { row.put("status","needs-review"); row.put("reason","PO changed during backfill"); exceptions = exceptions+1; }
+					}
+				}
+			}
+			rows.add(row);
+		}
+		result.put("rows",rows); result.put("nextCursor",cursor);
+		result.put("hasMore",Payment_Request[Request_Type == "Purchase Order" && ID > cursor.toLong()].count() > 0);
+		result.put("updated",updated); result.put("eligible",eligible); result.put("alreadySet",existing); result.put("needsReview",exceptions);
+		result.put("success",true);
+	}
+	catch(e) { result.put("rows",rows); result.put("error",e.toString()); }
+	return result;
+}

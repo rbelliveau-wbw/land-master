@@ -37,13 +37,14 @@
   }
   function fill(lines,range,items,newLine){if(range.r1<=range.r0)throw Error('Select at least two rows to fill down.');var values=[];for(var c=range.c0;c<=range.c1;c++)values.push(cell(lines[range.r0],c,items));return paste(lines,{row:range.r0+1,col:range.c0},Array.from({length:range.r1-range.r0},function(){return values.slice();}),items,newLine);}
   function bind(options){
-    var el=options.container,anchor=null,active=null,dragging=false,editing=false,history=[],allowPicker=false,lineKeys=null,editKey=null;
+    var el=options.container,anchor=null,active=null,dragging=false,editing=false,history=[],allowPicker=false,lineKeys=null,editKey=null,departmentKey=null;
     function model(){return options.model();}
     function enabled(){return model()&&model().gridMode==='excel'&&!options.busy();}
     function point(target){var node=target.closest('[data-po-cell]');return node?{row:Number(node.dataset.poRow),col:Number(node.dataset.poCol)}:null;}
     function range(){return anchor&&active?rect(anchor,active):null;}
     function focus(){if(!active)return;var node=el.querySelector('[data-po-cell][data-po-row="'+active.row+'"][data-po-col="'+active.col+'"]');if(node){node.focus({preventScroll:true});node.scrollIntoView({block:'nearest',inline:'nearest'});if(node.select)node.select();}}
     function paint(){
+      if(departmentKey!==model().department){history=[];anchor=active=null;departmentKey=model().department;}
       var keys=model().lines.map(function(line){return line.key;}).join('|');if(lineKeys!==null&&keys!==lineKeys){history=[];anchor=active=null;}lineKeys=keys;var excel=enabled();el.classList.toggle('po-excel-mode',excel);
       el.querySelectorAll('.po-line').forEach(function(row,r){row.querySelectorAll('.po-line-fields>div,.po-line-fields>label,.po-line-fields>span').forEach(function(cell,c){if(c>=8)return;var node=cell.querySelector('input,button')||cell;node.dataset.poCell='';node.dataset.poRow=r;node.dataset.poCol=c;if(c===1)node.tabIndex=excel?0:-1;});});
       if(active&&active.row>=model().lines.length)anchor=active=null;

@@ -1,5 +1,18 @@
 # Request list
 
+## Required PO type
+
+Use the existing searchable single-select picker in the PO header, before
+Request date, labeled PO Type with a required marker. Start new POs without a
+selection. Disable Budget Item selection until Construction or Development is
+chosen. Construction offers Construction items; Development offers Development
+and Engineering items, retaining the existing eligibility rules. Keep the
+three-panel editor, Details/Attachments/Approvers tabs and ledger unchanged.
+Persist in `Payment_Request.Department` and enforce the same rules natively.
+Never silently discard lines on a type change; incompatible lines require
+explicit removal. Untyped existing records stay readable with a short review
+notice. See [implementation and backfill](../../docs/po-department-type-2026-11-11.md).
+
 Budget Manager also exposes Requests as its second main tab. Load that index
 only after explicit activation; use a complete bulk snapshot and the same rail
 renderer/actions. Default to newest first with Date groups. Offer Project,

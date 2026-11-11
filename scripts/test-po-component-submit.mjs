@@ -16,10 +16,11 @@ function fixture(){
   const sends=[],errors=[];
   const c=vm.createContext({progress:false,visualBusy:false,current:()=>true,readOnly:()=>false,uid:()=> 'fixture-token',lineCode:()=> 'C_EP01-3240-4',mountProgress:()=>{c.mounts++;},error:message=>errors.push(message),options:{userAccessId:()=> '90071992547409939'},controller:{begin:async payload=>sends.push(clone(payload))}});
   c.root=c;c.mounts=0;vm.runInContext(domain,c);
-  c.model={id:'90071992547409938',revision:'draft-revision',budgetId:'90071992547409930',vendorId:'90071992547409937',vendors:[{ID:'90071992547409937'}],requestDate:'2026-11-09',dateNeeded:'2026-11-11',status:'Draft',balanceState:'loaded',reservedLines:[],balances:[balance(ITEM,'14973000'),balance(VALLEY,'1364000'),balance(INLET,'4093500','822000')],lines:[line('curb',ITEM,'144440.00'),line('ribbon',ITEM,'3562.50'),line('wings',VALLEY,'9520.00'),line('valley',VALLEY,'4120.00'),line('inlet',INLET,'5480.00')]};
+  c.model={id:'90071992547409938',revision:'draft-revision',budgetId:'90071992547409930',department:'Development',vendorId:'90071992547409937',vendors:[{ID:'90071992547409937'}],requestDate:'2026-11-09',dateNeeded:'2026-11-11',status:'Draft',balanceState:'loaded',reservedLines:[],balances:[balance(ITEM,'14973000'),balance(VALLEY,'1364000'),balance(INLET,'4093500','822000')],lines:[line('curb',ITEM,'144440.00'),line('ribbon',ITEM,'3562.50'),line('wings',VALLEY,'9520.00'),line('valley',VALLEY,'4120.00'),line('inlet',INLET,'5480.00')]};
   for(const [start,end] of [['  function dateValid(','  // Give'],['    function totals()','    function patchTotal()'],['    function allocationRows()','    function summaryRows()'],['    async function save(action)','    function loadVendors()']]){
     const a=ui.indexOf(start),b=ui.indexOf(end,a);assert.ok(a>=0&&b>a,start);vm.runInContext(ui.slice(a,b),c);
   }
+  c.itemRows=()=>c.model.lines.map(line=>({id:line.budgetItemId,department:'Development'}));
   c.canAmend=()=>false;
   return {c,sends,errors};
 }

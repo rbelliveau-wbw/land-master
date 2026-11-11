@@ -1138,6 +1138,16 @@ string managePurchaseOrder(string payload)
 		{
 			item = Budget_Item[ID == line.get("budgetItemId").toLong() && Budget == budget.ID && Template_Item != true];
 			category = Budget_Category[ID == item.Budget_Category && Budget == budget.ID];
+			// PO type is checked against native item department, including zero-amount lines.
+			itemDepartment = ifnull(item.Department,"");
+			if(itemDepartment == "") { itemDepartment = ifnull(category.Deparment,""); }
+			itemPOType = "";
+			if(itemDepartment == "Construction") { itemPOType = "Construction"; }
+			if(itemDepartment == "Development" || itemDepartment == "Engineering") { itemPOType = "Development"; }
+			if(item.ID == null || itemPOType == "" || itemPOType != p.get("department"))
+			{
+				result.put("error","Every PO item must belong to the selected PO type: Construction, or Development and Engineering.");
+			}
 			track = "";
 			if(category.Deparment == "Construction")
 			{
@@ -1474,6 +1484,7 @@ string managePurchaseOrder(string payload)
 				Request_Type="Purchase Order"
 				Budget=budget.ID
 				Vendor=vendor.ID
+				Department=p.get("department")
 				PO_Budget_Modification=linkedModificationId
 				Request_Date=p.get("requestDate").toDate("yyyy-MM-dd")
 				Date_Needed=p.get("dateNeeded").toDate("yyyy-MM-dd")
@@ -1530,6 +1541,7 @@ string managePurchaseOrder(string payload)
 			po.PO_Description=p.get("description");
 		}
 		po.Vendor=vendor.ID;
+		po.Department=p.get("department");
 		po.Request_Date=p.get("requestDate").toDate("yyyy-MM-dd");
 		po.Date_Needed=p.get("dateNeeded").toDate("yyyy-MM-dd");
 		po.PO_Budget_Modification=linkedModificationId;

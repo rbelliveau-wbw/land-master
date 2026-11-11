@@ -19,6 +19,8 @@ function fixture(){
   const c=vm.createContext({setTimeout:fn=>{timers.set(++timer,fn);return timer;},clearTimeout:id=>timers.delete(id)});c.root=c;
   for(const filename of ['po-domain.js','po-reallocation.js','po-reallocation-ui.js'])vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/'+filename,'utf8'),c);
   c.model={id:'90071992547409938',revision:'native-draft',budgetId:BUDGET,vendorId:'90071992547409937',vendors:[{ID:'90071992547409937'}],amount:'33000.00',description:'Fixture PO',requestDate:'2026-11-09',dateNeeded:'2026-11-11',loadState:'loaded',status:'Draft',commitmentState:'None',approvalState:'Not Configured',canEditDraft:true,editable:false,balanceState:'loaded',reallocationContract:CONTRACT,balances:[native()],reservedLines:[],lines:[{key:'one',budgetItemId:ITEM,description:'Concrete',uom:'LS',costElement:'4',pricingMode:'Manual',quantity:null,unitPrice:null,finalAmount:'33000.00'}]};
+  c.model.department='Construction';
+  c.itemRows=()=>[{id:ITEM,department:'Construction'}];
   c.options={canCreate:()=>creation,canEdit:()=>editor,canEditInFlight:()=>editor,userAccessId:()=> '90071992547409939'};
   c.progress=false;c.visualBusy=false;c.current=()=>true;c.generation=1;c.previewGeneration=0;c.previewTimer=null;c.deleteReview=false;
   c.error=message=>errors.push(message);c.uid=()=> 'reallocation-ui-fixture-token';c.lineCode=()=> 'C_EP01-3240-4';c.mountProgress=()=>{};c.controller={begin:async payload=>sends.push(clone(payload))};

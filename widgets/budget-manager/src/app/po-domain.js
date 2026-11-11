@@ -55,8 +55,12 @@
     ['budgetItemId','description','uom','costElement','pricingMode','quantity','unitPrice','finalAmount','costCode'].forEach(function(field){copy[field]=line[field];});
     return copy;
   }
-  function validate(payload, submit) {
+  function departmentAllows(type, department) {
+    return type === 'Construction' ? department === 'Construction' : type === 'Development' && (department === 'Development' || department === 'Engineering');
+  }
+  function validate(payload, submit, readingExisting) {
     if (!payload || typeof payload.budgetId!=="string" || typeof payload.vendorId!=="string" || !/^\d+$/.test(payload.budgetId) || !/^\d+$/.test(payload.vendorId)) throw new Error("Phase and vendor are required.");
+    if (!['Construction','Development'].includes(payload.department) && !(readingExisting === true && !payload.department)) throw new Error('Choose a PO type.');
     if (payload.budgetModificationId!=null && (typeof payload.budgetModificationId!=="string" || !/^\d+$/.test(payload.budgetModificationId))) throw new Error("Linked budget modification must be a Creator ID string or null.");
     if(payload.description!=null&&(typeof payload.description!=="string"||payload.description.length>1000))throw new Error("PO Description must be text, maximum 1000 characters.");
     var header = money(payload.amount);
@@ -190,5 +194,5 @@
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });
   }
-  root.LMPO={uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
+  root.LMPO={departmentAllows:departmentAllows,uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);
