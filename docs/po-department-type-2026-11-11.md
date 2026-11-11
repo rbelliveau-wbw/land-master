@@ -9,7 +9,9 @@ All existing finalization, template, cost-code and modified-budget rules remain.
 
 The selected value is sent as `department` and stored in the existing
 `Payment_Request.Department` picklist. No schema or widget Custom API registration
-change is required. `poSnapshot` returns the choice. Previously untyped records remain
+change is required. A temporary admin-only maintenance API was created with
+explicit approval, used for the Production backfill, and disabled afterward. `poSnapshot` returns the choice. Previously untyped records
+remain
 readable and show "PO type needs review"; saving requires a valid choice and
 matching items. Changing type never silently deletes existing lines: remove
 incompatible lines first. Spreadsheet paste/fill uses the filtered picker rows;
@@ -57,7 +59,11 @@ immutable hosted widget promotion are required.
 The four scoped native functions were compiled in Development and published
 through Stage to Production as Creator 9.183 on November 11, 2026. The native
 Development read-only preview found seven eligible blank departments and no
-exceptions. Production backfill execution is tracked separately from publication.
+exceptions. Production backfill completed after explicit temporary API approval: six
+Construction and one Development PO were updated, with zero exceptions. A
+read-only follow-up returned seven already-set records, zero eligible records
+and no further pages. The native Production report independently showed all
+seven saved Departments. See `po-department-production-backfill-2026-11-11.json`.
 
 Hosted release 122.29.133 integrates current main's shared deletion-reconciliation
 runtime; 122.29.132 remains an immutable candidate and was not promoted. Full
@@ -71,7 +77,9 @@ Production verification: commit 5f64b5b1 passed CI run 43061784812 and Pages
 deployment 43061784809. The live Production editor was checked in its existing
 Windmill Preserve workspace: item selection is disabled before Type; Construction
 shows construction items; Development shows Engineering Design and development
-soft costs. No test PO was saved or submitted. Production record backfill remains
-pending explicit approval for the temporary OAuth2, admin-only execution API;
-automatic approval review blocked creating that route. The native helper was
-restored to its published source and no Production departments were changed.
+soft costs. No test PO was saved or submitted. The temporary OAuth2, admin-only
+API was explicitly approved by the user,
+created, used for preview/apply/read-only verification, then disabled. The
+Development invocation wrapper was never published and was restored exactly to
+the original helper after completion. Only the seven blank PO Department values
+were changed in Production; amounts, lines, revisions and approvals were retained.

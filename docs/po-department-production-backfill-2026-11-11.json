@@ -1,0 +1,145 @@
+{
+  "environment": "Production",
+  "date": "2026-11-11",
+  "creatorVersion": "9.183",
+  "widgetVersion": "122.29.133",
+  "preview": {
+    "success": true,
+    "applied": false,
+    "eligible": 7,
+    "updated": 0,
+    "needsReview": 0,
+    "construction": 6,
+    "development": 1
+  },
+  "apply": {
+    "result": {
+      "nextCursor": "4410926000005943030",
+      "needsReview": 0,
+      "applied": true,
+      "success": true,
+      "eligible": 7,
+      "contract": "po-department-backfill-v1",
+      "alreadySet": 0,
+      "hasMore": false,
+      "rows": [
+        {
+          "proposedDepartment": "Development",
+          "id": "4410926000005267012",
+          "budgetId": "4410926000001671002",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005728136",
+          "budgetId": "4410926000003946830",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005734018",
+          "budgetId": "4410926000001895002",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005902006",
+          "budgetId": "4410926000002289002",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005902060",
+          "budgetId": "4410926000001659100",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005943006",
+          "budgetId": "4410926000002289002",
+          "department": "",
+          "status": "updated"
+        },
+        {
+          "proposedDepartment": "Construction",
+          "id": "4410926000005943030",
+          "budgetId": "4410926000002289002",
+          "department": "",
+          "status": "updated"
+        }
+      ],
+      "updated": 7
+    },
+    "code": 3000
+  },
+  "verification": {
+    "result": {
+      "nextCursor": "4410926000005943030",
+      "needsReview": 0,
+      "applied": false,
+      "success": true,
+      "eligible": 0,
+      "contract": "po-department-backfill-v1",
+      "alreadySet": 7,
+      "hasMore": false,
+      "rows": [
+        {
+          "id": "4410926000005267012",
+          "budgetId": "4410926000001671002",
+          "department": "Development",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005728136",
+          "budgetId": "4410926000003946830",
+          "department": "Construction",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005734018",
+          "budgetId": "4410926000001895002",
+          "department": "Construction",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005902006",
+          "budgetId": "4410926000002289002",
+          "department": "Construction",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005902060",
+          "budgetId": "4410926000001659100",
+          "department": "Construction",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005943006",
+          "budgetId": "4410926000002289002",
+          "department": "Construction",
+          "status": "already-set"
+        },
+        {
+          "id": "4410926000005943030",
+          "budgetId": "4410926000002289002",
+          "department": "Construction",
+          "status": "already-set"
+        }
+      ],
+      "updated": 0
+    },
+    "code": 3000
+  },
+  "temporaryApi": {
+    "name": "PO_Department_Backfill_20261111",
+    "authentication": "OAuth2",
+    "scope": "Admin only",
+    "status": "Disabled"
+  },
+  "developmentHelperRestored": true
+}

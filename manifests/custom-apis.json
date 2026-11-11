@@ -770,6 +770,15 @@
       "environment": "Stage",
       "enabled": false,
       "native_verification": "Prepared registry contract only. Register/enable after user-controlled promotion of the matching function/schema/profile changes; do not bind to Development."
+    },
+    {
+      "name": "PO_Department_Backfill_20261111",
+      "consumers": [],
+      "matching_creator_function": "backfillPurchaseOrderDepartments",
+      "confidence": "verified-2026-11-11",
+      "enabled": false,
+      "notes": "Temporary owner-approved Production maintenance API. POST, OAuth2, Admin only, key/value JSON afterId:string and apply:boolean, standard response. Used for preview/apply/verification of seven clear-match PO Departments, then disabled. No widget consumer. See docs/po-department-production-backfill-2026-11-11.json.",
+      "environment": "Production"
     }
   ]
 }
