@@ -91,10 +91,10 @@ try {
   assert.match(await page.locator('#matrix thead tr:first-child th').nth(1).textContent(),/^Total/,'builder total appears directly after Builder');
   const periodPinned=await page.evaluate(()=>{const scroll=document.getElementById('matrixScroll'),body=document.querySelector('#matrix tbody .builder-period-total'),head=document.querySelector('#matrix thead .builder-period-total'),foot=document.querySelector('#matrix tfoot .builder-period-total');scroll.scrollLeft=500;const r={body:body.getBoundingClientRect().left,head:head.getBoundingClientRect().left,foot:foot.getBoundingClientRect().left,nameRight:document.querySelector('#matrix tbody .builder-column').getBoundingClientRect().right,fill:getComputedStyle(body).backgroundColor};scroll.scrollLeft=0;return r;});assert.ok(Math.abs(periodPinned.body-periodPinned.head)<1&&Math.abs(periodPinned.body-periodPinned.foot)<1,'builder total header/body/footer remain aligned while scrolling');assert.ok(Math.abs(periodPinned.body-periodPinned.nameRight)<1,'builder total pins beside builder identity');assert.equal(periodPinned.fill,'rgb(225, 235, 245)','selected-period totals retain their neutral fill');
 
-  assert.equal(await page.locator('#matrix').getAttribute('data-view'),'forecast','new sessions default to Forecast, including after refresh');
-  assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'true');
-  assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'false');
-  assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Forecast'],'default Forecast keeps its green key');
+  assert.equal(await page.locator('#matrix').getAttribute('data-view'),'outlook','new sessions default to Sold + Forecast, including after refresh');
+  assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'false');
+  assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'true');
+  assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Sold','Forecast'],'default mixed view shows both basis keys');
   assert.ok(await page.locator('.year-heading').evaluateAll(headings=>headings.every(node=>{const a=node.firstElementChild.getBoundingClientRect(),b=node.lastElementChild.getBoundingClientRect(),r=node.getBoundingClientRect();return Math.abs((a.left+b.right)/2-(r.left+r.right)/2)<1;})),'WFY chip and dates center together over each year');
   await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');

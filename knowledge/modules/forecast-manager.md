@@ -1,3 +1,12 @@
+## Sold + Forecast default — 1.9.2, November 11, 2026
+
+Fresh page loads select Sold + Forecast in both application state and the pressed
+view button. Completed months use sold actuals; current/future months use forecast.
+Manual switching among all four views retains its existing behavior. No forms,
+fields, functions or Custom APIs change; no Creator deployment is required.
+Regression: fresh-load selection, mixed month basis, manual view switching, and
+reload reset. Rollback: promote Forecast Manager 1.9.1 in the environment mapping.
+
 ## Footer Clear stages deselection — 1.7.24, October 29, 2026
 
 Territory, Builders and Fiscal years footer Clear deselects every option while

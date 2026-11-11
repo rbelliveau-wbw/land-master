@@ -210,10 +210,11 @@ builder's first year; an empty matrix says No forecast available.
 
 ## October 15 review — v1.7
 
-Use Forecast Manager consistently in the topbar. User direction October 15,
-2026, v1.7.2: default the displayed-values slider to Forecast on a fresh load.
-Its initially pressed button and rendered matrix must agree. Retain Sold +
-Forecast as an explicit choice: completed calendar months show sold actuals;
+Use Forecast Manager consistently in the topbar. User direction November 11,
+2026, v1.9.2: default the displayed-values slider to Sold + Forecast on a fresh
+load, superseding the October 15 Forecast default. Its initially pressed button
+and rendered matrix must agree. In Sold + Forecast, completed calendar months
+show sold actuals;
 the current and future months show forecast with existing editing rules. Retain
 Sold and Scheduled views. Refresh preserves the current session's selected view.
 Hover/focus labels expose both actual and forecast, including blank versus zero.
