@@ -66,3 +66,12 @@ runtime; 122.29.132 remains an immutable candidate and was not promoted. Full
 Rollback: hosted widget 122.29.131 plus the captured prechange native copies for
 the three existing functions. Preserve backfilled Department values; do not undo
 or delete existing POs, lines, approvals, modifications or operation receipts.
+
+Production verification: commit 5f64b5b1 passed CI run 43061784812 and Pages
+deployment 43061784809. The live Production editor was checked in its existing
+Windmill Preserve workspace: item selection is disabled before Type; Construction
+shows construction items; Development shows Engineering Design and development
+soft costs. No test PO was saved or submitted. Production record backfill remains
+pending explicit approval for the temporary OAuth2, admin-only execution API;
+automatic approval review blocked creating that route. The native helper was
+restored to its published source and no Production departments were changed.
