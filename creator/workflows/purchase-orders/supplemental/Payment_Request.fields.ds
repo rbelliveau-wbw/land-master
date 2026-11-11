@@ -1,0 +1,42 @@
+// Add within the existing Managed_PO section. Do not replace other fields.
+PO_Kind
+(
+    type = picklist
+    values = {"Original","Supplemental"}
+    row = 4
+    column = 1
+    width = medium
+)
+PO_Original
+(
+    type = picklist
+    values = Payment_Request.ID
+    displayformat = [ID]
+    row = 4
+    column = 1
+    width = medium
+)
+PO_Supplement_Number
+(
+    type = number
+    maxchar = 9
+    row = 4
+    column = 1
+    width = medium
+)
+PO_Supplement_Counter
+(
+    type = number
+    maxchar = 9
+    row = 4
+    column = 1
+    width = medium
+)
+PO_Supplement_Baseline
+(
+    type = textarea
+    height = 100px
+    row = 4
+    column = 1
+    width = medium
+)

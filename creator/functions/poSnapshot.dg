@@ -16,6 +16,25 @@ map poSnapshot(string purchaseOrderId)
 		p.put("department",ifnull(po.Department,""));
 		p.put("departmentNeedsReview",ifnull(po.Department,"") == "");
 		p.put("description",ifnull(po.PO_Description,""));
+		p.put("supplementalContract","po-supplemental-v1"); p.put("poKind",ifnull(po.PO_Kind,"Original")); p.put("originalPoId",""); p.put("reference",po.ID.toString()); p.put("supplement",null); p.put("supplementBaselineKey",""); p.put("supplementNumber",0); p.put("supplements",List()); p.put("familyApprovedAmount",null);
+		if(po.PO_Original != null)
+		{
+			supplementContext = thisapp.poSupplementContext(po.PO_Original.toString(),ifnull(po.PO_Supplement_Baseline,""));
+			if(supplementContext.get("success") != true || ifnull(po.PO_Supplement_Baseline,"") == "") { result.put("error",ifnull(supplementContext.get("error"),"The saved supplement baseline is unavailable.")); return result; }
+			if(supplementContext.get("budgetId") != po.Budget.toString() || supplementContext.get("vendorId") != po.Vendor.toString() || supplementContext.get("department") != po.Department) { result.put("error","The supplement no longer matches its original PO scope."); return result; }
+			p.put("poKind","Supplemental"); p.put("originalPoId",po.PO_Original.toString()); p.put("supplementNumber",po.PO_Supplement_Number); p.put("reference",po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number); p.put("supplement",supplementContext); p.put("supplementBaselineKey",supplementContext.get("baselineKey"));
+		}
+		else if(po.PO_Approval_State == "Approved")
+		{
+			familyMembers = List(); approvedFamily = po.PO_Amount_Exact.toDecimal();
+			for each familyMember in Payment_Request[PO_Original == po.ID && Request_Type == "Purchase Order"] sort by PO_Supplement_Number
+			{
+				familyMembers.add({"id":familyMember.ID.toString(),"number":familyMember.PO_Supplement_Number,"amount":familyMember.PO_Amount_Exact,"status":if(familyMember.PO_Status == "Draft","Draft",familyMember.PO_Approval_State)});
+				if(familyMember.PO_Status == "Submitted" && familyMember.PO_Approval_State == "Approved") { approvedFamily = approvedFamily + familyMember.PO_Amount_Exact.toDecimal(); }
+			}
+			p.put("supplements",familyMembers); p.put("familyApprovedAmount",thisapp.poCurrencyString(approvedFamily.toString()));
+		}
+
 		modificationId = null;
 		if(po.PO_Budget_Modification != null)
 		{

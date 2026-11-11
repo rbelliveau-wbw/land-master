@@ -1,0 +1,86 @@
+{
+  "contract": "po-supplemental-v1",
+  "date": "2026-11-11",
+  "parent_form": "Payment_Request",
+  "new_forms": [],
+  "fields": [
+    {
+      "name": "PO_Kind",
+      "type": "picklist",
+      "values": [
+        "Original",
+        "Supplemental"
+      ],
+      "required": false
+    },
+    {
+      "name": "PO_Original",
+      "type": "lookup",
+      "target": "Payment_Request.ID",
+      "required": false
+    },
+    {
+      "name": "PO_Supplement_Number",
+      "type": "number",
+      "max_digits": 9,
+      "required": false
+    },
+    {
+      "name": "PO_Supplement_Counter",
+      "type": "number",
+      "max_digits": 9,
+      "required": false
+    },
+    {
+      "name": "PO_Supplement_Baseline",
+      "type": "textarea",
+      "required": false,
+      "application_max_chars": 16000
+    }
+  ],
+  "section": {
+    "name": "Managed_PO",
+    "row": 4,
+    "column": 1
+  },
+  "new_functions": [
+    "poSupplementContext"
+  ],
+  "changed_functions": [
+    "poValidatePayload",
+    "poApprovalBundle",
+    "poSnapshot",
+    "poActorResponse",
+    "handlePurchaseOrderApproval",
+    "poExcelWorkbook",
+    "sendPurchaseOrderEmail",
+    "buildPurchaseOrderOutcomeEmail",
+    "renderPurchaseOrderOutcomeEmail",
+    "managePurchaseOrder"
+  ],
+  "existing_apis": [
+    "Manage_Purchase_Order",
+    "Manage_Purchase_Order_DEV"
+  ],
+  "new_api_registrations": [],
+  "deployment": {
+    "development_fields": "Saved in Application IDE and independently reopened; all five persisted fields confirmed.",
+    "development_helper": "Created and Save/Done completed; persisted source recheck was interrupted by repeated agent-owned browser timeouts.",
+    "development_changed_functions": "Prepared in repository; installation and native compilation remain required.",
+    "stage": "Not published; owner promotion under PMP.",
+    "production": "Not published; owner promotion under PMP. Widget requires po-supplemental-v1 before supplement preparation."
+  },
+  "invariants": {
+    "request_type": "Purchase Order",
+    "eligible_original": "Approved managed original PO; no supplemental parent chaining",
+    "scope": "Same vendor, budget/phase and department",
+    "amount": "Only this supplement's new lines; original financial records and approvals unchanged",
+    "threshold": "Existing signed net budget change rule applied to this supplement alone",
+    "approval_context": "Captured original and earlier approved supplement revisions; all lines displayed, new lines marked",
+    "active_submissions": "One unresolved submitted supplement per original; rejected reservations remain unresolved",
+    "capacity": "250 editable lines per request; up to 100 approved baseline source records and 16000 baseline metadata characters",
+    "sequence": "Original counter advances under phase lock; number retained on edits and never reused after deletion",
+    "po_number": "Original business PO number retained; sequence identifies an approval supplement, never a new PO number",
+    "deletion": "Original deletion cascades to all supplements with explicit family confirmation, one phase lock, exact revisions and read-only recovery; earlier individual supplements remain protected by later dependencies"
+  }
+}

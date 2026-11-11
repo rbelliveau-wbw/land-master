@@ -71,6 +71,13 @@ map buildPurchaseOrderOutcomeEmail(string purchaseOrderId)
 		if(environmentName == "development") { subject = "[DEV TEST] " + subject; }
 		if(checked.get("bundle").get("poTestCFO") != null) { subject = "[PO TEST] " + subject; }
 		result = {"success":true,"recipients":recipients,"subject":subject,"outcome":outcome,"revision":po.PO_Revision,"budgetId":po.Budget.toString(),"objectId":purchaseOrderId,"amount":po.PO_Amount_Exact,"phaseName":ifnull(po.Budget.Budget_Name,""),"vendorName":ifnull(po.Vendor.Vendor_Name,""),"costCodes":codeRows,"url":url};
+		if(po.PO_Original != null)
+		{
+			outcomeBaseline = po.PO_Supplement_Baseline.toMap(); previousAmount = 0.00;
+			for each outcomeSource in outcomeBaseline.get("sources") { previousAmount = previousAmount + outcomeSource.get("amount").toDecimal(); }
+			result.put("reference",po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number); result.put("supplemental",true); result.put("previousAmount",thisapp.poCurrencyString(previousAmount.toString())); result.put("combinedAmount",thisapp.poCurrencyString((previousAmount + po.PO_Amount_Exact.toDecimal()).toString()));
+			result.put("subject","Supplemental " + subject);
+		}
 		// Four UTF-8 bytes per character is a conservative bound even for
 		// non-BMP names. Never persist a silently truncated native Snapshot.
 		if(result.toString().length() > 16000) { result = {"success":false,"error":"The complete cost-code notification exceeds its safe audit size. Review the PO before sending."}; return result; }

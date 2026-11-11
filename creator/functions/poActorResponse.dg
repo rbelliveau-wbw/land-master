@@ -11,6 +11,7 @@ map poActorResponse(map response, string userAccessId)
 		canReadEmail = thisapp.poEmailCanViewActivity(ifnull(editSnapshot.get("budgetId"),"").toString(),userAccessId) || thisapp.poEmailCanReadPO(ifnull(editSnapshot.get("id"),"").toString(),userAccessId);
 		if(!canReadEmail) { editSnapshot.remove("outcomeNotification"); response.remove("outcomeNotification"); }
 		editSnapshot.put("canEditInFlight",editActor.count() == 1 && editActor.Edit_All_Budgets == true && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Submitted" && editSnapshot.get("approvalState") == "Pending");
+		if(editSnapshot.get("originalPoId") != null && editSnapshot.get("originalPoId") != "") { editSnapshot.put("canEditInFlight",false); }
 		canEditDraft = false;
 		if(editActor.count() == 1 && editBudget.count() == 1 && editBudget.Archived != true && editSnapshot.get("status") == "Draft" && editSnapshot.get("commitmentState") == "None" && editSnapshot.get("approvalState") == "Not Configured")
 		{

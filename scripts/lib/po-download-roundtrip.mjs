@@ -4,7 +4,7 @@ import vm from 'node:vm';
 
 // Feed the actual native workbook producer's response through the actual widget
 // download handler and reopen the resulting ZIP/OOXML bytes with the XLSX reader.
-export async function verifyPODownload(native){
+export async function verifyPODownload(native,options={}){
   const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8');
   const start=source.indexOf('async function downloadSavedPurchaseOrder(');
   const handler=source.slice(start,source.indexOf('\n}',start)+2),downloads=[],calls=[];
@@ -24,6 +24,9 @@ export async function verifyPODownload(native){
   assert.equal(file.blob.type,'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   const round=c.XLSX.read(Array.from(bytes),{type:'array',cellNF:true,cellStyles:true});
   assert.equal(round.bookType,'xlsx');assert.ok(round.SheetNames.includes('Purchase Order'));
+  if(options.revised){
+    assert.deepEqual(Array.from(round.SheetNames),['Purchase Order','Original Lines','Original Budget Elements']);const consolidated=round.Sheets['Purchase Order'];assert.equal(consolidated.A1.v,'Revised Purchase Order '+native.id);assert.equal(consolidated.I2.v,options.approvedTotal);assert.equal(consolidated.A4.v,native.id);assert.equal(consolidated.A4.t,'s');assert.equal(consolidated.B4.v,options.costCode);assert.equal(consolidated.B5.v,options.costCode,'A supplement can reuse the exact original cost code');assert.match(consolidated.A5.v,/Supplement 1/);assert.equal(consolidated.D5.v,'More work on the original cost code $& scope');assert.equal(consolidated.D5.t,'s');assert.equal(round.Sheets['Original Lines'].B5.v,options.originalTotal);return;
+  }
   const sheet=round.Sheets['Purchase Order'];assert.equal(sheet.E3.t,'s');assert.equal(sheet.E3.v,native.id,'Creator identity remains text');
   assert.equal(sheet.B5.v,55);assert.match(sheet.B5.z,/0\.00/,'Currency formatting survives');
   assert.equal(sheet.A8.v,'C_CAR01-4410-5');assert.equal(sheet.B8.v,'Tanks & valves');assert.equal(sheet.C8.v,"Changed <description> O'Brien scope='literal'",'Attribute normalization never rewrites user text');

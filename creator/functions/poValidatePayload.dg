@@ -17,6 +17,12 @@ map poValidatePayload(string payload)
 			result.put("error","Choose a PO type: Construction or Development.");
 			return result;
 		}
+		if(p.get("originalPoId") != null && p.get("originalPoId") != "")
+		{
+			typedOriginal = {"value":p.get("originalPoId")};
+			if(!typedOriginal.toString().matches("[{][ ]*\"value\"[ ]*:[ ]*\"[0-9]+\"[ ]*[}]")) { result.put("error","Original PO identity must be an exact ID string."); return result; }
+			if(ifnull(p.get("supplementBaselineKey"),"").toString() == "") { result.put("error","Load the approved original PO before saving a supplement."); return result; }
+		}
 		action = ifnull(p.get("action"),"");
 		if(action != "Save" && action != "Submit")
 		{

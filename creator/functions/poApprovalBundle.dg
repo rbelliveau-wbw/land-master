@@ -27,6 +27,13 @@ map poApprovalBundle(string purchaseOrderId)
 		}
 		captured = Approval_Route_Snapshot[ID == selectedId];
 		context = captured.Context_JSON.toMap();
+		if(po.PO_Original != null)
+		{
+			if(context.get("supplementalContract") != "po-supplemental-v1" || context.get("originalPoId") != po.PO_Original.toString() || context.get("supplementNumber") != po.PO_Supplement_Number || context.get("supplementBaseline") == null || context.get("supplementBaseline").toString() != ifnull(po.PO_Supplement_Baseline,"{}").toMap().toString())
+			{
+				result.put("error","The supplement's approved baseline differs from its captured approval round."); return result;
+			}
+		}
 		routeSnapshot = captured.Route_JSON.toMap();
 		route = List();
 		executionIds = captured.Execution_JSON.toJSONList();

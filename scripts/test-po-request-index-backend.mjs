@@ -46,6 +46,10 @@ assert.equal(reply.rows[1].approvals[0].userAccessId,'12');
 assert.equal(reply.rows[4].approvalBundle,null,'Legacy reserved POs do not acquire an invented route');
 assert.deepEqual(r.tables(),before);assert.equal(r.c.writes,0);assert.equal(r.c.rollups,0);assert.equal(r.c.mails.length,0);
 
+// Supplements have an internal request ID but retain their original business PO identity.
+r=fixture({tables:{Payment_Request:[draft(51,61),{...draft(59,61),PO_Kind:'Supplemental',PO_Original:51,PO_Supplement_Number:2}]}});reply=call(r);
+assert.equal(reply.rows[0].originalPoId,'');assert.equal(reply.rows[1].id,'59');assert.equal(reply.rows[1].originalPoId,'51');assert.equal(reply.rows[1].supplementNumber,2);assert.equal(r.c.writes,0);
+
 // Creator's native list text format is not a JSON array. The live 102-phase
 // payload must never cross a list-to-text-to-JSON round trip or wrapper regex.
 const manyPhases=Array.from({length:102},(_,i)=>({ID:61+i,Archived:false,Budget_Owner:[]}));

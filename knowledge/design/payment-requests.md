@@ -1,3 +1,20 @@
+## Supplemental PO Review
+
+Supplemental Purchase Order appears in global Add, phase Request and Requests
+New Request. Choose an approved original through the existing searchable parent
+picker. Retain the three-panel workspace and tabs. Lock vendor and PO Type;
+show Previously Approved Lines in a read-only table outside the editable grid.
+Label additions New and distinguish Previously Approved, This Supplement and
+Proposed/Revised Approved Total. Original review lists supplement references,
+statuses and incremental amounts. Never label pending/rejected additions as
+approved or substitute a combined display total for a financial request amount.
+Original PO deletion lists every supplement with status and amount under
+Supplements Also Deleted, shows the actual reserved Commitment Released, and
+uses Delete PO & Supplements. Keep the family list scrollable, labeled and
+keyboard-focusable. A confirmed preview covers every family member; changed
+membership or revisions require a fresh preview.
+Use [the supplemental PO contract](../../docs/po-supplemental-2026-11-11.md).
+
 # Request list
 
 ## Required PO type

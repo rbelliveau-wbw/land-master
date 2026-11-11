@@ -1,0 +1,71 @@
+map poSupplementContext(string originalId, string baselineJSON)
+{
+	result = {"success":false,"contract":"po-supplemental-v1"};
+	try
+	{
+		if(!ifnull(originalId,"").matches("[0-9]+")) { result.put("error","An original PO is required."); return result; }
+		original = Payment_Request[ID == originalId.toLong() && Request_Type == "Purchase Order"];
+		originalTypeInvalid = original.Department != "Construction" && original.Department != "Development";
+		if(original.count() != 1 || original.ID.toString() != originalId || original.PO_Original != null || original.PO_Status != "Submitted" || original.PO_Approval_State != "Approved" || original.PO_Commitment_State != "Reserved" || ifnull(original.PO_Revision,"") == "" || originalTypeInvalid)
+		{
+			result.put("error","Select an approved original PO with a verified PO type."); return result;
+		}
+		baseline = Map();
+		if(ifnull(baselineJSON,"") == "")
+		{
+			sources = List();
+			sources.add({"id":originalId,"revision":original.PO_Revision,"amount":original.PO_Amount_Exact,"lineCount":original.PO_Line_Count,"reference":originalId});
+			for each sibling in Payment_Request[PO_Original == original.ID && Request_Type == "Purchase Order" && PO_Approval_State == "Approved"] sort by PO_Supplement_Number
+			{
+				sources.add({"id":sibling.ID.toString(),"revision":sibling.PO_Revision,"amount":sibling.PO_Amount_Exact,"lineCount":sibling.PO_Line_Count,"reference":originalId + " · Supplement " + sibling.PO_Supplement_Number});
+			}
+			baseline = {"contract":"po-supplemental-v1","originalId":originalId,"sources":sources};
+		}
+		else { baseline = baselineJSON.toMap(); }
+		if(baseline.get("contract") != "po-supplemental-v1" || baseline.get("originalId") != originalId || baseline.get("sources") == null || baseline.get("sources").size() == 0 || baseline.get("sources").size() > 100)
+		{
+			result.put("error","The supplemental PO baseline is unavailable or exceeds supported capacity."); return result;
+		}
+		if(baseline.toString().length() > 16000) { result.put("error","The captured PO baseline exceeds supported audit capacity."); return result; }
+		previousLines = List(); seen = List(); totalCents = 0;
+		for each source in baseline.get("sources")
+		{
+			sourceId = ifnull(source.get("id"),"").toString();
+			if(!sourceId.matches("[0-9]+") || seen.contains(sourceId)) { result.put("error","The approved PO baseline has duplicate or invalid sources."); return result; }
+			if(seen.size() == 0 && sourceId != originalId) { result.put("error","The approved baseline must start with the original PO."); return result; }
+			seen.add(sourceId);
+			sourcePO = Payment_Request[ID == sourceId.toLong() && Request_Type == "Purchase Order" && Budget == original.Budget];
+			if(sourcePO.count() != 1 || sourcePO.PO_Status != "Submitted" || sourcePO.PO_Approval_State != "Approved" || sourcePO.PO_Commitment_State != "Reserved" || sourcePO.PO_Revision != source.get("revision") || sourcePO.PO_Amount_Exact != source.get("amount") || sourcePO.PO_Line_Count != source.get("lineCount") || sourcePO.Vendor != original.Vendor || sourcePO.Department != original.Department)
+			{
+				result.put("error","An approved PO in the supplement baseline changed. Reload the PO before continuing."); return result;
+			}
+			if(sourceId != originalId && sourcePO.PO_Original != original.ID) { result.put("error","A baseline PO belongs to another original."); return result; }
+			sourceApprovals = thisapp.poApprovalBundle(sourceId);
+			if(sourceApprovals.get("success") != true) { result.put("error",sourceApprovals.get("error")); return result; }
+			lineCount = 0; sourceCents = 0; keys = List();
+			for each baselineLine in PO_Item[Purchase_Order == sourcePO.ID && Revision == source.get("revision")] sort by Line_Order
+			{
+				lineCount = lineCount + 1;
+				baselineItem = Budget_Item[ID == baselineLine.Budget_Item];
+				amount = thisapp.poCurrencyString(ifnull(baselineLine.Final_Amount_Exact,"").toString());
+				if(amount == "" || baselineLine.Line_Order != lineCount || keys.contains(baselineLine.Line_Key) || baselineLine.Revision_Line_Key != source.get("revision") + "-" + baselineLine.Line_Key || thisapp.poCurrencyString(baselineLine.Final_Amount.toString()) != amount || baselineItem.count() != 1 || baselineItem.Budget != original.Budget)
+				{
+					result.put("error","An approved baseline line could not be verified."); return result;
+				}
+				keys.add(baselineLine.Line_Key); sourceCents = sourceCents + amount.replaceAll("[.]","").toLong();
+				previousLines.add({"ID":baselineLine.ID.toString(),"key":baselineLine.Line_Key,"sourceId":sourceId,"sourceReference":source.get("reference"),"budgetItemId":baselineLine.Budget_Item.toString(),"itemName":ifnull(baselineItem.Item_Name,""),"description":baselineLine.Description,"costCode":baselineLine.Cost_Code,"costElement":baselineLine.Cost_Element,"uom":baselineLine.UOM,"pricingMode":baselineLine.Pricing_Mode,"quantity":baselineLine.Quantity_Exact,"unitPrice":baselineLine.Unit_Price_Exact,"finalAmount":amount});
+			}
+			if(lineCount == 0 || lineCount != source.get("lineCount") || sourceCents != source.get("amount").replaceAll("[.]","").toLong()) { result.put("error","The approved baseline line count or amount does not reconcile."); return result; }
+			totalCents = totalCents + sourceCents;
+		}
+		if(totalCents > 999999999999999) { result.put("error","The combined PO total exceeds supported currency capacity."); return result; }
+		digits = totalCents.toString(); if(digits.length() == 1) { digits = "00" + digits; } if(digits.length() == 2) { digits = "0" + digits; }
+		result.put("baseline",baseline); result.put("baselineKey",zoho.encryption.sha256(baseline.toString()));
+		result.put("previousAmount",digits.subString(0,digits.length()-2) + "." + digits.subString(digits.length()-2,digits.length()));
+		result.put("previousLines",previousLines); result.put("originalId",originalId);
+		result.put("budgetId",original.Budget.toString()); result.put("vendorId",original.Vendor.toString()); result.put("department",original.Department);
+		result.put("success",true);
+	}
+	catch(supplementError) { result.put("error","The complete approved PO baseline could not be loaded. No supplemental write is authorized."); }
+	return result;
+}

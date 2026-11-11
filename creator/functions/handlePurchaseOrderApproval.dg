@@ -32,6 +32,11 @@ map handlePurchaseOrderApproval(map request)
 			result.put("error","PO revision or authenticated User Access identity changed.");
 			return result;
 		}
+		if(po.PO_Original != null)
+		{
+			decisionBaseline = thisapp.poSupplementContext(po.PO_Original.toString(),ifnull(po.PO_Supplement_Baseline,""));
+			if(decisionBaseline.get("success") != true || ifnull(po.PO_Supplement_Baseline,"") == "") { result.put("error",ifnull(decisionBaseline.get("error"),"The approved original context is unavailable.")); return result; }
+		}
 		decisionAction = action;
 		if(action == "CheckDecision")
 		{

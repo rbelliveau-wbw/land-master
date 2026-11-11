@@ -16,6 +16,7 @@ const context={
   esc:v=>String(v),escAttr:v=>String(v),shortErr:e=>e.message,budgetArchived:b=>!!b.Archived,
   budgetCreateScope:()=>scope,sdkGetAllRecords:(report)=>Promise.resolve(report==='subs'?context.subdivisions:context.budgets),
   CFG:{reports:{subdivisions:'subs',budgets:'budgets'}},toastShow:m=>calls.push(['toast',m]),
+  fmt:v=>String(v),v:v=>Number(v),getPurchaseOrderUI:()=>({open:async (...args)=>calls.push(["supplement",...args])}),
   phaseName:b=>b.Phase,projectName:b=>b.Project,canSubmitMod:b=>b.canEdit,canEditBudget:b=>!!b.canEdit,
   budgetNavigationToken:()=>token,budgetNavigationCurrent:(t,v,id)=>t===token,
   openPhaseEditor:(id,mode)=>{calls.push(['editor',id,mode]);token++;return new Promise(resolve=>{loadResolve=resolve;});},
@@ -58,6 +59,23 @@ context.openGlobalBudgetAdd('budget');context.closeGlobalBudgetAdd();await settl
 const requestTrigger={isConnected:true,focus(){calls.push(['request-trigger-focus']);}};context.setActiveTab=tab=>calls.push(['tab',tab]);
 context.openGlobalBudgetAdd('check',requestTrigger);await settle();assert.equal(context.globalBudgetAdd.trigger,requestTrigger,'The Requests menu preserves its own return-focus target');
 context.selectGlobalBudgetParent(a);assert.equal(context.S.requestsReturn,true);assert.equal(el('backBtn').title,'Back to Requests');loadResolve();await settle();assert.deepEqual(calls.at(-1),['request','Check'],'Requests enters the same existing global Add composer after type and budget selection');
+// Supplemental Add traverses budget -> approved original -> the existing PO editor.
+context.S.edBudget=context.S.budgets[0];
+context.openGlobalBudgetAdd('supplemental-purchase-order');await settle();
+context.selectGlobalBudgetParent(a);loadResolve();await settle();
+assert.equal(context.globalBudgetAdd.stage,'original');
+assert.equal(JSON.parse(calls.at(-1)[2].payload).action,'SupplementChoices');
+const original='910000000000000001';
+apiResolve({success:true,supplementalContract:'po-supplemental-v1',choices:[{id:original,vendorName:'Vendor',department:'Construction',amount:'12000.00'}]});await settle();
+assert.deepEqual(Array.from(context.globalBudgetAdd.rows,r=>r.id),[original]);
+context.selectGlobalBudgetParent(original);await settle();
+assert.equal(calls.at(-1)[0],'supplement');assert.equal(calls.at(-1)[4],'supplement');
+assert.equal(calls.at(-1)[5].originalPoId,original);
+context.openGlobalBudgetAdd('supplemental-purchase-order',null,context.S.edBudget);
+apiResolve({success:true,choices:[{id:original}]});await settle();
+assert.match(el('budgetCreateStatus').textContent,/not available/);
+assert.equal(context.globalBudgetAdd.rows.length,0,'Missing native capability never offers a normal PO fallback');
+context.closeGlobalBudgetAdd();
 const backend=fs.readFileSync('creator/functions/createBudgetFromSubdivision.dg','utf8');
 assert.match(backend,/User_Access\[User == zoho\.loginuser\]/);
 assert.match(backend,/Edit_All_Budgets != true && accessRow\.Edit_Owned_Budgets != true/);

@@ -53,8 +53,9 @@
         mark('#modPreview .rv',mod);
         table('#modElementPreview',id(mod,'elements'),{row:row=>row.dataset.modElementRow});
         each('.po-overlay',overlay=>{
-          const scope=id('po',api.identity(overlay));
+          const scope=id('po',overlay.dataset?.poRecordId||api.identity(overlay));
           each('[data-po-total],[data-po-summary-total],[data-po-summary-count],[data-po-context] strong', (node,i)=>api.text(node,[scope,'summary',i]),overlay);
+          each('[data-po-family-total],[data-po-supplement-amount]',node=>api.text(node,[scope,'supplement',node.hasAttribute('data-po-family-total')?'combined':'added']),overlay);
           each('[data-ra-extra-count="approvers"]',node=>api.text(node,[scope,'approvers','count']),overlay);
           each('[data-line]',row=>{
             const line=row.dataset.line;

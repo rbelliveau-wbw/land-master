@@ -58,6 +58,11 @@
   function departmentAllows(type, department) {
     return type === 'Construction' ? department === 'Construction' : type === 'Development' && (department === 'Development' || department === 'Engineering');
   }
+  function supplementContext(value,budgetId,originalId){
+    if(!value||value.contract!=='po-supplemental-v1'||value.success!==true||value.budgetId!==budgetId||value.originalId!==originalId||typeof value.vendorId!=='string'||!/^\d+$/.test(value.vendorId)||!['Construction','Development'].includes(value.department)||typeof value.baselineKey!=='string'||!value.baselineKey||!value.baseline||value.baseline.originalId!==originalId||!Array.isArray(value.previousLines)||!value.previousLines.length)throw new Error('The complete approved original PO is unavailable.');
+    var seen=new Set(),total=0n;value.previousLines.forEach(function(line){if(typeof line.ID!=='string'||!/^\d+$/.test(line.ID)||seen.has(line.ID)||typeof line.sourceId!=='string'||!/^\d+$/.test(line.sourceId))throw new Error('Approved PO line identities are unavailable.');seen.add(line.ID);total+=money(line.finalAmount);});
+    if(total!==money(value.previousAmount))throw new Error('The approved PO total does not reconcile.');return value;
+  }
   function validate(payload, submit, readingExisting) {
     if (!payload || typeof payload.budgetId!=="string" || typeof payload.vendorId!=="string" || !/^\d+$/.test(payload.budgetId) || !/^\d+$/.test(payload.vendorId)) throw new Error("Phase and vendor are required.");
     if (!['Construction','Development'].includes(payload.department) && !(readingExisting === true && !payload.department)) throw new Error('Choose a PO type.');
@@ -194,5 +199,5 @@
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });
   }
-  root.LMPO={departmentAllows:departmentAllows,uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
+  root.LMPO={supplementContext:supplementContext,departmentAllows:departmentAllows,uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);

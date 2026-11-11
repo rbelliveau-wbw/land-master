@@ -1,3 +1,15 @@
+## Supplemental PO Approval Predicates
+
+Reuse the managed PO controller/progress modal and exact operation receipts.
+The saved destination is the supplement with its original ID, sequence,
+captured baseline and new-line count. Submit requires its fresh captured chain;
+decisions require the existing sequential/financial/delivery predicates plus
+the unchanged approved baseline. Full-line review/workbooks mark additions;
+only those additions and their modifications are approved in this round.
+Original lines and prior decisions remain unchanged. Unknown results use the
+same actor/budget/token read-only Check and never recreate a supplement.
+See [the supplemental PO handoff](../../docs/po-supplemental-2026-11-11.md).
+
 # Approval progress pattern
 
 ## PO Rejection Review — November 10, 2026

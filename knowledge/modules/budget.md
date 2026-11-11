@@ -1,3 +1,18 @@
+## Supplemental Purchase Orders — November 11, 2026
+
+Reuse Payment_Request/PO_Item with additive original linkage, subtype, sequence
+and captured baseline fields. Approved originals only; vendor, phase and type
+locked. New rows may reuse cost codes; financial amounts and the existing $10k
+net-budget approval threshold use only the supplement. Reviews/Excel include
+all approved lines and mark additions. Deleting the original also deletes its
+supplements, explicitly listed in the confirmation and protected by one exact
+family preview/phase lock and read-only lost-reply recovery. Original review lists supplements and
+the revised approved total. Existing permissions, reservations, modifications,
+sequential approvals and unknown-write recovery remain in force. Native changes
+are required and await owner installation/publication; the five fields alone
+are installed in Development. See [implementation, Creator handoff, validation
+and rollback](../../docs/po-supplemental-2026-11-11.md).
+
 ## Required PO Type — November 11, 2026
 
 The existing PO header requires Construction or Development before item

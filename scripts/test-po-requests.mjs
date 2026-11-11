@@ -100,7 +100,7 @@ for(const bad of [{...snapshot,id:'another-po'},{...snapshot,budgetId:'another-b
 const before=deferred(),after=deferred();u.call=payload=>payload.id===poId?before.promise:after.promise;const earlier=u.get(poId),later=u.get('900000000000000006');
 after.resolve({contract:'po-v1',success:true,snapshot:{...snapshot,id:'900000000000000006'}});await later;before.resolve({contract:'po-v1',success:true,snapshot});await earlier;
 assert.equal(u.model.id,'900000000000000006','A late saved PO reply cannot replace the latest selection');
-assert.match(ui,/loadState:purchaseOrderId\?'loading':'loaded'/,'Direct saved-PO entry starts locked while vendors load');
+assert.match(ui,/loadState:purchaseOrderId\|\|intent==='supplement'\?'loading':'loaded'/,'Saved POs and supplemental preparation start locked while their native context loads');
 assert.match(ui,/data-po-reload/,'Failed loads offer a read-only retry');
 console.log('PO Requests: blank native report, scoped List/Vendors merge, exact draft editing, fresh reads, malformed/foreign identities and guarded Get recovery passed.');
 

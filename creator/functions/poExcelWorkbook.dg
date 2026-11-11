@@ -45,10 +45,13 @@ map poExcelWorkbook(string purchaseOrderId)
 		{
 			modSummary = bundle.get("modifications").size() + " modifications · Net $" + modTotal;
 		}
+		packetTitle = "Purchase Order";
+		packetReference = purchaseOrderId;
+		if(po.PO_Original != null) { packetTitle = "Supplemental Purchase Order · Supplement " + po.PO_Supplement_Number; packetReference = po.PO_Original.toString(); }
 		// Real Excel SpreadsheetML (.xls), using the application's native export format.
 		// Keep title/summary rows at 22/18 points; no oversized cover or spacer rows.
 		excelXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet' xmlns:x='urn:schemas-microsoft-com:office:excel'><Styles><Style ss:ID='Default' ss:Name='Normal'><Alignment ss:Vertical='Center'/><Font ss:FontName='Calibri' ss:Size='10' ss:Color='#17385F'/></Style><Style ss:ID='Title'><Font ss:Size='13' ss:Bold='1' ss:Color='#FFFFFF'/><Interior ss:Color='#17385F' ss:Pattern='Solid'/></Style><Style ss:ID='Header'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Total'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Date'><NumberFormat ss:Format='mm/dd/yy'/></Style><Style ss:ID='Number'><NumberFormat ss:Format='0.###'/></Style><Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style></Styles><Worksheet ss:Name='Purchase Order'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='140'/><Column ss:Width='220'/><Column ss:Width='55'/><Column ss:Width='45'/><Column ss:Width='120'/><Column ss:Width='80'/><Column ss:Width='85'/>";
-		excelXml = excelXml + "<Row ss:Height='22' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7' ss:StyleID='Title'><Data ss:Type='String'>Purchase Order</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7'><Data ss:Type='String'>" + phase + "</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Vendor</Data></Cell><Cell ss:MergeAcross='1'><Data ss:Type='String'>" + vendor + "</Data></Cell><Cell ss:Index='4'><Data ss:Type='String'>PO ID</Data></Cell><Cell ss:MergeAcross='3'><Data ss:Type='String'>" + purchaseOrderId + "</Data></Cell></Row>";
+		excelXml = excelXml + "<Row ss:Height='22' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7' ss:StyleID='Title'><Data ss:Type='String'>" + packetTitle + "</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7'><Data ss:Type='String'>" + phase + "</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Vendor</Data></Cell><Cell ss:MergeAcross='1'><Data ss:Type='String'>" + vendor + "</Data></Cell><Cell ss:Index='4'><Data ss:Type='String'>PO Reference</Data></Cell><Cell ss:MergeAcross='3'><Data ss:Type='String'>" + packetReference + "</Data></Cell></Row>";
 		excelXml = excelXml + "<Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Request date</Data></Cell>";
 		if(po.Request_Date != null)
 		{
@@ -116,7 +119,7 @@ map poExcelWorkbook(string purchaseOrderId)
 		{
 			item = Budget_Item[ID == modification.get("budgetItemId").toLong()];
 			name = ifnull(item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-			code = ifnull(item.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			code = ifnull(item.Cost_Code,"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 			modNet = modification.get("amount").toDecimal();
 			if(modification.get("componentReallocation") == true && modification.get("modificationType") == "Decrease") { modNet = 0 - modNet; }
 			excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>" + code + "</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + name + "</Data></Cell><Cell ss:StyleID='Money'><Data ss:Type='Number'>" + modNet + "</Data></Cell><Cell><Data ss:Type='String'>" + modification.get("id") + "</Data></Cell>";
@@ -162,7 +165,57 @@ map poExcelWorkbook(string purchaseOrderId)
 			}
 			excelXml = excelXml + "</Row>";
 		}
-		excelXml = excelXml + "</Table></Worksheet></Workbook>";
+		excelXml = excelXml + "</Table></Worksheet>";
+		revisedOriginal = false;
+		if(po.PO_Original == null && po.PO_Approval_State == "Approved" && Payment_Request[PO_Original == po.ID && PO_Status == "Submitted" && PO_Approval_State == "Approved"].count() > 0) { revisedOriginal = true; }
+		if(po.PO_Original != null || revisedOriginal)
+		{
+			if(revisedOriginal) { fullContext = thisapp.poSupplementContext(po.ID.toString(),""); }
+			else { fullContext = thisapp.poSupplementContext(po.PO_Original.toString(),ifnull(po.PO_Supplement_Baseline,"")); }
+			if(fullContext.get("success") != true) { result.put("error",fullContext.get("error")); return result; }
+			previousAmount = fullContext.get("previousAmount"); combinedAmount = thisapp.poCurrencyString((previousAmount.toDecimal() + po.PO_Amount_Exact.toDecimal()).toString());
+			if(revisedOriginal) { reference = po.ID.toString(); familyTitle = "Revised Purchase Order "; combinedAmount = previousAmount; }
+			else { reference = po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number; familyTitle = "Supplemental Purchase Order "; }
+			fullSheet = "<Worksheet ss:Name='All PO Lines'><Table ss:DefaultRowHeight='18'><Column ss:Width='150'/><Column ss:Width='120'/><Column ss:Width='160'/><Column ss:Width='220'/><Column ss:Width='60'/><Column ss:Width='45'/><Column ss:Width='55'/><Column ss:Width='90'/><Column ss:Width='100'/><Row ss:StyleID='Title'><Cell ss:MergeAcross='8'><Data ss:Type='String'>" + familyTitle + reference + "</Data></Cell></Row>";
+			familyMetrics = List();
+			if(revisedOriginal) { familyMetrics.add({"label":"Revised Approved Total","value":combinedAmount}); }
+			else { familyMetrics.add({"label":"Previously Approved","value":previousAmount}); familyMetrics.add({"label":"This Supplement — New Lines","value":po.PO_Amount_Exact}); familyMetrics.add({"label":if(po.PO_Approval_State == "Approved","Revised Approved Total","Proposed Total"),"value":combinedAmount}); }
+			for each metric in familyMetrics
+			{
+				fullSheet = fullSheet + "<Row><Cell ss:MergeAcross='7'><Data ss:Type='String'>" + metric.get("label") + "</Data></Cell><Cell ss:StyleID='Total'><Data ss:Type='Number'>" + metric.get("value") + "</Data></Cell></Row>";
+			}
+			fullSheet = fullSheet + "<Row ss:StyleID='Header'>";
+			for each heading in {"Line Status / PO","Cost Code","Item Name","Description","Qty","UOM","ELEM","Unit Price","Total"} { fullSheet = fullSheet + "<Cell><Data ss:Type='String'>" + heading + "</Data></Cell>"; }
+			fullSheet = fullSheet + "</Row>";
+			allLines = fullContext.get("previousLines");
+			if(!revisedOriginal)
+			{
+				for each addedLine in PO_Item[Purchase_Order == po.ID && Revision == revision] sort by Line_Order
+				{
+					allLines.add({"sourceReference":"NEW — " + reference,"costCode":addedLine.Cost_Code,"itemName":ifnull(addedLine.Budget_Item.Item_Name,""),"description":addedLine.Description,"quantity":addedLine.Quantity_Exact,"uom":addedLine.UOM,"costElement":addedLine.Cost_Element,"unitPrice":addedLine.Unit_Price_Exact,"finalAmount":addedLine.Final_Amount_Exact});
+				}
+			}
+			for each packetLine in allLines
+			{
+				fullSheet = fullSheet + "<Row>";
+				for each textKey in {"sourceReference","costCode","itemName","description"} { escaped = ifnull(packetLine.get(textKey),"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); fullSheet = fullSheet + "<Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + escaped + "</Data></Cell>"; }
+				if(packetLine.get("quantity") != null && packetLine.get("quantity") != "") { fullSheet = fullSheet + "<Cell ss:StyleID='Number'><Data ss:Type='Number'>" + packetLine.get("quantity") + "</Data></Cell>"; } else { fullSheet = fullSheet + "<Cell/>"; }
+				for each textKey in {"uom","costElement"} { escaped = ifnull(packetLine.get(textKey),"").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;"); fullSheet = fullSheet + "<Cell><Data ss:Type='String'>" + escaped + "</Data></Cell>"; }
+				if(packetLine.get("unitPrice") != null && packetLine.get("unitPrice") != "") { fullSheet = fullSheet + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + packetLine.get("unitPrice") + "</Data></Cell>"; } else { fullSheet = fullSheet + "<Cell/>"; }
+				fullSheet = fullSheet + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + packetLine.get("finalAmount") + "</Data></Cell></Row>";
+			}
+			fullSheet = fullSheet + "</Table></Worksheet>";
+			if(revisedOriginal)
+			{
+				excelXml = excelXml.replaceAll("<Worksheet ss:Name='Purchase Order'>","<Worksheet ss:Name='Original Lines'>");
+				fullSheet = fullSheet.replaceAll("<Worksheet ss:Name='All PO Lines'>","<Worksheet ss:Name='Purchase Order'>");
+				sheetPosition = excelXml.indexOf("<Worksheet ss:Name='Original Lines'>");
+				excelXml = excelXml.subString(0,sheetPosition) + fullSheet + excelXml.subString(sheetPosition,excelXml.length());
+				excelXml = excelXml.replaceAll("<Worksheet ss:Name='Budget Elements'>","<Worksheet ss:Name='Original Budget Elements'>");
+			}
+			else { excelXml = excelXml + fullSheet; }
+		}
+		excelXml = excelXml + "</Workbook>";
 		if(po.PO_Revision != revision)
 		{
 			result.put("error","PO changed during download. Try again.");
@@ -173,6 +226,7 @@ map poExcelWorkbook(string purchaseOrderId)
 		result.put("budgetId",po.Budget.toString());
 		result.put("revision",po.PO_Revision);
 		result.put("filename","Purchase_Order_" + purchaseOrderId + ".xls");
+		if(po.PO_Original != null) { result.put("filename","Purchase_Order_" + po.PO_Original.toString() + "_Supplement_" + po.PO_Supplement_Number + ".xls"); }
 		result.put("content",excelXml);
 		return result;
 	}	catch (workbookError)
