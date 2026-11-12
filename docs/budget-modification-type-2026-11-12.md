@@ -16,4 +16,4 @@ These edits were saved through the agent-owned Creator browser. Publication to S
 
 The existing create/edit regression now covers every choice, blank legacy values, 50 accepted/51 rejected, and actual native record/API payloads. Browser preview verifies searchable selection, keyboard access, readable labels, native maxlength and draft retention across Increase/Decrease. The full repository validation and Pages build pass. Greptile could not run because its CLI is signed out.
 
-Frontend release: 122.29.142. Roll back Production mapping to 122.29.140 and restore previous function bodies. Retain new fields and their data.
+Frontend release: 122.29.143. Roll back Production mapping to 122.29.140 and restore previous function bodies. Retain new fields and their data.
