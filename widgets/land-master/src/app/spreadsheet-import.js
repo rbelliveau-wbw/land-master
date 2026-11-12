@@ -111,7 +111,9 @@
       document.getElementById('siPairContext').textContent=p.fileName+' → '+chosen().map(s=>s.Subdivision_Name).join(', ');
       const complete=!p.creating&&!p.error&&run.properties===run.total&&run.created===run.total;
       const outcome=document.getElementById('siPairOutcome');outcome.dataset.state=p.creating?'saving':complete?'saved':'error';outcome.className='si-pair-outcome'+(complete?' success':!p.creating?' warning':'');
-      outcome.textContent=p.creating?'Creating Lots & Properties…':complete?run.created+' Lots And '+run.properties+' Properties Created':run.created+' Lots Saved · '+run.properties+' Properties Saved — Needs Review';
+      const rate=p.creating&&ctx.rate?ctx.rate():null;
+      const waiting=rate&&rate.waitMs>0?'Waiting For Creator — Resuming In '+Math.ceil(rate.waitMs/1000)+'s':'';
+      outcome.textContent=p.creating?(waiting||'Creating Lots & Properties…'):complete?run.created+' Lots And '+run.properties+' Properties Created':run.created+' Lots Saved · '+run.properties+' Properties Saved — Needs Review';
       document.getElementById('siPairMeter').setAttribute('aria-valuenow',String(saved));
       document.getElementById('siPairBar').style.width=(total?saved/total*100:0)+'%';
       const stages=[['Check Existing Lots',run.stage>0?'Done':p.creating?'Running':'Needs Review'],['Create Lots & Properties',run.stage<1?(p.creating?'Up Next':'Not Started'):p.creating?'Running':complete?'Done':'Needs Review'],['Finish Import',p.creating?'Up Next':complete?'Done':'Needs Review']];
@@ -147,6 +149,8 @@
       p.run={rows,scope:ctx.scope?ctx.scope():'',total:rows.length,completed:0,created:0,properties:0,failed:0,stage:0,current:'Checking Existing Lot Codes'};
       rows.forEach(r=>{r.lotState='Waiting';r.propertyState='Waiting';});paint();document.getElementById('piTitle').tabIndex=-1;document.getElementById('piTitle').focus();
       background=Array.from(document.body.children||[]).filter(n=>n!==el&&n.id!=='piConfirm'&&!n.contains(el)).map(n=>[n,n.inert]);background.forEach(([n])=>{n.inert=true;});
+      const progressTimer=ctx.rate?window.setInterval(()=>{if(p.creating)paintRun();},1000):null;
+      function throttled(error){return ctx.throttled&&ctx.throttled(error);}
       function checkScope(){if(ctx.scope&&ctx.scope()!==p.run.scope)throw Error('The Creator session changed. Review saved records before another import.');}
       try{
         checkScope();await refreshExisting(subs);checkScope();p.run.stage=1;paint();
@@ -157,15 +161,16 @@
           const data={Lot_Code:r.code,Status:'Open',Subdivision:r.subId,Subdivision_Code:text(sub.Subdivision_Code),Phase:Number(sub.Phase),Block:text(r.block),Lot_Number:Number(r.lot),City:sub.importCity,County:sub.importCounty,Archived:false,On_Hold:false};if(text(r.width))data.Lot_Size=Number(r.width);
           p.run.current=r.code;r.lotState='Creating…';paint();
           try{const response=await ctx.add(data);r.created=true;r.on=false;r.lotState='Saved';r.lotId=ctx.recordId(response);existing.add(r.code.toUpperCase());p.run.created++;}
-          catch(e){r.error=ctx.error(e);r.lotState=e.uncertain?'Needs Review':'Failed';r.propertyState='Not Created';p.run.failed++;p.run.completed++;paint();if(e.uncertain){p.error='A Lot save could not be confirmed. Review saved records in Creator before another import.';break;}continue;}
+          catch(e){r.error=ctx.error(e);r.lotState=e.uncertain?'Needs Review':'Failed';r.propertyState='Not Created';p.run.failed++;p.run.completed++;paint();if(throttled(e)){p.error='Creator is still limiting requests. Import stopped; review the saved rows before another import.';break;}if(e.uncertain){p.error='A Lot save could not be confirmed. Review saved records in Creator before another import.';break;}continue;}
           if(!/^\d+$/.test(text(r.lotId))){r.propertyState='Not Created';r.error='Lot saved without a usable ID. Review the saved Lot in Creator before creating its Property.';p.run.failed++;p.run.completed++;p.error=r.error;paint();break;}
           checkScope();r.propertyState='Creating…';paint();
           try{const response=await ctx.addProperty(propertyData(r,sub,r.lotId));r.propertyCreated=true;r.propertyId=ctx.recordId(response);r.propertyState='Saved';p.run.properties++;}
-          catch(e){r.error=ctx.error(e);r.propertyState=e.uncertain?'Needs Review':'Failed';p.run.failed++;if(e.uncertain){p.error='A Property save could not be confirmed. Review saved records in Creator before another import.';p.run.completed++;paint();break;}}
+          catch(e){r.error=ctx.error(e);r.propertyState=e.uncertain?'Needs Review':'Failed';p.run.failed++;if(throttled(e)){p.error='Creator is still limiting requests. Import stopped; review the saved rows before another import.';p.run.completed++;paint();break;}if(e.uncertain){p.error='A Property save could not be confirmed. Review saved records in Creator before another import.';p.run.completed++;paint();break;}}
           p.run.completed++;p.progress=p.run.completed;paint();
         }
       }catch(e){p.error='Import stopped: '+ctx.error(e);}
       finally{
+        if(progressTimer!==null)window.clearInterval(progressTimer);
         p.creating=false;rows.forEach(r=>{if(r.lotState==='Waiting')r.lotState='Not Created';if(r.propertyState==='Waiting')r.propertyState='Not Created';});paint();document.getElementById('siPairClose').focus();
         ctx.log(p.error||p.run.failed?'error':'info','Spreadsheet Lot And Property Import Finished',{lots:p.run.created,properties:p.run.properties,failed:p.run.failed,total:p.run.total});
         // Display refresh is optional; its failure cannot reverse accepted native saves.
