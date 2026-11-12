@@ -200,7 +200,7 @@ assert.match(returnsCard,
   "return metrics retain their original heading and stacked appearance");
 assert.match(returnsCard,
   /class="k-gross"><div class="k-label">Gross Profit<\/div><div class="k-big">\$6,658,631<\/div>/,
-  "Gross Profit occupies the second column beside the existing return metrics");
+  "Gross Profit remains below the existing return metrics");
 assert.match(elements.get("kpis").innerHTML,
   /class="kpi violet"[^]*class="cash-position-secondary"[^]*Positive Cash Flow[^]*Peak Cash Out[^]*id="flowPeakCash"/,
   "peak funding sits under Positive Cash Flow inside the Cash Position card");

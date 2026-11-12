@@ -1447,3 +1447,8 @@ independent lot edits while sharing, shared take edits, read-only navigation,
 field commits, incomplete schedule recovery and retained click/focus targets.
 Widget rollback: Proforma Manager `1.80.102`. The approval changes in this same
 release require the separate [Creator publication](../../docs/proforma-settings-approval-routing-2026-10-14.md).
+
+
+## Dashboard Summary Layout — November 12, 2026
+
+Release 1.80.149 moves the unchanged construction-rate and sale-price card to the second position. The first card retains ROI, IRR, XIRR and Gross Profit, with Gross Profit below the return ratios and the existing Total Acres and Land Cost / Acre values added in its right column. The original assumption readouts remain. Inflow/outflow components, all cash snapshots, Positive Cash Flow, Peak Cash Out and peak timing remain. All calculations, rounding, incomplete-schedule behavior and field-exit numeric transitions are preserved; the existing numeric-view adapter captures the added `.k-big` values. No Creator forms, fields, functions, Custom APIs or publication change. Rollback: map Production to 1.80.147.

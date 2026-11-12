@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.147"></script>
-<script src="pf-save-audit.js?v=1.80.147"></script>
-<script src="pf-input-rules.js?v=1.80.147"></script>
-<script src="pf-input-validation.js?v=1.80.147"></script>
-<script src="pf-progress.js?v=1.80.147"></script>
+<script src="pf-save-verification.js?v=1.80.149"></script>
+<script src="pf-save-audit.js?v=1.80.149"></script>
+<script src="pf-input-rules.js?v=1.80.149"></script>
+<script src="pf-input-validation.js?v=1.80.149"></script>
+<script src="pf-progress.js?v=1.80.149"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.147">
-<script src="interaction-motion.js?v=1.80.147"></script>
-<script src="interaction-surfaces.js?v=1.80.147"></script>
-<script src="number-edit-commit.js?v=1.80.147"></script>
-<script src="number-transitions.js?v=1.80.147"></script>
-<script src="number-views.js?v=1.80.147"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.147">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.149">
+<script src="interaction-motion.js?v=1.80.149"></script>
+<script src="interaction-surfaces.js?v=1.80.149"></script>
+<script src="number-edit-commit.js?v=1.80.149"></script>
+<script src="number-transitions.js?v=1.80.149"></script>
+<script src="number-views.js?v=1.80.149"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.149">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.147"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.147">
-<script src="comments.js?v=1.80.147"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.147">
+<script src="budget-transfer-ui.js?v=1.80.149"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.149">
+<script src="comments.js?v=1.80.149"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.149">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -403,7 +403,7 @@ table.pf-list tr.grp-row:hover td{background:linear-gradient(180deg,#f2f5fa,#e9e
 .dash-head .meta b{color:var(--primary)}
 .dash-title-block{min-width:0}
 @media(max-width:900px){.dash-head{align-items:flex-start;flex-wrap:wrap}.dash-head>.spacer{display:none}.dash-title-block{flex:1}}
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:13px}
+.kpis{display:grid;grid-template-columns:minmax(0,1.45fr) repeat(3,minmax(0,1fr)) minmax(0,1.4fr);gap:11px;margin-bottom:13px}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
 .kpi{position:relative;border-radius:var(--r);padding:13px 15px 12px;min-height:122px;display:flex;flex-direction:column;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
 .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
@@ -429,9 +429,13 @@ table.pf-list tr.grp-row:hover td{background:linear-gradient(180deg,#f2f5fa,#e9e
 .k-cost-rates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .k-cost-label{font-size:11px;font-weight:650;color:rgba(255,255,255,.75);margin-bottom:4px}
 .kpi.slate{container-type:inline-size}
-.returns-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
-.kpi.slate .returns-columns .k-list{font-size:clamp(12px,5.7cqi,18px)}
-.kpi.slate .k-gross .k-big{font-size:clamp(14px,6.8cqi,22px)}
+.returns-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.kpi.slate .k-label{font-size:14px;letter-spacing:0;text-transform:none}
+.kpi.slate .k-gross{margin-top:12px}
+.kpi.slate .k-land{display:grid;gap:16px}
+.kpi.slate .k-land .k-big{font-size:clamp(14px,6cqi,18px);overflow-wrap:anywhere}
+.kpi.slate .returns-columns .k-list{font-size:clamp(14px,5.7cqi,18px)}
+.kpi.slate .k-gross .k-big{font-size:clamp(14px,6cqi,18px);overflow-wrap:anywhere}
 .kpi.violet::before{background:#7c3aed}
 .kpi.violet .k-label{color:#6d28d9}
 .kpi.violet .k-list{font-size:12px}
@@ -589,7 +593,7 @@ table.sub.items .mopick.need-next{border-color:var(--primary-2);background:#f5f9
 .deal-mud-state{font-size:9px;color:var(--muted);min-width:16px}
 .cmp-mud-state{font-size:9px;color:var(--muted);margin-left:5px}
 .kpi.slate .k-list{font-size:18px;line-height:1.6;font-weight:800}
-.kpi.slate .k-label{font-size:11px}
+.kpi.slate .k-label{font-size:14px}
 .dr-sub{font-weight:700;text-transform:none;letter-spacing:0;color:var(--muted);font-size:11px}
 .irr-in{width:44px;border:1px solid transparent;background:#eef2f8;border-radius:6px;padding:2px 5px;font-size:11px;font-weight:800;color:var(--navy);text-align:center;transition:background .12s}
 .irr-in:hover:not(:focus){background:#e6edf7}
@@ -1845,8 +1849,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.147"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.147">
+<script src="success-feedback.js?v=1.80.149"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.149">
 </head>
 <body>
 
@@ -2261,7 +2265,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.147";
+var PFW_VERSION="1.80.149";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -8084,14 +8088,16 @@ function renderDashboard(){
     ?(num(T.Construction_Cost_Base)+num(T.Construction_Cost_Addl))/streetLF:null;
   k.innerHTML=
     '<div class="kpi slate"><div class="returns-columns"><div><div class="k-label">ROI / IRR / XIRR</div><div class="k-list">'
-      +'ROI: '+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'<br/>IRR: '+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'<br/>XIRR: '+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div></div>'
-      +'<div class="k-gross"><div class="k-label">Gross Profit</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Net_Profit))+'</div></div></div></div>'
-    +'<div class="kpi green"><div class="k-label">Total Inflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Income))+'</div><div class="k-rows">'+kRows(inflowsRows)+'</div></div>'
-    +'<div class="kpi red"><div class="k-label">Total Outflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Expenses))+'</div><div class="k-rows">'+kRows(outflowRows)+'</div></div>'
+      +'ROI: '+(incompleteSales||c.roi==null?"—":fmtPct(c.roi))+'<br/>IRR: '+(incompleteSales||c.irr==null?"—":fmtPct(c.irr))+'<br/>XIRR: '+(incompleteSales||c.xirr==null?"—":fmtPct(c.xirr))+'</div>'
+      +'<div class="k-gross"><div class="k-label">Gross Profit</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Net_Profit))+'</div></div></div>'
+      +'<div class="k-land"><div><div class="k-label">Total Acres</div><div class="k-big">'+fmtN(num(m.Total_Acres),2)+'</div></div>'
+        +'<div><div class="k-label">Land Cost / Acre</div><div class="k-big">'+fmtWhole$(num(m.Land_Cost_Acre))+'</div></div></div></div></div>'
     +'<div class="kpi blue"><div class="k-price"><div class="k-label">Const. Cost / LF</div><div class="k-cost-rates">'
       +'<div><div class="k-cost-label">Base</div><div class="k-big">'+fmtWhole$(num(m.Const_Cost_FF))+'</div></div>'
       +'<div><div class="k-cost-label">Base + Add’l</div><div class="k-big">'+(constWithAddl==null?'—':fmtWhole$(constWithAddl))+'</div></div></div></div>'
       +'<div class="k-price"><div class="k-label">Sale Price / FF</div><div class="k-big">'+fmtWhole$(num(m.Sale_Price_FF))+'</div></div></div>'
+    +'<div class="kpi green"><div class="k-label">Total Inflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Income))+'</div><div class="k-rows">'+kRows(inflowsRows)+'</div></div>'
+    +'<div class="kpi red"><div class="k-label">Total Outflows</div><div class="k-big">'+(incompleteSales?"—":fmtWhole$(T.Total_Expenses))+'</div><div class="k-rows">'+kRows(outflowRows)+'</div></div>'
     +'<div class="kpi violet"><div class="cash-position-columns"><div><div class="k-label">Cash Position</div><div class="k-list">'+cpHtml+'</div></div>'
       +'<div class="cash-position-secondary"><div><div class="k-label">Positive Cash Flow</div><div class="k-list">'+positiveCashHtml+'</div></div>'
       +'<div><div class="k-label">Peak Cash Out</div><div class="k-list" id="flowPeakCash">—</div>'
