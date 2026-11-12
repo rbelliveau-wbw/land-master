@@ -497,7 +497,7 @@ search, alphabetical choices, single selection and unchanged other pickers.
 Rollback: Land Master frontend 8.17.11.
 
 
-## Property Lot Lookup — 8.17.17, November 12, 2026
+## Property Lot Lookup — 8.17.19, November 12, 2026
 
 Property Ownership & Relationships includes optional, writable Lot Code, a
 single native `Property.Lots` lookup to `Lots.ID` displaying `Lots.Lot_Code`.
@@ -534,3 +534,7 @@ missing lot/subdivision/project, parent changes, fresh prewrite reads, session
 changes, search before editor load, pill order, and OR multi-select filtering.
 Rollback: map Production Land Master back to 8.17.16; retain the optional field
 and entered data. Native validation can remain enabled.
+
+Lot and Subdivision ID maps are cached per loaded collection and rebuilt when
+its identity or size changes; row updates retain object identity. Historical
+candidates 8.17.17 and 8.17.18 are superseded by 8.17.19 and are not promoted.

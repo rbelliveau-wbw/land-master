@@ -2,6 +2,12 @@
   'use strict';
   function id(value){return typeof value==='string'?value:Array.isArray(value)?id(value[0]):value&&typeof value.ID==='string'?value.ID:'';}
   function ids(value){return (Array.isArray(value)?value:value?[value]:[]).map(id).filter(Boolean);}
+  var indexes=new WeakMap();
+  function index(rows){
+    rows=rows||[];var cached=indexes.get(rows);
+    if(!cached||cached.size!==rows.length){var byId=new Map();rows.forEach(function(row){byId.set(id(row),row);});cached={size:rows.length,byId:byId};indexes.set(rows,cached);}
+    return cached.byId;
+  }
   function merged(record,data){return Object.assign({},record||{},data||{});}
   function error(property,lot,subdivision){
     var lotId=id(property.Lots);
@@ -15,8 +21,8 @@
     return '';
   }
   function code(property,lots){
-    var lotId=id(property.Lots),lot=(lots||[]).find(function(row){return id(row)===lotId;});
+    var lotId=id(property.Lots),lot=index(lots).get(lotId);
     return lot?String(lot.Lot_Code||''):String(property.Lots&&(property.Lots.zc_display_value||property.Lots.display_value)||'');
   }
-  root.LMPropertyLots={id:id,ids:ids,merged:merged,error:error,code:code};
+  root.LMPropertyLots={id:id,ids:ids,index:index,merged:merged,error:error,code:code};
 })(window);

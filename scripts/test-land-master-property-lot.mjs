@@ -54,3 +54,10 @@ c.saveReached=false;c.savePanel();assert.equal(c.saveReached,true,'a valid selec
 controls.f_Subdivisions.value=[];c.saveReached=false;c.savePanel();assert.equal(c.saveReached,false);assert.match(message.textContent,/Subdivisions/);
 controls.f_Lots.value='';c.saveReached=false;c.savePanel();assert.equal(c.saveReached,true,'clearing optional Lot Code permits Save');
 console.log('Actual Property editor prewrite path: valid DOM string lookup accepted, invalid parents blocked, optional clear accepted.');
+const indexedRows=[{...lot}];const firstIndex=api.index(indexedRows);assert.equal(api.index(indexedRows),firstIndex,'collection ID maps are reused');
+indexedRows[0].Lot_Code='Updated Code';assert.equal(api.code(property,indexedRows),'Updated Code','native row object updates remain visible');
+indexedRows.push({ID:'extra'});assert.notEqual(api.index(indexedRows),firstIndex,'adding a row rebuilds the map');
+controls.f_Lots.value=lot.ID;c.S.lots=[];c.lookupOptions=()=>[];
+vm.runInContext(actual('propertyLotOptions'),c);
+const retained=c.propertyLotOptions(lot.ID);assert.equal(retained.length,1);assert.equal(retained[0].id,lot.ID);assert.equal(retained[0].label,lot.Lot_Code,'an unavailable saved lot keeps its exact ID and native label until explicit Clear');
+console.log('Indexed lookups reuse collection maps and retain unavailable saved Lot selections.');
