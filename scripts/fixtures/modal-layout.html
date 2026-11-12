@@ -6,7 +6,7 @@ const cases=[
  ['Budget Picker','budget-manager','#budgetCreateOverlay','.mod-modal','#budgetCreateChoices'],
  ['Budget Notes','budget-manager',null,'.multi-notes-modal','.multi-notes-body','<div class="multi-notes-overlay show"><section class="multi-notes-modal"><header class="multi-notes-head"><h3>Budget Notes</h3></header><div class="multi-notes-body"></div><footer class="multi-notes-foot"><button>Save</button></footer></section></div>'],
  ['Budget Owners','budget-manager',null,'.owners-modal','.owners-modal-body','<div class="owners-modal"><div class="owners-modal-head"><h3>Choose Owners</h3></div><div class="owners-modal-body"></div><div class="owners-modal-foot"><button>Save</button></div></div>'],
- ['PO Email Activity','budget-manager',null,'.po-activity-card','.po-activity-list','<div class="po-activity-overlay"><section class="po-activity-card"><header><h2>PO Email Activity</h2><button>Close</button></header><div class="po-activity-toolbar"><button>Refresh</button></div><div class="po-activity-content"><div class="po-activity-list"></div></div><footer><button>Close</button></footer></section></div>'],
+ ['PO Email Activity','budget-manager',null,'.po-activity-card','.po-activity-list','<div class="po-activity-overlay"><section class="po-activity-card"><header><h2>PO Email Activity</h2><button>Close</button></header><div class="po-activity-toolbar"><p></p><button class="mbtn neutral">Refresh</button></div><div class="po-activity-content"><div class="po-activity-list"></div></div><footer><span class="po-activity-sent-note">Sent records a successful send request.</span><span class="po-spacer"></span><button class="mbtn neutral">Close</button></footer></section></div>'],
  ['Budget Attachments','budget-manager',null,'.budget-attachment-modal','.budget-attachment-modal-body','<div class="budget-attachment-modal"><div class="budget-attachment-modal-head"><p>Budget Attachments</p><button>Close</button></div><div class="budget-attachment-modal-body"></div></div>'],
  ['Budget Request','budget-manager','#modOverlay','.mod-modal','#modModalBody'],
  ['PO Association','budget-manager',null,'.request-attachment-picker','[data-ra-options]','<dialog open class="request-attachment-picker"><header><strong>Link To Record</strong><button>Close</button></header><div class="request-attachment-picker-body"><strong>Budget File</strong><p>Choose a request.</p><input type="search" placeholder="Search Requests"><div data-ra-options></div><div class="request-attachment-picker-status">Loading</div></div><footer class="request-attachment-footer"><button>Cancel</button><button>Save</button></footer></dialog>'],
@@ -27,6 +27,8 @@ const cases=[
  ['Lot Update Results','manage-lots','#mlProgress','.modal','.modal-body'],
  ['Land Bulk Edit','land-master',null,'.bulk-dialog','.bulk-body','<div class="bulk-dialog"><div class="record-head"><h2>Bulk Edit</h2></div><div class="bulk-body"></div></div>'],
  ['Settings Approval Policy','settings-manager',null,'.ap-card','.ap-body','<div class="ap-overlay"><section class="ap-card"><header><h2>Approval Policy</h2><button>Close</button></header><div class="ap-tabs"><button>Roles</button><button>Preview</button></div><div class="ap-body"></div><footer><button>Save</button></footer></section></div>'],
+ ['Settings Inline Editor','settings-manager',null,'.ap-card','.ap-body','<main id="approval-screen"><div class="ap-overlay ap-inline"><section class="ap-card"><header><h2>Approvals</h2></header><div class="ap-tabs"><button>Roles</button></div><div class="ap-body"></div><footer><button>Save Rule</button></footer></section></div></main>','inline'],
+ ['Settings Progress Modal','settings-manager',null,'.ap-card','.ap-body','<div class="ap-overlay ap-inline ap-progress-mode"><section class="ap-card"><header><h2>Save Approval Rule</h2></header><div class="ap-body"></div><footer><button>Close</button></footer></section></div>'],
  ['Settings Curve Result','settings-manager',null,'.settings-dialog','[role=status]','<div class="settings-overlay"><section class="settings-dialog"><header><h2>Delete Curve Row?</h2></header><p>Construction Curve</p><div role="status"></div><footer><button>Cancel</button></footer></section></div>'],
  ['Insights Lots','lot-sales-explorer','#detail','#detail','.detail-scroll'],
  ['Insights Budget','lot-sales-explorer','#budgetDetail','#budgetDetail','.detail-scroll'],
@@ -55,15 +57,85 @@ async function prepare(c){
  const base=doc.createElement('base');base.href=location.origin+'/widgets/'+widget+'/src/app/';doc.head.prepend(base);
  return '<!doctype html>'+doc.documentElement.outerHTML;
 }
-async function mount(frame,c){const html=await prepare(c);await new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=reject;frame.srcdoc=html});await tick();return frame.contentDocument;}
+async function mount(frame,c){
+ const html=await prepare(c);
+ await new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=reject;frame.srcdoc=html});
+ const doc=frame.contentDocument;
+ if(c[6]==='inline')doc.body.style.display='block';
+ for(const dialog of doc.querySelectorAll('dialog[open]')){dialog.removeAttribute('open');dialog.showModal();}
+ await tick();return doc;
+}
 const tick=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-function state(doc,c,mode){let node=doc.querySelector(c[4]);if(!node)throw Error(c[0]+': missing results '+c[4]);const count=mode==='many'?50:mode==='two'?2:mode==='expanded'?8:0;node.innerHTML=count?Array.from({length:count},(_,i)=>'<div style="padding:14px;border-bottom:1px solid #d9e3ef">'+(c[1]==='budget-manager'?'Somerset Hills — Phase '+String(i+1).padStart(2,'0'):'Record '+(i+1))+(mode==='expanded'?'<div style="padding:30px">Expanded details with long content. '.repeat(6)+'</div>':'')+'</div>').join(''):mode==='error'?'<div style="padding:16px">Could not load choices: Unsupported PO action. '+('A long error description. '.repeat(15))+'</div>':mode==='loading'?'Loading…':mode==='empty'?'No Matching Results':'';
+function state(doc,c,mode){let node=doc.querySelector(c[4]);if(!node)throw Error(c[0]+': missing results '+c[4]);const count=mode==='many'?50:mode==='two'?2:mode==='expanded'?8:0;node.innerHTML=count?Array.from({length:count},(_,i)=>'<div style="padding:14px;border-bottom:1px solid #d9e3ef">'+(c[1]==='budget-manager'?'Somerset Hills — Phase '+String(i+1).padStart(2,'0'):'Record '+(i+1))+(mode==='expanded'?'<div style="padding:30px">'+('Expanded details with long content. '.repeat(6))+'</div>':'')+'</div>').join(''):mode==='error'?'<div style="padding:16px">Could not load choices: Unsupported PO action. '+('A long error description. '.repeat(15))+'</div>':mode==='loading'?'Loading…':mode==='empty'?'No Matching Results':'';
  const status=doc.querySelector('#budgetCreateStatus');if(status)status.textContent=mode==='loading'?'Loading…':mode==='error'?'Could not load choices: Unsupported PO action.':'';
 }
 function measure(doc,c){const el=doc.querySelector(c[3]),r=el.getBoundingClientRect(),head=el.querySelector('header,.mod-modal-head,.owners-modal-head,.budget-attachment-modal-head,.mo-head,.op-head,.qc-head,.cm-head,.air-head,.modal-hd,.modal-head,.record-head,.dialog-head,.gantt-save-head,.multi-notes-head'),foot=el.querySelector('footer,.mod-actions,.owners-modal-foot,.mo-foot,.op-foot,.qc-foot,.cactions,.modal-foot,.dialog-foot,.gantt-save-foot,.multi-notes-foot');const search=el.querySelector('input[type=search],#ppSearch');return {search:search?.getBoundingClientRect().top,top:r.top,height:r.height,bottom:r.bottom,head:head?.getBoundingClientRect().top,foot:foot?.getBoundingClientRect().top,footBottom:foot?.getBoundingClientRect().bottom};}
 let current=0;const choices=document.querySelector('#cases'),preview=document.querySelector('#preview');cases.forEach((c,i)=>choices.add(new Option(c[0],i)));
 async function show(){current=Number(choices.value);const doc=await mount(preview,cases[current]);state(doc,cases[current],'two');}
 choices.onchange=show;document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>state(preview.contentDocument,cases[current],b.dataset.state));
-document.querySelector('#run').onclick=async()=>{const runner=document.querySelector('#runner'),out=document.querySelector('#results'),summary=document.querySelector('#summary');out.textContent='';let checked=0,failed=0;for(const [w,h] of [[1280,900],[800,600],[390,420],[390,280]]){runner.style.width=w+'px';runner.style.height=h+'px';for(const c of cases){try{const doc=await mount(runner,c);state(doc,c,'two');await tick();const baseline=measure(doc,c);for(const mode of ['many','empty','loading','error','expanded']){state(doc,c,mode);await tick();const m=measure(doc,c);for(const key of ['top','height','head','foot','search'])if(baseline[key]!=null&&Math.abs(m[key]-baseline[key])>1)throw Error(mode+' moved '+key+' from '+baseline[key]+' to '+m[key]);if(m.top<0||m.bottom>h+1||m.height<100||m.footBottom>h+1)throw Error(mode+' outside viewport '+JSON.stringify(m));if(mode==='many'){let n=doc.querySelector(c[4]),scrolls=false;while(n&&n!==doc.querySelector(c[3])){if(n.scrollHeight>n.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(n).overflowY))scrolls=true;n=n.parentElement;}if(!scrolls)throw Error('Results have no internal scroll area');}checked++;}out.textContent+='PASS '+w+'×'+h+' '+c[0]+'\n';}catch(e){failed++;out.textContent+='FAIL '+w+'×'+h+' '+c[0]+': '+e.message+'\n';}summary.textContent=checked+' State Checks; '+failed+' Failures';}}summary.textContent='Done: '+checked+' State Checks; '+failed+' Failures';};
+function stable(baseline,current,mode){
+ for(const key of ['top','height','head','foot','search']){
+  if(baseline[key]!=null&&Math.abs(current[key]-baseline[key])>1)throw Error(mode+' moved '+key+' from '+baseline[key]+' to '+current[key]);
+ }
+}
+function fits(m,height,mode){if(m.top<0||m.bottom>height+1||m.height<100||m.footBottom>height+1)throw Error(mode+' outside viewport '+JSON.stringify(m));}
+async function checkNativeClosed(doc,c){
+ const dialog=doc.querySelector(c[3]);if(dialog.tagName!=='DIALOG')return 0;
+ const before=measure(doc,c);dialog.close();await tick();
+ if(dialog.open||dialog.getClientRects().length!==0||getComputedStyle(dialog).display!=='none')throw Error('Closed native dialog remains visible');
+ dialog.showModal();await tick();stable(before,measure(doc,c),'Reopened native dialog');return 2;
+}
+async function checkActivityProgress(doc,c,height){
+ const card=doc.querySelector(c[3]);if(!card.matches('.po-activity-card'))return 0;
+ const toolbar=card.querySelector('.po-activity-toolbar'),content=card.querySelector('.po-activity-content'),footer=card.querySelector('footer');
+ const saved={content:content.innerHTML,footer:footer.innerHTML,hidden:toolbar.hidden},before=measure(doc,c),width=card.getBoundingClientRect().width;
+ card.classList.add('is-progress');toolbar.hidden=true;
+ content.innerHTML='<div class="po-activity-progress" data-state="running"><div class="po-activity-meter" role="progressbar"><i style="width:33.333%"></i></div><ol>'+['Check Attempt','Send Email','Confirm Email'].map(label=>'<li><span class="po-activity-stage-icon">1</span><strong>'+label+'</strong><span>Running</span></li>').join('')+'</ol><section class="po-activity-result" role="status"><h3>Sending Email…</h3><p>Fixture Recipient</p></section></div>';
+ footer.innerHTML='<span class="po-spacer"></span><button class="mbtn neutral" disabled>Back To Activity</button>';
+ await tick();stable(before,measure(doc,c),'PO progress');fits(measure(doc,c),height,'PO progress');
+ if(width>600&&card.getBoundingClientRect().width>=width)throw Error('PO progress width did not activate');
+ content.querySelector('.po-activity-progress').dataset.state='warning';content.querySelector('h3').textContent='Email Status Needs Review';content.querySelector('p').textContent='Read-only status check required. '.repeat(200);footer.querySelector('button').disabled=false;
+ await tick();stable(before,measure(doc,c),'PO progress result');fits(measure(doc,c),height,'PO progress result');
+ card.classList.remove('is-progress');toolbar.hidden=saved.hidden;content.innerHTML=saved.content;footer.innerHTML=saved.footer;
+ await tick();stable(before,measure(doc,c),'Back to activity');return 3;
+}
+async function checkInline(doc,c){
+ const frame=doc.querySelector(c[3]);
+ state(doc,c,'two');await tick();const small=frame.getBoundingClientRect().height;
+ state(doc,c,'many');await tick();const large=frame.getBoundingClientRect().height;
+ if(large<=small+100)throw Error('Inline approval editor is fixed to a dialog height');
+ state(doc,c,'two');await tick();if(Math.abs(frame.getBoundingClientRect().height-small)>1)throw Error('Inline editor did not return to its content height');
+ return 3;
+}
+document.querySelector('#run').onclick=async()=>{
+ const runner=document.querySelector('#runner'),out=document.querySelector('#results'),summary=document.querySelector('#summary');
+ out.textContent='';let checked=0,failed=0;
+ for(const [w,h] of [[1280,900],[1024,768],[800,600]]){
+  runner.style.width=w+'px';runner.style.height=h+'px';
+  for(const c of cases){
+   try{
+    const doc=await mount(runner,c);
+    if(c[6]==='inline'){checked+=await checkInline(doc,c);}
+    else{
+     state(doc,c,'two');await tick();const baseline=measure(doc,c);
+     for(const mode of ['many','empty','loading','error','expanded']){
+      state(doc,c,mode);await tick();const m=measure(doc,c);stable(baseline,m,mode);fits(m,h,mode);
+      if(mode==='many'){
+       let n=doc.querySelector(c[4]),scrolls=false;
+       while(n&&n!==doc.querySelector(c[3])){if(n.scrollHeight>n.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(n).overflowY))scrolls=true;n=n.parentElement;}
+       if(!scrolls)throw Error('Results have no internal scroll area');
+      }
+      checked++;
+     }
+     checked+=await checkNativeClosed(doc,c);
+     checked+=await checkActivityProgress(doc,c,h);
+    }
+    out.textContent+='PASS '+w+'×'+h+' '+c[0]+'\n';
+   }catch(e){failed++;out.textContent+='FAIL '+w+'×'+h+' '+c[0]+': '+e.message+'\n';}
+   summary.textContent=checked+' State Checks; '+failed+' Failures';
+  }
+ }
+ summary.textContent='Done: '+checked+' State Checks; '+failed+' Failures';
+};
 await show();
 </script></html>

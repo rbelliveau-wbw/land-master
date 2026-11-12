@@ -55,9 +55,9 @@
 [data-lm-modal-layout="land-master"] .bulk-body{flex:1;min-height:0}
 
 /* Settings approval tabs and validation results must not recenter the dialog. */
-[data-lm-modal-layout="settings-manager"] .ap-card{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
-[data-lm-modal-layout="settings-manager"] .ap-card>header{flex:none}
-[data-lm-modal-layout="settings-manager"] .ap-body{flex:1;min-height:0}
+[data-lm-modal-layout="settings-manager"] .ap-overlay:is(:not(.ap-inline),.ap-progress-mode)>.ap-card{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="settings-manager"] .ap-overlay:is(:not(.ap-inline),.ap-progress-mode)>.ap-card>header{flex:none}
+[data-lm-modal-layout="settings-manager"] .ap-overlay:is(:not(.ap-inline),.ap-progress-mode)>.ap-card>.ap-body{flex:1;min-height:0}
 [data-lm-modal-layout="settings-manager"] .settings-dialog{height:min(340px,var(--lm-dialog-room));max-height:var(--lm-dialog-room);display:flex;flex-direction:column;overflow:auto;box-sizing:border-box}
 [data-lm-modal-layout="settings-manager"] .settings-dialog>header,[data-lm-modal-layout="settings-manager"] .settings-dialog>footer{flex:none}
 [data-lm-modal-layout="settings-manager"] .settings-dialog>footer{margin-top:auto}

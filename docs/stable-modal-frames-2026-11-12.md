@@ -38,7 +38,7 @@ Full `npm run validate` and `npm run build:pages` passed locally.
 
 The layout detector found no issues in the new stylesheet; its 16 findings in
 existing source concern pre-existing padding/card structure outside this change.
-Greptile could not run because the pinned CLI reports Not signed in.
+At the initial release, Greptile could not run because the CLI was signed out.
 
 ## Affected Contracts
 
@@ -48,3 +48,27 @@ Greptile could not run because the pinned CLI reports Not signed in.
 - Regression focus: global Budget/PO choices, PO Email Activity disclosures and
   refresh, attachment association, long result lists, empty/error states, tab
   changes, native dialog closed behavior and short viewport scrolling.
+
+## Greptile Follow-Up
+
+Greptile is now signed in. Review 1 (`e87ad51e-d48b-448f-8f97-9d59aa0f02d8`,
+4/5 confidence) found the inline Settings approval card sizing regression and
+missing native closed/progress regression coverage. The frame selectors now
+exclude ordinary inline approval screens while preserving real overlays and
+inline-to-modal progress. The fixture uses native close/showModal and checks
+PO progress, long results and return-to-activity geometry. It also verifies
+that inline Settings content can grow and shrink.
+
+Desktop-only verification: 612 checks passed at 1280×900, 1024×768 and 800×600.
+The first review covered actual committed source and release metadata against
+623648d8. Copied immutable assets were omitted only after verifying all 250
+assets against source (two Windows line-ending-only differences); HTML source
+hashes matched. No secret exclusions were overridden.
+
+Settings release 1.6.15 replaces 1.6.14 in Development and Production. The
+canonical stylesheet and its source mirrors are synchronized; the changed
+selectors apply only to Settings, so the other nine Production releases stay
+as listed above. Rollback Settings to 1.6.14 restores the preceding behavior,
+including its inline-height regression. No Creator publication is required.
+
+Second Greptile review: pending.

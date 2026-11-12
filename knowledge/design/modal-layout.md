@@ -32,3 +32,10 @@ to exercise actual widget styles with empty, one, many, loading, error and
 expanded results at desktop, narrow and short viewport sizes. The fixture does
 not load widget scripts or make Creator requests. Check frame/header/footer
 coordinates and that content can scroll without leaving the viewport.
+
+Settings approval cards mounted inline in `#approval-screen` remain content-sized.
+Apply the fixed approval frame only to real overlays and `.ap-progress-mode`,
+including progress temporarily lifted out of the inline screen. The desktop
+fixture also checks that native dialogs disappear when closed and reopen at
+the same geometry, and that PO activity retains its frame through progress,
+result and return-to-activity transitions.
