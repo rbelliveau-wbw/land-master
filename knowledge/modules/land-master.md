@@ -1,3 +1,11 @@
+## Large Lot Import Pacing (8.17.24)
+
+Land & Projects now opts into the existing shared Creator request limiter: 45 requests per rolling 61 seconds, including startup, AI calls, report counts/pages, lookup preflights, and native saves from this widget. Each Lot/Property pair retains its two native writes and four fresh lookup calls. The import shows a live wait countdown without advancing saved counts, rebuilding result rows, unlocking Close, or replaying writes. An explicit native 2955 during a read gets the existing single read-only retry after a cooldown; a persistent throttle stops the import before further Lots are created. Concurrent use in other tabs/apps still shares Creator's per-user limit and can exhaust the remaining headroom.
+
+Zoho documents 50 calls per user per minute and native error 2955: [API Limits](https://www.zoho.com/creator/help/api/v2.1/api-limits.html). Pacing addresses the minute limit; it does not lower the total call count or change daily quotas. At this rate, 162 pairs can take approximately 22 minutes plus native processing and setup. Existing partial imports are not automatically replayed or backfilled.
+
+No Creator function, form, field, workflow, API registration, or permission changes are required. Promote the immutable frontend through the existing stable Creator widget URL; a Creator environment publish would contain no component from this fix. Regression: the actual mounted 162-pair importer, actual Property lookup preflight and shared report adapter with native lookup shapes, rolling budget including prior startup calls, saved counts, wait countdown, pending/terminal duplicate guards, timer cleanup, and persistent Lot/Property throttle stops. Existing adapter tests cover read-only retry and no write replay. The UI detector identified only existing widget-wide contrast, small text, heading and motion findings outside this change. Local Greptile review is blocked because the CLI is signed out. Rollback: remap Development and Production Land Master to 8.17.23.
+
 ## Same-company Property Transfers — 8.17.15, November 11, 2026
 
 Property Transfers allow identical From and To companies for every transfer

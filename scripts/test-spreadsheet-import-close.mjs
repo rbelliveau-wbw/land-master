@@ -49,7 +49,7 @@ function harness(count = 3, options = {}) {
   const controls = {confirm: options.confirm ?? true};
   const spreadsheetRows = api.sheetRows('Lots', Array.from({length: count}, (_, i) => ['1', String(i + 1), '50']));
   const mappings = spreadsheetRows.map(row => ({sheet: row.sheet, row: row.row, subdivision_id: subdivision.ID, block_column: 0, lot_column: 1, width_column: 2}));
-  const importer = api.mount({
+  const hostContext = {
     subdivisions: () => [subdivision], selected: () => [subdivision.ID],
     cities: ['Seguin'], counties: ['Guadalupe'], readLots: async () => {if(options.failRead)throw Error('Lot read denied');return options.existing || [];},
     recordId:sandbox.landCreatedRecordId,scope:()=>controls.scope||'original',
@@ -71,7 +71,8 @@ function harness(count = 3, options = {}) {
     async reload() { calls.reload++;if(options.reloadError)throw Error('Refresh unavailable'); },
     log(...args) {calls.logs.push(args);}, error: error => error.message,
     async confirm(config) { calls.confirm.push(config); return controls.confirm; }
-  });
+  };
+  const importer = api.mount(hostContext);
   importer.open();
   const state = importer.state();
   state.step = 2;
@@ -79,7 +80,7 @@ function harness(count = 3, options = {}) {
   state.source = spreadsheetRows;
   state.rows = api.stage(spreadsheetRows, mappings, [subdivision]);
   importer.paint();
-  return {importer, state, calls, controls, node, document, documentListeners};
+  return {importer, state, calls, controls, node, document, documentListeners, hostContext, sandbox};
 }
 
 // Reproduce the reported 133/134 result through the actual creation path.
@@ -339,3 +340,44 @@ console.log('Paired import: exact Property ID, Residential/L&B Res, native strin
 assert.match(source,/id="siResultScroll" tabindex="0" role="region"/);
 const numberRegistry=fs.readFileSync('shared/number-surfaces.js','utf8');assert.match(numberRegistry,/lot-property-import/);for(const selector of ['.si-pair-context>p:last-child','#siPairOutcome','#piFootMeta'])assert.ok(numberRegistry.includes(selector));
 console.log('Review regressions: truthful stopped stages, terminal unsent rows, retained inert background, usable nested confirmation, keyboard results, and import-scoped quantity motion passed.');
+
+// Exercise the real mounted importer and shared limiter across a 162-pair import.
+{
+  const h=harness(162),c=h.sandbox;let now=0,sequence=0;const timers=new Map(),intervals=new Map(),dispatched=[];
+  class FakeDate extends Date { constructor(...args){super(...(args.length?args:[now]));}static now(){return now;} }
+  c.Date=FakeDate;c.window.setTimeout=(fn,ms)=>{const id=++sequence;timers.set(id,{fn,at:now+ms});return id;};c.window.clearTimeout=id=>timers.delete(id);
+  c.window.setInterval=fn=>{const id=++sequence;intervals.set(id,fn);return id;};c.window.clearInterval=id=>intervals.delete(id);
+  vm.runInContext(fs.readFileSync('shared/creator-data.js','utf8'),c);c.LMData=c.window.LMData;c.LMPerf=c.window.LMPerf;
+  const host=fs.readFileSync('widgets/land-master/src/app/widget.html','utf8'),config=host.match(/<script>(LMData.configure\([^<]+)<\/script>/);assert.ok(config,'host must configure pacing before native initialization');vm.runInContext(config[1],c);
+  const native=(task,fn,readOnly=false)=>c.LMData.request(task,()=>{dispatched.push(now);return fn();},{readOnly});
+  const add=h.hostContext.add,property=h.hostContext.addProperty,lots=new Map();
+  vm.runInContext(fs.readFileSync('widgets/land-master/src/app/property-lots.js','utf8'),c);c.LMPropertyLots=c.window.LMPropertyLots;
+  c.S={coreRefreshing:false};c.LandData={generation:()=>1};c.landCreateScope=()=> 'fixture:production';c.lookupId=c.LMPropertyLots.id;
+  const dataApi={getRecordCount(){dispatched.push(now);return {code:3000,result:{records_count:1}};},getRecords(config){dispatched.push(now);const id=config.criteria.match(/ID == (\d+)/)[1];return {code:3000,data:[config.report_name==='All_Lots_All_Fields'?lots.get(id):subdivision]};}};
+  c.sdkGetAll=(reportName,criteria,progress,options)=>c.LMData.readAll({reportName,criteria,api:dataApi,...options});
+  const start=host.indexOf('function propertyLotPreflight(');vm.runInContext(host.slice(start,host.indexOf('\nfunction ',start)),c);
+  h.hostContext.add=data=>native('create:Lots',async()=>{const response=await add(data);const id=c.landCreatedRecordId(response);lots.set(id,{...data,ID:id,Subdivision:{ID:data.Subdivision}});return response;});
+  h.hostContext.addProperty=async data=>{await c.propertyLotPreflight({},data);return native('create:Property',()=>property(data));};
+  h.hostContext.readLots=async()=>{await native('existing:count',()=>true,true);return native('existing:records',()=>[],true);};
+  h.hostContext.rate=()=>c.LMPerf.snapshot().rate;h.hostContext.throttled=e=>c.LMData.failureCode(e)==='2955';
+  // Include calls already spent loading the widget and reviewing the spreadsheet.
+  for(let i=0;i<12;i++)await native('startup',()=>true,true);
+  const task=h.importer.create();let waits=0;
+  while(h.state.creating){
+    for(let i=0;i<30;i++)await new Promise(resolve=>setImmediate(resolve));
+    if(!h.state.creating)break;assert.ok(timers.size,'active import must be awaiting its request budget');
+    for(const fn of intervals.values())fn();
+    assert.match(h.node('siPairOutcome').textContent,/Waiting For Creator — Resuming In/);
+    const saved=h.node('siPairMeter')['aria-valuenow'];await h.importer.close();await h.importer.create();assert.equal(h.state.open,true);assert.equal(h.node('siPairMeter')['aria-valuenow'],saved,'waiting cannot fabricate saved records');
+    now=Math.min(...Array.from(timers.values(),t=>t.at));for(const [id,t]of [...timers])if(t.at<=now){timers.delete(id);t.fn();}waits++;assert.ok(waits<30);
+  }
+  await task;assert.equal(h.calls.add.length,162);assert.equal(h.calls.properties.length,162);assert.equal(h.state.run.failed,0);assert.equal(h.node('siPairMeter')['aria-valuenow'],'324');assert.ok(waits>15);assert.equal(intervals.size,0,'progress timer must stop at terminal state');
+  for(const at of dispatched)assert.ok(dispatched.filter(t=>t<=at&&at-t<61000).length<=45,'all startup, read and write calls share the rolling budget');
+}
+// Persistent throttling stops the run instead of creating more orphan Lots or replaying writes.
+for(const kind of ['add','addProperty']){
+  const h=harness(3);let calls=0;h.hostContext.throttled=e=>e.code===2955;h.hostContext[kind]=async()=>{calls++;throw Object.assign(Error('Minute limit'),{code:2955});};
+  await h.importer.create();assert.equal(calls,1);assert.match(h.state.error,/still limiting requests/);assert.equal(h.state.run.properties,0);assert.equal(h.calls.add.length,kind==='add'?0:1);assert.equal(h.state.rows[1].lotState,'Not Created');
+  await h.importer.create();assert.equal(calls,1,'a throttled write cannot replay from a terminal run');
+}
+console.log('162-pair pacing: 324 records, 45 calls per rolling 61 seconds, existing startup usage, countdown, pending locks, timer cleanup and terminal throttle stop passed.');
