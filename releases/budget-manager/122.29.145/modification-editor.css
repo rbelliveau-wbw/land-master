@@ -1,0 +1,65 @@
+/* Budget Modification editor: approved wide layout, scoped away from PO/request dialogs. */
+#modOverlay.mod-editor .mod-modal{width:min(800px,calc(100vw - 32px));font-family:var(--font,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif);font-size:16px;line-height:1.5}
+#modOverlay.mod-editor .mod-modal-head{padding:20px 28px;align-items:center}
+#modOverlay.mod-editor .mod-modal-title{font-size:20px;font-weight:600}
+#modOverlay.mod-editor .mod-modal-sub:empty{display:none}
+#modOverlay.mod-editor .mod-modal-x{width:36px;height:36px}
+#modOverlay.mod-editor .mod-modal-x svg{width:18px;height:18px}
+#modOverlay.mod-editor .request-attachment-tabs{padding:10px 28px;gap:12px}
+#modOverlay.mod-editor .request-attachment-tabs button{min-height:40px;font-size:14px;color:#41557a}
+#modOverlay.mod-editor .request-attachment-tabs [aria-selected=true]{color:#1e40af}
+#modOverlay.mod-editor .request-attachment-tabs [data-ra-count]{font-size:14px}
+#modOverlay.mod-editor .mod-modal-body{padding:24px 28px;scrollbar-gutter:stable}
+#modOverlay.mod-editor .mod-det-item{flex-wrap:wrap;border:0;margin-bottom:20px;padding:0}
+#modOverlay.mod-editor .mod-det-item .nm{font-size:20px;font-weight:600;overflow-wrap:anywhere}
+#modOverlay.mod-editor .mod-det-item .codepill{font-size:14px;font-weight:500;max-width:100%;overflow-wrap:anywhere}
+#modOverlay.mod-editor .mod-ctx{gap:16px 28px;margin-bottom:24px}
+#modOverlay.mod-editor .mod-ctx .box{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:baseline;padding:0;background:none;border:0;border-radius:0}
+#modOverlay.mod-editor .mod-ctx .l{font-size:14px;font-weight:600;letter-spacing:normal;text-transform:none;color:#41557a}
+#modOverlay.mod-editor .mod-ctx .v{font:400 16px var(--font,"Segoe UI",Arial,sans-serif);font-variant-numeric:tabular-nums;margin:0}
+#modOverlay.mod-editor .mod-field{min-width:0;margin-bottom:20px}
+#modOverlay.mod-editor .mod-field label{font-size:14px;font-weight:600;line-height:1.5;text-transform:none;letter-spacing:normal;color:#0f2744;margin-bottom:7px}
+#modOverlay.mod-editor .mod-field input,#modOverlay.mod-editor .mod-field textarea{font:400 16px/1.5 var(--font,"Segoe UI",Arial,sans-serif);min-height:44px;padding:9px 12px;border:1px solid #c8d4e5;border-radius:8px;color:#0f2744;background:#fff}
+#modOverlay.mod-editor .mod-field input::placeholder,#modOverlay.mod-editor .mod-field textarea::placeholder{color:#5c7394}
+#modOverlay.mod-editor .mod-field input:focus-visible,#modOverlay.mod-editor .mod-field textarea:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+#modOverlay.mod-editor .mod-field input:disabled{background:#f0f3f7;color:#5c7394}
+#modOverlay.mod-editor #modReason{min-height:112px}
+#modOverlay.mod-editor .amt-row{display:grid;grid-template-columns:96px minmax(180px,1fr) minmax(140px,1fr);gap:12px}
+#modOverlay.mod-editor .sign-seg{border-radius:8px}
+#modOverlay.mod-editor .sgn{display:grid;place-items:center;width:47px;padding:0}
+#modOverlay.mod-editor .sgn svg{display:block;width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+#modOverlay.mod-editor .mod-element-picker{min-width:0}
+#modOverlay.mod-editor #modElementToggle{height:100%;min-height:44px;padding:9px 12px;border-radius:8px;font-family:inherit;font-size:16px;font-weight:400}
+#modOverlay.mod-editor .mod-element-menu{width:max(100%,220px);max-width:calc(100vw - 72px);box-sizing:border-box}
+#modOverlay.mod-editor .mod-element-menu button,#modOverlay.mod-editor #modTypeChoices button{font-family:inherit;font-size:16px;min-height:44px}
+#modOverlay.mod-editor .mod-classification-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:24px}
+#modOverlay.mod-editor .mod-date-reference{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#modOverlay.mod-editor .mod-preview{overflow:auto;padding:12px 16px}
+#modOverlay.mod-editor .mod-preview .row{font-size:14px;gap:16px}
+#modOverlay.mod-editor .mod-preview .row .rv{font-family:inherit;font-variant-numeric:tabular-nums}
+#modOverlay.mod-editor .mod-preview .row.big .rl{font-size:14px;text-transform:none}
+#modOverlay.mod-editor .mod-element-preview{font-size:14px;min-width:560px}
+#modOverlay.mod-editor .mod-element-preview thead th{font-size:14px}
+#modOverlay.mod-editor .mod-element-preview tbody td{font-family:inherit}
+#modOverlay.mod-editor .mod-guard{font-size:14px}
+#modOverlay.mod-editor .mod-editor-actions{flex:none;padding:16px 28px;margin:0;border-top:1px solid #dde4ef;background:#fff}
+#modOverlay.mod-editor:has(#modModalBody[hidden]) .mod-editor-actions{display:none}
+#modOverlay.mod-editor .mod-editor-actions .mbtn{min-height:44px;padding:10px 18px;font-family:inherit;font-size:14px;font-weight:600}
+#modOverlay.mod-editor .mod-list h4,#modOverlay.mod-editor .mod-row-top,#modOverlay.mod-editor .mod-row-meta,#modOverlay.mod-editor .mod-chain .step,#modOverlay.mod-editor .mod-row .mbtn{font-size:14px;text-transform:none;letter-spacing:normal}
+@media(max-width:600px){
+  #modOverlay.mod-editor .mod-modal-head,#modOverlay.mod-editor .mod-editor-actions{padding:16px}
+  #modOverlay.mod-editor .mod-modal-body{padding:20px 16px}
+  #modOverlay.mod-editor .request-attachment-tabs{padding:8px 16px}
+  #modOverlay.mod-editor .mod-ctx,#modOverlay.mod-editor .mod-classification-row,#modOverlay.mod-editor .mod-date-reference{grid-template-columns:minmax(0,1fr);gap:0}
+  #modOverlay.mod-editor .mod-ctx{gap:10px}
+  #modOverlay.mod-editor .mod-date-reference{gap:20px}
+  #modOverlay.mod-editor .amt-row{grid-template-columns:96px minmax(0,1fr)}
+  #modOverlay.mod-editor #modAmt{grid-column:1/-1}
+  #modOverlay.mod-editor .mod-editor-actions .mbtn{padding:10px 12px}
+}
+
+#modOverlay.mod-editor #modRequestType{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;padding:9px 12px;border:1px solid #c8d4e5;border-radius:8px;background:#fff;color:#0f2744;font:400 16px/1.5 var(--font,"Segoe UI",Arial,sans-serif);text-align:left;cursor:pointer}
+#modOverlay.mod-editor #modRequestType svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#modOverlay.mod-editor #modRequestType:hover{border-color:#82a9d8;background:#f4f8ff}
+#modOverlay.mod-editor #modRequestType:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+#modOverlay.mod-editor #modRequestType:disabled{background:#f0f3f7;color:#5c7394;cursor:default}
