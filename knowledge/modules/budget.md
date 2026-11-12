@@ -2883,16 +2883,15 @@ The existing `budget-components-v1` amount envelope accepts optional `classifica
 
 Creator Development: add the two fields, expose them in All_Budget_Modifications, save createBudgetModification, modificationAdmin and sendModificationEmail. Creator promotion is separate from the repository PMP. Regression: all five choices, blank/legacy values, 50 accepted/51 rejected, create/edit/clear, rerenders, escaped email values and unchanged PO flow. Rollback: Budget Manager 122.29.140 and previous three function bodies; retain new fields/data.
 
-# Construction Approval Email — November 12, 2026
+# Budget Approval Email — November 12, 2026
 
-The Construction track email now puts Open Approval Page first, shows the
-requested category/element matrix using Unapproved amounts, then one detail
-header with cost-code totals and indented elements. The Unapproved column is
-highlighted. Only element rows with four known zero amounts are hidden;
-unavailable allocations remain dashes, and parent totals remain visible.
-Development emails and shared export helpers retain their existing layouts.
+Construction and Development emails use the compact category/element matrix.
+Only rows with a displayed nonzero amount qualify; zero/null-only elements,
+items, summary categories and empty tables are hidden. Credits remain visible.
+Elements use (1) Labor, (2) Materials, (3) Equipment, (4) Subcontractor,
+(5) Other order. Modification and PO approval element detail rows follow the
+same nonzero filter; exports retain their complete five-element structure.
 See [deployment, regression, and rollback notes](../../docs/construction-approval-email-2026-11-12.md).
-
 
 # Budget Modification Editor — November 12, 2026
 

@@ -1,23 +1,37 @@
-# Construction Approval Email
+# Budget Approval Email
 
-Construction approval emails show an Unapproved summary by budget category
-and cost element, followed by cost-code totals and element details. The summary
-uses Labor, Equipment, Materials, Subcontractor, Other, and Total, matching the
-requested matrix. The detail columns are Preliminary, Unapproved, HCSS Actuals,
-and GP Actuals. Unapproved cells are highlighted. Open Approval Page appears
-above the tables.
+Construction and Development approval emails show an Unapproved summary by
+budget category, followed by cost-code totals and element details. Elements
+appear in numeric order: (1) Labor, (2) Materials, (3) Equipment,
+(4) Subcontractor, (5) Other. Detail columns remain Preliminary, Unapproved,
+HCSS Actuals, and GP Actuals. Open Approval Page remains above the tables.
 
-Element amounts reuse the read-only budgetElementExportRows contract. A missing
-allocation stays unavailable (—), never an invented zero. Hide a detail row
-only when all four known amounts are zero. Parent totals remain authoritative;
-incomplete summary element columns remain unavailable while Total still shows
-the saved Unapproved total. No financial records, approval routing, recipients,
-permissions, exports, or Custom API contracts change.
+Show a numeric row only when at least one displayed amount is nonzero.
+Null values do not qualify a row for display, but remain unavailable (—) in
+retained rows. Negative credits and small nonzero values remain visible.
+Hide zero/null-only items, summary categories, totals, and empty tables.
+An item heading is retained to identify any nonzero child allocation even
+when its parent totals net to zero. Native parent totals remain authoritative;
+unknown allocations are never inferred or converted into displayed zeroes.
 
-Deployment: publish sendApprovalEmail through Creator Stage and Production.
-No widget release or Pages mapping change is required. Regression checks cover
-signed values, zero rows, missing allocations, category/overall totals, HTML
-escaping, Construction scope, Development compatibility, and delivery stamping.
-Rollback: restore the prior sendApprovalEmail body from the parent commit and
-publish it through Creator. Existing emails are unaffected; future sends and
-existing Resend actions use the published template.
+The same row filter applies to the single-item element details in modification
+emails and the selected-item element details in PO approval emails. Their
+shared export helpers and Excel/download attachments retain all five elements.
+Modification detail text is 14px. Approval routing, recipients, delivery stamps,
+permissions, financial records, and Custom API signatures are unchanged.
+
+Changed Creator functions: sendApprovalEmail, sendModificationEmail,
+sendPurchaseOrderEmail. Deployment requires saving these functions in Creator
+Development, promoting the selected functions through Stage and Production,
+and checking the published release. No widget release or Pages mapping changes
+are needed. The user explicitly authorized agent promotion on November 12.
+
+Regression: execute the actual Deluge email-rendering bodies with native lookup
+shapes; cover 1–5 ordering, positive/negative/tiny nonzero values, zero/null-only
+rows, empty items/categories/tables, saved totals with unknown allocations,
+Construction/Development scope, HTML escaping, PO isolation, and delivery stamps.
+Related delivery/permission/export checks preserve existing contracts.
+
+Rollback: restore these three function bodies from the parent of this change
+and promote only those functions through Creator. Existing emails are unaffected;
+future sends and Resend actions use the published template.
