@@ -1,3 +1,11 @@
+## Pro Forma Approval Step Deletion
+
+Reuse the Pro Forma progress dialog for Deleting Approval Step, Updating Approval
+Order and Checking Remaining Route. Success requires the targeted check-delete
+response to identify the exact string parent/step IDs, confirm absence and a
+nonempty contiguous route. Errors retain Check Status without replaying Delete.
+No delivery phase applies. Existing pending decisions continue without reset.
+
 ## Supplemental PO Approval Predicates
 
 Reuse the managed PO controller/progress modal and exact operation receipts.

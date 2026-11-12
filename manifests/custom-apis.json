@@ -234,7 +234,8 @@
         "widgets/proforma-manager/src/app/widget.html"
       ],
       "matching_creator_function": "Manage_Proforma_Approval_Config",
-      "confidence": "inferred-name-match"
+      "confidence": "verified-2026-11-12",
+      "notes": "Enabled OAuth2 POST, All users, application/json Key and Value, Standard response; six existing string arguments. Delete/check-delete require authenticated User_Access.Edit_All_Proformas, exact Pro Forma/approval scope; Pending and last-step deletion are rejected. Other mutations remain retired to Settings."
     },
     {
       "name": "Modification_Admin",
