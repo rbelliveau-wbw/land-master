@@ -22,7 +22,7 @@ const c=vm.createContext({
  document:{querySelector:()=>host},auditLog(){},errMeta:e=>({message:e.message}),
  setApprovalBusy(value){c.S.approvalBusy=value;},setPane(){},pfApprovalProgress:null,
 });
-vm.runInContext(['approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','canSendProformaApprovalsFor','proformaSendApprovalsGate','sendApprovalsWhyText','sendApprovalsWhyIcon','proformaApprovalSettingsKey','proformaApprovalSettingsEntry','validateProformaApprovalSettings','loadProformaApprovalSettings','proformaApprovalStartPayload','canDeleteProformaApproval','renderApprovalPane','runStartProformaApproval'].map(fn).join('\n'),c);
+vm.runInContext(['approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','canSendProformaApprovalsFor','proformaSendApprovalsGate','sendApprovalsWhyText','sendApprovalsWhyIcon','proformaApprovalSettingsKey','proformaApprovalSettingsEntry','validateProformaApprovalSettings','loadProformaApprovalSettings','proformaApprovalStartPayload','pfAttachmentActionIcon','canDeleteProformaApproval','renderApprovalPane','runStartProformaApproval'].map(fn).join('\n'),c);
 
 assert.equal(c.validateProformaApprovalSettings(snapshot,pf.ID),snapshot);
 for(const invalid of [

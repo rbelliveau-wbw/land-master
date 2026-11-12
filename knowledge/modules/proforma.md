@@ -1,3 +1,7 @@
+## Approval Delete Icon — 1.80.151
+
+The saved approval Delete action uses the existing attachment trashcan SVG in a compact bottom-right icon button. Permissions, confirmation and routing are unchanged. No Creator update is required. Rollback: 1.80.149.
+
 ## Delete A Saved Approval Step — November 12, 2026
 
 Users with User_Access.Edit_All_Proformas may Delete Approval on a saved

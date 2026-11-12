@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.149"></script>
-<script src="pf-save-audit.js?v=1.80.149"></script>
-<script src="pf-input-rules.js?v=1.80.149"></script>
-<script src="pf-input-validation.js?v=1.80.149"></script>
-<script src="pf-progress.js?v=1.80.149"></script>
+<script src="pf-save-verification.js?v=1.80.151"></script>
+<script src="pf-save-audit.js?v=1.80.151"></script>
+<script src="pf-input-rules.js?v=1.80.151"></script>
+<script src="pf-input-validation.js?v=1.80.151"></script>
+<script src="pf-progress.js?v=1.80.151"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.149">
-<script src="interaction-motion.js?v=1.80.149"></script>
-<script src="interaction-surfaces.js?v=1.80.149"></script>
-<script src="number-edit-commit.js?v=1.80.149"></script>
-<script src="number-transitions.js?v=1.80.149"></script>
-<script src="number-views.js?v=1.80.149"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.149">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.151">
+<script src="interaction-motion.js?v=1.80.151"></script>
+<script src="interaction-surfaces.js?v=1.80.151"></script>
+<script src="number-edit-commit.js?v=1.80.151"></script>
+<script src="number-transitions.js?v=1.80.151"></script>
+<script src="number-views.js?v=1.80.151"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.151">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.149"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.149">
-<script src="comments.js?v=1.80.149"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.149">
+<script src="budget-transfer-ui.js?v=1.80.151"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.151">
+<script src="comments.js?v=1.80.151"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.151">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1726,6 +1726,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-appr-flow-card .pf-appr-step:after{top:12px;height:2px}
 .pf-appr-flow-card .pf-appr-dot{width:26px;height:26px;box-shadow:0 2px 5px rgba(20,47,89,.08)}
 .pf-appr-flow-card .pf-appr-step label{margin-top:1px;font-size:9.5px;letter-spacing:.01em}
+.pf-appr-actions .pf-appr-delete{width:26px;height:26px;border-radius:6px}.pf-appr-actions .pf-appr-delete svg{width:14px;height:14px}
 .pf-appr-row{min-width:0;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease}
 .pf-appr-row:hover{border-color:#b9cdf3;box-shadow:0 3px 14px rgba(30,64,175,.10);transform:translateY(-1px)}
 .pf-appr-row:last-child{border-bottom:1px solid var(--line)}
@@ -1849,8 +1850,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.149"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.149">
+<script src="success-feedback.js?v=1.80.151"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.151">
 </head>
 <body>
 
@@ -2265,7 +2266,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.149";
+var PFW_VERSION="1.80.151";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -4793,7 +4794,7 @@ function renderApprovalPane(){
       noteHtml='<div class="pf-appr-note-view'+(note?'':' empty')+'">'+esc(note||"No approval note entered.")+'</div>';
       if(resendHtml)noteHtml+='<div class="pf-appr-actions">'+resendHtml+'</div>';
     }
-    if(savedRoute&&canDeleteProformaApproval(id,r))noteHtml+='<div class="pf-appr-actions"><button type="button" class="btn reject" style="font-size:14px" data-pf-appr-delete="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Delete Approval</button></div>';
+    if(savedRoute&&canDeleteProformaApproval(id,r))noteHtml+='<div class="pf-appr-actions"><button type="button" class="pf-attachment-action danger pf-appr-delete" title="Delete Approval" aria-label="Delete Approval" data-pf-appr-delete="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">'+pfAttachmentActionIcon("delete")+'</button></div>';
     return '<div class="pf-appr-row" data-approval-id="'+esc(String(r.ID||''))+'"><div class="pf-appr-row-head"><div class="pf-appr-row-role"><span class="pf-appr-seq">'+(i+1)+'</span>'+esc(role)+'</div><div class="pf-appr-row-recipient">'+recipient+'</div>'+(meta?'<div class="pf-appr-meta">'+meta+'</div>':'')+approvalStatusMarkup(status)+'</div>'+noteHtml+'</div>';
   }).join('');
   var body=rows.length?'<div class="pf-appr-flow-card">'+approvalStepperHtml(rows)+cards+'</div>':'<div class="pf-appr-info" role="status"><b>'+(entry&&entry.status==="loading"?'Loading Settings approval route…':'Approval route unavailable')+'</b>'+(entry&&entry.status==="error"?'<br>'+esc(entry.error&&entry.error.message||'Check Settings → Approvals and refresh the route.'):'')+'</div>';
