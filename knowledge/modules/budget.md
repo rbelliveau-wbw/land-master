@@ -2874,6 +2874,7 @@ creation/review, matched headers, missing switch, retained grid regressions and
 repository validation/Pages build. Rollback Production to Budget 122.29.139.
 
 
+
 ## Standalone Modification Type — November 12, 2026
 
 Standalone modifications add optional Type (`Budget_Modification.Type_field`): Eng, Dev, Muni, Constr, Purch, and Type Comment (`Type_Comment`, single line, maximum 50 characters). These classify the source/function of the request independently of Increase/Decrease, approval track, and required Reason. Existing blank records remain valid. PO-linked modifications and PO emails are unchanged.
@@ -2881,3 +2882,14 @@ Standalone modifications add optional Type (`Budget_Modification.Type_field`): E
 The existing `budget-components-v1` amount envelope accepts optional `classification: {type, comment}` in Create_Budget_Modification and Modification_Admin without changing either public signature. Validate before writes; persist during create before routing/email. Legacy decimal/component callers remain accepted; legacy admin requests preserve classification. The widget retains drafts through rerenders and displays saved fields in standalone detail. Native field validation enforces the same comment limit for record edits. `sendModificationEmail` HTML-escapes both fields into the shared approval/rejection email detail.
 
 Creator Development: add the two fields, expose them in All_Budget_Modifications, save createBudgetModification, modificationAdmin and sendModificationEmail. Creator promotion is separate from the repository PMP. Regression: all five choices, blank/legacy values, 50 accepted/51 rejected, create/edit/clear, rerenders, escaped email values and unchanged PO flow. Rollback: Budget Manager 122.29.140 and previous three function bodies; retain new fields/data.
+
+# Construction Approval Email — November 12, 2026
+
+The Construction track email now puts Open Approval Page first, shows the
+requested category/element matrix using Unapproved amounts, then one detail
+header with cost-code totals and indented elements. The Unapproved column is
+highlighted. Only element rows with four known zero amounts are hidden;
+unavailable allocations remain dashes, and parent totals remain visible.
+Development emails and shared export helpers retain their existing layouts.
+See [deployment, regression, and rollback notes](../../docs/construction-approval-email-2026-11-12.md).
+
