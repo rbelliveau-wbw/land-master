@@ -2872,3 +2872,12 @@ the immutable release. No forms, fields, functions, Custom APIs, approval or
 financial behavior change. Creator 9.187 remains published. Verify desktop
 creation/review, matched headers, missing switch, retained grid regressions and
 repository validation/Pages build. Rollback Production to Budget 122.29.139.
+# Construction Approval Email — November 12, 2026
+
+The Construction track email now puts Open Approval Page first, shows the
+requested category/element matrix using Unapproved amounts, then one detail
+header with cost-code totals and indented elements. The Unapproved column is
+highlighted. Only element rows with four known zero amounts are hidden;
+unavailable allocations remain dashes, and parent totals remain visible.
+Development emails and shared export helpers retain their existing layouts.
+See [deployment, regression, and rollback notes](../../docs/construction-approval-email-2026-11-12.md).

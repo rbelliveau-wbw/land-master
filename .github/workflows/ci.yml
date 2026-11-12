@@ -27,6 +27,9 @@ jobs:
       - name: Validate repository
         run: npm run validate
 
+      - name: Check Construction Approval Email
+        run: node scripts/test-construction-approval-email.mjs
+
       - name: Build Pages artifact locally
         run: npm run build:pages
 
