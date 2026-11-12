@@ -126,7 +126,8 @@ map poSnapshot(string purchaseOrderId)
 			bundle = thisapp.poApprovalBundle(purchaseOrderId);
 			if(bundle.get("success") != true) { result.put("error",bundle.get("error")); return result; }
 			p.put("approvalBundle",bundle.get("bundle"));
-			if(bundle.get("bundle").get("reallocationContract") == "po-reallocation-v1" && (po.PO_Approval_State != "Rejected" || !hasRevisionPlan)) { p.put("reallocation",bundle.get("bundle").get("reallocation")); }
+			useBundlePlan = po.PO_Approval_State != "Rejected" || !hasRevisionPlan;
+			if(bundle.get("bundle").get("reallocationContract") == "po-reallocation-v1" && useBundlePlan) { p.put("reallocation",bundle.get("bundle").get("reallocation")); }
 		}
 		result.put("snapshot",p);
 		result.put("success",true);

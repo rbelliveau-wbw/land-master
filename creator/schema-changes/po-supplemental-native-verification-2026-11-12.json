@@ -1,0 +1,66 @@
+{
+  "date": "2026-11-12",
+  "environment": "Development",
+  "sourceBase": "edbe13d9",
+  "status": "all-eleven-functions-saved-compiled-and-reopened",
+  "verification": "Native editor readbacks substituted for all eleven repository functions in scripts/test-po-supplemental.mjs; complete workflow matrix passed. getall capitalization normalized only for the offline translator.",
+  "runtime": "Authenticated Development Request > Supplemental Purchase Order returns the empty eligible-original list instead of Unsupported PO action. Existing approved $35 test PO has no Department; no test data was changed.",
+  "production": "Not published; owner promotion under PMP. Production Somerset PO 4410926000005964006 remains Approved. Missing Construction PM notice retained by explicit user instruction.",
+  "functions": [
+    {
+      "name": "poValidatePayload",
+      "readback_bytes": 11396,
+      "sha256": "1b8e06b3495a933ee082ad2c298728cdae44b7da7f13dc0c150b8fb54e7e869e"
+    },
+    {
+      "name": "poApprovalBundle",
+      "readback_bytes": 18047,
+      "sha256": "6f19b1e524618bab6c93e9a6ad6b8a911530a6f52578a75c58a6eb4e812dbb32"
+    },
+    {
+      "name": "poSupplementContext",
+      "readback_bytes": 6531,
+      "sha256": "4d2807da152588434ff681537e10128f8065540e7d002a7bf4fe45ff0bb5e28a"
+    },
+    {
+      "name": "poSnapshot",
+      "readback_bytes": 8932,
+      "sha256": "04025ce1a0c8871c6719ab1d8698aeb003d47b8dc2feed4fcdf3217884df3b16"
+    },
+    {
+      "name": "poActorResponse",
+      "readback_bytes": 6157,
+      "sha256": "b26a482ec67cebdcc570677d2e3fa1aa4d3491273f5e6ad5e8f567b101ba34c8"
+    },
+    {
+      "name": "poExcelWorkbook",
+      "readback_bytes": 18731,
+      "sha256": "da11a6a3d84b205eb4a9b19e1af57a6914c6488343249ec3058b2e2012734280"
+    },
+    {
+      "name": "sendPurchaseOrderEmail",
+      "readback_bytes": 14187,
+      "sha256": "5ecb379bc24a6332b9981a6da62d3834a366d8c873e1c6c9d62bc8b5f8190b1c"
+    },
+    {
+      "name": "renderPurchaseOrderOutcomeEmail",
+      "readback_bytes": 4855,
+      "sha256": "5265ac582c5c5fff4a4a9dd10cd6f5cfeb0197e5a8c2a59f49a95db3fd3a941f"
+    },
+    {
+      "name": "buildPurchaseOrderOutcomeEmail",
+      "readback_bytes": 7300,
+      "sha256": "6200f4afdf99375e97fb38dfd21025b6038e17f00f815d97a9c61039aaae5ea8"
+    },
+    {
+      "name": "handlePurchaseOrderApproval",
+      "readback_bytes": 15865,
+      "sha256": "87fe1eab8d19a9c7599d856c5dfa30f1418cd4ef74f9f56b23bf7d504b3053f5"
+    },
+    {
+      "name": "managePurchaseOrder",
+      "readback_bytes": 94872,
+      "sha256": "f6d0ccabaaeb037025c0178622ea18e3d151029ae9d64b6d15ebcfa8838f6201"
+    }
+  ]
+}

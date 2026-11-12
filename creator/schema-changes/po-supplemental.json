@@ -65,8 +65,8 @@
   "new_api_registrations": [],
   "deployment": {
     "development_fields": "Saved in Application IDE and independently reopened; all five persisted fields confirmed.",
-    "development_helper": "Created and Save/Done completed; persisted source recheck was interrupted by repeated agent-owned browser timeouts.",
-    "development_changed_functions": "Prepared in repository; installation and native compilation remain required.",
+    "development_helper": "Saved, compiled and independently reopened on November 12, 2026; current identity guard and Supplement references verified.",
+    "development_changed_functions": "All ten changed functions saved/compiled and independently reopened on November 12, 2026. Native formatted readbacks passed the supplemental workflow matrix. See docs/po-supplemental-native-repair-2026-11-12.md.",
     "stage": "Not published; owner promotion under PMP.",
     "production": "Not published; owner promotion under PMP. Widget requires po-supplemental-v1 before supplement preparation."
   },
