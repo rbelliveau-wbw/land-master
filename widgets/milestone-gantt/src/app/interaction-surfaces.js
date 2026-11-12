@@ -20,6 +20,7 @@
       
       tab('.ps-nav','[data-ps-select]',null,{rail:false});
       panels.push({selector:'#vList,#vEdit,#vDash,.ed-pane'});
+      list('.pf-appr-flow-card','.pf-appr-row[data-approval-id]',row=>row.dataset.approvalId,recordScope,{resize:true});
       list('#listBody','tr[data-id]',row=>row.dataset.id,()=>state().view||'list');
       list('#edPanes [data-lm-row-list]','tbody>tr',row=>{
         const kind=row.dataset.kind,index=Number(row.dataset.i),model=state().ed?.model;

@@ -1,3 +1,34 @@
+## Delete A Saved Approval Step — November 12, 2026
+
+Users with User_Access.Edit_All_Proformas may Delete Approval on a saved
+non-Pending step. Approval-only or owned-record grants do not grant deletion.
+The server checks the current logged-in actor, exact parent/approval IDs,
+current status and at least one surviving step. It deletes only the selected
+Budget_Approvals row and renumbers Sort_Order, preserving other decisions,
+notes, dates, recipients and Add_Pro_Forma status/lock. Settings remains the
+source for new routes; add/rename/reorder/recipient editing stays retired.
+Deleting the last future step makes the preceding approver the final step.
+The existing decision function routes using the revised Sort_Order and completes
+the chain when its final remaining approver approves. No email is sent by deletion.
+
+Manage_Proforma_Approval_Config retains its six string arguments and now accepts
+delete and read-only check-delete. Both require Edit All Pro Formas. The
+proforma-approval-delete-v1 response contains string parent/target IDs, deleted,
+contiguous, rowCount and remaining route IDs/orders/statuses. The progress dialog
+checks this exact target and nonempty contiguous route before declaring success.
+Unknown results offer Check Status only; they never replay Delete automatically.
+The surviving approval rows use the shared keyed movement animation.
+
+Affected forms/fields: User_Access.User/Edit_All_Proformas (read),
+Budget_Approvals.Proforma/Status (guards), ID (delete), Sort_Order (renumber);
+Add_Pro_Forma.ID (read). No new schema or API signatures. Creator compilation
+and publication of Manage_Proforma_Approval_Config are required.
+Regression: native-source permission/status/scope/last-row/replay guards,
+first/middle/last removal, preserved pending note/delivery/parent state,
+read-only recovery and unchanged Settings configuration guards.
+Widget rollback: 1.80.146; restore the prior retired Creator function if needed.
+Deleted execution rows require their own data restore; rollback does not recreate them.
+
 ## Native Delete Reconciliation November 11 2026
 
 Resolved native delete replies with an ambiguous acknowledgement are recovered

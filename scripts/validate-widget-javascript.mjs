@@ -183,7 +183,7 @@ for (const required of [
 ]) {
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: dedicated Pro Forma send access is missing ${required}.`);
 }
-for (const forbidden of ['data-pf-appr-config-title', 'data-pf-appr-config-email', 'data-pf-appr-recipient=', 'data-pf-appr-add=', 'invokeProformaApprovalApi("manageProformaApprovalConfig"', 'invokeProformaApprovalApi("updateProformaApprovalRecipient"']) {
+for (const forbidden of ['data-pf-appr-config-title', 'data-pf-appr-config-email', 'data-pf-appr-recipient=', 'data-pf-appr-add=', 'invokeProformaApprovalApi("updateProformaApprovalRecipient"']) {
   if (proformaHtml.includes(forbidden)) errors.push(`proforma-manager: legacy per-record approval configuration remains: ${forbidden}.`);
 }
 if (proformaHtml.includes('flags.send != null ? flags.send : flags.Send_for_Approvals')) {
@@ -362,10 +362,15 @@ for (const required of [
 }
 const updateProformaApprovalRecipient = fs.readFileSync(path.join(root, 'creator/functions/Update_Proforma_Approval_Recipient.dg'), 'utf8');
 const retiredProformaConfig = fs.readFileSync(path.join(root, 'creator/functions/Manage_Proforma_Approval_Config.dg'), 'utf8');
-for (const [name, source] of [['Update_Proforma_Approval_Recipient', updateProformaApprovalRecipient], ['Manage_Proforma_Approval_Config', retiredProformaConfig]]) {
+for (const [name, source] of [['Update_Proforma_Approval_Recipient', updateProformaApprovalRecipient]]) {
   if (!source.includes('response.put("success",false);') || !source.includes('Settings > Approval')) errors.push(`${name}: retired endpoint must direct configuration to Settings.`);
   if (/insert into|delete from|row\.\w+\s*=|Budget_Approvals\[/.test(source)) errors.push(`${name}: retired endpoint must preserve historical execution rows.`);
 }
+// Explicit Edit All deletion is the sole saved-route configuration exception.
+for (const required of ['actor.count() != 1 || actor.Edit_All_Proformas != true', 'action != "delete" && action != "check-delete"', 'A pending approval step cannot be deleted.', 'routeRows.count() <= 1', 'ID == rowId && Proforma == pfId && Status != "Pending"', 'step.Sort_Order=position;', 'proforma-approval-delete-v1']) {
+  if (!retiredProformaConfig.includes(required)) errors.push('Manage_Proforma_Approval_Config: missing saved-route deletion guard '+required);
+}
+if (/insert into|row\.(Title|Approver|Status|Approval_Notes|Sent_Date|Responded_Date)\s*=|pf\.\w+\s*=(?!=)/.test(retiredProformaConfig)) errors.push('Manage_Proforma_Approval_Config: deletion must preserve surviving approvals and parent state.');
 const killProformaApproval = fs.readFileSync(path.join(root, 'creator/functions/Kill_Proforma_Approval_Flow.dg'), 'utf8');
 if (!killProformaApproval.includes('pf.Status="Draft";')) {
   errors.push('Kill_Proforma_Approval_Flow: reset must return the Pro Forma lifecycle status to Draft.');

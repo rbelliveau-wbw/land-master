@@ -1,8 +1,95 @@
 map Manage_Proforma_Approval_Config(string proformaId, string configAction, string approvalId, string title, string approverEmail, string orderedIds)
 {
-	// Retired compatibility endpoint. Preserve historical execution records.
-	response = Map();
-	response.put("success",false);
-	response.put("message","Manage Pro Forma approvers in Settings > Approval Policies.");
-	return response;
+    response = Map();
+    response.put("success",false);
+    try
+    {
+        action = ifnull(configAction,"").trim().toLowerCase();
+        if(action != "delete" && action != "check-delete")
+        {
+            response.put("message","Manage Pro Forma approvers in Settings > Approval Policies.");
+            return response;
+        }
+        actor = User_Access[User == zoho.loginuser];
+        if(actor.count() != 1 || actor.Edit_All_Proformas != true)
+        {
+            response.put("message","Edit All Pro Formas access is required to delete an approval step.");
+            return response;
+        }
+        pfId = ifnull(proformaId,"").trim().toLong();
+        rowId = ifnull(approvalId,"").trim().toLong();
+        pf = Add_Pro_Forma[ID == pfId];
+        if(pf.ID == null)
+        {
+            response.put("message","Pro Forma not found.");
+            return response;
+        }
+        row = Budget_Approvals[ID == rowId && Proforma == pfId];
+        if(action == "delete")
+        {
+            if(row.ID == null)
+            {
+                response.put("message","Approval step not found for this Pro Forma. Refresh the route.");
+                return response;
+            }
+            if(ifnull(row.Status,"Not Sent").trim().toLowerCase() == "pending")
+            {
+                response.put("message","A pending approval step cannot be deleted.");
+                return response;
+            }
+            routeRows = Budget_Approvals[Proforma == pfId];
+            if(routeRows.count() <= 1)
+            {
+                response.put("message","An approval route must contain at least one step.");
+                return response;
+            }
+            // Recheck status in the native deletion criteria; never reset other decisions.
+            delete from Budget_Approvals[ID == rowId && Proforma == pfId && Status != "Pending"];
+            stillPresent = Budget_Approvals[ID == rowId && Proforma == pfId];
+            if(stillPresent.count() > 0)
+            {
+                response.put("message","This approval became pending. Refresh the route.");
+                return response;
+            }
+            remaining = Budget_Approvals[Proforma == pfId] sort by Sort_Order;
+            position = 1;
+            for each step in remaining
+            {
+                step.Sort_Order=position;
+                position = position + 1;
+            }
+        }
+        // Targeted read-only reconciliation also works after the deleted row is gone.
+        remaining = Budget_Approvals[Proforma == pfId] sort by Sort_Order;
+        target = Budget_Approvals[ID == rowId && Proforma == pfId];
+        route = List();
+        contiguous = true;
+        position = 1;
+        for each step in remaining
+        {
+            item = Map();
+            item.put("id",step.ID.toString());
+            item.put("order",step.Sort_Order);
+            item.put("role",ifnull(step.Title,"").toString());
+            item.put("status",ifnull(step.Status,"Not Sent").toString());
+            route.add(item);
+            if(step.Sort_Order != position) { contiguous = false; }
+            position = position + 1;
+        }
+        response.put("success",true);
+        response.put("contract","proforma-approval-delete-v1");
+        response.put("proformaId",pf.ID.toString());
+        response.put("approvalId",rowId.toString());
+        response.put("deleted",target.count() == 0);
+        response.put("contiguous",contiguous);
+        response.put("rowCount",remaining.count());
+        response.put("route",route);
+        response.put("message","Approval route checked.");
+    }
+    catch(error)
+    {
+        response.put("success",false);
+        response.put("message",error.toString());
+    }
+    return response;
 }
