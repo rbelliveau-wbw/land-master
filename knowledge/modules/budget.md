@@ -2841,3 +2841,14 @@ schema/functions, contacts, DTOs, retry predicates, checks and rollback.
 Source/local checks are available; native installation/publication, desktop
 evidence and exact release/promotion versions remain pending until recorded.
 
+
+## Requests Header — 122.29.138
+
+The global Requests search and Group By, Type, Status and Order pickers occupy
+the heading between the title and actions. Search flexes to the remaining space
+with a shorter desktop width; the former separate filter panel is removed.
+Narrower desktop windows keep the controls together below the title/actions.
+Existing search, filtering, grouping, ordering, refresh and request actions are
+unchanged. No forms, fields, functions, Custom APIs or Creator deployment change.
+Verify the Requests workspace regressions, desktop layout/pickers and repository
+validation/Pages build. Rollback Production to Budget Manager 122.29.137.

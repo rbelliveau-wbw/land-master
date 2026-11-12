@@ -35,7 +35,11 @@ only after explicit activation; use a complete bulk snapshot and the same rail
 renderer/actions. Default to newest first with Date groups. Offer Project,
 Territory, Request Type, Status and None through searchable single-select Group
 By, with searchable Type/Status filters. Use the existing pale-blue group bands,
-compact rounded toolbar and native smooth disclosures. Keep PO children with
+compact controls and native smooth disclosures. On the global Requests view,
+place the shortened search and all four labeled filters in the heading between
+Requests and Refresh / New Request. Omit the separate full-width filter panel.
+Keep controls on one row on wide desktops; use a full-width controls row below
+the title/actions only when desktop space is constrained. Keep PO children with
 their parent through search/filter/grouping, including Bud Mods filtering. Show
 project/phase context above each row and distinguish primary from linked counts.
 Do not preload line items or attachments for the index. Unknown attachment
