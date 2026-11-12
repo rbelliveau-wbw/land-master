@@ -71,4 +71,10 @@ selectors apply only to Settings, so the other nine Production releases stay
 as listed above. Rollback Settings to 1.6.14 restores the preceding behavior,
 including its inline-height regression. No Creator publication is required.
 
-Second Greptile review: pending.
+Second Greptile review (`1312cf8b-1430-47d4-b55c-209eb53ae07f`) completed
+against source commit `1b3094da491cb23b64104644b33d5536716ecc77`: 5/5
+confidence, zero findings, both prior findings confirmed addressed. The
+automatic loop stopped after two completed reviews. All 22 assets in Settings
+1.6.15 match the follow-up source bytes and its HTML hash matches metadata.
+Full `npm run validate`, `npm run build:pages`, and the 612 desktop browser
+checks passed for this follow-up; the layout detector returned no findings.
