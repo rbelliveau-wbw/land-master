@@ -55,3 +55,35 @@
 #platModal .si-review-notes>summary svg{flex:none}
 #platModal .si-review-notes>p{margin:8px 4px;color:#607694;font-size:12px}
 @media(prefers-reduced-motion:reduce){#platModal .si-source-chevron{transition:none}}
+
+/* Paired native creates use the same readable status in both destination columns. */
+#platModal .si-pair-context{display:grid;gap:8px;padding:16px;background:#f0f4fa;border-radius:8px}
+#platModal .si-pair-context h3,#platModal .si-pair-context p{margin:0;font-size:16px}
+#platModal .si-table,#platModal .si-table input,#platModal .si-source-detail summary,#platModal .si-review-notes summary{font-size:14px}
+#platModal .si-pair-run{display:flex;flex-direction:column;gap:16px;min-height:0;flex:1;font-size:16px}
+#platModal .si-pair-run>p{margin:0;overflow-wrap:anywhere}
+#platModal .si-pair-run .si-review-scroll{flex:1;min-height:100px}
+#platModal .si-pair-outcome{padding:14px 16px;background:#eef4ff;color:#173b7a;border-radius:8px;font-size:18px;font-weight:650}
+#platModal .si-pair-outcome.success{background:#ecfdf5;color:#047857}
+#platModal .si-pair-outcome.warning{background:#fffbeb;color:#92400e}
+#platModal .si-pair-stages>div{display:flex;justify-content:space-between;gap:16px;padding:8px 0;font-size:14px}
+#platModal .si-pair-stages span{color:#526683}
+#platModal .si-record-status{display:inline-flex;align-items:center;font-size:14px;font-weight:600;white-space:nowrap;color:#526683}
+#platModal .si-record-saved{color:#047857}
+#platModal .si-record-failed,#platModal .si-pair-error,#platModal #siPairError{color:#b91c1c}
+#platModal .si-pair-error{font-size:14px;max-width:44ch;white-space:normal}
+#platModal .si-pair-run .si-progress-track{flex-shrink:0}
+#platModal .pi-foot .pi-meta{font-size:14px}
+
+#platModal .si-table table{font-size:14px}
+#platModal .si-pair-run .si-table{margin-top:0;max-height:none}
+#platModal .si-pair-run .si-table table{min-width:540px;table-layout:fixed}
+#platModal .si-pair-run .si-table th:first-child{width:44%}
+#platModal .si-pair-run .si-table th:nth-child(2),#platModal .si-pair-run .si-table th:nth-child(3){width:28%}
+#platModal .si-pair-run .si-table td:nth-child(2),#platModal .si-pair-run .si-table td:nth-child(3){min-width:0;max-width:none}
+#platModal .pi-foot-meta,#platModal .si-note{font-size:14px}
+
+#platModal .si-table th,#platModal .pi-steps li{font-size:14px}
+#platModal .pi-steps i{font-size:14px;width:24px;height:24px}
+#platModal .si-pair-run .si-table td:first-child{border-left:0}
+@media(max-width:700px){#platModal .pi-head{flex-wrap:wrap}#platModal .pi-steps{order:3;width:100%;justify-content:center;margin:0}}

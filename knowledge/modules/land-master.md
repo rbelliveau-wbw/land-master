@@ -551,3 +551,7 @@ absent on review two (5/5, zero findings). Superseded immutable bundles 8.17.17
 and 8.17.18 were excluded from review two to fit its upload limit; all active
 source, tests, native workflow and release 8.17.19 were included.
 
+
+## Paired Lot And Property Import — 8.17.21
+
+The AI spreadsheet import creates new Lots plus new Residential / L&B Res Properties. Property ID and Common Name equal Lot Code, pending the real CAD parcel ID. Each new Property uses existing Project, Subdivision and Lots lookups. Existing Lots are excluded from Property creation; no existing Properties are reused. The same Waiting / Creating… / Saved / Failed / Needs Review renderer serves both destination columns. Accepted native writes remain saved after an optional refresh failure; partial/unknown outcomes remain visible, and terminal runs cannot replay. See [contract, Creator prerequisite, verification and rollback](../../docs/lot-property-import.md).

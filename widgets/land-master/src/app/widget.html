@@ -4,20 +4,20 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.19"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.21"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.19"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.19">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.19">
-<script src="searchable-pickers.js?v=8.17.19" defer></script>
-<script src="property-subtypes.js?v=8.17.19"></script>
-<script src="property-lots.js?v=8.17.19"></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.19">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.19">
-<script src="spreadsheet-import.js?v=8.17.19"></script>
-<script src="lot-import.js?v=8.17.19"></script>
+<script src="property-workspace.js?v=8.17.21"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.21">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.21">
+<script src="searchable-pickers.js?v=8.17.21" defer></script>
+<script src="property-subtypes.js?v=8.17.21"></script>
+<script src="property-lots.js?v=8.17.21"></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.21">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.21">
+<script src="spreadsheet-import.js?v=8.17.21"></script>
+<script src="lot-import.js?v=8.17.21"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -429,19 +429,19 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.17.19"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.19">
-<script src="interaction-motion.js?v=8.17.19"></script>
-<script src="interaction-surfaces.js?v=8.17.19"></script>
-<script src="number-edit-commit.js?v=8.17.19"></script>
-<script src="number-transitions.js?v=8.17.19"></script>
-<script src="number-surfaces.js?v=8.17.19"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.19">
-<link rel="stylesheet" href="modal-layout.css?v=8.17.19">
+<script src="success-feedback.js?v=8.17.21"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.21">
+<script src="interaction-motion.js?v=8.17.21"></script>
+<script src="interaction-surfaces.js?v=8.17.21"></script>
+<script src="number-edit-commit.js?v=8.17.21"></script>
+<script src="number-transitions.js?v=8.17.21"></script>
+<script src="number-surfaces.js?v=8.17.21"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.21">
+<link rel="stylesheet" href="modal-layout.css?v=8.17.21">
 </head>
 <body>
 
-  <div id="platModal" class="pi-modal" role="dialog" aria-modal="true" aria-labelledby="piTitle"><div class="pi-box"><div class="pi-head"><div class="pi-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg></div><div class="pi-heading"><h2 id="piTitle">Populate Subdivision</h2></div><ol id="piSteps" class="pi-steps" aria-label="Import steps"></ol><button id="piClose" class="pi-x" type="button" aria-label="Close import"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="piBody" class="pi-body"></div><div class="pi-foot"><span id="piFootMeta" class="pi-foot-meta"></span><div id="piFootActions" class="pi-foot-actions"></div></div></div></div>
+  <div id="platModal" class="pi-modal" role="dialog" aria-modal="true" aria-labelledby="piTitle"><div class="pi-box"><div class="pi-head"><div class="pi-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"></path><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"></path></svg></div><div class="pi-heading"><h2 id="piTitle">Populate Subdivision</h2></div><ol id="piSteps" class="pi-steps" aria-label="Import Steps"></ol><button id="piClose" class="pi-x" type="button" aria-label="Close Import"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div><div id="piBody" class="pi-body"></div><div class="pi-foot"><span id="piFootMeta" class="pi-foot-meta"></span><div id="piFootActions" class="pi-foot-actions"></div></div></div></div>
   <div id="piConfirm" class="pi-confirm" role="dialog" aria-modal="true"></div>
 <div class="topbar">
   <div class="topbar-brand">
@@ -602,7 +602,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.19-LAZY-CORE",
+  version: "8.17.21-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1491,7 +1491,7 @@ function loadData(){
   S.coreLoadPromise=loading;function settled(){if(S.coreLoadPromise===loading){S.coreLoadPromise=null;setCoreRefreshing(false);}}loading.then(settled,settled);return loading;
 }
 
-var lotImport=LMLotImport.mount({version:CFG.version,subdivisions:function(){return S.subdivisions},selected:function(){return S.scope==='subs'?Object.keys(S.checked).filter(id=>S.checked[id]):[]},live:function(){return S.liveSDK&&!S.demo},prepare:function(){closeNewMenu();closeFilterPopup();closeLookupPopup();closeProjectPopup();if(window.LMPickers)LMPickers.close(false)},unavailable:function(){setStatus('warn','Open Import Lots inside Zoho Creator')},add:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('lot',data)},reload:loadData,log:function(level,label,details){auditOnly(label,details,level==='error');if(level==='error')queueErrorEmail(label,details)}});
+var lotImport=LMLotImport.mount({version:CFG.version,subdivisions:function(){return S.subdivisions},selected:function(){return S.scope==='subs'?Object.keys(S.checked).filter(id=>S.checked[id]):[]},live:function(){return S.liveSDK&&!S.demo},prepare:function(){closeNewMenu();closeFilterPopup();closeLookupPopup();closeProjectPopup();if(window.LMPickers)LMPickers.close(false)},unavailable:function(){setStatus('warn','Open Import Lots inside Zoho Creator')},add:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('lot',data)},addProperty:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('property',data)},recordId:landCreatedRecordId,scope:landCreateScope,reload:loadData,log:function(level,label,details){auditOnly(label,details,level==='error');if(level==='error')queueErrorEmail(label,details)}});
 // Reuse Tax's native full-name title without changing any lookup/edit handler.
 function landLookupNameTitle(event){
   var target=event.target,button=target&&target.closest?target.closest('.table-lookup-btn,.field-lookup-btn,.table-project-btn'):null;
