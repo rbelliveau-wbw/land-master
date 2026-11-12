@@ -736,3 +736,15 @@ Property Lot Code labels, picker triggers, Parcel ID/Lot Code headings and the
 Subdivision filter use the same typography as their neighboring controls.
 Do not add per-field font-size or letter-spacing overrides to those controls;
 keep their visible labels in Title Case and retain the Lot Code pill styling.
+
+Budget Modification editing uses an 800px-wide viewport-capped dialog, 20px title,
+14px Title Case labels and 16px field text. Type and Type Comment share a 1:2
+row on desktop and stack below 600px. Show the approved and revised financial
+values inline without summary cards. Keep the existing calculated preview and
+approval actions; pin the editor actions below the scrolling Details panel and
+hide them on Attachments. Other request dialogs retain their existing layouts.
+
+Budget Modification Type uses a selection-only button with a chevron and the
+five existing options (Eng, Dev, Muni, Constr, Purch). Omit Clear and free-text
+entry. Preserve existing blank values as Choose Type without inventing a value.
+Support keyboard selection and retain the 50-character Type Comment field.

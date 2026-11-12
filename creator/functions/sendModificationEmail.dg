@@ -181,7 +181,7 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		changeParts = {"1":modRec.Labor_Budget,"2":modRec.Materials_Budget,"3":modRec.Equipment_Budget,"4":modRec.Subcontractor_Budget,"5":modRec.Other_Budget};
 		changeSign = 1; if(modType == "Decrease") { changeSign = -1; }
-		detailCard = detailCard + "<h3 style='font-size:14px;margin:16px 0 8px'>Element Details</h3><table style='width:100%;font-size:10px;border-collapse:collapse'><tr><th>Element</th><th>Final</th><th>Approved Mods</th><th>Current Revised</th><th>This Modification</th><th>Revised If Approved</th></tr>";
+		modElementBody = "";
 		for each element in thisapp.budgetElementExportRows(modRec.Budget_Item.ID)
 		{
 			values = element.get("values");
@@ -189,15 +189,27 @@ string sendModificationEmail(int modificationId, string action)
 			if(change != null) { change = changeSign * change; }
 			projected = null;
 			if(values.get(5) != null && change != null) { projected = values.get(5); if(modRec.Status != "Approved") { projected = projected + change; } }
-			detailCard = detailCard + "<tr><td style='padding:5px;border-bottom:1px solid #e2e8f0'>" + element.get("label") + "</td>";
+			rowNonzero = false;
+			for each amount in {values.get(3),values.get(4),values.get(5),change,projected}
+			{
+				if(ifnull(amount,0) != 0) { rowNonzero = true; }
+			}
+			if(rowNonzero)
+			{
+			modElementBody = modElementBody + "<tr><td style='padding:5px;border-bottom:1px solid #e2e8f0'>" + element.get("label") + "</td>";
 			for each amount in {values.get(3),values.get(4),values.get(5),change,projected}
 			{
 				display = "—"; if(amount != null) { display = amount.text("$#,##0.####"); }
-				detailCard = detailCard + "<td style='padding:5px;border-bottom:1px solid #e2e8f0;text-align:right'>" + display + "</td>";
+				modElementBody = modElementBody + "<td style='padding:5px;border-bottom:1px solid #e2e8f0;text-align:right'>" + display + "</td>";
 			}
-			detailCard = detailCard + "</tr>";
+			modElementBody = modElementBody + "</tr>";
+			}
 		}
-		detailCard = detailCard + "</table>";
+		if(modElementBody != "")
+		{
+		detailCard = detailCard + "<h3 style='font-size:14px;margin:16px 0 8px'>Element Details</h3><table style='width:100%;font-size:14px;border-collapse:collapse'><tr><th>Element</th><th>Final</th><th>Approved Mods</th><th>Current Revised</th><th>This Modification</th><th>Revised If Approved</th></tr>";
+			detailCard = detailCard + modElementBody + "</table>";
+		}
 	}
 	linkBlock = linkBlock + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	linkBlock = linkBlock + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
