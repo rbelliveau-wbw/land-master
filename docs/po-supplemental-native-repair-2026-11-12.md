@@ -20,11 +20,13 @@ The authenticated Development picker now returns its supported eligible-original
 
 Full npm run validate (including the new formatter regression) and npm run build:pages passed. Greptile whoami reported Not signed in; no Greptile review was run.
 
-## Production Handoff
+## Production Publication
 
-PMP leaves Creator publication to the owner. Publish the five Payment_Request fields, poSupplementContext and ten changed functions listed in the schema contract through Stage to Production. Preserve unrelated pending changes. No new Custom API or audience change is required; Manage_Purchase_Order and Manage_Purchase_Order_DEV retain their existing contracts.
+After explicit user authorization on November 12, the eleven PO function changes were published from Development to Stage, then promoted to Production as Creator **9.187**. Creator offered exactly eleven pending functions and no form/field changes; the supplemental fields were already present. The Environments page confirmed Stage and Production 9.187 and no pending Development changes.
 
-Hosted Budget Manager 122.29.138 is already mapped in Development and Production. This repair changes native functions, tests and installation evidence only; a new hosted release would not install the missing Creator code. After Creator publication, verify Somerset's original in Supplemental Purchase Order and open its prepared supplement before saving. Its approval remains valid independently of the missing PM notification configuration accepted for this test.
+Authenticated Production Request → Supplemental Purchase Order now lists **PO 4410926000005964006 · Brian Bekker · Construction · $123,456 · TEST** in Somerset Hills Phase 01. Selecting it opens the supplemental editor with vendor and PO Type locked, the approved C_SH01-3532-4 / TEST / Qty 1 / LS / $123,456 line visible, Previously Approved $123,456, This Supplement $0 and Proposed Total $123,456. This exercises the live SupplementChoices and PrepareSupplement API paths and native original approval/baseline validation.
+
+No supplement was saved or submitted. No original PO amount, line, approval or notification setting was changed, and no PO mail was retried. The missing Construction PM warning remains intentionally accepted for this test. Hosted Budget Manager remains 122.29.138; no widget assets, environment mappings, new APIs or API audiences changed during native publication.
 
 ## Rollback
 
