@@ -279,6 +279,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		{
 			return "ERROR: Modification not found.";
 		}
+		classification = null;
 		vAmt = ifnull(amount,"").trim();
 		componentAmounts = Map();
 		hasComponentRequest = vAmt.startsWith("{");
@@ -292,6 +293,14 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 					if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
 					{
 						return "ERROR: Unsupported budget component request.";
+					}
+					classification = componentRequest.get("classification");
+					if(classification != null)
+					{
+					 classificationType = ifnull(classification.get("type"),"").toString().trim();
+					 classificationComment = ifnull(classification.get("comment"),"").toString();
+					 if(classificationType != "" && classificationType != "Eng" && classificationType != "Dev" && classificationType != "Muni" && classificationType != "Constr" && classificationType != "Purch") { return "ERROR: Invalid modification type."; }
+					 if(classificationComment.length() > 50) { return "ERROR: Type comment must be 50 characters or fewer."; }
 					}
 					componentSource = componentRequest.get("components");
 					componentFields = {"Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"};
@@ -325,6 +334,11 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			{
 				return "ERROR: Amount must be greater than zero.";
 			}
+		}
+		if(classification != null)
+		{
+			modRec.Type_field=classificationType;
+			modRec.Type_Comment=classificationComment;
 		}
 		vType = ifnull(modType,"").trim();
 		if(vType == "Increase" || vType == "Decrease")

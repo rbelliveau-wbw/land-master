@@ -2872,3 +2872,12 @@ the immutable release. No forms, fields, functions, Custom APIs, approval or
 financial behavior change. Creator 9.187 remains published. Verify desktop
 creation/review, matched headers, missing switch, retained grid regressions and
 repository validation/Pages build. Rollback Production to Budget 122.29.139.
+
+
+## Standalone Modification Type — November 12, 2026
+
+Standalone modifications add optional Type (`Budget_Modification.Type_field`): Eng, Dev, Muni, Constr, Purch, and Type Comment (`Type_Comment`, single line, maximum 50 characters). These classify the source/function of the request independently of Increase/Decrease, approval track, and required Reason. Existing blank records remain valid. PO-linked modifications and PO emails are unchanged.
+
+The existing `budget-components-v1` amount envelope accepts optional `classification: {type, comment}` in Create_Budget_Modification and Modification_Admin without changing either public signature. Validate before writes; persist during create before routing/email. Legacy decimal/component callers remain accepted; legacy admin requests preserve classification. The widget retains drafts through rerenders and displays saved fields in standalone detail. Native field validation enforces the same comment limit for record edits. `sendModificationEmail` HTML-escapes both fields into the shared approval/rejection email detail.
+
+Creator Development: add the two fields, expose them in All_Budget_Modifications, save createBudgetModification, modificationAdmin and sendModificationEmail. Creator promotion is separate from the repository PMP. Regression: all five choices, blank/legacy values, 50 accepted/51 rejected, create/edit/clear, rerenders, escaped email values and unchanged PO flow. Rollback: Budget Manager 122.29.140 and previous three function bodies; retain new fields/data.

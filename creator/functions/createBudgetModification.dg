@@ -20,6 +20,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	// argument. The widget's single element picker sends that element's amount
 	// plus explicit zeroes for the other four; legacy decimal callers stay valid.
 	componentAmounts = Map();
+	classificationType = ""; classificationComment = "";
 	amountInput = ifnull(amount,"0").trim();
 	if(amountInput.startsWith("{"))
 	{
@@ -29,6 +30,14 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 			if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
 			{
 				return "ERROR: Unsupported budget component request.";
+			}
+			classification = componentRequest.get("classification");
+			if(classification != null)
+			{
+			 classificationType = ifnull(classification.get("type"),"").toString().trim();
+			 classificationComment = ifnull(classification.get("comment"),"").toString();
+			 if(classificationType != "" && classificationType != "Eng" && classificationType != "Dev" && classificationType != "Muni" && classificationType != "Constr" && classificationType != "Purch") { return "ERROR: Invalid modification type."; }
+			 if(classificationComment.length() > 50) { return "ERROR: Type comment must be 50 characters or fewer."; }
 			}
 			componentSource = componentRequest.get("components");
 			componentFields = {"Labor_Budget","Materials_Budget","Equipment_Budget","Subcontractor_Budget","Other_Budget"};
@@ -148,6 +157,8 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Budget_Item=vItemId
 		Budget=vBudgetId
 		Budget_Category=vCatId
+		Type_field=classificationType
+		Type_Comment=classificationComment
 		Modification_Type=vType
 		Amount=vAmount
 		Labor_Budget=componentAmounts.get("Labor_Budget")

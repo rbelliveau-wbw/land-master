@@ -21,10 +21,10 @@ const context=vm.createContext({S:state,findItemById:id=>String(id)===IID?item:n
   refreshBudgetWorkflowState:async()=>{},refreshModSurfaces:()=>{},openModDetail:()=>{},
   CFG:{forms:{modification:'Budget_Modification'}}
 });
-vm.runInContext(`var BUDGET_ELEMENTS=${map};\n`+[
+vm.runInContext(`var MOD_REQUEST_TYPES=["Eng","Dev","Muni","Constr","Purch"];var BUDGET_ELEMENTS=${map};\n`+[
   'v','cleanVal','isObj','rawPath','firstRaw','lookupId','lookupMatchesId','catDept','esc','escAttr','modStatusOf','modSignedAmount','modsForItem',
   'budgetElementNumber','budgetElementSnapshot','budgetElementDepartmentIndex','budgetElementValues','budgetPrelimElementSnapshot','budgetElementModAmounts',
-  'budgetModInitialElement','budgetModComponentPayload','budgetModElementPicker','budgetModElementPreview','submitModification','updateModification'
+  'budgetModInitialElement','budgetModClassifiedPayload','budgetModComponentPayload','budgetModElementPicker','budgetModElementPreview','submitModification','updateModification'
 ].map(extract).join('\n'),context);
 const plain=value=>JSON.parse(JSON.stringify(value));
 assert.equal(context.budgetModInitialElement({...item,Budget_Category:{ID:'dev'}},null),'5');
@@ -52,9 +52,21 @@ assert.deepEqual(preview[3].values,['$400','$0','$70','$470']);
 preview=rows(context.budgetModElementPreview(item,{...modal,type:'Decrease'},70));assert.deepEqual(preview[3].values,['$400','$0','−$70','$330']);
 assert.equal(JSON.stringify({item,mods:state.modifications}),before,'preview never changes native amounts or allocation records');
 state.modModal={itemId:IID,type:'Decrease',element:'3',busy:false};context.submitModification();await action;
-assert.equal(api.length,1);assert.equal(api[0].name,'createBudgetModification');assert.equal(api[0].args.modType,'Decrease');assert.equal(api[0].args.itemId,IID);assert.deepEqual(JSON.parse(api[0].args.amount),JSON.parse(payload.amount),'actual create handler sends the selected component envelope');
+assert.equal(api.length,1);assert.equal(api[0].name,'createBudgetModification');assert.equal(api[0].args.modType,'Decrease');assert.equal(api[0].args.itemId,IID);assert.deepEqual(JSON.parse(api[0].args.amount),{...JSON.parse(payload.amount),classification:{type:'',comment:''}},'actual create handler sends the selected component envelope');
 state.modModal={itemId:IID,editId:MID,type:'Increase',element:'2',busy:false};context.updateModification();for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));
 assert.equal(writes.length,1);assert.equal(writes[0].form,'Budget_Modification');assert.equal(writes[0].id,MID);for(const field of fields)assert.equal(writes[0].data[field],field==='Materials_Budget'?'12.50':'0.00');
 assert.equal(api.length,2);assert.equal(api[1].name,'modificationAdmin');assert.equal(api[1].args.action,'update');assert.equal(JSON.parse(api[1].args.amount).components.Materials_Budget,'12.50','actual update handler sends the same allocation through admin');
 state.modModal={itemId:IID,type:'Increase',element:'',busy:false};context.submitModification();assert.equal(api.length,2,'missing element cannot initiate a write');
 console.log('Standalone modification elements: department/existing defaults, explicit choice, five positive component fields, create/update envelopes, independent signed element preview and edit exclusion passed.');
+
+for(const type of ['Eng','Dev','Muni','Constr','Purch']) {
+ const result=context.budgetModClassifiedPayload(12.5,'3',{requestType:type,typeComment:'A'.repeat(50)});
+ assert.deepEqual(JSON.parse(result.amount).classification,{type,comment:'A'.repeat(50)});
+}
+assert.throws(()=>context.budgetModClassifiedPayload(12.5,'3',{requestType:'Other'}));
+assert.throws(()=>context.budgetModClassifiedPayload(12.5,'3',{typeComment:'A'.repeat(51)}));
+state.modModal={itemId:IID,editId:MID,type:'Increase',element:'2',requestType:'Dev',typeComment:'City scope',busy:false};
+context.updateModification();for(let i=0;i<4;i++)await new Promise(resolve=>setImmediate(resolve));
+assert.equal(writes.at(-1).data.Type_field,'Dev');assert.equal(writes.at(-1).data.Type_Comment,'City scope');
+assert.deepEqual(JSON.parse(api.at(-1).args.amount).classification,{type:'Dev',comment:'City scope'});
+console.log('Standalone types: five valid choices, blank legacy values, 50/51-character boundaries and native edit persistence passed.');
