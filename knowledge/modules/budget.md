@@ -2854,7 +2854,7 @@ Verify the Requests workspace regressions, desktop layout/pickers and repository
 validation/Pages build. Rollback Production to Budget Manager 122.29.137.
 
 
-## Supplemental Table Headers — 122.29.139
+## Supplemental Table Headers — 122.29.140
 
 Previously Approved Lines and Supplemental Lines use matching 14px table header
 bands. Supplemental Lines remains orange (#8c5a05) and sits inside the lower
@@ -2871,4 +2871,4 @@ Changed UI sources: po-ui.js and purchase-orders.css, plus version metadata and
 the immutable release. No forms, fields, functions, Custom APIs, approval or
 financial behavior change. Creator 9.187 remains published. Verify desktop
 creation/review, matched headers, missing switch, retained grid regressions and
-repository validation/Pages build. Rollback Production to Budget 122.29.138.
+repository validation/Pages build. Rollback Production to Budget 122.29.139.

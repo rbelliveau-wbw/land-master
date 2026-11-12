@@ -1,0 +1,10 @@
+/* Keep the Manager's selected-year sum beside each builder while months scroll. */
+#matrix .builder-period-total{position:sticky;left:205px;z-index:3;width:88px;min-width:88px;max-width:88px;text-align:center;font-weight:800;color:#173c61;background:#e1ebf5;border-right:2px solid #a9bfd9;box-shadow:3px 0 6px #173b6008}
+#matrix thead .builder-period-total{top:0;z-index:6;background:#173b64;color:#fff;border-bottom:2px solid #7c99b8}
+#matrix .builder-period-total small{display:block;font-size:8px;font-weight:500;margin-top:3px}
+#matrix tbody .builder-period-total>[data-number-key]:not([data-number-value=""]){display:inline-block;min-width:43px;min-height:30px;line-height:28px;padding:0 5px;border:1px solid #c2d3e5;border-radius:5px;background:#e1ebf5;color:#173c61}
+#matrix tfoot .builder-period-total{z-index:5;background:#173b64;color:#fff}
+.toolbar .territory-filter{flex:0 1 170px;min-width:135px}
+.toolbar .filter.wide{flex-basis:310px}
+.forecast-years-option{border-bottom:1px solid var(--line);border-radius:0;margin-bottom:4px;font-weight:700}
+@media(min-width:821px) and (max-width:1350px){.toolbar{flex-wrap:wrap}.toolbar .window-state{margin-left:0}.toolbar .filter{min-width:140px;flex:1 1 170px}.toolbar .filter.wide{flex:2 1 260px}}

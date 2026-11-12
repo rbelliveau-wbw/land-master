@@ -313,3 +313,14 @@ changes do not advance approvals, send mail or change progress behavior.
 ### Legacy PO Rule Migration
 
 An existing PO policy whose saved route differs from the fixed VP → CFO → conditional COO route exposes Save Rule in its editor. Opening is read-only; Save Rule uses the existing audited save progress and retains the exact published policy ID, scope and enabled state. Already normalized rules retain ordinary inline saves.
+
+## PO Approval Email Content — November 12, 2026
+
+Regular and supplemental requests share sendPurchaseOrderEmail and its navy
+header, exact environment-aware Review Purchase Order link and Excel attachment.
+Build the supplemental title/reference/baseline text before assembling HTML;
+never regex-replace rendered HTML with currency text. Native Deluge returns null
+for the unescaped dollar amounts in the old replacement. Show PO_Description
+and current-revision PO_Item.Description with HTML escaping and preserved line
+breaks. Supplemental lines are the additions under review. Keep native routing,
+permissions, workbook generation and delivery/retry guards unchanged.

@@ -2,7 +2,7 @@
   "slug": "forecast-manager",
   "name": "Forecast Manager",
   "module": "forecasting",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "Forecast editing and grouped Contract Review with compact schedule/contract cards, placeholder exclusions and year choices through 2045.",
   "source_entry": "widgets/forecast-manager/src/app/widget.html",
   "creator_package_manifest": "widgets/forecast-manager/src/plugin-manifest.json",

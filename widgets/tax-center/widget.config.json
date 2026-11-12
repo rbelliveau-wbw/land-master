@@ -2,7 +2,7 @@
   "slug": "tax-center",
   "name": "Tax Center",
   "module": "tax",
-  "version": "19.17.36",
+  "version": "19.17.37",
   "description": "Tax parcel, tax year, jurisdiction, protest, and appeal management.",
   "source_entry": "widgets/tax-center/src/app/widget.html",
   "creator_package_manifest": "widgets/tax-center/src/plugin-manifest.json",

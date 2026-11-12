@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html data-lm-modal-layout="budget-manager" lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
@@ -1862,6 +1862,7 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 <script src="budget-requests-workspace.js?v=122.29.139"></script>
 <link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.139">
 
+<link rel="stylesheet" href="modal-layout.css?v=122.29.139">
 </head>
 <body>
 
@@ -2336,9 +2337,11 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
     <div class="mod-modal-head"><div><div class="mod-modal-title" id="budgetCreateTitle">Add Budget</div><div class="mod-modal-sub" id="budgetCreateSub"></div></div><button class="mod-modal-x" id="budgetCreateClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="mod-modal-body">
       <div class="mod-field" id="budgetCreateSearchField"><input id="budgetCreateSearch" type="search" placeholder="Search subdivisions…" aria-label="Search subdivisions" autocomplete="off"></div>
+      <div class="budget-create-results">
       <div id="budgetCreateChoices" class="budget-create-list"></div>
       <div id="budgetCreateProgress" class="budget-create-progress" hidden><progress id="budgetCreateBar" max="3" value="0" aria-label="Budget creation progress"></progress><ol class="budget-create-stages"><li id="budgetCreateStage1">Verify subdivision — Up next</li><li id="budgetCreateStage2">Create budget and template rows — Up next</li><li id="budgetCreateStage3">Verify saved records — Up next</li></ol></div>
       <div id="budgetCreateStatus" role="status" aria-live="polite"></div>
+      </div>
       <div class="mod-actions"><button class="mbtn neutral" id="budgetCreateBack" type="button" hidden>Back</button><span class="spacer"></span><button class="mbtn primary" id="budgetCreateConfirm" type="button" hidden>Create Budget</button><button class="mbtn neutral" id="budgetCreateDone" type="button">Close</button></div>
     </div>
   </div>
