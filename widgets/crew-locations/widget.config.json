@@ -2,7 +2,7 @@
   "slug": "crew-locations",
   "name": "Crew Management",
   "module": "projects",
-  "version": "1.10.2",
+  "version": "1.10.3",
   "description": "24-month Rough Cut choices excluding New, phase location hover cards, and existing explicit schedule Save and Refresh.",
   "source_entry": "widgets/crew-locations/src/app/widget.html",
   "creator_package_manifest": "widgets/crew-locations/src/plugin-manifest.json",

@@ -1,0 +1,69 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Modal Layout Checks</title>
+<style>body{font:16px system-ui;margin:20px;background:#edf2f8;color:#17375f}button,select{font:inherit;padding:8px;margin:4px}h1{font-size:24px}#preview{border:1px solid #9db4cd;width:100%;height:700px;background:white}#results{white-space:pre-wrap;font:14px/1.5 monospace}#runner{position:absolute;left:-20000px;top:0;border:0}#summary{font-weight:700;margin:16px 0}</style>
+<h1>Modal Layout Checks</h1><select id="cases" aria-label="Modal"></select><button id="run">Run All Checks</button><button data-state="many">Many Results</button><button data-state="two">Two Results</button><button data-state="empty">No Results</button><button data-state="loading">Loading</button><button data-state="error">Error</button><button data-state="expanded">Expand Details</button><div id="summary" role="status">Ready</div><iframe id="preview" title="Modal Preview"></iframe><pre id="results"></pre><iframe id="runner" title="Layout Test Frame"></iframe>
+<script type="module">
+const cases=[
+ ['Budget Picker','budget-manager','#budgetCreateOverlay','.mod-modal','#budgetCreateChoices'],
+ ['Budget Notes','budget-manager',null,'.multi-notes-modal','.multi-notes-body','<div class="multi-notes-overlay show"><section class="multi-notes-modal"><header class="multi-notes-head"><h3>Budget Notes</h3></header><div class="multi-notes-body"></div><footer class="multi-notes-foot"><button>Save</button></footer></section></div>'],
+ ['Budget Owners','budget-manager',null,'.owners-modal','.owners-modal-body','<div class="owners-modal"><div class="owners-modal-head"><h3>Choose Owners</h3></div><div class="owners-modal-body"></div><div class="owners-modal-foot"><button>Save</button></div></div>'],
+ ['PO Email Activity','budget-manager',null,'.po-activity-card','.po-activity-list','<div class="po-activity-overlay"><section class="po-activity-card"><header><h2>PO Email Activity</h2><button>Close</button></header><div class="po-activity-toolbar"><button>Refresh</button></div><div class="po-activity-content"><div class="po-activity-list"></div></div><footer><button>Close</button></footer></section></div>'],
+ ['Budget Attachments','budget-manager',null,'.budget-attachment-modal','.budget-attachment-modal-body','<div class="budget-attachment-modal"><div class="budget-attachment-modal-head"><p>Budget Attachments</p><button>Close</button></div><div class="budget-attachment-modal-body"></div></div>'],
+ ['Budget Request','budget-manager','#modOverlay','.mod-modal','#modModalBody'],
+ ['PO Association','budget-manager',null,'.request-attachment-picker','[data-ra-options]','<dialog open class="request-attachment-picker"><header><strong>Link To Record</strong><button>Close</button></header><div class="request-attachment-picker-body"><strong>Budget File</strong><p>Choose a request.</p><input type="search" placeholder="Search Requests"><div data-ra-options></div><div class="request-attachment-picker-status">Loading</div></div><footer class="request-attachment-footer"><button>Cancel</button><button>Save</button></footer></dialog>'],
+ ['PO Approval Details','budget-manager',null,'.po-chain-detail-modal','.po-chain-detail-body','<div class="po-chain-detail-overlay"><section class="po-chain-detail-modal"><header><h3>PO Approvers</h3><button>Close</button></header><div class="po-chain-detail-body"></div><div class="po-detail-read-status">Loading</div></section></div>'],
+ ['Pro Forma Months','proforma-manager','#moModal','.mo-box','.mo-grid'],
+ ['Pro Forma Budget Transfer','proforma-manager',null,'.pfbt-box','.pfbt-body','<div class="pfbt"><section class="pfbt-box"><header class="pfbt-head"><h2>Transfer To Budget</h2><button>Close</button></header><div class="pfbt-body"></div><footer class="pfbt-foot"><button>Transfer</button></footer></section></div>'],
+ ['Pro Forma Owners','proforma-manager','#ownerPickerModal','.op-card','.op-body'],
+ ['Pro Forma Export','proforma-manager','#exportModal','.op-card','.op-body'],
+ ['Pro Forma LOI','proforma-manager','#loiQuickModal','.qc-card','.qc-body'],
+ ['Pro Forma Confirmation','proforma-manager','#confirmModal','.cbox','.cm-body'],
+ ['Pro Forma Attachments','proforma-manager','#proformaAttachmentModal','.pf-attachment-modal-dialog','.pf-attachment-modal-panel'],
+ ['Pro Forma AI Review','proforma-manager','#aiReviewModal','.air-box','.air-main'],
+ ['Tax Property Picker','tax-center','#propPickOverlay','.modal','#ppResults'],
+ ['Tax Record','tax-center','#modalOverlay','.modal','#modalBody'],
+ ['Tax Bulk Edit','tax-center','#bulkEditOverlay','.modal','#bulkEditBody'],
+ ['Takedown Editor','manage-lots','#overlay','.modal','.modal-body'],
+ ['Takedown Details','manage-lots','#takedownDetail','.modal','.modal-body'],
+ ['Lot Update Results','manage-lots','#mlProgress','.modal','.modal-body'],
+ ['Land Bulk Edit','land-master',null,'.bulk-dialog','.bulk-body','<div class="bulk-dialog"><div class="record-head"><h2>Bulk Edit</h2></div><div class="bulk-body"></div></div>'],
+ ['Settings Approval Policy','settings-manager',null,'.ap-card','.ap-body','<div class="ap-overlay"><section class="ap-card"><header><h2>Approval Policy</h2><button>Close</button></header><div class="ap-tabs"><button>Roles</button><button>Preview</button></div><div class="ap-body"></div><footer><button>Save</button></footer></section></div>'],
+ ['Settings Curve Result','settings-manager',null,'.settings-dialog','[role=status]','<div class="settings-overlay"><section class="settings-dialog"><header><h2>Delete Curve Row?</h2></header><p>Construction Curve</p><div role="status"></div><footer><button>Cancel</button></footer></section></div>'],
+ ['Insights Lots','lot-sales-explorer','#detail','#detail','.detail-scroll'],
+ ['Insights Budget','lot-sales-explorer','#budgetDetail','#budgetDetail','.detail-scroll'],
+ ['Forecast Results','forecast-manager','#modal','.dialog','#dialogBody'],
+ ['Gantt Save Results','milestone-gantt','#ganttSaveOverlay','.gantt-save-dialog','.gantt-save-body'],
+ ['Crew Editor','crew-locations','#cmEditorDialog','#cmEditorDialog','#cmEditorFields'],
+ ['Employee Editor','crew-locations','#employeeEditor','#employeeEditor','#employeeFields'],
+ ['Crew Save Results','crew-locations','#operationDialog','#operationDialog','.dialog-body'],
+ ['Crew Group Results','crew-locations','#groupDialog','#groupDialog','.group-body'],
+ ['Crew History','crew-locations','#historyDialog','#historyDialog','#historyContent'],
+ ['Crew Boundary','crew-locations','#endpointDialog','#endpointDialog','#endpointContent']
+];
+const sourceCache=new Map();
+async function prepare(c){
+ let [name,widget,selector,card,result,markup]=c;
+ if(!sourceCache.has(widget)){const html=await(await fetch('/widgets/'+widget+'/src/app/widget.html')).text();sourceCache.set(widget,html)}
+ const doc=new DOMParser().parseFromString(sourceCache.get(widget),'text/html');doc.querySelectorAll('script').forEach(n=>n.remove());
+ let root=selector?doc.querySelector(selector):null;if(selector&&!root)throw Error(name+': missing '+selector);
+ doc.body.innerHTML=root?root.outerHTML:markup;doc.body.style.cssText='margin:0;padding:0;display:grid;place-items:center;min-height:100dvh';
+ doc.querySelectorAll('[onclick],[oninput],[onchange]').forEach(n=>{n.removeAttribute('onclick');n.removeAttribute('oninput');n.removeAttribute('onchange')});
+ if(selector){root=doc.querySelector(selector);root.hidden=false;root.classList.remove('hidden');if(root.tagName==='DIALOG')root.setAttribute('open','');else if(root.matches('.overlay'))root.classList.add('open');else root.style.display='flex';}
+ const cardNode=doc.querySelector(card);if(!cardNode)throw Error(name+': missing card '+card);if(cardNode.tagName==='DIALOG')cardNode.setAttribute('open','');
+ // Give empty source headers their real type of identity without running application scripts.
+ doc.querySelectorAll('h2:empty,h3:empty,#budgetCreateSub:empty').forEach(n=>n.textContent=name);
+ const style=doc.createElement('style');style.textContent='*,*::before,*::after{animation:none!important;transition:none!important}';doc.head.append(style);
+ const base=doc.createElement('base');base.href=location.origin+'/widgets/'+widget+'/src/app/';doc.head.prepend(base);
+ return '<!doctype html>'+doc.documentElement.outerHTML;
+}
+async function mount(frame,c){const html=await prepare(c);await new Promise((resolve,reject)=>{frame.onload=resolve;frame.onerror=reject;frame.srcdoc=html});await tick();return frame.contentDocument;}
+const tick=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+function state(doc,c,mode){let node=doc.querySelector(c[4]);if(!node)throw Error(c[0]+': missing results '+c[4]);const count=mode==='many'?50:mode==='two'?2:mode==='expanded'?8:0;node.innerHTML=count?Array.from({length:count},(_,i)=>'<div style="padding:14px;border-bottom:1px solid #d9e3ef">'+(c[1]==='budget-manager'?'Somerset Hills — Phase '+String(i+1).padStart(2,'0'):'Record '+(i+1))+(mode==='expanded'?'<div style="padding:30px">Expanded details with long content. '.repeat(6)+'</div>':'')+'</div>').join(''):mode==='error'?'<div style="padding:16px">Could not load choices: Unsupported PO action. '+('A long error description. '.repeat(15))+'</div>':mode==='loading'?'Loading…':mode==='empty'?'No Matching Results':'';
+ const status=doc.querySelector('#budgetCreateStatus');if(status)status.textContent=mode==='loading'?'Loading…':mode==='error'?'Could not load choices: Unsupported PO action.':'';
+}
+function measure(doc,c){const el=doc.querySelector(c[3]),r=el.getBoundingClientRect(),head=el.querySelector('header,.mod-modal-head,.owners-modal-head,.budget-attachment-modal-head,.mo-head,.op-head,.qc-head,.cm-head,.air-head,.modal-hd,.modal-head,.record-head,.dialog-head,.gantt-save-head,.multi-notes-head'),foot=el.querySelector('footer,.mod-actions,.owners-modal-foot,.mo-foot,.op-foot,.qc-foot,.cactions,.modal-foot,.dialog-foot,.gantt-save-foot,.multi-notes-foot');const search=el.querySelector('input[type=search],#ppSearch');return {search:search?.getBoundingClientRect().top,top:r.top,height:r.height,bottom:r.bottom,head:head?.getBoundingClientRect().top,foot:foot?.getBoundingClientRect().top,footBottom:foot?.getBoundingClientRect().bottom};}
+let current=0;const choices=document.querySelector('#cases'),preview=document.querySelector('#preview');cases.forEach((c,i)=>choices.add(new Option(c[0],i)));
+async function show(){current=Number(choices.value);const doc=await mount(preview,cases[current]);state(doc,cases[current],'two');}
+choices.onchange=show;document.querySelectorAll('[data-state]').forEach(b=>b.onclick=()=>state(preview.contentDocument,cases[current],b.dataset.state));
+document.querySelector('#run').onclick=async()=>{const runner=document.querySelector('#runner'),out=document.querySelector('#results'),summary=document.querySelector('#summary');out.textContent='';let checked=0,failed=0;for(const [w,h] of [[1280,900],[800,600],[390,420],[390,280]]){runner.style.width=w+'px';runner.style.height=h+'px';for(const c of cases){try{const doc=await mount(runner,c);state(doc,c,'two');await tick();const baseline=measure(doc,c);for(const mode of ['many','empty','loading','error','expanded']){state(doc,c,mode);await tick();const m=measure(doc,c);for(const key of ['top','height','head','foot','search'])if(baseline[key]!=null&&Math.abs(m[key]-baseline[key])>1)throw Error(mode+' moved '+key+' from '+baseline[key]+' to '+m[key]);if(m.top<0||m.bottom>h+1||m.height<100||m.footBottom>h+1)throw Error(mode+' outside viewport '+JSON.stringify(m));if(mode==='many'){let n=doc.querySelector(c[4]),scrolls=false;while(n&&n!==doc.querySelector(c[3])){if(n.scrollHeight>n.clientHeight+1&&/(auto|scroll)/.test(getComputedStyle(n).overflowY))scrolls=true;n=n.parentElement;}if(!scrolls)throw Error('Results have no internal scroll area');}checked++;}out.textContent+='PASS '+w+'×'+h+' '+c[0]+'\n';}catch(e){failed++;out.textContent+='FAIL '+w+'×'+h+' '+c[0]+': '+e.message+'\n';}summary.textContent=checked+' State Checks; '+failed+' Failures';}}summary.textContent='Done: '+checked+' State Checks; '+failed+' Failures';};
+await show();
+</script></html>

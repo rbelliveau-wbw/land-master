@@ -1,0 +1,102 @@
+/* Fixed dialog frames: only content scrolls when results or status change. */
+:root[data-lm-modal-layout]{--lm-dialog-room:calc(100dvh - 48px);--lm-dialog-large:min(800px,var(--lm-dialog-room));--lm-dialog-medium:min(640px,var(--lm-dialog-room));--lm-dialog-picker:min(560px,var(--lm-dialog-room))}
+
+/* Budget: global pickers share one frame across both supplemental PO steps. */
+[data-lm-modal-layout="budget-manager"] #budgetCreateOverlay .mod-modal{height:var(--lm-dialog-picker);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="budget-manager"] #budgetCreateOverlay .mod-modal-body{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+[data-lm-modal-layout="budget-manager"] #budgetCreateSearchField{flex:none}
+[data-lm-modal-layout="budget-manager"] .budget-create-results{flex:1;min-height:0;overflow:auto;scrollbar-gutter:stable}
+[data-lm-modal-layout="budget-manager"] #budgetCreateChoices{max-height:none;overflow:visible}
+[data-lm-modal-layout="budget-manager"] #budgetCreateProgress{max-height:none}
+[data-lm-modal-layout="budget-manager"] #budgetCreateStatus{overflow-wrap:anywhere}
+[data-lm-modal-layout="budget-manager"] #budgetCreateOverlay .mod-actions{flex:none;margin-top:12px}
+[data-lm-modal-layout="budget-manager"] :is(.po-activity-card,.budget-attachment-modal,.multi-notes-modal){height:var(--lm-dialog-large);min-height:0;max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="budget-manager"] .po-activity-card.is-progress{height:var(--lm-dialog-large);min-height:0}
+[data-lm-modal-layout="budget-manager"] .po-activity-progress{flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="budget-manager"] #modOverlay .mod-modal{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="budget-manager"] #modOverlay .mod-modal-body{flex:1;min-height:0}
+[data-lm-modal-layout="budget-manager"] .owners-modal{height:var(--lm-dialog-picker);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="budget-manager"] .owners-modal-head,[data-lm-modal-layout="budget-manager"] .owners-modal-foot{flex:none}
+[data-lm-modal-layout="budget-manager"] .budget-attachment-modal-body{flex:1;min-height:0}
+[data-lm-modal-layout="budget-manager"] .po-chain-detail-modal{height:var(--lm-dialog-picker);max-height:var(--lm-dialog-room);display:flex;flex-direction:column;overflow:hidden}
+[data-lm-modal-layout="budget-manager"] .po-chain-detail-modal>header{flex:none}
+[data-lm-modal-layout="budget-manager"] .po-chain-detail-body{flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="budget-manager"] .po-detail-read-status{flex:none;max-height:84px;overflow:auto}
+
+/* Pro Forma: owners, months, exports, attachments and narrow AI review. */
+[data-lm-modal-layout="proforma-manager"] :is(.mo-box,.op-card){height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="proforma-manager"] :is(.mo-head,.mo-tools,.mo-foot,.op-head,.op-foot){flex:none}
+[data-lm-modal-layout="proforma-manager"] :is(.mo-grid,.op-body){flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="proforma-manager"] .qc-card{height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room);display:flex;flex-direction:column;overflow:hidden}
+[data-lm-modal-layout="proforma-manager"] :is(.qc-head,.qc-foot){flex:none}
+[data-lm-modal-layout="proforma-manager"] .qc-body{flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="proforma-manager"] .pf-attachment-modal-dialog{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="proforma-manager"] .pf-attachment-modal-panel{flex:1;min-height:0}
+[data-lm-modal-layout="proforma-manager"] .air-box{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="proforma-manager"] .pfbt-box{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="proforma-manager"] .pfbt-body{flex:1;min-height:0}
+
+/* Tax editors and their nested property picker keep the same working area. */
+[data-lm-modal-layout="tax-center"] .modal-overlay>.modal{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room);margin-bottom:0;display:flex;flex-direction:column;overflow:hidden}
+[data-lm-modal-layout="tax-center"] :is(.modal-hd,.modal-foot){flex:none}
+[data-lm-modal-layout="tax-center"] .modal-body{flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="tax-center"] #propPickOverlay>.modal{height:var(--lm-dialog-medium)}
+[data-lm-modal-layout="tax-center"] #propPickOverlay .modal-body{display:flex;flex-direction:column;overflow:hidden}
+[data-lm-modal-layout="tax-center"] #propPickOverlay .modal-body>input{flex:none}
+[data-lm-modal-layout="tax-center"] .pp-results{flex:1;min-height:0;max-height:none;overflow:auto;scrollbar-gutter:stable}
+
+/* Takedown rows, calculations and multi-record results scroll inside the frame. */
+[data-lm-modal-layout="manage-lots"] .overlay>.modal{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room);display:flex;flex-direction:column;overflow:hidden}
+[data-lm-modal-layout="manage-lots"] :is(.modal-head,.modal-foot){flex:none}
+[data-lm-modal-layout="manage-lots"] .modal-body{flex:1;min-height:0;overflow:auto}
+
+/* Land & Projects record and audit windows already have explicit heights. */
+[data-lm-modal-layout="land-master"] .bulk-dialog{height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="land-master"] .bulk-body{flex:1;min-height:0}
+
+/* Settings approval tabs and validation results must not recenter the dialog. */
+[data-lm-modal-layout="settings-manager"] .ap-card{height:var(--lm-dialog-large);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="settings-manager"] .ap-card>header{flex:none}
+[data-lm-modal-layout="settings-manager"] .ap-body{flex:1;min-height:0}
+[data-lm-modal-layout="settings-manager"] .settings-dialog{height:min(340px,var(--lm-dialog-room));max-height:var(--lm-dialog-room);display:flex;flex-direction:column;overflow:auto;box-sizing:border-box}
+[data-lm-modal-layout="settings-manager"] .settings-dialog>header,[data-lm-modal-layout="settings-manager"] .settings-dialog>footer{flex:none}
+[data-lm-modal-layout="settings-manager"] .settings-dialog>footer{margin-top:auto}
+[data-lm-modal-layout="settings-manager"] .settings-dialog>[role="status"]{flex:1;min-height:0;overflow:auto}
+
+/* Native Insights dialogs stay fixed while switching statuses or paging. */
+[data-lm-modal-layout="lot-sales-explorer"] :is(#detail,#budgetDetail){height:var(--lm-dialog-large);max-height:var(--lm-dialog-room);overflow:hidden}
+[data-lm-modal-layout="lot-sales-explorer"] :is(#detail,#budgetDetail)[open]{display:flex;flex-direction:column}
+[data-lm-modal-layout="lot-sales-explorer"] :is(.dialog-head,.dialog-foot,.detail-status-slider){flex:none}
+[data-lm-modal-layout="lot-sales-explorer"] .detail-scroll{flex:1;min-height:0;max-height:none;overflow:auto}
+
+/* Forecast and Gantt results replace content, never the frame geometry. */
+[data-lm-modal-layout="forecast-manager"] #modal>.dialog{height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="forecast-manager"] :is(.dialog-head,.dialog-context,.dialog-foot){flex:none}
+[data-lm-modal-layout="forecast-manager"] .dialog-body{flex:1;min-height:0}
+[data-lm-modal-layout="milestone-gantt"] .gantt-save-dialog{height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="milestone-gantt"] .gantt-save-body{flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="milestone-gantt"] :is(.gantt-save-head,.gantt-save-foot){flex:none}
+
+/* Crew native dialogs retain native closed/display semantics. */
+[data-lm-modal-layout="crew-locations"] :is(#cmEditorDialog,#employeeEditor,#operationDialog,#groupDialog,#historyDialog,#endpointDialog){height:var(--lm-dialog-medium);max-height:var(--lm-dialog-room);overflow:hidden}
+[data-lm-modal-layout="crew-locations"] :is(#cmEditorDialog,#employeeEditor,#operationDialog,#groupDialog,#historyDialog,#endpointDialog)[open]{display:flex;flex-direction:column}
+[data-lm-modal-layout="crew-locations"] :is(#cmForm,#employeeForm){display:flex;flex-direction:column;flex:1;min-height:0}
+[data-lm-modal-layout="crew-locations"] :is(dialog header,dialog footer,.cm-editor-status){flex:none}
+[data-lm-modal-layout="crew-locations"] :is(.cm-editor-fields,.dialog-body,.group-body,#historyContent,#endpointContent){flex:1;min-height:0;overflow:auto}
+[data-lm-modal-layout="crew-locations"] .cm-editor-status{max-height:84px;overflow:auto}
+
+
+/* Attachment association is a native searchable dialog too. */
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker{height:var(--lm-dialog-picker);max-height:var(--lm-dialog-room)}
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker[open]{display:flex;flex-direction:column}
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker>header,[data-lm-modal-layout="budget-manager"] .request-attachment-picker>footer{flex:none}
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker-body{display:flex;flex-direction:column;flex:1;min-height:0;max-height:none;overflow:hidden}
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker-body>:not([data-ra-options]){flex:none}
+[data-lm-modal-layout="budget-manager"] [data-ra-options]{flex:1;min-height:0;overflow:auto;scrollbar-gutter:stable}
+[data-lm-modal-layout="budget-manager"] .request-attachment-picker-status{max-height:84px;overflow:auto}
+[data-lm-modal-layout="proforma-manager"] #confirmModal .cbox{height:var(--lm-dialog-picker);max-height:var(--lm-dialog-room);display:flex;flex-direction:column}
+[data-lm-modal-layout="proforma-manager"] #confirmModal :is(.cm-head,.cactions){flex:none}
+[data-lm-modal-layout="proforma-manager"] #confirmModal .cm-body{flex:1;min-height:0;overflow:auto}
+
+[data-lm-modal-layout="budget-manager"] .multi-notes-body{flex:1;min-height:0}
+[data-lm-modal-layout="budget-manager"] :is(.multi-notes-head,.multi-notes-foot){flex:none}
