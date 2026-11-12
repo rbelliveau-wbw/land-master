@@ -1,3 +1,32 @@
+## Forecast CSV Builder Rows — 1.7.1, November 12, 2026
+
+Forecasts Export CSV writes one row per builder and phase, repeating Territory,
+Project, Phase and Zoho Project Status for each builder. Monthly, fiscal-year
+and selected-period values come from that builder's existing report cells.
+Project, Territory and Builder views export the same allocation without phase
+aggregate duplicates. Single-builder and unassigned phases retain one row.
+Filters, search, Hide Empty and WFY Totals apply; disclosure/collapse state does
+not limit exports. Missing values stay blank and known zeroes remain zero.
+The overall total remains a single row from the existing report aggregate.
+
+Changed files: forecast-insights-app.js, focused model/CSV and desktop browser
+regressions, widget.html/config, widget manifest, immutable 1.7.1,
+Development/Production mappings and Forecast matrices guidance. No Creator
+forms, fields, functions or Custom APIs change; no Creator deployment is
+required. PMP promotes main and hosted Production. Regression: both modes,
+all three groupings, scoped builder filters, annual columns, Hide Empty,
+unknown/zero values, exact footer reconciliation and export permission/error
+guards. Rollback: map Production lot-sales-explorer to 1.7.0 and rebuild Pages.
+
+The agent-owned in-app browser downloaded the actual fixture CSV: the two-builder
+phase produced Adams Homes 176 and D.R. Horton 200, with one overall total of
+376. Desktop review used 1540 × 980. The focused CSV/model regression and
+Impeccable detector passed; no live Creator records were written. The desktop
+browser regression's CSV expectations were updated; that standalone Playwright
+suite was not run because browser work used the required in-app browser.
+Full `npm run validate` and `npm run build:pages` passed. All immutable release
+assets match current source.
+
 ## Budget Exceptions — 1.7.0, November 9, 2026
 
 The permission-gated dashboard combines overview cards and the expandable

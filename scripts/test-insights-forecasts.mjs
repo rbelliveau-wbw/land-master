@@ -81,7 +81,7 @@ function assertBuilderDetailParity(result){
   assert.deepEqual(parent.builderRows.map(row=>row.builder.id).sort(),parent.builders.map(builder=>builder.id).sort(),'only currently scoped builders have child rows');
   assert.ok(parent.builderRows.every(row=>typeof row.key==='string'&&typeof row.builder.id==='string'),'exact large Creator IDs remain strings');
   assert.equal(new Set(parent.builderRows.map(row=>row.key)).size,2,'child motion identities are unique');
-  assert.ok(parent.builderRows.every(child=>!result.rows.some(row=>row.key===child.key)),'child rows are excluded from report/group/footer/CSV source rows');
+  assert.ok(parent.builderRows.every(child=>!result.rows.some(row=>row.key===child.key)),'child rows are excluded from report/group/footer aggregate contributors');
   const rolled=M.aggregate(parent.builderRows,result.months);assert.deepEqual(rolled.map(numericCell),parent.cells.map(numericCell),'children reproduce the exact known/unknown monthly parent aggregate');
   for(const year of result.years)assert.deepEqual(M.annual(rolled,year),M.annual(parent.cells,year),'child annual totals agree without adding a second report contribution');
   return parent;
@@ -112,6 +112,43 @@ for(const emptyValue of ['0','']){
   assert.ok(emptyChild.cells.every(cell=>cell.value===(emptyValue===''?null:0)),'zero and unknown child values remain distinct');
 }
 const all=new Map(Object.entries(A.reports).map(([key,name])=>[name,data[key]]));let calls=0;
+// Exercise the shipped CSV handler and column calculations without a browser.
+const appSource=fs.readFileSync(dir+'forecast-insights-app.js','utf8');
+const csvSource=appSource.slice(appSource.indexOf('  function exportCsv(){'),appSource.indexOf('  let cardTimer'));
+const columnSource=appSource.slice(appSource.indexOf('  const columnCache='),appSource.indexOf('  const columnKey='));
+async function exportRows(result,{annual=true,hideEmpty=false,allowed=true,busy=false,error=false}={}){
+  let blob,clicked=false;
+  const state={report:result,permissions:{forecastsDashboard:allowed},groupBy:'project',busy,error};
+  vm.runInNewContext(columnSource+csvSource+'\nexportCsv();',{
+    M,S:state,$:id=>({checked:id==='fcAnnual'?annual:hideEmpty}),Blob,
+    URL:{createObjectURL:value=>{blob=value;return 'blob:test';},revokeObjectURL:()=>{}},
+    document:{createElement:()=>({click:()=>{clicked=true;}})},setTimeout:()=>{}
+  });
+  if(!clicked)return null;
+  return (await blob.text()).replace(/^\ufeff/,'').split('\r\n').map(line=>[...line.matchAll(/"((?:[^"]|"")*)"(?:,|$)/g)].map(match=>match[1].replace(/""/g,'"')));
+}
+for(const mode of ['outlook','forecast'])for(const groupBy of ['project','territory','builder']){
+  const result=M.report(model,{...filters,mode,groupBy},today),rows=await exportRows(result);
+  const detail=rows.slice(1,-1),phase=detail.filter(row=>row[2]===alta.phase.name);
+  assert.equal(detail.length,4,'CSV contains each phase/builder once, including the unassigned phase');
+  assert.deepEqual(phase.map(row=>row[4]).sort(),['Adams Homes','D.R. Horton']);
+  assert.deepEqual(phase.map(row=>Number(row[5])).sort((a,b)=>a-b),mode==='outlook'?[176,200]:[240,264]);
+  for(let column=5;column<rows[0].length;column++)assert.equal(detail.reduce((sum,row)=>sum+Number(row[column]),0),Number(rows.at(-1)[column]),'builder monthly, annual and period values sum to the existing footer exactly once');
+}
+const scopedCsv=await exportRows(M.report(model,{...filters,builderIds:[data.builders[1].ID]},today),{annual:false});
+assert.equal(scopedCsv.length,3);assert.equal(scopedCsv[1][4],'D.R. Horton');assert.ok(scopedCsv[0].every(label=>!label.startsWith('WFY ')),'annual switch controls exported columns');
+const sparseCsv=await exportRows(M.report(M.normalize(sparseDetails),filters,today));
+const sparseAdams=sparseCsv.find(row=>row[2]===alta.phase.name&&row[4]==='Adams Homes');
+assert.equal(sparseAdams[sparseCsv[0].indexOf('2027-02')],'','unknown builder-month stays blank instead of inheriting the phase total');
+for(const emptyValue of ['0','']){
+  const fixture=forecastFixture();for(const month of fixture.months.filter(row=>row.Builder1.ID===fixture.builders[0].ID)){month.Forecasted_Lots=emptyValue;month.Actual_Lots='0';}
+  const result=M.report(M.normalize(fixture),{...filters,mode:'forecast'},today);
+  const visible=await exportRows(result,{hideEmpty:true}),allRows=await exportRows(result);
+  assert.ok(visible.slice(1,-1).every(row=>row[4]==='D.R. Horton'),'Hide Empty excludes zero and missing-only builder details');
+  const adams=allRows.find(row=>row[2]===alta.phase.name&&row[4]==='Adams Homes');assert.equal(adams[6],emptyValue,'zero and unknown remain distinct in CSV');
+}
+for(const options of [{allowed:false},{busy:true},{error:true}])assert.equal(await exportRows(report,options),null,'CSV preserves permission and completeness gates');
+
 globalThis.LotSalesCreator={readAll:async(api,name,onProgress,fields,options)=>{calls++;assert.equal(options.isCancelled(),false);assert.deepEqual(fields,A.fields[Object.keys(A.reports).find(k=>A.reports[k]===name)]);return all.get(name);}};
 assert.deepEqual(await A.load({}, {isCurrent:()=>true}),data);assert.equal(calls,5);
 await assert.rejects(A.load({}, {isCurrent:()=>false}),/session changed/);

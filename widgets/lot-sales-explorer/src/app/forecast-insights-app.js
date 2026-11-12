@@ -183,7 +183,13 @@
   function exportCsv(){
     if(!S.permissions?.forecastsDashboard||!S.report||S.busy||S.error)return;
     const r=S.report,cols=columns(r),lines=[['Territory','Project','Phase','Zoho Project Status','Builder',...cols.map(c=>c.total?'Total':c.annual?'WFY '+c.year+' Total':c.key)]];
-    for(const row of r.rows)lines.push([row.phase.territory,row.phase.project,row.phase.name,row.phase.projectStatus,row.builders.map(b=>b.name).join('; '),...cols.map(c=>columnValue(row.cells,c).value??'')]);
+    for(const row of r.rows){
+      const builders=row.builderRows.length?row.builderRows:[{builder:row.builders[0],cells:row.cells}];
+      for(const detail of builders){
+        if($('fcHideEmpty').checked&&!M.hasValues(detail.cells))continue;
+        lines.push([row.phase.territory,row.phase.project,row.phase.name,row.phase.projectStatus,detail.builder?.name||'',...cols.map(c=>columnValue(detail.cells,c).value??'')]);
+      }
+    }
     lines.push(['','','All '+S.groupBy+'s','','',...cols.map(c=>columnValue(r.totals,c).value??'')]);
     const quote=v=>'"'+String(v??'').replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
     const url=URL.createObjectURL(new Blob(['\ufeff'+lines.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}));const link=document.createElement('a');link.href=url;link.download='Forecasts-'+r.mode+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),10000);

@@ -413,7 +413,12 @@ with stable phase/builder keys and shared row/disclosure motion. Display switche
 retain expanded choices; group collapse hides all descendants and Hide Empty
 hides child builders with no nonzero displayed month. In Builder view the phase
 already represents one builder, so omit a redundant disclosure. Children never
-contribute again to parent/group/footer/CSV aggregates. Preserve partial-known,
+contribute again to parent/group/footer aggregates. Forecasts CSV exports one
+row per builder and phase using those existing detail cells, replacing the
+combined phase row; single-builder and unassigned phases keep one row. Repeat
+phase identity/status columns, respect filters, Hide Empty and annual-column
+visibility, and retain one overall total without adding child values twice.
+Disclosure state does not limit exported builders. Preserve partial-known,
 missing-year, explicit-zero and all-unknown semantics for every builder cell.
 
 The user requested full cell background colors for this read-only dashboard.
