@@ -555,3 +555,18 @@ source, tests, native workflow and release 8.17.19 were included.
 ## Paired Lot And Property Import — 8.17.22
 
 The AI spreadsheet import creates new Lots plus new Residential / L&B Res Properties. Property ID and Common Name equal Lot Code, pending the real CAD parcel ID. Each new Property uses existing Project, Subdivision and Lots lookups. Existing Lots are excluded from Property creation; no existing Properties are reused. The same Waiting / Creating… / Saved / Failed / Needs Review renderer serves both destination columns. Accepted native writes remain saved after an optional refresh failure; partial/unknown outcomes remain visible, and terminal runs cannot replay. See [contract, Creator prerequisite, verification and rollback](../../docs/lot-property-import.md).
+
+
+## Property Lot Typography — 8.17.23, November 12, 2026
+
+Parcel ID and Lot Code column headings, the Lot Code field label and picker,
+and the Subdivision filter inherit the surrounding controls' existing font
+size, weight and letter spacing. Remove the isolated size overrides that made
+these controls stand out; retain Title Case and the Lot Code pill treatment.
+Lookup matching, optional clearing, search, filtering, saves and import behavior
+are unchanged. Changed implementation: property-workspace.css and widget
+version/release metadata, with the style guide and this module note updated.
+No Creator form, field, function, Custom API or publication is required.
+Regression: compare the rendered headings, labels and picker with neighboring
+controls; retain Lot lookup and paired-import regressions. Rollback Production
+Land Master to 8.17.22 to revert this typography fix, or 8.17.19 to restore the prior Production mapping.

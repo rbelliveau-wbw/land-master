@@ -37,12 +37,11 @@
 .pw-transfer-status.CAD.Verified{background:#e5f5ed;color:#24724e}
 
 .property-lot-badge{display:inline-flex;align-items:center;padding:4px 10px;border:1px solid #c8d4e5;border-radius:999px;background:#eef4ff;color:#1e40af;font-size:14px;font-weight:650;white-space:nowrap}
-.fg:has(#f_Lots) .fl{font-size:14px;text-transform:none;letter-spacing:normal}
-.fg:has(#f_Lots) .lm-picker-btn{font-size:14px}
-.multi-filter-btn[data-filter-key="subdivision"] .filter-name,.multi-filter-btn[data-filter-key="subdivision"] .filter-value{font-size:14px;text-transform:none;letter-spacing:normal}
+.fg:has(#f_Lots) .fl{ text-transform:none }
+.multi-filter-btn[data-filter-key="subdivision"] .filter-name{ text-transform:none }
 
 #lmPickerMenu:has(input[placeholder="Search Lot Code…"]) .lm-picker-option,
 #lmPickerMenu:has(input[placeholder="Search Lot Code…"]) input,
 #lmPickerMenu:has(input[placeholder="Search Lot Code…"]) button,
 .filter-popup-search,.filter-option,.filter-popup-foot button{font-size:14px}
-.fg:has(#f_Lots) .lm-picker-trigger{font-size:14px}.wtable th[data-sort="_lotCode"],.wtable th[data-sort="Property_ID"]{font-size:14px;text-transform:none;letter-spacing:normal}
+.wtable th[data-sort="_lotCode"],.wtable th[data-sort="Property_ID"]{ text-transform:none }

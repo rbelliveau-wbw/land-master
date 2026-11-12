@@ -730,3 +730,9 @@ Constrain choices by the staged Property Subdivisions and Projects; retain a
 nonmatching current value visibly and block Save until corrected or cleared.
 Subdivision filters reuse the searchable multi-select filter popover, exact
 lookup IDs, OR membership, retained hidden selections and immediate Clear/X.
+
+
+Property Lot Code labels, picker triggers, Parcel ID/Lot Code headings and the
+Subdivision filter use the same typography as their neighboring controls.
+Do not add per-field font-size or letter-spacing overrides to those controls;
+keep their visible labels in Title Case and retain the Lot Code pill styling.
