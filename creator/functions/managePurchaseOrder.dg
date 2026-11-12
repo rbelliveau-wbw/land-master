@@ -85,7 +85,8 @@ string managePurchaseOrder(string payload)
 				choices = List();
 				for each originalChoice in Payment_Request[Budget == budget.ID && Request_Type == "Purchase Order" && PO_Original == null && PO_Status == "Submitted" && PO_Approval_State == "Approved" && PO_Commitment_State == "Reserved"] sort by ID
 				{
-					if(ifnull(originalChoice.PO_Revision,"") != "" && (originalChoice.Department == "Construction" || originalChoice.Department == "Development")) { choices.add({"id":originalChoice.ID.toString(),"amount":originalChoice.PO_Amount_Exact,"vendorName":ifnull(originalChoice.Vendor.Vendor_Name,"Vendor"),"department":originalChoice.Department,"description":ifnull(originalChoice.PO_Description,"")}); }
+					choiceTypeValid = originalChoice.Department == "Construction" || originalChoice.Department == "Development";
+					if(ifnull(originalChoice.PO_Revision,"") != "" && choiceTypeValid) { choices.add({"id":originalChoice.ID.toString(),"amount":originalChoice.PO_Amount_Exact,"vendorName":ifnull(originalChoice.Vendor.Vendor_Name,"Vendor"),"department":originalChoice.Department,"description":ifnull(originalChoice.PO_Description,"")}); }
 				}
 				result.put("choices",choices); result.put("success",true); return result.toString();
 			}
@@ -408,10 +409,14 @@ string managePurchaseOrder(string payload)
 				targetIdText = targetId.toString(); familyIdTexts.add(targetIdText);
 				deleteTarget = Payment_Request[ID == targetId && Budget == budget.ID && Request_Type == "Purchase Order"];
 				if(deleteTarget.count() != 1 || ifnull(deleteTarget.PO_Revision,"") == "" || !deleteStatuses.contains(deleteTarget.PO_Status)) { result.put("error","A supplemental PO is not a current managed request in this phase."); return result.toString(); }
-				if(deleteTarget.PO_Status == "Draft" && (deleteTarget.PO_Commitment_State != "None" || deleteTarget.PO_Approval_State != "Not Configured")) { result.put("error","A supplemental draft state needs review before deletion."); return result.toString(); }
-				if(deleteTarget.PO_Status == "Submitted" && (deleteTarget.PO_Commitment_State != "Reserved" || (deleteTarget.PO_Approval_State != "Pending" && deleteTarget.PO_Approval_State != "Approved" && deleteTarget.PO_Approval_State != "Rejected"))) { result.put("error","A supplemental submission state needs review before deletion."); return result.toString(); }
+				deleteDraftInvalid = deleteTarget.PO_Commitment_State != "None" || deleteTarget.PO_Approval_State != "Not Configured";
+				if(deleteTarget.PO_Status == "Draft" && deleteDraftInvalid) { result.put("error","A supplemental draft state needs review before deletion."); return result.toString(); }
+				deleteApprovalInvalid = deleteTarget.PO_Approval_State != "Pending" && deleteTarget.PO_Approval_State != "Approved" && deleteTarget.PO_Approval_State != "Rejected";
+				deleteSubmittedInvalid = deleteTarget.PO_Commitment_State != "Reserved" || deleteApprovalInvalid;
+				if(deleteTarget.PO_Status == "Submitted" && deleteSubmittedInvalid) { result.put("error","A supplemental submission state needs review before deletion."); return result.toString(); }
 				targetOriginal = ""; if(deleteTarget.PO_Original != null) { targetOriginal = deleteTarget.PO_Original.toString(); }
-				if(targetId != po.ID && (targetOriginal != idText || deleteTarget.Vendor != po.Vendor || deleteTarget.Department != po.Department || ifnull(deleteTarget.PO_Supplement_Number,0) < 1 || Payment_Request[PO_Original == deleteTarget.ID].count() > 0)) { result.put("error","A supplemental PO's ownership or scope needs review before deletion."); return result.toString(); }
+				deleteMemberInvalid = targetOriginal != idText || deleteTarget.Vendor != po.Vendor || deleteTarget.Department != po.Department || ifnull(deleteTarget.PO_Supplement_Number,0) < 1 || Payment_Request[PO_Original == deleteTarget.ID].count() > 0;
+				if(targetId != po.ID && deleteMemberInvalid) { result.put("error","A supplemental PO's ownership or scope needs review before deletion."); return result.toString(); }
 				familyPlan.add({"id":targetIdText,"originalPoId":targetOriginal,"supplementNumber":ifnull(deleteTarget.PO_Supplement_Number,0),"revision":deleteTarget.PO_Revision,"status":deleteTarget.PO_Status,"commitmentState":deleteTarget.PO_Commitment_State,"approvalState":deleteTarget.PO_Approval_State,"amount":deleteTarget.PO_Amount_Exact});
 				if(familyIds.size() > 1 && deleteTarget.PO_Status == "Submitted" && deleteTarget.PO_Commitment_State == "Reserved") { releaseAmount = releaseAmount + deleteTarget.PO_Amount_Exact.toDecimal(); }
 				for each  deleteLine in PO_Item[Purchase_Order == deleteTarget.ID] sort by ID

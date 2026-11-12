@@ -91,6 +91,8 @@ New numeric targets join the shared field-exit/Sliding push registry.
 
 ## Creator Installation And Promotion
 
+November 12 update: all eleven functions are now saved, compiled and reopened in Development. The formatter-safe repairs and remaining owner publication are recorded in [the native installation repair](po-supplemental-native-repair-2026-11-12.md). The following paragraph records the original November 11 handoff state.
+
 PMP promotes repository assets only. The five fields were saved and reopened
 successfully in Development. poSupplementContext was created and Save/Done
 completed, but its persisted-source recheck and remaining function installation
