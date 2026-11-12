@@ -245,7 +245,10 @@ string sendApprovalEmail(int budgetId, int approvalId)
 		for each constructionCategory in Budget_Category[Budget == vBudgetId] sort by Category_Code
 		{
 			department = ifnull(constructionCategory.Deparment,"").toLowerCase();
-			if((approvalType == "Construction" && department.contains("construction")) || (approvalType == "Development" && (department.contains("development") || department.contains("engineering"))))
+			includeCategory = false;
+			if(approvalType == "Construction") { includeCategory = department.contains("construction"); }
+			else if(approvalType == "Development") { includeCategory = department.contains("development") || department.contains("engineering"); }
+			if(includeCategory)
 			{
 				categoryTotals = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
 				categoryKnown = {"1":true,"2":true,"3":true,"4":true,"5":true};

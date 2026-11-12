@@ -35,11 +35,13 @@ const credit=item(22,12,'3201','Credit',[0,0,0,0,0],[-50,0,0,0,0],[0,0,0,0,0],[0
 runtime.tables={Add_Budget:[{ID:1,Budget_Name:'Test Budget'}],Budget_Approvals:[{ID:2,Budget:1,Approver:'brian@example.test',Title:'VP',Type1:'Construction',Sort_Order:1}],Budget_Category:[{ID:11,Budget:1,Category_Code:'3100',Budget_Category_Name:'Clearing',Deparment:'Construction'},{ID:12,Budget:1,Category_Code:'3200',Budget_Category_Name:'Streets',Deparment:'Construction'},{ID:13,Budget:1,Category_Code:'1100',Budget_Category_Name:'Development',Deparment:'Development'},{ID:14,Budget:99,Category_Code:'9900',Budget_Category_Name:'Other Budget',Deparment:'Construction'}],Budget_Item:[construction,credit,item(23,13,'1101','Development Only',[1,0,0,0,0],[1,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]),item(24,14,'9901','Other Budget',[1,0,0,0,0],[1,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0])],Budget_Import_Item:[construction,credit].map((r,i)=>({ID:31+i,Budget_Item:r.ID,Data_Source:'HeavyJob Budget',Cost:r.Unapproved_Final_Budget_Ttl,...Object.fromEntries(elements.map((e,n)=>[e,i===0?[500,0,1500,0,0][n]:[-50,0,0,0,0][n]]))})),Budget_Modification:[]};
 vm.runInContext('tables=JSON.parse(JSON.stringify(tables));',runtime);
 function render(){vm.runInContext('tables=JSON.parse(JSON.stringify(tables));',runtime);runtime.sendApprovalEmail(1,2);return runtime.mails.at(-1).body;}
+runtime.tables.Budget_Category.push({ID:16,Budget:1,Category_Code:'2100',Budget_Category_Name:'Engineering Category',Deparment:'Engineering'});
+runtime.tables.Budget_Item.push(item(32,16,'2101','Engineering Only',[1,0,0,0,0],[2,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]));
 let html=render();
 assert.ok(html.indexOf('Open Approval Page')<html.indexOf('Unapproved Summary'));
 assert.equal((html.match(/Open Approval Page/g)||[]).length,1);
 assert.match(html,/3101 Clearing &amp; &lt;Brush&gt;/);
-assert.doesNotMatch(html,/Development Only|Other Budget/);
+assert.doesNotMatch(html,/Development Only|Engineering Only|Other Budget/);
 assert.doesNotMatch(html,/\(2\) Materials<\/th><td/,'zero-only detail hidden');
 assert.doesNotMatch(html,/\(4\) Subcontractor<\/th><td/);
 assert.match(html,/\$-50/,'signed credit retained');
@@ -59,7 +61,7 @@ html=render();assert.doesNotMatch(html,/\(2\) Materials<\/th><td/,'null plus zer
 runtime.tables.Budget_Import_Item[0].Cost=2001;
 html=render();assert.match(html,/—/);assert.match(html,/\$1,950/,'missing allocation does not erase parent total');
 runtime.tables.Budget_Approvals[0].Type1='Development';
-html=render();assert.doesNotMatch(html,/3101 Clearing|Other Budget|Approved Mods/);assert.match(html,/Development Only/);assert.match(html,/Unapproved Summary/,'Development shares filtered email layout');
+html=render();assert.doesNotMatch(html,/3101 Clearing|Other Budget|Approved Mods/);assert.match(html,/Development Only/);assert.match(html,/Engineering Only/);assert.match(html,/Unapproved Summary/,'Development shares filtered email layout');
 
 // Exercise the real Deluge renderer with empty/null lines, signed allocations,
 // and each numeric element column, without sending a live email.
