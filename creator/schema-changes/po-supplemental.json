@@ -67,8 +67,8 @@
     "development_fields": "Saved in Application IDE and independently reopened; all five persisted fields confirmed.",
     "development_helper": "Saved, compiled and independently reopened on November 12, 2026; current identity guard and Supplement references verified.",
     "development_changed_functions": "All ten changed functions saved/compiled and independently reopened on November 12, 2026. Native formatted readbacks passed the supplemental workflow matrix. See docs/po-supplemental-native-repair-2026-11-12.md.",
-    "stage": "Not published; owner promotion under PMP.",
-    "production": "Not published; owner promotion under PMP. Widget requires po-supplemental-v1 before supplement preparation."
+    "stage": "Published as Creator 9.187 on November 12, 2026 after explicit user authorization; exactly eleven PO function changes.",
+    "production": "Published as Creator 9.187 on November 12, 2026. Authenticated Production SupplementChoices lists Somerset PO 4410926000005964006; PrepareSupplement opens its inherited Construction/vendor context and $123,456 approved line."
   },
   "invariants": {
     "request_type": "Purchase Order",

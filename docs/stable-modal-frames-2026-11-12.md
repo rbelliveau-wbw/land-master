@@ -67,8 +67,8 @@ hashes matched. No secret exclusions were overridden.
 
 Settings release 1.6.15 replaces 1.6.14 in Development and Production. The
 canonical stylesheet and its source mirrors are synchronized; the changed
-selectors apply only to Settings, so the other nine Production releases stay
-as listed above. Rollback Settings to 1.6.14 restores the preceding behavior,
+selectors apply only to Settings, so this follow-up does not promote the other
+nine widgets. Concurrent main-branch releases are preserved. Rollback Settings to 1.6.14 restores the preceding behavior,
 including its inline-height regression. No Creator publication is required.
 
 Second Greptile review (`1312cf8b-1430-47d4-b55c-209eb53ae07f`) completed

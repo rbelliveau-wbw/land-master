@@ -5,7 +5,7 @@
   "status": "all-eleven-functions-saved-compiled-and-reopened",
   "verification": "Native editor readbacks substituted for all eleven repository functions in scripts/test-po-supplemental.mjs; complete workflow matrix passed. getall capitalization normalized only for the offline translator.",
   "runtime": "Authenticated Development Request > Supplemental Purchase Order returns the empty eligible-original list instead of Unsupported PO action. Existing approved $35 test PO has no Department; no test data was changed.",
-  "production": "Not published; owner promotion under PMP. Production Somerset PO 4410926000005964006 remains Approved. Missing Construction PM notice retained by explicit user instruction.",
+  "production": "Published Stage and Production as Creator 9.187 on November 12, 2026 after explicit user authorization. Production Environments shows both 9.187 with no pending changes.",
   "functions": [
     {
       "name": "poValidatePayload",
@@ -62,5 +62,22 @@
       "readback_bytes": 94872,
       "sha256": "f6d0ccabaaeb037025c0178622ea18e3d151029ae9d64b6d15ebcfa8838f6201"
     }
-  ]
+  ],
+  "productionVerification": {
+    "creatorVersion": "9.187",
+    "publishedFunctions": 11,
+    "pendingSchemaChanges": 0,
+    "poId": "4410926000005964006",
+    "phase": "Somerset Hills - Phase 01",
+    "vendor": "Brian Bekker",
+    "department": "Construction",
+    "approvedAmount": "123456.00",
+    "picker": "Exact approved original appears in Add Supplemental Purchase Order.",
+    "preparedContext": "Editor opens with locked Brian Bekker vendor and Construction PO Type, prior line C_SH01-3532-4 / TEST / Qty 1 / LS / $123,456, Previously Approved $123,456, This Supplement $0 and Proposed Total $123,456.",
+    "writes": "No supplement saved/submitted, approval decision made, PO email retried, or original amount/line changed.",
+    "screenshots": [
+      "somerset-picker.jpg",
+      "creator-production.jpg"
+    ]
+  }
 }

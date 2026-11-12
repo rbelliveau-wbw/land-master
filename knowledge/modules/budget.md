@@ -2852,3 +2852,23 @@ Existing search, filtering, grouping, ordering, refresh and request actions are
 unchanged. No forms, fields, functions, Custom APIs or Creator deployment change.
 Verify the Requests workspace regressions, desktop layout/pickers and repository
 validation/Pages build. Rollback Production to Budget Manager 122.29.137.
+
+
+## Supplemental Table Headers — 122.29.140
+
+Previously Approved Lines and Supplemental Lines use matching 14px table header
+bands. Supplemental Lines remains orange (#8c5a05) and sits inside the lower
+ledger container. Supplemental sections keep their full content height and the
+body scrolls on shorter desktop windows.
+
+The shared PO editor no longer renders the Row / Spreadsheet switch or its
+empty toolbar in ordinary, supplemental, editable or read-only views. Row stays
+the default. po-grid.js retains the spreadsheet engine, typed editing, selection,
+copy/paste, fill and grouped undo for future development; its existing regression
+suite still runs. This supersedes earlier descriptions of the visible toggle.
+
+Changed UI sources: po-ui.js and purchase-orders.css, plus version metadata and
+the immutable release. No forms, fields, functions, Custom APIs, approval or
+financial behavior change. Creator 9.187 remains published. Verify desktop
+creation/review, matched headers, missing switch, retained grid regressions and
+repository validation/Pages build. Rollback Production to Budget 122.29.139.

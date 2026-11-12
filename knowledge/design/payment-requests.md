@@ -4,6 +4,11 @@ Supplemental Purchase Order appears in global Add, phase Request and Requests
 New Request. Choose an approved original through the existing searchable parent
 picker. Retain the three-panel workspace and tabs. Lock vendor and PO Type;
 show Previously Approved Lines in a read-only table outside the editable grid.
+Use matching, readable table header bands for Previously Approved Lines and
+Supplemental Lines. Keep Supplemental Lines orange (#8c5a05) inside the editable
+table container. Omit the Row / Spreadsheet switch throughout the PO editor;
+Row is the default. Preserve po-grid.js and its copy/paste/fill/undo engine for
+future development, with no visible mode switch or empty toolbar space.
 Label additions New and distinguish Previously Approved, This Supplement and
 Proposed/Revised Approved Total. Original review lists supplement references,
 statuses and incremental amounts. Never label pending/rejected additions as

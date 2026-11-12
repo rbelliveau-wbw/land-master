@@ -44,7 +44,7 @@ function runtime(options={}){
  function Map(){return map({});}function List(){return [];}function ifnull(v,f){return v==null?f:v;}function choose(c,a,b){return c?a:b;}
  function recordValues(...pairs){var data={};for(var i=0;i<pairs.length;i+=2)data[pairs[i]]=pairs[i+1];return map(data);}
  Array.prototype.add=function(v){this.push(v);};Array.prototype.get=function(i){return this[i]??null;};Array.prototype.size=Array.prototype.count=function(){return this.length;};Array.prototype.contains=function(v){return this.includes(v);};Array.prototype.toString=function(){return JSON.stringify(this);};
- String.prototype.toMap=function(){return map(JSON.parse(this));};String.prototype.toLong=function(){return this.length>15?this.toString():Number(this);};String.prototype.toDecimal=function(){return Number(this);};String.prototype.matches=function(r){return new RegExp('^(?:'+r+')$').test(this);};String.prototype.replaceAll=function(a,b){return this.replace(new RegExp(a,'g'),b);};String.prototype.toFile=function(name){return {name,content:this.toString()};};
+ String.prototype.toMap=function(){return map(JSON.parse(this));};String.prototype.toLong=function(){return this.length>15?this.toString():Number(this);};String.prototype.toDecimal=function(){return Number(this);};String.prototype.matches=function(r){return new RegExp('^(?:'+r+')$').test(this);};String.prototype.replaceAll=function(a,b,literal=false){if(literal)return this.split(a).join(b);if(/[$][0-9]/.test(b))return null;return this.replace(new RegExp(a,'g'),b);};String.prototype.toFile=function(name){return {name,content:this.toString()};};
  Number.prototype.toLong=function(){return Math.trunc(this);};Number.prototype.toDecimal=function(){return Number(this);};Number.prototype.text=function(){return '$'+this.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
  function stamp(){return {toString(){return '2026-11-10T10:30:00-06:00';},toDate(){return '2026-11-10';}};}
  var zoho={loginuser:options.login??'sam',adminuser:'owner',currenttime:stamp(),currentdate:'2026-11-10',encryption:{sha256(value){return 'fixture-'+value;}}};
@@ -155,3 +155,28 @@ for(const [name,source]of Object.entries(sources))assert.doesNotMatch(source,/th
  const h=runtime();h.eval('tables.Settings[0].PO_Approved_Recipients=[{ID:"4410926123456999999"}];');assert.equal(h.call('buildPurchaseOrderOutcomeEmail',PO).success,false,'deleted notification contacts are an explicit preparation failure');assert.equal(h.send().state,'Failed');assert.equal(h.mails.length,0);
 }
 console.log('PO outcome email backend: contact-only recipients, exact grouped code totals, final-state preflight, per-recipient audit/retries, address-level concurrent deduplication, immutable plans, safe missing-claim resume, unknown no-replay, request-email logs, scoped readers and Dev/Stage/Prod links passed.');
+
+// Zoho's live Deluge runner returns null for a regex replacement containing
+// currency ($123,456.00); native-shaped regular/supplemental mails must retain
+// the shared header, exact destination link and saved descriptions.
+for(const supplemental of [false,true]) {
+ const h=runtime({outcome:'Pending'}),po=h.tables.Payment_Request[0];
+ po.PO_Description='Julie requests $100,000 & <additional work>\nSecond line';
+ if(supplemental)Object.assign(po,{PO_Original:'4410926000005964006',PO_Supplement_Number:1,PO_Supplement_Baseline:JSON.stringify({sources:[{amount:'123456.00'}]})});
+ h.tables.PO_Item[0].Description='Install $100,000 & <sewer> \"quoted\"';
+ h.tables.PO_Item.push({...h.tables.PO_Item[0],ID:'4410926123456000099',Revision:'obsolete',Description:'STALE DESCRIPTION'});
+ assert.match(h.call('sendPurchaseOrderEmail',PO),/^OK/);
+ const message=h.mails[0].message;
+ assert.doesNotMatch(message,/null|undefined|STALE DESCRIPTION|<additional work>|<sewer>/);
+ assert.match(message,/Review Purchase Order/);assert.match(message,/Request Description/);
+ assert.match(message,/Julie requests \$100,000 &amp; &lt;additional work&gt;\nSecond line/);
+ assert.match(message,/Install \$100,000 &amp; &lt;sewer&gt;/);
+ const href=message.match(/href='([^']+)'/)[1],url=new URL(href);
+ assert.equal(url.hash,'#Page:Budget_Management1?budgetId='+BUDGET+'&purchaseOrderId='+PO);
+ if(supplemental){assert.match(message,/Supplemental Purchase Order Approval/);assert.match(message,/4410926000005964006 · Supplement 1/);assert.match(message,/\$123,456.00/);assert.match(message,/\$123,468.35/);assert.match(message,/Supplemental Lines/);}
+ else {assert.match(message,/>Purchase Order Approval</);assert.match(message,/>PO Lines</);}
+ assert.equal(h.mails[0].Attachments.name,'PO.xls');
+ h.call('sendPurchaseOrderEmail',PO);assert.equal(h.mails.length,1);
+ if(process.env.PO_EMAIL_PREVIEW_DIR)fs.writeFileSync(process.env.PO_EMAIL_PREVIEW_DIR+'/'+(supplemental?'supplemental-email':'original-email')+'.html',message);
+}
+console.log('PO approval email: native currency replacement regression, shared regular/supplemental layout, current-revision descriptions, escaped user text, exact review links, attachment and no duplicate send passed.');

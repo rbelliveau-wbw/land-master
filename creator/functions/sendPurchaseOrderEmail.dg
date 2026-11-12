@@ -94,16 +94,35 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			appBase = appBase + "/environment/" + urlEnvironment;
 		}
 		url = appBase + "/land-master/#Page:Budget_Management1?budgetId=" + po.Budget.toString() + "&purchaseOrderId=" + purchaseOrderId;
-		body = "<div style='background:#eef3fa;padding:20px;font-family:Arial,sans-serif;color:#17385f'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:640px;margin:auto;background:white;border:1px solid #d5e1ee'><tr><td style='background:#17385f;color:white;padding:18px 22px'><div style='font-size:12px'>PURCHASE ORDER APPROVAL</div><h2 style='font-size:21px;margin:6px 0'>" + phase + "</h2><div>" + vendor + "</div></td></tr><tr><td style='padding:20px 22px'><div style='font-size:28px;font-weight:bold;color:#08745a'>$" + po.PO_Amount_Exact + "</div><p style='margin:8px 0 16px'>Your " + role + " approval is requested.</p><table style='width:100%;font-size:13px;line-height:1.7'><tr><td>PO</td><td align='right'>" + purchaseOrderId + "</td></tr><tr><td>Request date / needed</td><td align='right'>" + requestDate + " / " + neededDate + "</td></tr><tr><td>Line items</td><td align='right'>" + po.PO_Line_Count + "</td></tr><tr><td>Budget modifications</td><td align='right'>" + modSummary + "</td></tr></table><p style='font-size:13px;color:#526982'>Full line details are in the attached Excel file.</p><p style='margin:20px 0 4px'><a href='" + url + "' style='display:inline-block;padding:12px 18px;background:#2256a6;color:white;text-decoration:none;font-weight:bold'>Review purchase order</a></p></td></tr></table></div>";
+		// Assemble shared markup directly: regex replacements with dollar amounts return null in Deluge.
+		mailTitle = "Purchase Order Approval";
+		mailReference = purchaseOrderId;
+		lineTitle = "PO Lines";
+		mailDetails = "Full line details are in the attached Excel file.";
 		if(po.PO_Original != null)
 		{
+			mailTitle = "Supplemental Purchase Order Approval";
 			mailReference = po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number;
-			mailBaseline = po.PO_Supplement_Baseline.toMap(); approvedBefore = 0.00;
+			lineTitle = "Supplemental Lines";
+			mailBaseline = po.PO_Supplement_Baseline.toMap();
+			approvedBefore = 0.00;
 			for each mailSource in mailBaseline.get("sources") { approvedBefore = approvedBefore + mailSource.get("amount").toDecimal(); }
-			body = body.replaceAll("PURCHASE ORDER APPROVAL","SUPPLEMENTAL PURCHASE ORDER APPROVAL");
-			body = body.replaceAll(">" + purchaseOrderId + "</td>",">" + po.PO_Original.toString() + "</td>");
-			body = body.replaceAll("Full line details are in the attached Excel file.","PO " + mailReference + ". This request approves only the new lines. Previously approved: " + approvedBefore.text("$#,##0.00") + ". Proposed total: " + (approvedBefore + po.PO_Amount_Exact.toDecimal()).text("$#,##0.00") + ". The All PO Lines worksheet includes every approved line and marks the additions NEW.");
+			proposedTotal = approvedBefore + po.PO_Amount_Exact.toDecimal();
+			mailDetails = "This request approves only the new lines. Previously approved: " + approvedBefore.text("$#,##0.00") + ". Proposed total: " + proposedTotal.text("$#,##0.00") + ". The All PO Lines worksheet includes every approved line and marks the additions NEW.";
 		}
+		requestDescription = ifnull(po.PO_Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+		descriptionBody = "";
+		if(requestDescription.trim() != "") { descriptionBody = "<h3 style='font-size:16px;margin:18px 0 8px'>Request Description</h3><div style='font-size:14px;white-space:pre-wrap'>" + requestDescription + "</div>"; }
+		lineBody = "<h3 style='font-size:16px;margin:18px 0 8px'>" + lineTitle + "</h3><table style='width:100%;font-size:14px;border-collapse:collapse'><thead><tr><th style='padding:6px;text-align:left'>Cost Code</th><th style='padding:6px;text-align:left'>Description</th><th style='padding:6px;text-align:right'>Amount</th></tr></thead><tbody>";
+		for each mailLine in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
+		{
+			lineCode = ifnull(mailLine.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			lineDescription = ifnull(mailLine.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			lineAmount = mailLine.Final_Amount_Exact.toDecimal().text("$#,##0.00");
+			lineBody = lineBody + "<tr><td style='padding:6px;border-top:1px solid #e2e8f0'>" + lineCode + "</td><td style='padding:6px;border-top:1px solid #e2e8f0;white-space:pre-wrap'>" + lineDescription + "</td><td style='padding:6px;border-top:1px solid #e2e8f0;text-align:right'>" + lineAmount + "</td></tr>";
+		}
+		lineBody = lineBody + "</tbody></table>";
+		body = "<div style='background:#eef3fa;padding:20px;font-family:Arial,sans-serif;color:#17385f'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:640px;margin:auto;background:white;border:1px solid #d5e1ee'><tr><td style='background:#17385f;color:white;padding:18px 22px'><div style='font-size:14px'>" + mailTitle + "</div><h2 style='font-size:21px;margin:6px 0'>" + phase + "</h2><div>" + vendor + "</div></td></tr><tr><td style='padding:20px 22px'><div style='font-size:28px;font-weight:bold;color:#08745a'>" + po.PO_Amount_Exact.toDecimal().text("$#,##0.00") + "</div><p style='margin:8px 0 16px'>Your " + role + " approval is requested.</p><table style='width:100%;font-size:14px;line-height:1.7'><tr><td>PO</td><td align='right'>" + mailReference + "</td></tr><tr><td>Request Date / Needed</td><td align='right'>" + requestDate + " / " + neededDate + "</td></tr><tr><td>Line Items</td><td align='right'>" + po.PO_Line_Count + "</td></tr><tr><td>Budget Modifications</td><td align='right'>" + modSummary + "</td></tr></table><p style='margin:20px 0 4px'><a href='" + url + "' style='display:inline-block;padding:12px 18px;background:#2256a6;color:white;text-decoration:none;font-weight:bold'>Review Purchase Order</a></p>" + descriptionBody + lineBody + "<p style='font-size:14px;color:#526982'>" + mailDetails + "</p></td></tr></table></div>";
 		elementBody = "";
 		if(bundle.get("modifications").size() > 0)
 		{
