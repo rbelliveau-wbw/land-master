@@ -56,7 +56,7 @@ const approvalContext={
  sendApprovalsWhyIcon(){return '';},
 };
 vm.createContext(approvalContext);
-for(const name of ['approvalText','approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','approvalUserPart','userOwnsProformaApproval','canEditProformaApprovalRow','canViewProformaApprovals','canSendProformaApprovalsFor','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','renderApprovalPane']){
+for(const name of ['approvalText','approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','approvalUserPart','userOwnsProformaApproval','canEditProformaApprovalRow','canViewProformaApprovals','canSendProformaApprovalsFor','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','canDeleteProformaApproval','renderApprovalPane']){
  const start=widget.indexOf('function '+name+'('),end=widget.indexOf('\nfunction ',start+1);
  assert.ok(start>=0&&end>start,`${name} must be available for approval rendering`);
  vm.runInContext(widget.slice(start,end).split('\n/*')[0],approvalContext);

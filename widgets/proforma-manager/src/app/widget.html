@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.148"></script>
-<script src="pf-save-audit.js?v=1.80.148"></script>
-<script src="pf-input-rules.js?v=1.80.148"></script>
-<script src="pf-input-validation.js?v=1.80.148"></script>
-<script src="pf-progress.js?v=1.80.148"></script>
+<script src="pf-save-verification.js?v=1.80.149"></script>
+<script src="pf-save-audit.js?v=1.80.149"></script>
+<script src="pf-input-rules.js?v=1.80.149"></script>
+<script src="pf-input-validation.js?v=1.80.149"></script>
+<script src="pf-progress.js?v=1.80.149"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.148">
-<script src="interaction-motion.js?v=1.80.148"></script>
-<script src="interaction-surfaces.js?v=1.80.148"></script>
-<script src="number-edit-commit.js?v=1.80.148"></script>
-<script src="number-transitions.js?v=1.80.148"></script>
-<script src="number-views.js?v=1.80.148"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.148">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.149">
+<script src="interaction-motion.js?v=1.80.149"></script>
+<script src="interaction-surfaces.js?v=1.80.149"></script>
+<script src="number-edit-commit.js?v=1.80.149"></script>
+<script src="number-transitions.js?v=1.80.149"></script>
+<script src="number-views.js?v=1.80.149"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.149">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.148"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.148">
-<script src="comments.js?v=1.80.148"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.148">
+<script src="budget-transfer-ui.js?v=1.80.149"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.149">
+<script src="comments.js?v=1.80.149"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.149">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1849,8 +1849,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.148"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.148">
+<script src="success-feedback.js?v=1.80.149"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.149">
 </head>
 <body>
 
@@ -2265,7 +2265,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.148";
+var PFW_VERSION="1.80.149";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -2321,6 +2321,7 @@ var CFG = {
     handleProformaApproval: "Handle_Proforma_Approval_Action",
     sendProformaApprovalEmail: "Send_Proforma_Approval_Email",
     killProformaApproval: "Kill_Proforma_Approval_Flow",
+    manageProformaApprovalConfig: "Manage_Proforma_Approval_Config",
     createProformaAttachmentRecord: "Create_Proforma_Attachment_Record",
     deleteProformaAttachment: "Delete_Proforma_Attachment",
     getProformaAttachmentPreview: "Get_Proforma_Attachment_Preview",
@@ -4232,7 +4233,7 @@ function userOwnsProformaApproval(a){
   return !!me&&!!who&&(me===who||approvalUserPart(me)===approvalUserPart(who));
 }
 function canEditProformaApprovalRow(a){ var p=perms(); return !!p.apprAll || (!!p.apprOwned&&userOwnsProformaApproval(a)); }
-function canViewProformaApprovals(){ var p=perms(); return !!(p.apprAll||p.apprOwned||p.editOwned||p.sendApprovals); }
+function canViewProformaApprovals(){ var p=perms(); return !!(p.editAll||p.apprAll||p.apprOwned||p.editOwned||p.sendApprovals); }
 /* Sending is intentionally not inferred from approval-admin, owner-edit, or a
    hardcoded user override. The dedicated Send Pro Formas for Approvals grant is
    required, and it applies only to Pro Formas the user owns unless they also
@@ -4293,7 +4294,17 @@ function invokeProformaApprovalApi(key,args){
     var mockInput=argsObj.proformaId;
     if(key==="startProformaApproval"&&String(mockInput||"").charAt(0)==="{")mockInput=JSON.parse(mockInput);
     var pfId=String(mockInput&&typeof mockInput==="object"?mockInput.id:mockInput||""),rows=approvalRowsForPf(pfId),now=new Date().toISOString();
+    if(key==="manageProformaApprovalConfig"){
+      var target=rows.find(function(row){return String(row.ID)===String(argsObj.approvalId);});
+      if(!perms().editAll)return Promise.reject(new Error("Edit All Pro Formas access is required."));
+      if(argsObj.configAction==="delete"){
+        if(!target||approvalStatus(target).toLowerCase()==="pending"||rows.length<=1)return Promise.reject(new Error("This approval step cannot be deleted."));
+        S.approvals=S.approvals.filter(function(row){return row!==target;});rows=approvalRowsForPf(pfId);rows.forEach(function(row,i){row.Sort_Order=i+1;});
+      }
+      return Promise.resolve({success:true,contract:"proforma-approval-delete-v1",proformaId:pfId,approvalId:String(argsObj.approvalId),deleted:!rows.some(function(row){return String(row.ID)===String(argsObj.approvalId);}),contiguous:true,rowCount:rows.length,route:rows.map(function(row){return {id:String(row.ID),order:row.Sort_Order,role:approvalRole(row),status:approvalStatus(row)};})});
+    }
     if(key==="startProformaApproval"){
+
       var mockSettings=S.mockProformaApprovalSettings;
       if(mockInput&&mockInput.settingsPreview===true){
         if(!mockSettings)return Promise.reject(new Error("Configure the Pro Forma approval route in Settings → Approvals."));
@@ -4419,7 +4430,7 @@ function pfApprovalSnapshot(id,mode){
 function pfApprovalValid(s){return s&&s.status==="Pending Approval"&&s.locked===true&&Number(s.rowCount)>0&&Number(s.pendingCount)===1&&Number(s.approvedCount)===0&&s.firstStatus==="Pending"&&!!s.sentDate&&!!s.role&&!!s.address;}
 function pfApprovalRender(p){
   if(pfApprovalProgress!==p)return;
-  var labels=p.kind==="reject"?PF_REJECT_STEPS:PF_APPROVAL_STEPS,rows=document.getElementById("pfApprovalRows");
+  var labels=p.kind==="delete"?["Deleting Approval Step","Updating Approval Order","Checking Remaining Route"]:p.kind==="reject"?PF_REJECT_STEPS:PF_APPROVAL_STEPS,rows=document.getElementById("pfApprovalRows");
   if(!rows.children.length)labels.forEach(function(label){var li=document.createElement("li");li.className="lr-step pending";li.innerHTML='<span class="lr-ico"></span><span class="lr-main"><span class="lr-name"></span><span class="lr-det"></span></span><span class="lr-chip"></span>';li.querySelector(".lr-name").textContent=label;rows.appendChild(li);});
   labels.forEach(function(label,i){
     var row=rows.children[i],state=p.terminal==="success"?"done":p.terminal==="warning"?(i<2?"done":"warning"):p.terminal==="error"?(i<p.errorStep?"done":i===p.errorStep?"failed":"pending"):i<p.displayStep?"done":i===p.displayStep?"run":i===p.displayStep+1?"next":"pending";
@@ -4428,17 +4439,19 @@ function pfApprovalRender(p){
     row.querySelector(".lr-chip").textContent=state==="run"?"Running":state==="done"?"Done":state==="failed"?"Failed":state==="warning"?"Needs retry":state==="next"?"Up next":"Waiting";
     row.querySelector(".lr-det").textContent=state==="failed"?"Verification did not complete.":state==="warning"?"Delivery could not be verified.":"";
   });
-  document.getElementById("pfApprovalTitle").textContent=p.kind==="reject"?(p.terminal==="success"?"Approval returned":p.terminal==="warning"?"Email needs attention":p.terminal==="error"?"Rejection needs attention":"Returning approval"):(p.terminal==="success"?"Approvals started":p.terminal==="warning"?"Email needs attention":p.terminal==="error"?"Submission needs attention":"Sending for approvals");
+  document.getElementById("pfApprovalTitle").textContent=p.kind==="delete"?(p.terminal==="success"?"Approval Deleted":p.terminal?"Deletion Needs Attention":"Deleting Approval"):p.kind==="reject"?(p.terminal==="success"?"Approval returned":p.terminal==="warning"?"Email needs attention":p.terminal==="error"?"Rejection needs attention":"Returning approval"):(p.terminal==="success"?"Approvals started":p.terminal==="warning"?"Email needs attention":p.terminal==="error"?"Submission needs attention":"Sending for approvals");
+  document.querySelector("#pfApprovalRun .lr-kicker").hidden=p.kind==="delete";
   document.querySelector("#pfApprovalRun .lr-kicker").textContent=p.kind==="reject"?"Reject approval":"Send for Approvals";
   document.getElementById("pfApprovalSub").textContent=p.name;
   var bar=document.getElementById("pfApprovalBar");bar.className="lr-bar"+(p.terminal?(p.terminal==="success"?" ok":" bad"):"");bar.querySelector("i").style.width=(p.terminal?100:Math.round(p.displayStep*100/3))+"%";
   var note=document.getElementById("pfApprovalStatus");note.className="lr-note "+(p.terminal==="success"?"ok":"warn");note.textContent=p.terminal?p.message:labels[Math.min(p.displayStep,2)]+" — leave this open until it finishes.";
-  var retry=document.getElementById("pfApprovalRetry");retry.hidden=!p.terminal||p.terminal==="success";retry.textContent=p.terminal==="warning"?"Retry email":"Try again";
+  var retry=document.getElementById("pfApprovalRetry");retry.hidden=!p.terminal||p.terminal==="success";retry.textContent=p.kind==="delete"?"Check Status":p.terminal==="warning"?"Retry email":"Try again";
   var close=document.getElementById("pfApprovalClose");close.disabled=!p.terminal;close.textContent=p.terminal==="success"?"Done":"Close";close.className=p.terminal==="success"?"btn primary sm":"btn sm";
   if(p.terminal)(retry.hidden?close:retry).focus();
 }
 function pfApprovalPace(p){
   if(pfApprovalProgress!==p||p.terminal||p.visualTimer)return;
+  if(p.kind==="delete"&&window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){p.displayStep=p.targetStep;if(p.pendingFinish){pfApprovalFinish(p,p.pendingFinish.kind,p.pendingFinish.message);return;}pfApprovalRender(p);return;}
   if(p.displayStep<p.targetStep){p.visualTimer=setTimeout(function(){p.visualTimer=null;if(pfApprovalProgress!==p||p.terminal)return;p.displayStep++;pfApprovalRender(p);pfApprovalPace(p);},PF_APPROVAL_TICK);}
   else if(p.pendingFinish){p.visualTimer=setTimeout(function(){p.visualTimer=null;if(pfApprovalProgress!==p||p.terminal||!p.pendingFinish)return;pfApprovalFinish(p,p.pendingFinish.kind,p.pendingFinish.message);},PF_APPROVAL_TICK);}
 }
@@ -4497,7 +4510,7 @@ function executeRejectProformaApproval(id,aid,note,trigger){
 function pfApprovalClose(){var p=pfApprovalProgress;if(!p||!p.terminal)return;clearTimeout(p.timer);clearTimeout(p.deadlineTimer);clearTimeout(p.visualTimer);pfApprovalProgress=null;document.getElementById("pfApprovalRun").classList.remove("show");setApprovalBusy(false);renderApprovalPane();if(p.trigger&&p.trigger.isConnected&&!p.trigger.disabled)p.trigger.focus();else{var pane=document.querySelector('.ed-pane[data-pane="approvals"]');if(pane){pane.setAttribute("tabindex","-1");pane.focus();}}}
 document.getElementById("pfApprovalClose").addEventListener("click",pfApprovalClose);
 document.getElementById("pfApprovalRetry").addEventListener("click",function(){
-  var p=pfApprovalProgress;if(!p||!p.terminal)return;var warning=p.terminal==="warning";pfApprovalAttempt(p,false);
+  var p=pfApprovalProgress;if(!p||!p.terminal)return;if(p.kind==="delete"){pfApprovalDeleteAttempt(p,false);return;}var warning=p.terminal==="warning";pfApprovalAttempt(p,false);
   pfProgressSnapshot(p,"Check").then(function(s){
     if(pfApprovalProgress!==p||p.terminal||pfApprovalInspect(p,s))return;
     if(p.kind==="reject"){
@@ -4662,6 +4675,35 @@ function runKillProformaApproval(pfId){
       .then(function(){setApprovalBusy(false);renderApprovalPane();});
   });
 }
+function canDeleteProformaApproval(pfId,row){
+  return !!perms().editAll&&!S.approvalBusy&&!pfApprovalProgress&&!!row&&!!row.ID&&approvalPfId(row)===String(pfId)&&approvalStatus(row).toLowerCase()!=="pending"&&approvalRowsForPf(pfId).length>1;
+}
+function proformaApprovalDeleteRequest(p,action){
+  return invokeProformaApprovalApi("manageProformaApprovalConfig",{proformaId:p.id,configAction:action,approvalId:p.approvalId,title:"",approverEmail:"",orderedIds:""});
+}
+function pfApprovalDeleteAttempt(p,write){
+  p.terminal="";p.message="";p.displayStep=0;p.targetStep=0;p.pendingFinish=null;
+  pfApprovalRender(p);document.getElementById("pfApprovalRun").focus();
+  var request=write?proformaApprovalDeleteRequest(p,"delete").catch(function(error){
+    p.writeError=error;return null;
+  }):Promise.resolve(null);
+  return request.then(function(){return proformaApprovalDeleteRequest(p,"check-delete");}).then(function(value){
+    if(!value||value.contract!=="proforma-approval-delete-v1"||value.proformaId!==p.id||value.approvalId!==p.approvalId)throw new Error("Creator approval deletion verification is unavailable.");
+    if(value.deleted!==true||value.contiguous!==true||value.rowCount<1||!Array.isArray(value.route)||value.route.length!==value.rowCount)throw new Error(p.writeError&&p.writeError.message||"Deletion or route order could not be confirmed. Refresh the route before trying again.");
+    p.targetStep=3;p.pendingFinish={kind:"success",message:"Approval step deleted. The chain now ends at "+value.route[value.route.length-1].role+"."};pfApprovalPace(p);
+  }).catch(function(error){pfApprovalFinish(p,"error",String(error&&error.message||error)+" Use Check Status to check again without repeating the deletion.");});
+}
+function runDeleteProformaApproval(pfId,approvalId){
+  var id=String(pfId||""),aid=String(approvalId||""),row=(S.approvals||[]).find(function(value){return String(value.ID)===aid;});
+  if(!canDeleteProformaApproval(id,row))return;
+  var scope=proformaApprovalScope(),navigation=S.navigationGeneration;
+  return uiConfirm({tone:"danger",kicker:false,title:"Delete Approval Step?",message:"Delete "+approvalRole(row)+" ("+approvalEmail(row)+") from this route? The remaining steps will be renumbered. The pending approval will continue.",okLabel:"Delete Approval",cancelLabel:"Cancel"}).then(function(ok){
+    if(!ok||scope!==proformaApprovalScope()||navigation!==S.navigationGeneration||!canDeleteProformaApproval(id,row))return;
+    var p={kind:"delete",id:id,approvalId:aid,name:approvalRole(row)+" — "+approvalEmail(row),trigger:document.activeElement,displayStep:0,targetStep:0,terminal:""};
+    pfApprovalProgress=p;setApprovalBusy(true);document.getElementById("pfApprovalRows").textContent="";document.getElementById("pfApprovalRun").classList.add("show");
+    return pfApprovalDeleteAttempt(p,true);
+  });
+}
 function proformaApprovalSettingsKey(pf){
   var scope=S.liveSDK&&typeof LMRuntime!=="undefined"?LMRuntime.current():null;
   return JSON.stringify({id:String(pf&&pf.ID||""),territory:approvalText(pf&&pf.Territory),actor:approvalText(S.currentUser),scope:scope,saved:approvalRowsForPf(pf).map(function(row){return [String(row.ID),approvalRole(row),approvalEmail(row),intN(row.Sort_Order)];})});
@@ -4751,7 +4793,8 @@ function renderApprovalPane(){
       noteHtml='<div class="pf-appr-note-view'+(note?'':' empty')+'">'+esc(note||"No approval note entered.")+'</div>';
       if(resendHtml)noteHtml+='<div class="pf-appr-actions">'+resendHtml+'</div>';
     }
-    return '<div class="pf-appr-row"><div class="pf-appr-row-head"><div class="pf-appr-row-role"><span class="pf-appr-seq">'+(i+1)+'</span>'+esc(role)+'</div><div class="pf-appr-row-recipient">'+recipient+'</div>'+(meta?'<div class="pf-appr-meta">'+meta+'</div>':'')+approvalStatusMarkup(status)+'</div>'+noteHtml+'</div>';
+    if(savedRoute&&canDeleteProformaApproval(id,r))noteHtml+='<div class="pf-appr-actions"><button type="button" class="btn reject" style="font-size:14px" data-pf-appr-delete="'+esc(String(r.ID))+'" data-pf-id="'+esc(id)+'">Delete Approval</button></div>';
+    return '<div class="pf-appr-row" data-approval-id="'+esc(String(r.ID||''))+'"><div class="pf-appr-row-head"><div class="pf-appr-row-role"><span class="pf-appr-seq">'+(i+1)+'</span>'+esc(role)+'</div><div class="pf-appr-row-recipient">'+recipient+'</div>'+(meta?'<div class="pf-appr-meta">'+meta+'</div>':'')+approvalStatusMarkup(status)+'</div>'+noteHtml+'</div>';
   }).join('');
   var body=rows.length?'<div class="pf-appr-flow-card">'+approvalStepperHtml(rows)+cards+'</div>':'<div class="pf-appr-info" role="status"><b>'+(entry&&entry.status==="loading"?'Loading Settings approval route…':'Approval route unavailable')+'</b>'+(entry&&entry.status==="error"?'<br>'+esc(entry.error&&entry.error.message||'Check Settings → Approvals and refresh the route.'):'')+'</div>';
   host.innerHTML='<div class="pf-appr-panel'+(busy?' pf-appr-busy':'')+'">'+top+body+'</div>';
@@ -12834,6 +12877,7 @@ document.addEventListener("click",function(e){
   var open=e.target.closest&&e.target.closest("[data-pf-appr-open]");if(open){openEdit(open.getAttribute("data-pf-appr-open"),"approvals");return;}
   var scope=e.target.closest&&e.target.closest("[data-pf-appr-scope]");if(scope){S.approvalUI.scope=scope.getAttribute("data-pf-appr-scope")||"mine";document.querySelectorAll("[data-pf-appr-scope]").forEach(function(b){b.classList.toggle("on",b===scope);});renderApprovalQueue();return;}
   var start=e.target.closest&&e.target.closest("[data-pf-appr-start]");if(start){runStartProformaApproval(start.getAttribute("data-pf-appr-start"));return;}
+  var deletion=e.target.closest&&e.target.closest("[data-pf-appr-delete]");if(deletion){runDeleteProformaApproval(deletion.getAttribute("data-pf-id"),deletion.getAttribute("data-pf-appr-delete"));return;}
   var cancel=e.target.closest&&e.target.closest("[data-pf-appr-cancel]");if(cancel){runKillProformaApproval(cancel.getAttribute("data-pf-appr-cancel"));return;}
   var resend=e.target.closest&&e.target.closest("[data-pf-appr-resend]");if(resend){runResendProformaApproval(resend.getAttribute("data-pf-id"),resend.getAttribute("data-pf-appr-resend"));return;}
   var act=e.target.closest&&e.target.closest("[data-pf-appr-action]");if(act){var aid=act.getAttribute("data-pf-appr-id"),ta=document.querySelector('[data-pf-appr-note="'+aid+'"]');runProformaApprovalAction(act.getAttribute("data-pf-id"),aid,act.getAttribute("data-pf-appr-action"),ta?ta.value:"");return;}

@@ -5,9 +5,10 @@ import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 
 // Execute checked-in native Deluge bodies with local records. This verifies
 // their control flow; native Creator compilation/deployment is a separate gate.
-const names=['resolveApprovalRoute','snapshotApprovalRoute','applySharedApprovalPolicy','Start_Proforma_Approval_Chain','Manage_Proforma_Approval_Config','Update_Proforma_Approval_Recipient'];
+const names=['resolveApprovalRoute','snapshotApprovalRoute','applySharedApprovalPolicy','Start_Proforma_Approval_Chain','Manage_Proforma_Approval_Config','Update_Proforma_Approval_Recipient','Handle_Proforma_Approval_Action'];
 const sources=Object.fromEntries(names.map(name=>[name,fs.readFileSync(`creator/functions/${name}.dg`,'utf8')]));
 function compile(source){
+  source=source.replace(/sendmail\s*\[[\s\S]*?\]/g,";");
   // Deluge map literals become calls so the subset translator does not treat
   // their curly braces as a Deluge list. None of these literals are nested.
   source=source.replace(/\{((?:"(?:\\.|[^"\\])*"\s*:[^{}\n]+))\}/g,(_,body)=>'delugeMap('+body.replace(/("(?:\\.|[^"\\])*")\s*:/g,'$1,')+')');
@@ -15,6 +16,7 @@ function compile(source){
   source=source.replace(/insert into (\w+)\s*\[([^\]]+)\]/g,(_,form,fields)=>
     `insertRecord("${form}", delugeMap(${fields.trim().split('\n').map(line=>{const m=line.trim().match(/^(\w+)=(.*)$/);assert.ok(m,line);return JSON.stringify(m[1])+','+m[2];}).join(',')}))`);
   // Native long multiplication stays exact in this BigInt-based adapter.
+  source=source.replace(/delete from (\w+)\[([^\]]+)\];/g,(_,form,criteria)=>`deleteRecords("${form}",row=>${criteria.replace(/\b([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<)/g,'row.$1 $2')});`);
   return translate(source).js.replace('netSign * netMagnitude','BigInt(netSign) * netMagnitude').replace(/catch\((\w+)\)\s*\{/g,'catch($1) { diagnostics.push($1.message);');
 }
 const executable=names.map(name=>compile(sources[name])+`;thisapp.${name}=${name};`).join('\n');
@@ -48,6 +50,7 @@ function runtime({owner=creatorOwner,mine=true,pfStatus='Draft',locked=false,app
     var zoho={loginuser:'owner',currenttime:{toString(){return '20261014120000001';}}};
     function record(form,row){return new Proxy(row,{get(o,k){return o[k]??null;},set(o,k,v){writes.push({form,id:o.ID,field:k,value:typeof v==='bigint'?v.toString():v});o[k]=typeof v==='bigint'?v.toString():v;return true;}});}
     function query(form,predicate,sort){var result=(tables[form]||[]).map(row=>record(form,row)).filter(predicate);if(sort)result.sort((a,b)=>a[sort]>b[sort]?1:a[sort]<b[sort]?-1:0);return new Proxy(result,{get(a,k){return k in a||typeof k==='symbol'?a[k]:a[0]?.[k]??null;},set(a,k,v){if(!a.length)throw Error('Missing record');a[0][k]=v;return true;}});}
+    function deleteRecords(form,predicate){tables[form]=tables[form].filter(row=>{if(!predicate(row))return true;writes.push({form,id:row.ID,deleted:true});return false;});}
     function insertRecord(form,data){data.ID=(tables[form].reduce((max,row)=>BigInt(row.ID)>max?BigInt(row.ID):max,100n)+1n).toString();for(var key of Object.keys(data))if(typeof data[key]==='bigint')data[key]=data[key].toString();tables[form].push(data);writes.push({form,id:data.ID,insert:true});return BigInt(data.ID);}
     thisapp.poCurrencyString=function(value){return /^[0-9]+(?:[.][0-9]{1,2})?$/.test(value)?value:'';};
     thisapp.Send_Proforma_Approval_Email_With_Context=function(pf,id){emails.push({pf,id});if(email==='throw')throw Error('Unknown email reply');if(email==='failed')return delugeMap('success',false,'message','Email failed');var row=query('Budget_Approvals',row=>row.ID==id);row.Sent_Date='2026-10-14';return delugeMap('success',true,'packetFileName','packet.pdf');};
@@ -92,7 +95,7 @@ h=runtime({pfStatus:'Pending Approval',approvals:[{...rows[0],Status:'Pending'},
 h=runtime({pfStatus:'Pending Approval',approvals:[{...rows[0],Status:'Pending'},{...rows[1],Status:'Rejected',Approval_Notes:'Keep decision'}]});before=h.snapshot();result=h.run({id:ID,mode:'Repair'});assert.deepEqual(h.snapshot(),before);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);
 h=runtime({email:'failed'});result=h.run(submission);assert.equal(result.success,false);assert.equal(h.snapshot().Add_Pro_Forma[0].Status,'Draft');assert.equal(h.snapshot().Budget_Approvals[0].Status,'Not Sent');const failedWrites=h.writes.length;h.run({id:ID,mode:'Repair'});assert.equal(h.writes.length,failedWrites);assert.equal(h.emails.length,1);
 h=runtime({email:'throw'});result=h.run(submission);assert.equal(result.success,false);assert.equal(h.snapshot().Add_Pro_Forma[0].Status,'Pending Approval');assert.equal(h.snapshot().Budget_Approvals[0].Status,'Pending');
-for(const [name,args] of [['Manage_Proforma_Approval_Config',[ID,'delete','101','','','']],['Update_Proforma_Approval_Recipient',[{proformaId:ID,approvalId:'101',approverEmail:'changed@example.com'}]]]){h=runtime({approvals:sent,snapshots:captured});before=h.snapshot();const argCode=args.map(arg=>typeof arg==='object'?'delugeMap("proformaId",'+JSON.stringify(arg.proformaId)+',"approvalId",'+JSON.stringify(arg.approvalId)+',"approverEmail",'+JSON.stringify(arg.approverEmail)+')':JSON.stringify(arg)).join(',');result=clone(vm.runInContext(name+'('+argCode+')',h.c));assert.equal(result.success,false);assert.match(result.message,/Settings > Approval Policies/);assert.deepEqual(h.snapshot(),before);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);}
+for(const [name,args] of [['Manage_Proforma_Approval_Config',[ID,'delete','101','','','']],['Update_Proforma_Approval_Recipient',[{proformaId:ID,approvalId:'101',approverEmail:'changed@example.com'}]]]){h=runtime({approvals:sent,snapshots:captured});before=h.snapshot();const argCode=args.map(arg=>typeof arg==='object'?'delugeMap("proformaId",'+JSON.stringify(arg.proformaId)+',"approvalId",'+JSON.stringify(arg.approvalId)+',"approverEmail",'+JSON.stringify(arg.approverEmail)+')':JSON.stringify(arg)).join(',');result=clone(vm.runInContext(name+'('+argCode+')',h.c));assert.equal(result.success,false);assert.match(result.message,/Settings > Approval Policies|Edit All Pro Formas/);assert.deepEqual(h.snapshot(),before);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);}
 
 // Every workflow uses the record's Territory for VP and every selected Dev Mgr.
 // Assignments for these roles cannot override the Territory record.
@@ -173,3 +176,25 @@ assert.equal(result.success,false);assert.match(result.message,/permission/);ass
 h=runtime({offer:false,owner:offerAdmin,approvals:[{...rows[0],Status:'Approved'},rows[1]]});result=h.run(submission);
 assert.equal(result.success,false);assert.match(result.message,/history/);assert.equal(h.writes.length,0);assert.equal(h.emails.length,0);
 console.log('Incomplete Offer initiation: signed-in Edit All exception, ordinary-user requirements, independent send grant, normal routing/delivery and duplicate/history guards passed.');
+
+// Explicit administrative deletion of a saved route is the narrow exception to Settings.
+function deleteStep(h,aid='104',action='delete',pf=ID){return clone(vm.runInContext('Manage_Proforma_Approval_Config('+[pf,action,aid,'','',''].map(JSON.stringify).join(',')+')',h.c));}
+const deleteRows=[
+ {...rows[0],Status:'Pending',Approval_Notes:'Keep note',Sent_Date:'2026-11-12'},
+ {...rows[1],Status:'Not Sent'},
+ {...rows[1],ID:'103',Sort_Order:3,Title:'COO',Approver:'dreinke@example.com'},
+ {...rows[1],ID:'104',Sort_Order:4,Title:'CEO',Approver:'bruce@example.com'}
+];
+for(const grant of [false,null,undefined]){h=runtime({owner:{...creatorOwner,Edit_All_Proformas:grant,Edit_All_Pro_Forma_Approvals:true},approvals:deleteRows});before=h.snapshot();assert.equal(deleteStep(h).success,false);assert.deepEqual(h.snapshot(),before);}
+h=runtime({owner:{...creatorOwner,Edit_All_Proformas:true},mine:false,pfStatus:'Pending Approval',locked:true,approvals:deleteRows});
+result=deleteStep(h);assert.equal(result.success,true,JSON.stringify(result));assert.equal(result.deleted,true);assert.equal(result.route.at(-1).role,'COO');assert.equal(result.rowCount,3);assert.equal(result.contiguous,true);assert.equal(h.snapshot().Budget_Approvals[0].Status,'Pending');assert.equal(h.snapshot().Budget_Approvals[0].Approval_Notes,'Keep note');assert.equal(h.snapshot().Add_Pro_Forma[0].Status,'Pending Approval');assert.equal(h.emails.length,0);
+let saved=h.snapshot();assert.equal(deleteStep(h,'104','check-delete').deleted,true);assert.deepEqual(h.snapshot(),saved,'check is read only');assert.equal(deleteStep(h).success,false,'no delete replay');
+for(const status of ['Approved','Rejected','Not Sent']){h=runtime({owner:{...creatorOwner,Edit_All_Proformas:true},approvals:deleteRows.map((r,i)=>i===1?{...r,Status:status}:r)});assert.equal(deleteStep(h,'102').success,true);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Sort_Order),[1,2,3]);assert.equal(h.snapshot().Budget_Approvals[0].Status,'Pending');}
+for(const [aid,pf,approvals] of [['101',ID,deleteRows],['104','77',deleteRows],['777',ID,deleteRows],['104',ID,[deleteRows[3]]]]){h=runtime({owner:{...creatorOwner,Edit_All_Proformas:true},approvals});before=h.snapshot();assert.equal(deleteStep(h,aid,'delete',pf).success,false);assert.deepEqual(h.snapshot(),before);}
+h=runtime({owner:{...creatorOwner,Edit_All_Proformas:true},approvals:deleteRows});before=h.snapshot();assert.equal(deleteStep(h,'104','reorder').success,false);assert.deepEqual(h.snapshot(),before);
+console.log('Saved approval deletion: Edit All grant, pending guard, parent/row scope, final-row guard, renumbering, decisions/notes preservation, read-only recovery and shorter chain passed.');
+
+h=runtime({owner:{...creatorOwner,Edit_All_Proformas:true},pfStatus:'Pending Approval',locked:true,approvals:deleteRows});assert.equal(deleteStep(h).success,true);
+for(const aid of ['101','102','103']){result=clone(vm.runInContext('Handle_Proforma_Approval_Action('+[ID,aid,'Approved',''].map(JSON.stringify).join(',')+')',h.c));assert.equal(result.success,true,JSON.stringify(result));}
+assert.equal(h.snapshot().Add_Pro_Forma[0].Status,'Approved','deleting Bruce ends the live chain at Dreinke');assert.equal(h.snapshot().Budget_Approvals.length,3);assert.equal(h.snapshot().Budget_Approvals.at(-1).Status,'Approved');
+console.log('Actual approval decision function routes through the shortened chain and finalizes at Dreinke.');

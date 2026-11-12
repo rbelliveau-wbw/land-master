@@ -22,7 +22,7 @@ const c=vm.createContext({
  document:{querySelector:()=>host},auditLog(){},errMeta:e=>({message:e.message}),
  setApprovalBusy(value){c.S.approvalBusy=value;},setPane(){},pfApprovalProgress:null,
 });
-vm.runInContext(['approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','canSendProformaApprovalsFor','proformaSendApprovalsGate','sendApprovalsWhyText','sendApprovalsWhyIcon','proformaApprovalSettingsKey','proformaApprovalSettingsEntry','validateProformaApprovalSettings','loadProformaApprovalSettings','proformaApprovalStartPayload','renderApprovalPane','runStartProformaApproval'].map(fn).join('\n'),c);
+vm.runInContext(['approvalPfId','approvalRowsForPf','approvalRole','approvalStatus','approvalEmail','approvalNote','approvalDate','proformaApprovalState','approvalStateLabel','approvalStatusMarkup','approvalStepperHtml','canSendProformaApprovalsFor','proformaSendApprovalsGate','sendApprovalsWhyText','sendApprovalsWhyIcon','proformaApprovalSettingsKey','proformaApprovalSettingsEntry','validateProformaApprovalSettings','loadProformaApprovalSettings','proformaApprovalStartPayload','canDeleteProformaApproval','renderApprovalPane','runStartProformaApproval'].map(fn).join('\n'),c);
 
 assert.equal(c.validateProformaApprovalSettings(snapshot,pf.ID),snapshot);
 for(const invalid of [
@@ -164,3 +164,24 @@ offerTest.permissions={sendApprovals:false,editAll:true};assert.equal(offerTest.
 offerTest.permissions={sendApprovals:true,editAll:false};assert.equal(offerTest.proformaSendApprovalsGate({...offerPf,mine:true}).can,false,'ordinary senders retain the completeness gate');
 console.log('Incomplete Offer warning: list/editor access, plain-language dependencies, Send Anyway, cancellation, independent grants and existing blockers passed.');
 assert.equal(live.widget.PFTransport.snapshot().reviews.length,0,'failed read-only route preview cannot lock writes as an unknown mutation');assert.equal(live.widget.PFTransport.snapshot().ledger.length,0);
+
+c.perms=()=>({editAll:true});c.S.approvalBusy=false;c.pfApprovalProgress=null;c.S.ed={model:pf};c.S.proformas=[pf];c.S.approvals=[
+ {ID:'501',Proforma:pf.ID,Title:'VP',Status:'Pending',Sort_Order:1},
+ {ID:'502',Proforma:pf.ID,Title:'COO',Status:'Not Sent',Sort_Order:2},
+ {ID:'503',Proforma:pf.ID,Title:'CEO',Status:'Approved',Sort_Order:3}
+];
+c.renderApprovalPane();assert.equal((host.innerHTML.match(/data-pf-appr-delete=/g)||[]).length,2);assert.doesNotMatch(host.innerHTML,/data-pf-appr-delete="501"/);assert.match(host.innerHTML,/Delete Approval/);
+assert.equal(c.canDeleteProformaApproval('other',c.S.approvals[1]),false);
+c.perms=()=>({apprAll:true,editOwned:true});c.renderApprovalPane();assert.doesNotMatch(host.innerHTML,/data-pf-appr-delete/);
+c.perms=()=>({editAll:true});c.S.approvalBusy=true;assert.equal(c.canDeleteProformaApproval(pf.ID,c.S.approvals[1]),false);c.S.approvalBusy=false;
+c.S.approvals=[c.S.approvals[1]];assert.equal(c.canDeleteProformaApproval(pf.ID,c.S.approvals[0]),false);
+console.log('Approval delete controls respect Edit All, pending status, busy state, parent identity and last-step guard.');
+
+vm.runInContext(fn('pfApprovalDeleteAttempt'),c);
+let deleteCalls=[],finished=[],paced=[];c.document={getElementById(){return {focus(){}};}};c.pfApprovalRender=()=>{};c.pfApprovalPace=p=>paced.push(p.pendingFinish);c.pfApprovalFinish=(p,kind,message)=>finished.push({kind,message});
+const receipt={contract:'proforma-approval-delete-v1',proformaId:pf.ID,approvalId:'503',deleted:true,contiguous:true,rowCount:2,route:[{id:'501',role:'VP'},{id:'502',role:'COO'}]};
+c.proformaApprovalDeleteRequest=async(p,action)=>{deleteCalls.push(action);if(action==='delete')throw Error('Lost reply');return receipt;};
+await c.pfApprovalDeleteAttempt({id:pf.ID,approvalId:'503'},true);assert.deepEqual(deleteCalls,['delete','check-delete']);assert.equal(paced.at(-1).kind,'success');assert.match(paced.at(-1).message,/ends at COO/);
+deleteCalls=[];await c.pfApprovalDeleteAttempt({id:pf.ID,approvalId:'503'},false);assert.deepEqual(deleteCalls,['check-delete'],'recheck never replays delete');
+for(const bad of [{...receipt,proformaId:'wrong'},{...receipt,approvalId:'wrong'},{...receipt,deleted:false},{...receipt,contiguous:false},{...receipt,rowCount:0,route:[]},{}]){c.proformaApprovalDeleteRequest=async()=>bad;await c.pfApprovalDeleteAttempt({id:pf.ID,approvalId:'503'},false);assert.equal(finished.at(-1).kind,'error');assert.match(finished.at(-1).message,/Check Status/);}
+console.log('Approval delete progress: lost-reply recovery, exact parent/step contract, nonempty route checks, terminal errors and read-only Check Status passed.');
