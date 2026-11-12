@@ -1,0 +1,36 @@
+// Property — Created or Edited — Validations on form submission
+// Optional single lookup Lots -> Lots.ID, displayed as Lot_Code.
+if(input.Lots != null)
+{
+    selectedLot = Lots[ID == input.Lots];
+    lotError = "";
+    if(selectedLot.count() == 0)
+    {
+        lotError = "The selected lot is unavailable. Choose another Lot Code or clear it.";
+    }
+    else if(selectedLot.Subdivision == null)
+    {
+        lotError = "The lot must have a valid Subdivision lookup.";
+    }
+    else
+    {
+        selectedSubdivision = Subdivision[ID == selectedLot.Subdivision];
+        if(selectedSubdivision.count() == 0)
+        {
+            lotError = "The lot must have a valid Subdivision lookup.";
+        }
+        else if(input.Subdivisions == null || !input.Subdivisions.contains(selectedSubdivision.ID))
+        {
+            lotError = "Select the lot's subdivision in Subdivisions or choose a matching Lot Code.";
+        }
+        else if(selectedSubdivision.Project == null || input.Projects == null || !input.Projects.contains(selectedSubdivision.Project))
+        {
+            lotError = "Select the subdivision's project in Projects or choose a matching Lot Code.";
+        }
+    }
+    if(lotError != "")
+    {
+        alert lotError;
+        cancel submit;
+    }
+}

@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+const app='widgets/land-master/src/app/';
+const source=fs.readFileSync(app+'widget.html','utf8');
+const c=vm.createContext({});c.window=c;
+vm.runInContext(fs.readFileSync(app+'property-lots.js','utf8'),c);
+const api=c.LMPropertyLots,L=(ID,label)=>({ID,zc_display_value:label});
+const lot={ID:'90071992547409931',Lot_Code:'PH1-B01-L007',Subdivision:L('90071992547409932','Phase 1')};
+const sub={ID:'90071992547409932',Subdivision_Name:'Phase 1',Project:L('90071992547409933','Project')};
+const property={ID:'90071992547409934',Lots:L(lot.ID,lot.Lot_Code),Projects:[L(sub.Project.ID,'Project')],Subdivisions:[L(sub.ID,'Phase 1')]};
+assert.equal(api.error(property,lot,sub),'');
+assert.equal(api.error({...property,Lots:''},null,null),'','Lot is optional and can be cleared');
+assert.match(api.error(property,null,sub),/unavailable/);
+assert.match(api.error(property,{...lot,Subdivision:''},null),/valid Subdivision/);
+assert.match(api.error({...property,Subdivisions:[L('90071992547409935','Phase 1')]},lot,sub),/Subdivisions/,'equal names cannot substitute for exact IDs');
+assert.match(api.error({...property,Projects:[]},lot,sub),/Projects/);
+assert.match(api.error(property,lot,{...sub,Project:L('90071992547409936','Project')}),/Projects/);
+assert.equal(api.code(property,[]),lot.Lot_Code,'native lookup display supports list search without loading all lots');
+assert.equal(api.code({...property,Lots:{ID:lot.ID}},[lot]),lot.Lot_Code);
+assert.equal(api.code({},[]),'');
+assert.equal(api.merged(property,{Lots:''}).Lots,'');
+function actual(name){let start=source.indexOf('function '+name+'(');assert.ok(start>=0);return source.slice(start,source.indexOf('\nfunction ',start));}
+Object.assign(c,{S:{scope:'props',properties:[property,{ID:'other',Subdivisions:[L('other-sub','Other')]}],lots:[],filters:{subdivision:[sub.ID]},search:'',sortKey:'',issuesOnly:false},asList:v=>Array.isArray(v)?v:v?[v]:[],lookupId:api.id,
+  findIn:(rows,id)=>rows.find(r=>r.ID===id),cols:()=>[{key:'_lotCode'}],currentList:()=>c.S.properties,
+  esc:s=>String(s).replaceAll('<','&lt;'),truthy:Boolean});
+vm.runInContext(actual('colValue'),c);vm.runInContext(actual('cellHTML'),c);
+vm.runInContext(source.slice(source.indexOf('var FILTER_DEFS='),source.indexOf('\nfunction mergeFilterValues')),c);
+vm.runInContext(actual('visibleList'),c);
+assert.equal(c.visibleList().length,1,'multi-lookup subdivision filter matches by membership');
+c.S.filters.subdivision=['other-sub',sub.ID];assert.equal(c.visibleList().length,2,'multiple selections use OR');
+c.S.filters.subdivision=[];c.S.search='l007';assert.equal(c.visibleList()[0].ID,property.ID,'lot code is searchable case-insensitively before the editor opens');
+assert.match(c.cellHTML(property,{key:'_lotCode'}),/property-lot-badge.*PH1-B01-L007/);
+const columns=actual('cols');assert.match(columns,/Property_ID.*Lot Code.*_lotCode/,'Lot Code follows Parcel ID');
+let reads=[],epoch=1;
+Object.assign(c,{LandData:{generation:()=>epoch},landCreateScope:()=> 'actor:production',sdkGetAll:async(report,criteria,progress,options)=>{reads.push({report,criteria,options});return [report==='All_Lots_All_Fields'?lot:sub];}});
+vm.runInContext(actual('propertyLotPreflight'),c);
+await c.propertyLotPreflight(property,{});
+assert.deepEqual(reads.map(r=>r.report),['All_Lots_All_Fields','All_Subdivisions']);assert.ok(reads.every(r=>r.options.fresh));
+await assert.rejects(c.propertyLotPreflight(property,{Projects:['wrong-project']}),/Projects/);
+reads=[];await c.propertyLotPreflight(property,{Lots:''});assert.equal(reads.length,0,'clearing optional lot never requires lot access');
+c.sdkGetAll=async()=>{epoch++;return [lot];};await assert.rejects(c.propertyLotPreflight(property,{}),/Records or session changed/);
+console.log('Property Lot: optional assign/clear, exact subdivision/project IDs, native labels, pill, search, multi-select membership, fresh prewrite reads and context change guards passed.');
+// Execute the real editor's prewrite path with native lookup objects and DOM strings.
+const controls={};
+for(const [key,value] of Object.entries({Lots:lot.ID,Projects:[sub.Project.ID],Subdivisions:[sub.ID]}))controls['f_'+key]={value,getAttribute:name=>({'data-field':key,'data-ftype':key==='Lots'?'lookup':'multilookup','data-original':'old'}[name]||'')};
+const message={textContent:''};
+Object.assign(c,{createdProjectNeedsId:()=>false,takedownSaveReviewForEditor:()=>null,landCreateReviewForEditor:()=>null,allowTableEdit:()=>true,panelHasChanges:()=>true,validatePropertySubtypePanel:()=>true,
+  currentEditor:()=>property,document:{querySelectorAll:selector=>selector.includes('data-req')?[]:Object.values(controls)},$:id=>id==='panelMsg'?message:controls[id],inputRaw:el=>el.value,normalizedRaw:raw=>String(raw),payloadValue:(ft,raw)=>raw,setStatus(){}});
+Object.assign(c.S,{editorType:'property',editorNew:false,coreRefreshing:false,panelLoading:false,panelSaving:false,lots:[lot],subdivisions:[sub]});
+vm.runInContext(actual('asList'),c);vm.runInContext(actual('lookupId'),c);vm.runInContext(actual('propertyLotDraft'),c);
+vm.runInContext(actual('savePanel').split('S.panelSaving=true;')[0]+'saveReached=true;}',c);
+c.saveReached=false;c.savePanel();assert.equal(c.saveReached,true,'a valid selected lot reaches Save even though the DOM value is a raw string');
+controls.f_Subdivisions.value=[];c.saveReached=false;c.savePanel();assert.equal(c.saveReached,false);assert.match(message.textContent,/Subdivisions/);
+controls.f_Lots.value='';c.saveReached=false;c.savePanel();assert.equal(c.saveReached,true,'clearing optional Lot Code permits Save');
+console.log('Actual Property editor prewrite path: valid DOM string lookup accepted, invalid parents blocked, optional clear accepted.');

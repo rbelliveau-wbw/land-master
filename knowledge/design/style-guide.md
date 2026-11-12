@@ -722,3 +722,11 @@ native access live in [the module release](../../docs/insights-budget-exceptions
 Land & Projects County choices display alphabetically in the existing searchable
 picker. County record fields remain single select; search does not add multiple
 selection or change native values and save handlers.
+
+
+Property Lot Code uses an optional searchable single lookup in Ownership &
+Relationships and a readable blue pill after Parcel ID in the Properties table.
+Constrain choices by the staged Property Subdivisions and Projects; retain a
+nonmatching current value visibly and block Save until corrected or cleared.
+Subdivision filters reuse the searchable multi-select filter popover, exact
+lookup IDs, OR membership, retained hidden selections and immediate Clear/X.

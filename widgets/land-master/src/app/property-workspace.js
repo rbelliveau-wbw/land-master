@@ -20,7 +20,7 @@
   function propertyHTML(fields, render) {
     var groups = [
       ['Property & location', ['Common_Name','Property_ID','Facility_ID','External_Transfer_Inactive','County','Land_Type','Subtype','Location','TerraVault_URL']],
-      ['Ownership & relationships', ['Company1','Seller','Projects','Subdivisions','Proforma']],
+      ['Ownership & Relationships', ['Company1','Seller','Projects','Subdivisions','Lots','Proforma']],
       ['Acreage & financials', ['Acres','Original_Acres','Construction_Acres','cost_per_acre_FT','Purchase_Price','Purchase_Date']],
       ['Designation & coverage', ['Deed_To','New_Owner','Agree_with_Designation','Insured','Is_1031','Ag_Exempt']],
       ['Descriptions & notes', ['Legal_Description','Bruce_s_Description','Notes']]
@@ -34,7 +34,7 @@
   }
   function transferHTML(fields, render, rec, audit) {
     var get = function (keys) { return keys.map(function (key) { return fields.find(function (f) { return f.k === key; }); }); };
-    return '<div class="pw-transfer-layout"><div class="pw-transfer-main">'+card('Property & companies',get(['Property','From_Company','To_Company']),render)+card('Transfer details',get(['Transfer_Date','Transfer_Type','Status','Transfer_Scope']),render)+'<section class="pw-card pw-partial" data-transfer-amount'+(rec.Transfer_Scope==='Partial'?'':' hidden')+'><h3>Partial transfer</h3><div class="fgrid">'+get(['Amount_Unit','Amount_Transferred']).map(render).join('')+'</div></section>'+card('Notes',get(['Notes']),render)+'</div><aside class="pw-transfer-aside"><div class="pw-route-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></div><span class="pw-eyebrow">TRANSFER SUMMARY</span><div class="pw-route"><span>From</span><strong data-transfer-from>—</strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg><span>To</span><strong data-transfer-to>—</strong></div><div class="pw-transfer-facts"><span>Scope</span><b data-transfer-scope>Full</b><span>Status</span><b data-transfer-status>Pending</b><span>Amount</span><b data-transfer-total>Full property</b></div>'+audit(rec)+'</aside></div>';
+    return '<div class="pw-transfer-layout"><div class="pw-transfer-main">'+card('Property & companies',get(['Property','From_Company','To_Company']),render)+card('Transfer details',get(['Transfer_Date','Transfer_Type','Status','Transfer_Scope']),render)+'<section class="pw-card pw-partial" data-transfer-amount'+(rec.Transfer_Scope==='Partial'?'':' hidden')+'><h3>Partial transfer</h3><div class="fgrid">'+get(['Amount_Unit','Amount_Transferred']).map(render).join('')+'</div></section>'+card('Notes',get(['Notes']),render)+'</div><aside class="pw-transfer-aside"><div class="pw-route-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></svg></div><span class="pw-eyebrow">TRANSFER SUMMARY</span><div class="pw-route"><span>From</span><strong data-transfer-from>â€”</strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg><span>To</span><strong data-transfer-to>â€”</strong></div><div class="pw-transfer-facts"><span>Scope</span><b data-transfer-scope>Full</b><span>Status</span><b data-transfer-status>Pending</b><span>Amount</span><b data-transfer-total>Full property</b></div>'+audit(rec)+'</aside></div>';
   }
   function validateTransfer(values, properties, demo) {
     var required = ['Property','From_Company','To_Company','Transfer_Date','Transfer_Type','Status','Transfer_Scope'];
@@ -57,7 +57,7 @@
   function auditHTML(rec) {
     var rows = [['Entered by',rec.Added_User],['Date entered',rec.Added_Time],['Last updated by',rec.Modified_User],['Last updated',rec.Modified_Time]];
     if (!rows.some(function (r) { return r[1]; })) return '';
-    return '<div class="pw-audit"><span class="pw-eyebrow">RECORD ACTIVITY</span>'+rows.map(function (r) { return '<div><span>'+esc(r[0])+'</span><b>'+esc(typeof r[1] === 'object' ? r[1] && (r[1].display_value || r[1].zc_display_value) || '—' : r[1] || '—')+'</b></div>'; }).join('')+'</div>';
+    return '<div class="pw-audit"><span class="pw-eyebrow">RECORD ACTIVITY</span>'+rows.map(function (r) { return '<div><span>'+esc(r[0])+'</span><b>'+esc(typeof r[1] === 'object' ? r[1] && (r[1].display_value || r[1].zc_display_value) || 'â€”' : r[1] || 'â€”')+'</b></div>'; }).join('')+'</div>';
   }
   function mount(host) {
     var panel = host.panel, dateMenu, dateAnchor, dateMonth, dateYear;
@@ -65,10 +65,10 @@
     function value(key) { var el=input(key); return el?el.value:''; }
     function summary() {
       if (!panel.querySelector('[data-transfer-from]')) return;
-      [['from','From_Company'],['to','To_Company']].forEach(function (pair) { panel.querySelector('[data-transfer-'+pair[0]+']').textContent=host.lookupLabel('company',value(pair[1]))||'—'; });
-      panel.querySelector('[data-transfer-scope]').textContent=value('Transfer_Scope')||'—';
-      panel.querySelector('[data-transfer-status]').textContent=value('Status')||'—';
-      panel.querySelector('[data-transfer-total]').textContent=value('Transfer_Scope')==='Full'?'Full property':value('Amount_Transferred')?(value('Amount_Transferred')+(value('Amount_Unit')==='Percentage'?'%':' acres')):'—';
+      [['from','From_Company'],['to','To_Company']].forEach(function (pair) { panel.querySelector('[data-transfer-'+pair[0]+']').textContent=host.lookupLabel('company',value(pair[1]))||'â€”'; });
+      panel.querySelector('[data-transfer-scope]').textContent=value('Transfer_Scope')||'â€”';
+      panel.querySelector('[data-transfer-status]').textContent=value('Status')||'â€”';
+      panel.querySelector('[data-transfer-total]').textContent=value('Transfer_Scope')==='Full'?'Full property':value('Amount_Transferred')?(value('Amount_Transferred')+(value('Amount_Unit')==='Percentage'?'%':' acres')):'â€”';
     }
     function syncPartial(clear) {
       var section=panel.querySelector('[data-transfer-amount]');if(!section)return;
@@ -97,7 +97,7 @@
     }
     panel.addEventListener('click',function(e){var button=e.target.closest('[data-date-open]');if(button&&!host.busy())openDate(button);});
     panel.addEventListener('input',function(e){if(e.target.dataset.dateText)syncDate(e.target);summary();});
-    panel.addEventListener('change',function(e){if(e.target.dataset.field==='Transfer_Scope')syncPartial(true);if(e.target.dataset.field==='Property'&&host.isNewTransfer()){var property=host.properties().find(function(p){return p.ID===value('Property');}),company=input('From_Company'),next=id(property&&property.Company1);company.value=next;var button=panel.querySelector('[data-lookup-target="f_From_Company"] .lookup-label');if(button)button.textContent=host.lookupLabel('company',next)||'Select…';company.dispatchEvent(new Event('input',{bubbles:true}));}summary();});
+    panel.addEventListener('change',function(e){if(e.target.dataset.field==='Transfer_Scope')syncPartial(true);if(e.target.dataset.field==='Property'&&host.isNewTransfer()){var property=host.properties().find(function(p){return p.ID===value('Property');}),company=input('From_Company'),next=id(property&&property.Company1);company.value=next;var button=panel.querySelector('[data-lookup-target="f_From_Company"] .lookup-label');if(button)button.textContent=host.lookupLabel('company',next)||'Selectâ€¦';company.dispatchEvent(new Event('input',{bubbles:true}));}summary();});
     document.addEventListener('mousedown',function(e){if(dateMenu&&!dateMenu.contains(e.target)&&!dateAnchor.contains(e.target))closeDate();});window.addEventListener('resize',closeDate);document.addEventListener('scroll',function(e){if(dateMenu&&!dateMenu.contains(e.target))closeDate();},true);
     return {afterRender:function(){closeDate();syncPartial(false);summary();},closeDate:closeDate,validateDates:function(){var texts=Array.from(panel.querySelectorAll('[data-date-text]'));for(var text of texts)if(text.value.trim()&&!parseDate(text.value)){text.setAttribute('aria-invalid','true');text.focus();host.error('Enter a valid date as MM/DD/YYYY.');return false;}return true;}};
   }

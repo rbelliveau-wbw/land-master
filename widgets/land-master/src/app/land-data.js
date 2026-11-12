@@ -5,7 +5,7 @@
   var types={property:'properties',project:'projects',subdivision:'subdivisions',company:'companies',milestone:'milestones',forecast:'forecasts',forecastYear:'forecastYears',takedown:'takedownSchedules',builderTakedown:'builderTakedowns',builder:'builders',lot:'lots',additionalItem:'additionalItems',externalMapping:'externalMappings'};
   function cancelled(){var error=new Error('Load superseded.');error.cancelled=true;return error;}
   function editorDependencies(type,isNew){
-    var keys=core.slice(),extra={property:['builders','proformas'],subdivision:['builders'],forecast:['builders','forecastYears'],forecastYear:['builders'],takedown:['builders'],builderTakedown:['builders','lots'],lot:['builders','takedownSchedules','builderTakedowns'],additionalItem:['builderTakedowns']}[type]||[];
+    var keys=core.slice(),extra={property:['builders','proformas','lots'],subdivision:['builders'],forecast:['builders','forecastYears'],forecastYear:['builders'],takedown:['builders'],builderTakedown:['builders','lots'],lot:['builders','takedownSchedules','builderTakedowns'],additionalItem:['builderTakedowns']}[type]||[];
     if(!isNew&&types[type])keys.push(types[type]);
     if(!isNew&&type==='subdivision')extra=extra.concat(['milestones','forecasts','forecastYears','takedownSchedules','builderTakedowns','additionalItems','externalMappings']);
     if(!isNew&&type==='forecastYear')extra=extra.concat(['forecasts']);

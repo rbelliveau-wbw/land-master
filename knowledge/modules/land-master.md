@@ -495,3 +495,42 @@ functions or Custom APIs. No Creator deployment is required.
 Regression: existing picker checks and full validation/Pages build; verify County
 search, alphabetical choices, single selection and unchanged other pickers.
 Rollback: Land Master frontend 8.17.11.
+
+
+## Property Lot Lookup — 8.17.17, November 12, 2026
+
+Property Ownership & Relationships includes optional, writable Lot Code, a
+single native `Property.Lots` lookup to `Lots.ID` displaying `Lots.Lot_Code`.
+The Properties table places its Lot Code pill immediately after Parcel ID
+(`Property_ID`). Main search includes that native display value before opening
+an editor. The new searchable Subdivision filter supports multiple selections,
+matches any selected subdivision by exact ID, and combines with other filters
+and search. Clear/X, Apply, hidden selections, Escape and outside dismissal reuse
+the existing filter controller.
+
+The lot picker offers lots whose Subdivision is selected on the Property and
+whose Subdivision.Project is in Property.Projects. An existing incompatible
+selection remains visible for correction; changing parents never silently clears
+it. A selected lot requires both relationships before Save. Clearing Lot Code
+is allowed. Lots.Property_ID text is deliberately not compared, per user choice.
+Property editors lazily load Lots; list search uses the report's native lookup
+display without adding a full-lot startup read.
+
+Property creates and all Property updates (including inline Projects changes)
+with a selected lot run fresh exact-ID lot/subdivision reads before mutation.
+Missing/denied relationships and changed session/data generations stop the write.
+Native `Validate Property Lot` also cancels mismatched Property submissions.
+This is prewrite business validation; successful saves add no field-equality
+readback gate. No new function or Custom API is introduced.
+
+Creator Development: optional `Property.Lots` field and Created or Edited /
+Validations on form submission workflow `Validate_Property_Lot`; source is
+`creator/workflows/Validate_Property_Lot.dg`. Promote the field, report exposure,
+and validation workflow together. Creator publication remains with the user.
+The widget release is promoted through the repository's stable URLs.
+
+Regression: optional assign/clear, exact IDs versus duplicate display names,
+missing lot/subdivision/project, parent changes, fresh prewrite reads, session
+changes, search before editor load, pill order, and OR multi-select filtering.
+Rollback: map Production Land Master back to 8.17.16; retain the optional field
+and entered data. Native validation can remain enabled.
