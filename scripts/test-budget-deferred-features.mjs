@@ -211,7 +211,7 @@ function harness(){
 // Complete native data may cache after navigation; an obsolete editor callback cannot repaint.
 {
   const {context:c,calls,badges}=harness();
-  install(c,['requestAttachmentWritesLocked','budgetAttachmentBadge','budgetBadgeCount','budgetBadgeLabel','syncBudgetAttachmentButtons','loadBudgetAttachments','budgetFeatureStateHtml','renderAttachmentPage']);
+  install(c,['budgetCreateScope','attachmentLinkScope','requestAttachmentWritesLocked','budgetAttachmentBadge','budgetBadgeCount','budgetBadgeLabel','syncBudgetAttachmentButtons','loadBudgetAttachments','budgetFeatureStateHtml','renderAttachmentPage']);
   // Use the existing normalizer contract without needing a preview/file write.
   c.attachmentRecordBudgetId=row=>row.Budget.ID;c.normalizeBudgetAttachmentRecord=row=>({recordId:row.ID,budgetId:row.Budget.ID,name:'Existing.pdf',addedTime:'2026-10-01'});
   const count={textContent:'old'},button={dataset:{budgetAttachments:'1',attachmentLabel:'Phase'},querySelector:()=>count,setAttribute(){}};badges.push(button);

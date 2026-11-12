@@ -19,7 +19,7 @@ it; unrelated guides do not need to be read for every small edit.
 | --- | --- |
 | [Loading states](loading-states.md) | Canonical Forecasts-style centered report loading card, spinner and pending lifecycle |
 | [Empty row filters](empty-row-filters.md) | Hide Empty switches beside Search; Budget and Pro Forma item visibility |
-| [Attachments](attachments.md) | Main-list paperclip actions, file counts, attachment modals, upload/preview/download/delete and Added by |
+| [Attachments](attachments.md) | Main-list paperclip actions, file counts, attachment modals, scoped read recovery, upload/preview/download/delete and Added by |
 | [Comments](comments.md) | Main-list comment actions, activity counts, conversation modals, composer and message actions |
 | [Audit logs](audit-logs.md) | Scrollable diagnostic dialogs, Copy Log, clipboard feedback and Insights sidebar tools |
 | [Boards](boards.md) | Construction content-sized priority swimlanes, Signal rail, priority/status dragging, card fields and Legal's board exception |

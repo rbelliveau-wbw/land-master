@@ -124,8 +124,8 @@ function harness(){
   c.LMRuntime={current:()=>({environment:'PRODUCTION',user:'unrelated-current-actor',appLinkName:'land-master'})};
   c.ZOHO={CREATOR:{DATA:{getRecordCount:async config=>{calls.push({method:'count',config:clone(config)});return {code:3000,result:{records_count:rows.length}};},getRecords:async config=>{calls.push({method:'read',config:clone(config)});return {code:3000,data:rows.map(row=>Object.fromEntries(config.fields.split(',').filter(field=>Object.hasOwn(row,field)).map(field=>[field,row[field]])))};}}}};
   c.auditLog=()=>{};c.shortErr=error=>error.message;c.syncBudgetAttachmentButtons=()=>{};c.budgetBadgeScope=()=>'';
-  c.loadBudgetFeature=(_key,loader,publish)=>loader().then(result=>{publish(result);return result;});
-  vm.runInContext(adapter,c);for(const name of ['getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','loadBudgetAttachments'])vm.runInContext(block(name),c);
+  c.budgetCreateScope=()=> 'production|unrelated-current-actor|'+BID;
+  vm.runInContext(adapter,c);for(const name of ['budgetFeature','invalidateBudgetFeature','loadBudgetFeature','getReportCandidates','budgetSdkCode','budgetMissingReport','sdkGetAllRecords','loadBudgetAttachments'])vm.runInContext(block(name),c);
   const result=await c.loadBudgetAttachments(BID,true),read=calls.find(call=>call.method==='read').config;
   assert.equal(read.report_name,'All_Attachments');assert.equal(read.criteria,`(Budget == ${BID})`);assert.equal(read.field_config,'custom');assert.equal(read.fields,'ID,Budget,File_field1,Date_field1,Added_Time,Modified_Time,Added_User');
   assert.equal(result[0].recordId,RID);assert.equal(result[0].budgetId,BID);assert.equal(result[0].name,'detail.pdf');assert.equal(result[0].filePath,'/api/file/detail.pdf');assert.equal(result[0].addedTime,'01-Oct-2026');assert.equal(result[0].addedUser,'Native author');

@@ -1,3 +1,12 @@
+## PO attachment read recovery — November 11, 2026
+
+Budget 122.29.137 fixes the Construction profile's false superseded-read error
+by entering request loading before rendering and following replacement
+same-actor/Budget snapshots. Read failures use the request's own Retry surface
+and cannot persist in file-write feedback. Actual report failures remain errors;
+older/foreign rows cannot publish. No Creator changes or new permission grants.
+See [cause, regression coverage and rollback](../../docs/po-attachment-read-race-2026-11-11.md).
+
 ## Supplemental Purchase Orders — November 11, 2026
 
 Reuse Payment_Request/PO_Item with additive original linkage, subtype, sequence

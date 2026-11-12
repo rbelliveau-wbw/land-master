@@ -217,3 +217,12 @@ trusted native capability and exact PO/Budget context. Load that capability for
 unsaved PO drafts before enabling local file selection. Keep Delete and Link
 Budget File behind their existing general grant; preserve pending/unknown locks.
 See [scope and native verification](../../docs/po-attachment-profile-2026-11-10.md).
+
+Budget 122.29.137 enters request loading before first render. A capability or
+post-write refresh can replace an attachment read: existing same-actor/Budget
+waiters follow the latest snapshot without showing cancellation as a file error.
+Superseded rows and other actors cannot publish. Keep real read failures in the
+feature's Retry surface, separate from upload/delete/recovery status; successful
+read recovery must not retain a red write-status banner. Request-tab Retry must
+reload that request controller rather than the separate Budget modal. See
+[read-race recovery and regressions](../../docs/po-attachment-read-race-2026-11-11.md).
