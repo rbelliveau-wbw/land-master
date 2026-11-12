@@ -4,24 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.140"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.142"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.140"></script>
-<script src="po-reallocation.js?v=122.29.140"></script>
-<script src="po-reallocation-ui.js?v=122.29.140"></script>
-<script src="po-grid.js?v=122.29.140"></script>
-<script src="po-controller.js?v=122.29.140"></script>
-<script src="po-progress.js?v=122.29.140"></script>
-<script src="po-activity.js?v=122.29.140"></script>
-<script src="po-ui.js?v=122.29.140"></script>
-<script src="request-attachments.js?v=122.29.140"></script>
-<script src="full-budget-export.js?v=122.29.140"></script>
-<script src="budget-snapshot-pdf.js?v=122.29.140"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.140">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.140">
-<link rel="stylesheet" href="po-activity.css?v=122.29.140">
+<script src="po-domain.js?v=122.29.142"></script>
+<script src="po-reallocation.js?v=122.29.142"></script>
+<script src="po-reallocation-ui.js?v=122.29.142"></script>
+<script src="po-grid.js?v=122.29.142"></script>
+<script src="po-controller.js?v=122.29.142"></script>
+<script src="po-progress.js?v=122.29.142"></script>
+<script src="po-activity.js?v=122.29.142"></script>
+<script src="po-ui.js?v=122.29.142"></script>
+<script src="request-attachments.js?v=122.29.142"></script>
+<script src="full-budget-export.js?v=122.29.142"></script>
+<script src="budget-snapshot-pdf.js?v=122.29.142"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.142">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.142">
+<link rel="stylesheet" href="po-activity.css?v=122.29.142">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1845,24 +1845,32 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .compare-panel-head{padding:11px 13px}
 .compare-panel-title{font-size:13px}
 
+.mod-classification label,.mod-classification input,.mod-classification button,.mod-classification-detail{font-size:14px}
+.mod-classification{position:relative}
+.mod-classification label{text-transform:none}
+#modTypeChoices{position:absolute;z-index:20;left:0;right:0;background:#fff;border:1px solid #c8d4e5;border-radius:8px;box-shadow:0 5px 14px #0f274420;padding:4px}
+#modTypeChoices[hidden]{display:none}
+#modTypeChoices button{display:block;width:100%;border:0;background:#fff;color:#0f2744;text-align:left;padding:8px;border-radius:4px;cursor:pointer}
+#modTypeChoices button:hover,#modTypeChoices button:focus-visible{background:#eef4ff;outline:2px solid #2563eb}
+.mod-classification-detail{margin-bottom:7px;overflow-wrap:anywhere}
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.140">
-<script src="success-feedback.js?v=122.29.140"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.140">
-<script src="interaction-motion.js?v=122.29.140"></script>
-<script src="interaction-surfaces.js?v=122.29.140"></script>
-<script src="number-edit-commit.js?v=122.29.140"></script>
-<script src="number-transitions.js?v=122.29.140"></script>
-<script src="number-surfaces.js?v=122.29.140"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.140">
-<script src="budget-import-ledger.js?v=122.29.140"></script>
-<script src="budget-import-workspace.js?v=122.29.140"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.140">
-<script src="budget-requests-workspace.js?v=122.29.140"></script>
-<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.140">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.142">
+<script src="success-feedback.js?v=122.29.142"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.142">
+<script src="interaction-motion.js?v=122.29.142"></script>
+<script src="interaction-surfaces.js?v=122.29.142"></script>
+<script src="number-edit-commit.js?v=122.29.142"></script>
+<script src="number-transitions.js?v=122.29.142"></script>
+<script src="number-surfaces.js?v=122.29.142"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.142">
+<script src="budget-import-ledger.js?v=122.29.142"></script>
+<script src="budget-import-workspace.js?v=122.29.142"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.142">
+<script src="budget-requests-workspace.js?v=122.29.142"></script>
+<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.142">
 
-<link rel="stylesheet" href="modal-layout.css?v=122.29.140">
+<link rel="stylesheet" href="modal-layout.css?v=122.29.142">
 </head>
 <body>
 
@@ -2745,7 +2753,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.140", code:"BMW",
+  widget:"Budget Manager", version:"122.29.142", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -13101,6 +13109,7 @@ function openModEdit(modId) {
     type: cleanVal(mod.Modification_Type) === "Decrease" ? "Decrease" : "Increase",
     element: budgetModInitialElement(findItemById(itId),mod),
     amt: String(Math.abs(parseFloat(cleanVal(mod.Amount)) || 0) || ""),
+    requestType: cleanVal(mod.Type_field), typeComment: cleanVal(mod.Type_Comment),
     reason: cleanVal(mod.Reason), ref: cleanVal(mod.Reference_Number), date: cleanVal(mod.Effective_Date),
     busy: false, rejectFor: null
   };
@@ -13137,7 +13146,7 @@ function updateModification() {
   if (amt <= 0) { toastShow("Enter a modification amount"); return; }
   if (!reason) { toastShow("A reason is required for the audit trail"); return; }
   var allocation;
-  try { allocation = budgetModComponentPayload(amt,m.element); } catch(error) { toastShow(error.message); return; }
+  try { allocation = budgetModClassifiedPayload(amt,m.element,m); } catch(error) { toastShow(error.message); return; }
   var reference = cleanVal($("modRef").value);
   var effectiveDate = cleanVal($("modDate").value);
   var token=budgetNavigationToken();m.amt=String(amt);m.reason=reason;m.ref=reference;m.date=effectiveDate;
@@ -13148,6 +13157,7 @@ function updateModification() {
   var fieldData = {
     Modification_Type: m.type,
     Amount: String(amt),
+    Type_field: m.requestType || "", Type_Comment: m.typeComment || "",
     Reason: reason,
     Reference_Number: reference
   };
@@ -13276,9 +13286,11 @@ function renderModModal() {
         "<input id='modAmt' inputmode='decimal' placeholder='0' value='" + escAttr(m.amt || "") + "'>" +
       "</div></div>";
     html += "<div class='mod-guard' id='modGuard'>⚠ This decrease exceeds the current Revised Final and would drive the line negative.</div>";
-    html += "<div class='mod-field'><label>Reason / description<span class='req'>*</span></label><textarea id='modReason' placeholder='e.g. Change order CO-015 — scope added by city'>" + esc(m.reason || "") + "</textarea></div>";
+    html += "<div class='mod-field mod-classification'><label for='modRequestType'>Type</label><input id='modRequestType' role='combobox' aria-autocomplete='list' aria-controls='modTypeChoices' aria-expanded='false' autocomplete='off' placeholder='Choose Type' value='" + escAttr(m.requestType || "") + "'" + (m.busy ? " disabled" : "") + "><div id='modTypeChoices' data-lm-motion='popover' role='listbox' aria-label='Type' hidden></div></div>";
+    html += "<div class='mod-field mod-classification'><label for='modTypeComment'>Type Comment</label><input id='modTypeComment' maxlength='50' value='" + escAttr(m.typeComment || "") + "'" + (m.busy ? " disabled" : "") + "></div>";
+    html += "<div class='mod-field'><label>Reason / Description<span class='req'>*</span></label><textarea id='modReason' placeholder='e.g. Change order CO-015 — scope added by city'>" + esc(m.reason || "") + "</textarea></div>";
     html += "<div class='mod-field' style='display:grid;grid-template-columns:1fr 1fr;gap:10px'>" +
-      "<div><label>Effective date</label><input id='modDate' placeholder='MM/DD/YYYY' value='" + escAttr(m.date || fmtDateUS()) + "'></div>" +
+      "<div><label>Effective Date</label><input id='modDate' placeholder='MM/DD/YYYY' value='" + escAttr(m.date || fmtDateUS()) + "'></div>" +
       "<div><label>Reference #</label><input id='modRef' placeholder='CO-###' value='" + escAttr(m.ref || "") + "'></div>" +
     "</div>";
     html += "<div class='mod-preview' id='modPreview'></div>";
@@ -13286,11 +13298,11 @@ function renderModModal() {
       "<span class='spacer'></span>" +
       "<button class='mbtn neutral' type='button' id='modCancelBtn'>Cancel</button>" +
       "<button class='mbtn primary' type='button' id='modSubmitBtn'" + (m.busy ? " disabled" : "") + ">" +
-        (m.busy ? (m.editId ? "Saving…" : "Submitting…") : (m.editId ? "Save changes" : "✈ Submit for approval")) + "</button>" +
+        (m.busy ? (m.editId ? "Saving…" : "Submitting…") : (m.editId ? "Save Changes" : "✈ Submit For Approval")) + "</button>" +
     "</div>";
   }
   if (mods.length) {
-    html += "<div class='mod-list'><h4>Modifications on this item</h4>";
+    html += "<div class='mod-list'><h4>Modifications On This Item</h4>";
     mods.forEach(function (mod) {
       var signed = modSignedAmount(mod);
       var chain = modChainRows(mod.ID);
@@ -13672,6 +13684,33 @@ function budgetModInitialElement(item, mod) {
   var index = budgetElementDepartmentIndex(item);
   return index === null ? "5" : String(index+1);
 }
+var MOD_REQUEST_TYPES = ["Eng", "Dev", "Muni", "Constr", "Purch"];
+function budgetModClassifiedPayload(amount, element, modal) {
+  var type = cleanVal(modal.requestType), comment = modal.typeComment || "";
+  if (type && MOD_REQUEST_TYPES.indexOf(type) < 0) throw new Error("Choose one of the five modification types");
+  if (comment.length > 50) throw new Error("Type comment must be 50 characters or fewer");
+  var payload = budgetModComponentPayload(amount,element), envelope = JSON.parse(payload.amount);
+  envelope.classification = {type:type, comment:comment};
+  payload.amount = JSON.stringify(envelope);
+  return payload;
+}
+function bindModClassification(m) {
+  var input=$("modRequestType"), menu=$("modTypeChoices"), comment=$("modTypeComment");
+  if (!input || !menu) return;
+  function close(){menu.hidden=true;input.setAttribute("aria-expanded","false");}
+  function show(){
+    var query=input.value.toLowerCase();
+    menu.innerHTML=[""].concat(MOD_REQUEST_TYPES).filter(function(type){return !query || type.toLowerCase().indexOf(query)>=0;}).map(function(type){return "<button type='button' role='option' aria-selected='"+String(type===m.requestType)+"' data-mod-request-type='"+type+"'>"+(type||"Clear")+"</button>";}).join("");
+    menu.hidden=false;input.setAttribute("aria-expanded","true");
+  }
+  input.parentElement.addEventListener("focusout",function(event){if(!input.parentElement.contains(event.relatedTarget))close();});
+  input.addEventListener("focus",show);
+  input.addEventListener("input",function(){m.requestType=input.value;show();});
+  input.addEventListener("keydown",function(event){if(event.key==="Escape"){event.preventDefault();event.stopPropagation();close();}else if(event.key==="ArrowDown"){event.preventDefault();show();var first=menu.querySelector("button");if(first)first.focus();}else if(event.key==="Tab")close();});
+  menu.addEventListener("click",function(event){var option=event.target.closest("[data-mod-request-type]");if(!option)return;m.requestType=option.dataset.modRequestType;input.value=m.requestType;input.focus();close();});
+  menu.addEventListener("keydown",function(event){var options=Array.from(menu.querySelectorAll("button")),index=options.indexOf(document.activeElement);if(event.key==="ArrowDown"||event.key==="ArrowUp"){event.preventDefault();options[(index+(event.key==="ArrowDown"?1:-1)+options.length)%options.length].focus();}else if(event.key==="Escape"){event.preventDefault();event.stopPropagation();input.focus();close();}else if(event.key==="Tab")close();});
+  if(comment)comment.addEventListener("input",function(){m.typeComment=comment.value;});
+}
 function budgetModComponentPayload(amount, element) {
   if (!/^[1-5]$/.test(String(element || ""))) throw new Error("Choose an element for this modification");
   if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount*100-Math.round(amount*100)) > .0001) throw new Error("Enter an amount with at most two decimal places");
@@ -13720,6 +13759,7 @@ function wireModForm(fin, agg) {
       renderModModal();
     });
   });
+  bindModClassification(m);
   var picker = $("modElementToggle"), menu = $("modElementMenu");
   if (picker && menu) {
     picker.addEventListener("click",function(){menu.hidden=!menu.hidden;picker.setAttribute("aria-expanded",String(!menu.hidden));if(!menu.hidden)(menu.querySelector("[aria-selected=true]")||menu.querySelector("button")).focus();});
@@ -13761,7 +13801,7 @@ function submitModification() {
   if (amt <= 0) { toastShow("Enter a modification amount"); return; }
   if (!reason) { toastShow("A reason is required for the audit trail"); return; }
   var allocation;
-  try { allocation = budgetModComponentPayload(amt,m.element); } catch(error) { toastShow(error.message); return; }
+  try { allocation = budgetModClassifiedPayload(amt,m.element,m); } catch(error) { toastShow(error.message); return; }
   var track = modTrackForItem(it);
   var trigger = $("modSubmitBtn");
   var args = {
@@ -14170,6 +14210,10 @@ function renderModDetailView(b) {
     "<span class='mod-det-with" + (info.waitingOnMe ? " me" : "") + "'>" +
       (info.waitingOnMe ? "⏳ Waiting on you" : esc(info.label + (info.who ? " · " + info.who : ""))) + "</span>" +
   "</div>";
+  if (!/^PO:/.test(cleanVal(mod.Reference_Number))) {
+    if (cleanVal(mod.Type_field)) html += "<div class='mod-classification-detail'><b>Type:</b> " + esc(cleanVal(mod.Type_field)) + "</div>";
+    if (cleanVal(mod.Type_Comment)) html += "<div class='mod-classification-detail'><b>Type Comment:</b> " + esc(cleanVal(mod.Type_Comment)) + "</div>";
+  }
   if (cleanVal(mod.Reason)) html += "<div class='mod-det-reason'>" + esc(cleanVal(mod.Reason)) + "</div>";
   var metaHtml = modRefPill(mod) + modDateChips(mod) +
     (cleanVal(mod.Approved_By) ? "<span class='mdate by'>" + esc(cleanVal(mod.Approved_By)) + "</span>" : "");
@@ -14836,7 +14880,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.140",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.142",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;

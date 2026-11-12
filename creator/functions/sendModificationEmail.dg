@@ -118,6 +118,8 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		modReasonSafe = "No reason was provided.";
 	}
+	classificationTypeSafe = ifnull(modRec.Type_field,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+	classificationCommentSafe = ifnull(modRec.Type_Comment,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 	// ---- Chain rows for this modification ----
 	nextApprovalRec = null;
 	nextSortOrder = 999999;
@@ -170,6 +172,8 @@ string sendModificationEmail(int modificationId, string action)
 		}
 		componentIndex = componentIndex + 1;
 	}
+	if(classificationTypeSafe != "") { detailCard = detailCard + "<div style='margin-top:8px;font-size:14px;'><b>Type:</b> " + classificationTypeSafe + "</div>"; }
+	if(classificationCommentSafe != "") { detailCard = detailCard + "<div style='margin-top:8px;font-size:14px;'><b>Type Comment:</b> " + classificationCommentSafe + "</div>"; }
 	detailCard = detailCard + "<div style='margin-top:8px;font-size:13px;color:#475569;'><b>Reason:</b> " + modReasonSafe + "</div>";
 	detailCard = detailCard + "</div>";
 	linkBlock = "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Budget Page</a>";
