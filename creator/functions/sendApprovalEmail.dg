@@ -195,7 +195,7 @@ string sendApprovalEmail(int budgetId, int approvalId)
 	emailBody = emailBody + "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
 	emailBody = emailBody + "<h2 style='margin:0 0 8px 0;color:#0f2744;'>Budget Approval Needed</h2>";
 	emailBody = emailBody + "<p style='margin:0 0 16px 0;'>A <b>" + approvalType + "</b> budget approval is ready for your review as <b>" + approvalRole + "</b>.</p>";
-	if(approvalType == "Construction")
+	if(approvalType == "Construction" || approvalType == "Development")
 	{
 		emailBody = emailBody + "<p style='margin:0 0 16px'><a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Approval Page</a></p>";
 	}
@@ -227,14 +227,14 @@ string sendApprovalEmail(int budgetId, int approvalId)
 	emailBody = emailBody + "<div style='font-size:12px;color:#8a6d22;margin-bottom:8px;'>" + notesContextSafe + "</div>";
 	emailBody = emailBody + "<div style='font-size:14px;color:#334155;white-space:normal;'>" + approvalNotesSafe + "</div>";
 	emailBody = emailBody + "</div>";
-	if(approvalType == "Construction")
+	if(approvalType == "Construction" || approvalType == "Development")
 	{
 		// Email-specific layout; keep the shared download/attachment HTML unchanged.
 		cellStyle = "padding:8px;border-bottom:1px solid #dbe4f0;text-align:right;white-space:nowrap;";
 		labelStyle = "padding:8px;border-bottom:1px solid #dbe4f0;text-align:left;";
 		pendingStyle = cellStyle + "background:#fff3cd;color:#624800;";
 		tableStyle = "width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;color:#0f172a;";
-		summaryColumns = {"1","3","2","4","5"};
+		summaryColumns = {"1","2","3","4","5"};
 		detailColumns = {1,2,6,7};
 		summaryTotals = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
 		summaryKnown = {"1":true,"2":true,"3":true,"4":true,"5":true};
@@ -244,31 +244,34 @@ string sendApprovalEmail(int budgetId, int approvalId)
 		detailBody = "";
 		for each constructionCategory in Budget_Category[Budget == vBudgetId] sort by Category_Code
 		{
-			if(ifnull(constructionCategory.Deparment,"").toLowerCase().contains("construction"))
+			department = ifnull(constructionCategory.Deparment,"").toLowerCase();
+			if((approvalType == "Construction" && department.contains("construction")) || (approvalType == "Development" && (department.contains("development") || department.contains("engineering"))))
 			{
 				categoryTotals = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
 				categoryKnown = {"1":true,"2":true,"3":true,"4":true,"5":true};
 				categoryTotal = 0.0;
 				categoryTotalKnown = true;
-				categoryHasItems = false;
+
 				for each constructionItem in Budget_Item[Budget_Category == constructionCategory.ID] sort by Cost_Code
 				{
-					categoryHasItems = true;
+					parentNonzero = false;
+					elementBody = "";
 					itemLabel = (ifnull(constructionItem.Cost_Code,"").toString() + " " + ifnull(constructionItem.Item_Name,"Budget Item")).trim().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 					// Parent values are native totals, independent of allocation completeness.
 					parentValues = {constructionItem.Prelim_Budget_Ttl,constructionItem.Unapproved_Final_Budget_Ttl,constructionItem.HCSS_Actuals,constructionItem.PROJ_Actual};
-					detailBody = detailBody + "<tr style='background:#eef4ff;font-weight:700'><th scope='row' style='" + labelStyle + "'>" + itemLabel + "</th>";
+					parentHtml = "<tr style='background:#eef4ff;font-weight:700'><th scope='row' style='" + labelStyle + "'>" + itemLabel + "</th>";
 					parentIndex = 0;
 					for each parentValue in parentValues
 					{
+						if(ifnull(parentValue,0) != 0) { parentNonzero = true; }
 						display = "—";
 						if(parentValue != null) { display = parentValue.text("$#,##0.####"); }
 						style = cellStyle;
 						if(parentIndex == 1) { style = pendingStyle; }
-						detailBody = detailBody + "<td style='" + style + "'>" + display + "</td>";
+						parentHtml = parentHtml + "<td style='" + style + "'>" + display + "</td>";
 						parentIndex = parentIndex + 1;
 					}
-					detailBody = detailBody + "</tr>";
+					parentHtml = parentHtml + "</tr>";
 					if(constructionItem.Unapproved_Final_Budget_Ttl == null) { categoryTotalKnown = false; grandKnown = false; }
 					else
 					{
@@ -289,11 +292,11 @@ string sendApprovalEmail(int budgetId, int approvalId)
 						allZero = true;
 						for each column in detailColumns
 						{
-							if(values.get(column) == null || values.get(column) != 0) { allZero = false; }
+							if(ifnull(values.get(column),0) != 0) { allZero = false; }
 						}
 						if(allZero == false)
 						{
-							detailBody = detailBody + "<tr><th scope='row' style='" + labelStyle + "padding-left:24px;font-weight:400;'>" + constructionElement.get("label") + "</th>";
+							elementBody = elementBody + "<tr><th scope='row' style='" + labelStyle + "padding-left:24px;font-weight:400;'>" + constructionElement.get("label") + "</th>";
 							for each column in detailColumns
 							{
 								value = values.get(column);
@@ -301,13 +304,19 @@ string sendApprovalEmail(int budgetId, int approvalId)
 								if(value != null) { display = value.text("$#,##0.####"); }
 								style = cellStyle;
 								if(column == 2) { style = pendingStyle; }
-								detailBody = detailBody + "<td style='" + style + "'>" + display + "</td>";
+								elementBody = elementBody + "<td style='" + style + "'>" + display + "</td>";
 							}
-							detailBody = detailBody + "</tr>";
+							elementBody = elementBody + "</tr>";
 						}
 					}
+					if(parentNonzero || elementBody != "") { detailBody = detailBody + parentHtml + elementBody; }
 				}
-				if(categoryHasItems)
+				categoryNonzero = categoryTotalKnown && categoryTotal != 0;
+				for each elementCode in summaryColumns
+				{
+					if(categoryKnown.get(elementCode) && categoryTotals.get(elementCode) != 0) { categoryNonzero = true; }
+				}
+				if(categoryNonzero)
 				{
 					categoryLabel = (ifnull(constructionCategory.Category_Code,"").toString() + " " + ifnull(constructionCategory.Budget_Category_Name,"")).trim().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 					summaryBody = summaryBody + "<tr><th scope='row' style='" + labelStyle + "font-weight:400;'>" + categoryLabel + "</th>";
@@ -324,13 +333,15 @@ string sendApprovalEmail(int budgetId, int approvalId)
 			}
 		}
 		summaryHeader = "<tr style='background:#eef4ff'><th scope='col' style='" + labelStyle + "'>Code/Category</th>";
-		for each heading in {"(1) Labor","(3) Equipment","(2) Materials","(4) Subcontractor","(5) Other","Total"}
+		for each heading in {"(1) Labor","(2) Materials","(3) Equipment","(4) Subcontractor","(5) Other","Total"}
 		{
 			summaryHeader = summaryHeader + "<th scope='col' style='" + cellStyle + "'>" + heading + "</th>";
 		}
 		totalRow = "<tr style='background:#eef4ff;font-weight:700'><th scope='row' style='" + labelStyle + "'>Total</th>";
+		totalNonzero = grandKnown && grandTotal != 0;
 		for each elementCode in summaryColumns
 		{
+			if(summaryKnown.get(elementCode) && summaryTotals.get(elementCode) != 0) { totalNonzero = true; }
 			display = "—";
 			if(summaryKnown.get(elementCode)) { display = summaryTotals.get(elementCode).text("$#,##0.####"); }
 			totalRow = totalRow + "<td style='" + cellStyle + "'>" + display + "</td>";
@@ -338,27 +349,17 @@ string sendApprovalEmail(int budgetId, int approvalId)
 		display = "—";
 		if(grandKnown) { display = grandTotal.text("$#,##0.####"); }
 		totalRow = totalRow + "<td style='" + cellStyle + "'>" + display + "</td></tr>";
+		if(totalNonzero == false) { totalRow = ""; }
+		if(summaryBody != "" || totalRow != "")
+		{
 		emailBody = emailBody + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Unapproved Summary</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead>" + summaryHeader + "</tr></thead><tbody>" + totalRow + summaryBody + "</tbody></table>";
+		}
+		if(detailBody != "")
+		{
 		emailBody = emailBody + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Budget Element Details</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead><tr style='background:#eef4ff'><th scope='col' style='" + labelStyle + "'>Code/Element</th><th scope='col' style='" + cellStyle + "'>Preliminary</th><th scope='col' style='" + pendingStyle + "'>Unapproved</th><th scope='col' style='" + cellStyle + "'>HCSS Actuals</th><th scope='col' style='" + cellStyle + "'>GP Actuals</th></tr></thead><tbody>" + detailBody + "</tbody></table>";
 	}
-	else
-	{
-	emailBody = emailBody + "<h3 style='font-size:15px;color:#0f2744;margin:18px 0 8px'>Budget Element Details</h3>";
-	for each elementCategory in Budget_Category[Budget == vBudgetId] sort by Category_Code
-	{
-		elementDepartment = ifnull(elementCategory.Deparment,"").toLowerCase();
-		includeElements = (approvalType == "Construction" && elementDepartment.contains("construction")) || (approvalType == "Development" && (elementDepartment.contains("development") || elementDepartment.contains("engineering")));
-		if(includeElements)
-		{
-			for each elementItem in Budget_Item[Budget_Category == elementCategory.ID] sort by Cost_Code
-			{
-				elementName = ifnull(elementItem.Item_Name,"Budget Item").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-				emailBody = emailBody + "<div style='font-size:12px;font-weight:bold;margin-top:12px'>" + elementName + "</div>" + thisapp.budgetElementExportHtml(elementItem.ID);
-			}
-		}
 	}
-	emailBody = emailBody + "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Approval Page</a>";
-	}
+
 	emailBody = emailBody + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	emailBody = emailBody + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
 	emailBody = emailBody + "</div>";
