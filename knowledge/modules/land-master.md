@@ -538,3 +538,16 @@ and entered data. Native validation can remain enabled.
 Lot and Subdivision ID maps are cached per loaded collection and rebuilt when
 its identity or size changes; row updates retain object identity. Historical
 candidates 8.17.17 and 8.17.18 are superseded by 8.17.19 and are not promoted.
+
+Verification: full npm run validate and npm run build:pages passed for 8.17.19.
+Focused native-shape and actual-editor regressions passed. Desktop browser demo
+verified field placement, matching choices, invalid-parent save blocking, optional
+clear, searchable lot pill and applied Subdivision filter. No live Property data
+was inserted or changed. Creator workflow compiled, saved and reopened in
+Development; All_Property Quick View includes the Lots lookup. Further builder
+inspection was interrupted by Creator's existing publication-preparation lock.
+Greptile: two completed reviews; three confirmed findings fixed and verified
+absent on review two (5/5, zero findings). Superseded immutable bundles 8.17.17
+and 8.17.18 were excluded from review two to fit its upload limit; all active
+source, tests, native workflow and release 8.17.19 were included.
+
