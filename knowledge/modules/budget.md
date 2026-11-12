@@ -2892,3 +2892,13 @@ Elements use (1) Labor, (2) Materials, (3) Equipment, (4) Subcontractor,
 (5) Other order. Modification and PO approval element detail rows follow the
 same nonzero filter; exports retain their complete five-element structure.
 See [deployment, regression, and rollback notes](../../docs/construction-approval-email-2026-11-12.md).
+
+# Budget Modification Editor — November 12, 2026
+
+Budget Manager 122.29.145 implements the approved wide editor: 800px viewport-capped frame, 20px title, consistent 14px Title Case labels and 16px inputs. Type and Type Comment share a 1:2 desktop row, stacking below 600px; financial context is inline. The calculated preview and existing approval/save behavior remain. Editor actions are pinned outside the scrolling Details panel, hidden on Attachments and cleaned up on rerender/close.
+
+Type is now a button with a chevron and selection-only Eng/Dev/Muni/Constr/Purch options. Clear and arbitrary text entry are removed. Existing blank classification remains blank until a listed option is chosen; the 50-character comment limit is unchanged.
+
+Frontend-only: Budget_Modification Type_field, Type_Comment, amount/component, reason, effective date and reference payloads retain their existing contracts. No functions, Custom APIs, schema or permissions change; no Creator publication is required. Development and Production map to 122.29.145. Rollback: restore the Budget Manager mappings to 122.29.143.
+
+Regression evidence: source-rendered in-app-browser fixture at desktop and 390px verifies typography, two-column/stacked fields, no horizontal form overflow, visible pinned actions, hidden actions on Attachments, five options with no Clear, ignored typing, and selection updates. Existing modification element/classification checks verify create/edit payloads, five types and 50/51-character boundaries. Native production writes were not exercised for this presentation change.
