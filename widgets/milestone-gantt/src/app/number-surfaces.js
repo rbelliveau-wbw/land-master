@@ -144,9 +144,11 @@
         table('#panel table',editor,{cell:(cell,c,row)=>cell.classList.contains('num')&&!/id|code|year|date|account|ein/i.test(clean(row.closest('table')?.querySelectorAll('th')[c]))});
         mark('#panel [data-transfer-total]',editor);
         const paired=id('lot-property-import',document.getElementById('platModal')?.dataset.importKey);
-        mark('.si-pair-context>p:last-child',[paired,'selected'],'counts');
-        mark('#siPairOutcome',[paired,'outcome'],'counts');
-        mark('#piFootMeta',[paired,'saved-records'],'counts');
+        // These scoped messages contain quantities only; include Property labels
+        // without broadening the shared counts matcher to identifiers or prose.
+        mark('.si-pair-context>p:last-child',[paired,'selected'],'all');
+        mark('#siPairOutcome',[paired,'outcome'],'all');
+        mark('#piFootMeta',[paired,'saved-records'],'all');
         const imported=id('lot-import',clean(document.querySelector('.si-summary-file')));
         each('.si-summary-metric',metric=>api.text(metric.querySelector('b'),[imported,clean(metric.querySelector('span'))]));
         each('.si-block-total',block=>{const blockId=clean(block.querySelector('span'));api.text(block.querySelector('strong'),[imported,blockId,'total']);api.text(block.querySelector('small'),[imported,blockId,'selected']);});
