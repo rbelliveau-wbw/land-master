@@ -163,3 +163,9 @@ for(const [type,values,net] of [['Increase',[100,-80,0,0,0],20],['Decrease',[100
 console.log('Approval email and Excel: five ordered signed elements, net/gross changes, prior/projected values, escaped text, formula-safe numeric/string cells and delivery stamping passed.');
 
 for(const method of ["create","update"]){h=runtime();const before=h.snapshot();assert.match(h[method](signedEnvelope([1,0,0,0,0]),""),/^ERROR:/);assert.deepEqual(h.snapshot(),before);}
+
+// Native Creator strips grouping in mixed AND/OR expressions. Legacy scalar
+// callers still omit direction; V2 callers must provide an explicit direction.
+h=runtime();assert.match(h.create('25.00',''),/^OK:/);assert.equal(h.snapshot().Budget_Modification.at(-1).Modification_Type,'Increase');
+h=runtime();assert.match(h.update('25.00',''),/^OK:/);assert.equal(h.snapshot().Budget_Modification[0].Modification_Type,'Increase');
+console.log('Legacy blank scalar directions remain compatible with Creator-safe separate V2 validation guards.');

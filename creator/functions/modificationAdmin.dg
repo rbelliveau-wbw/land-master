@@ -335,9 +335,28 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			{
 				vAmount = vAmt.toDecimal();
 			}
-			if((signedComponents != true && vAmount <= 0) || (signedComponents == true && (componentGross <= 0 || componentGross > 9999999999999.99 || vAmount < 0 || (modType != "Increase" && modType != "Decrease") || (vAmount == 0 && modType == "Decrease"))))
+			if(signedComponents != true)
 			{
-				return "ERROR: Amount must be greater than zero.";
+				if(vAmount <= 0)
+				{
+					return "ERROR: Amount must be greater than zero.";
+				}
+			}
+			else
+			{
+				// Keep separate guards: Creator's formatter removes nested AND/OR grouping.
+				if(componentGross <= 0 || componentGross > 9999999999999.99 || vAmount < 0)
+				{
+					return "ERROR: Budget components must have a positive gross change and a nonnegative normalized net.";
+				}
+				if(modType != "Increase" && modType != "Decrease")
+				{
+					return "ERROR: A valid modification direction is required.";
+				}
+				if(vAmount == 0 && modType == "Decrease")
+				{
+					return "ERROR: A zero-net modification must use Increase direction.";
+				}
 			}
 		}
 		if(classification != null)
