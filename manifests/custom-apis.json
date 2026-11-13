@@ -397,7 +397,8 @@
     {
       "name": "Get_Land_Master_Choices",
       "consumers": [
-        "widgets/land-master/src/app/widget.html"
+        "widgets/land-master/src/app/widget.html",
+          "widgets/proforma-manager/src/app/widget.html"
       ],
       "matching_creator_function": "getLandMasterChoices",
       "confidence": "verified-production-2026-10-03",

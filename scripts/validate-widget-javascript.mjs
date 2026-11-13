@@ -249,7 +249,9 @@ for (const required of [
   if (!proformaHtml.includes(required)) errors.push(`proforma-manager: LOI Seller/Property row contract is missing ${required}.`);
 }
 for (const required of [
-  'Canonical values copied from the Contract.City Creator picklist.',
+  "api_name:LMRuntime.apiName('Get_Land_Master_Choices')",
+  'loadCityChoices(cancelled,next)',
+  'CFG.choices.cities=value.cities',
   'loiComboPop',
   'function loiChoiceMatch(list,text)',
   'if(canon===null){ t.value=""; canon=""; }',
