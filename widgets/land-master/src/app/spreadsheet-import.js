@@ -61,7 +61,10 @@
     const project=lookupId(sub.Project),sid=lookupId(sub.ID);
     if(!/^\d+$/.test(project)||!/^\d+$/.test(sid))throw Error('The subdivision needs a valid parent Project before importing.');
     if(!/^\d+$/.test(text(lotId)))throw Error('The Lot was saved without a usable ID. Review it in Creator before creating its Property.');
-    return {Common_Name:row.code,Property_ID:row.code,Land_Type:'Residential',Subtype:'L&B Res',Projects:[project],Subdivisions:[sid],Lots:text(lotId),City:sub.importCity,County:sub.importCounty};
+    const data={Common_Name:row.code,Property_ID:row.code,Land_Type:'Residential',Subtype:'L&B Res',Projects:[project],Subdivisions:[sid],Lots:text(lotId),City:sub.importCity,County:sub.importCounty};
+    const company=lookupId(sub.Company1);
+    if(company){if(!/^\d+$/.test(company))throw Error('The subdivision Dev Entity needs a valid Company lookup.');data.Company1=company;}
+    return data;
   }
   function lotData(r,sub){
     const data={Lot_Code:r.code,Status:'Open',Subdivision:r.subId,Subdivision_Code:text(sub.Subdivision_Code),Phase:Number(sub.Phase),Block:text(r.block),Lot_Number:Number(r.lot),City:sub.importCity,County:sub.importCounty,Archived:false,On_Hold:false};if(text(r.width))data.Lot_Size=Number(r.width);return data;

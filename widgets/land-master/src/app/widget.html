@@ -4,22 +4,22 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.27"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.28"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script>LMData.configure({maxRequestsPerMinute:45,readRetryOnThrottle:true});</script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.27"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.27">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.27">
-<script src="searchable-pickers.js?v=8.17.27" defer></script>
-<script src="property-subtypes.js?v=8.17.27"></script>
-<script src="property-lots.js?v=8.17.27"></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.27">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.27">
-<script src="spreadsheet-import.js?v=8.17.27"></script>
-<script src="lot-import-batch.js?v=8.17.27"></script>
-<script src="lot-import.js?v=8.17.27"></script>
+<script src="property-workspace.js?v=8.17.28"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.28">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.28">
+<script src="searchable-pickers.js?v=8.17.28" defer></script>
+<script src="property-subtypes.js?v=8.17.28"></script>
+<script src="property-lots.js?v=8.17.28"></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.28">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.28">
+<script src="spreadsheet-import.js?v=8.17.28"></script>
+<script src="lot-import-batch.js?v=8.17.28"></script>
+<script src="lot-import.js?v=8.17.28"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -115,11 +115,11 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 
 /* ── SEARCHABLE MULTI FILTERS ── */
 .filter-controls{display:flex;align-items:center;gap:7px;min-width:0;max-width:100%;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:thin}
-.multi-filter-btn{height:34px;display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:var(--navy);padding:0 10px;font-size:11px;font-weight:800;cursor:pointer;box-shadow:0 1px 3px rgba(15,39,68,.05);transition:all .12s}
+.multi-filter-btn{height:34px;display:inline-flex;align-items:center;gap:7px;flex:none;border:1px solid #b9c9df;border-radius:9px;background:#fff;color:var(--navy);padding:0 10px;font-size:14px;font-weight:650;cursor:pointer;box-shadow:0 1px 3px rgba(15,39,68,.05);transition:all .12s}
 .multi-filter-btn:hover{border-color:#7ea4df;background:#f8fbff;box-shadow:0 3px 9px rgba(37,99,235,.11)}
 .multi-filter-btn.primary-filter{border-color:#7da5e5;background:#f5f9ff;box-shadow:0 0 0 2px rgba(37,99,235,.06),0 2px 7px rgba(37,99,235,.09)}
 .multi-filter-btn.active{border-color:var(--primary-2);background:var(--primary-2);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.22)}
-.multi-filter-btn .filter-name{font-size:9.5px;letter-spacing:.055em;text-transform:uppercase;opacity:.72}
+.multi-filter-btn .filter-name{font-size:inherit;letter-spacing:normal;text-transform:none}
 .multi-filter-btn .filter-value{max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .multi-filter-btn .filter-caret{font-size:8px;opacity:.75}
 .filter-popup{display:none;position:fixed;z-index:1225;width:330px;max-width:calc(100vw - 24px);max-height:430px;overflow:hidden;background:#fff;border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 22px 60px rgba(15,39,68,.28)}
@@ -431,15 +431,15 @@ tr.ghead:hover td{background:#edf2f9}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
 </style>
-<script src="success-feedback.js?v=8.17.27"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.27">
-<script src="interaction-motion.js?v=8.17.27"></script>
-<script src="interaction-surfaces.js?v=8.17.27"></script>
-<script src="number-edit-commit.js?v=8.17.27"></script>
-<script src="number-transitions.js?v=8.17.27"></script>
-<script src="number-surfaces.js?v=8.17.27"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.27">
-<link rel="stylesheet" href="modal-layout.css?v=8.17.27">
+<script src="success-feedback.js?v=8.17.28"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.28">
+<script src="interaction-motion.js?v=8.17.28"></script>
+<script src="interaction-surfaces.js?v=8.17.28"></script>
+<script src="number-edit-commit.js?v=8.17.28"></script>
+<script src="number-transitions.js?v=8.17.28"></script>
+<script src="number-surfaces.js?v=8.17.28"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.28">
+<link rel="stylesheet" href="modal-layout.css?v=8.17.28">
 </head>
 <body>
 
@@ -604,7 +604,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.27-LAZY-CORE",
+  version: "8.17.28-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -969,7 +969,7 @@ function createLotImportBatch(){return LMLotImportBatch.create({
     return records.map(function(payload,i){return {key:keys[i],type:type,payload:landCreateFreeze(payload),scope:landCreateScope(),id:'',checking:false};});
   },
   release:function(type,attempts){delete S.createPending[type];attempts.forEach(function(attempt){delete S.createPending[attempt.key];});},
-  failure:landCreateFailure,accept:requireCreateSuccess,recordId:landCreatedRecordId
+  freeze:landCreateFreeze,failure:landCreateFailure,accept:requireCreateSuccess,recordId:landCreatedRecordId
 });}
 function deleteRecord(type,id){if(S.demo)return Promise.resolve({code:3000});var report=reportForType(type),rid=String(id||''),scope=landCreateScope();if(!report)return Promise.reject({message:"No report configured for "+type});if(!/^\d+$/.test(rid))return Promise.reject({message:"Invalid record ID",recordId:rid});if(!S.liveSDK)return Promise.reject({message:"Creator connection required."});return LMData.request('delete:'+report,function(){return ZOHO.CREATOR.DATA.deleteRecords({report_name:report,payload:{criteria:'(ID == '+rid+')'}});}).then(function(resp){return LMData.confirmDeletion(resp,[rid],function(){if(scope!==landCreateScope())throw new Error('The Creator session changed before delete reconciliation.');return LMData.readAll({reportName:report,criteria:'(ID == '+rid+')',fresh:true}).then(function(rows){if(scope!==landCreateScope())throw new Error('The Creator session changed during delete reconciliation.');if(rows.length)return false;auditOnly('Deleted record identity reconciled',{report:report,recordId:rid,response:resp},false);return true;});});});}
 function openReport(report,query){try{ZOHO.CREATOR.UTIL.navigateParentURL({action:"open",url:"#Report:"+report+(query?"?"+query:""),window:"same"});}catch(e){diag("Report navigation failed",{report:report,query:query,error:e});}}

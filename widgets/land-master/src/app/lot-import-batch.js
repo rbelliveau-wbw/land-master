@@ -13,23 +13,33 @@
       if(lots.length!==ids.length||subIds.some(id=>!/^\d+$/.test(id)))throw Error('A saved Lot or its subdivision is unavailable.');
       const subs=await ctx.read('All_Subdivisions',subIds.map(id=>'(ID == '+id+')').join(' || '),check);
       check();const subById=new Map(subs.map(s=>[s.ID,s]));
-      for(const record of records){
+      return records.map(original=>{
+        const record=Object.assign({},original);
         const lot=byId.get(record.Lots),sub=lot&&subById.get(root.LMPropertyLots.id(lot.Subdivision));
         const error=root.LMPropertyLots.error(record,lot,sub);
         if(error)throw Error(error);
         // This identifies the intended child destination before its first write.
         if(lot.Lot_Code!==record.Property_ID)throw Error('A returned Lot ID does not match its import row. Review saved Lots before creating Properties.');
-      }
+        // Reuse this fresh parent read: Company follows the Subdivision's Dev Entity.
+        const company=root.LMPropertyLots.id(sub.Company1);
+        if(sub.Company1&&!/^\d+$/.test(company))throw Error('The subdivision Dev Entity needs a valid Company lookup.');
+        delete record.Company1;
+        if(company)record.Company1=company;
+        return record;
+      });
     }
     async function write(type,input){
       if(!['lot','property'].includes(type)||!Array.isArray(input)||!input.length||input.length>size)throw Error('Invalid import batch.');
       if(!ctx.live())throw Error('Creator connection required.');
-      const scope=ctx.scope(),records=JSON.parse(JSON.stringify(input));
+      const scope=ctx.scope();let records=JSON.parse(JSON.stringify(input));
       if(type==='property')records.forEach(record=>ctx.prepare(record));
       const attempts=ctx.reserve(type,records),check=()=>{if(!ctx.live()||ctx.scope()!==scope)throw Error('The Creator session or loaded data changed. Review saved records before another import.');};
       let dispatched=false;
       try{
-        check();if(type==='property')await preflight(records,check);check();
+        check();if(type==='property'){
+          records=await preflight(records,check);
+          attempts.forEach((attempt,i)=>{attempt.payload=ctx.freeze(records[i]);});
+        }check();
         const response=await ctx.request('import-batch:'+type,()=>{
           check();dispatched=true;
           return ctx.api().addRecords({form_name:type==='lot'?'Lots':'Property',payload:{data:records,result:{fields:[type==='lot'?'Lot_Code':'Property_ID']}}});

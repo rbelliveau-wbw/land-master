@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 
 const source = fs.readFileSync('widgets/land-master/src/app/spreadsheet-import.js', 'utf8');
-const subdivision = {ID: '90071992547409931', Subdivision_Name: 'Sample Creek — Phase 1', Subdivision_Code: 'SC01', Phase: '1', Project: {ID:'90071992547409930',display_value:'Sample Creek'}, City: 'Seguin', County: 'Guadalupe'};
+const subdivision = {ID: '90071992547409931', Subdivision_Name: 'Sample Creek — Phase 1', Subdivision_Code: 'SC01', Phase: '1', Project: {ID:'90071992547409930',display_value:'Sample Creek'}, Company1: {ID:'90071992547409929',display_value:'Sample Development Entity'}, City: 'Seguin', County: 'Guadalupe'};
 const deferred = () => {
   let resolve;
   const promise = new Promise(done => { resolve = done; });
@@ -278,7 +278,7 @@ console.log('Spreadsheet import creation/close: Notes omitted, exact imported fi
   assert.equal(h.calls.properties.length,3);assert.equal(h.state.run.properties,3);
   h.calls.properties.forEach((data,i)=>assert.deepEqual(JSON.parse(JSON.stringify(data)),{
     Common_Name:'SC01-B01-L0'+(i+1),Property_ID:'SC01-B01-L0'+(i+1),Land_Type:'Residential',Subtype:'L&B Res',
-    Projects:['90071992547409930'],Subdivisions:[subdivision.ID],Lots:String(90071992547409941n+BigInt(i)),City:'Seguin',County:'Guadalupe'
+    Projects:['90071992547409930'],Subdivisions:[subdivision.ID],Lots:String(90071992547409941n+BigInt(i)),City:'Seguin',County:'Guadalupe',Company1:subdivision.Company1.ID
   }));
   assert.ok(h.state.rows.every(r=>r.lotState==='Saved'&&r.propertyState==='Saved'));
   assert.match(h.node('siPairOutcome').textContent,/3 Lots And 3 Properties Created/);
@@ -393,7 +393,7 @@ function batchHarness(count=162,options={}){
   for(const name of ['LMData','LMPropertyLots','LMPropertySubtypes','LMLotImportBatch'])c[name]=c.window[name];
   function actual(name){const start=host.indexOf('function '+name+'(');assert.ok(start>=0);return host.slice(start,host.indexOf('\nfunction ',start));}
   for(const name of ['extractRecordId','landCreateFreeze','landCreateScope','landCreateKey','landCreateStore','landCreateCandidateId','landCreateFailure','landCreateResponseFailure','requireCreateSuccess','createLotImportBatch'])vm.runInContext(actual(name),c);
-  function rows(config){const ids=[...config.criteria.matchAll(/ID == (\d+)/g)].map(m=>m[1]);if(config.report_name==='All_Subdivisions')return options.reparent?[{...subdivision,Project:{ID:'999'}}]:[subdivision];return [...lots.values()].filter(l=>!ids.length||ids.includes(l.ID));}
+  function rows(config){const ids=[...config.criteria.matchAll(/ID == (\d+)/g)].map(m=>m[1]);if(config.report_name==='All_Subdivisions')return [{...subdivision,...(options.reparent?{Project:{ID:'999'}}:{}),...(Object.hasOwn(options,'freshCompany')?{Company1:options.freshCompany}:{})}];return [...lots.values()].filter(l=>!ids.length||ids.includes(l.ID));}
   c.ZOHO={CREATOR:{DATA:{
     async getRecordCount(config){native.push({method:'count',...config});return {code:3000,result:{records_count:rows(config).length}};},
     async getRecords(config){native.push({method:'records',...config});return {code:3000,data:rows(config)};},
@@ -424,7 +424,7 @@ function batchHarness(count=162,options={}){
   const h=batchHarness();for(let i=0;i<13;i++)await h.c.LMData.request('startup',()=>true,{readOnly:true});await h.importer.create();assert.equal(h.c.window.LMPerf.snapshot().rate.dispatched,41);assert.equal(h.native.length,28,'162 pairs require four duplicate-read calls plus four six-call chunks');
   assert.deepEqual(h.native.filter(c=>c.method==='create').map(c=>[c.form_name,c.payload.data.length]),[['Lots',50],['Property',50],['Lots',50],['Property',50],['Lots',50],['Property',50],['Lots',12],['Property',12]]);
   assert.equal(h.state.run.created,162);assert.equal(h.state.run.properties,162);assert.equal(h.state.run.failed,0);assert.equal(h.node('siPairMeter')['aria-valuenow'],'324');
-  for(const property of h.properties.values()){const lot=h.lots.get(property.Lots);assert.equal(lot.Lot_Code,property.Property_ID);assert.equal(property.Subdivisions[0],subdivision.ID);assert.equal(property.Projects[0],subdivision.Project.ID);}
+  for(const property of h.properties.values()){const lot=h.lots.get(property.Lots);assert.equal(lot.Lot_Code,property.Property_ID);assert.equal(property.Subdivisions[0],subdivision.ID);assert.equal(property.Projects[0],subdivision.Project.ID);assert.equal(property.Company1,subdivision.Company1.ID);}
   await h.importer.create();assert.equal(h.native.length,28,'terminal Create cannot replay a batch');assert.equal(Object.keys(h.c.S.createPending).length,0);
 }
 {
@@ -448,6 +448,30 @@ for(const mode of ['missingId','incomplete','reparent','changeScope']){
   await h.importer.close();await h.importer.create();assert.equal(h.state.open,true);assert.equal(h.native.filter(c=>c.method==='create').length,1);gate.resolve();await task;assert.equal(h.state.run.properties,2);
 }
 console.log('Native batch import: 162 Lots + 162 Properties in 28 calls; 50-row chunks, exact parent identities, partial failures, unknown no-replay, missing IDs, reordered/incomplete results, reparent/session drift and pending locks passed.');
+
+// Native single lookup shapes; the prewrite parent read owns the current Dev Entity.
+for(const company of [{ID:'90071992547409928',zc_display_value:'Changed Dev Entity'},'90071992547409928',null,'']){
+  const h=batchHarness(2,{freshCompany:company});await h.importer.create();
+  const expected=typeof company==='string'?company:company?.ID;
+  assert.equal(h.state.run.properties,2);
+  for(const property of h.properties.values()){
+    if(expected)assert.equal(property.Company1,expected,'fresh Dev Entity must replace the review snapshot');
+    else assert.equal(Object.hasOwn(property,'Company1'),false,'blank Dev Entity must omit Company rather than retain a stale value');
+  }
+  assert.equal(h.native.length,10,'Dev Entity reuses the existing counted parent read');
+}
+{
+  const h=batchHarness(2,{freshCompany:{ID:'90071992547409928'},unknown:'Property'});await h.importer.create();
+  const attempt=Object.values(h.c.S.createReviews).find(a=>a.type==='property');
+  assert.equal(attempt.payload.Company1,'90071992547409928','lost-reply recovery must retain the actual dispatched Company');
+  assert.equal(Object.isFrozen(attempt.payload),true);
+}
+{
+  const h=batchHarness(2,{freshCompany:{ID:'bad'}});await h.importer.create();
+  assert.equal(h.native.filter(c=>c.method==='create'&&c.form_name==='Property').length,0,'malformed entity cannot be written as a Company');
+  assert.ok(h.state.rows.every(row=>/valid Company lookup/.test(row.error)));
+}
+console.log('Imported Property Company: Subdivision Dev Entity, fresh native object/string lookups, blank omission, invalid lookup stop, frozen recovery payload and unchanged API count passed.');
 
 {const h=batchHarness(2,{bareForm:'Property'});await h.importer.create();assert.equal(h.state.run.properties,2,'resolved Property batch success never requires optional returned IDs');assert.equal(h.state.error,'');}
 {const h=batchHarness(2);h.c.S.createReviews={property:{key:'property'}};await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create').length,0,'unresolved Property replies must block new Lot batches');}
