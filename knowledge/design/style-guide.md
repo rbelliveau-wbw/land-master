@@ -774,3 +774,10 @@ the current modal frame and footer. Sign changes patch mounted controls; they do
 not rebuild the form or discard other fields. Display the combined net change
 and gross changes in the existing preview, alongside per-element projections.
 The scope remains one budget item, one modification and one approval chain.
+
+The standalone composer uses the approved two-column desktop layout: existing
+fields left, existing financial preview right, and item identity beside the real
+Details/Attachments tabs. Avoid repeating Approved Final and Revised Final
+above the form when those figures already appear in the preview. Keep prior
+modification history in a native disclosure below the preview, preserving its
+existing actions/comments. Maintain readable 14px labels and the fixed footer.

@@ -1,6 +1,17 @@
 # Changelog
 
 
+## Budget Manager 122.29.148 — November 13, 2026
+
+Implements the approved two-column standalone Budget Modification composer:
+form left, financial preview right, and real attachment tabs/item identity in
+one context row. The core form fits at 1280 x 720 without scrolling. Prior
+modifications remain available in a collapsed disclosure; mounted inputs and
+attachment state are preserved. Frontend only; no new Creator deployment.
+Regression: 1–5 inputs/signs, previews, tabs/draft continuity, prior history,
+fixed frame/footer, rerender/close cleanup. Rollback: widget 122.29.147.
+
+
 ## Budget Manager 122.29.147 — November 13, 2026
 
 Standalone Budget Modifications now use five ordered element amount rows, each

@@ -1,3 +1,32 @@
+## Standalone Modification Layout — 122.29.148, November 13, 2026
+
+The approved desktop composer uses a 1220px two-column frame: the existing
+five signed element inputs and request fields stay left, and the existing net,
+gross and element financial preview moves right. The real Details/Attachments
+tabs share a 44px context row with item name/code, outside the scrolling body.
+The header and committing footer remain fixed. Necessary text remains 14px or
+larger, with 40px controls. At 1280 x 720 the normal editor needs no scrolling.
+Shorter/narrower windows retain a readable, internally scrolling body; below
+1100px the editor stacks into one column. Long textarea contents retain their
+native internal scrolling rather than expanding the frame.
+
+Prior modification rows, approval actions and comments remain intact under a
+collapsed Prior Modifications disclosure below the preview. Expanding history
+can scroll the body without moving the committing footer. The existing motion
+engine animates native disclosures; existing numeric slots keep their keys and
+field-exit transitions. Moving mounted form/preview/tab nodes preserves their
+handlers and attachment-tab draft state. Rerender and close remove the context
+row, so other request/detail/picker views retain their existing frames.
+
+Frontend only: widget.html, modification-editor.css and release metadata;
+no forms, fields, functions, Custom APIs or native permissions change. No new
+Creator deployment. The earlier signed-element feature's native prerequisite
+is unchanged. Desktop in-app verification covered empty/prior-history states,
+no horizontal or vertical overflow at 1280 x 720, signed amount previews,
+Details/Attachments switching with retained input values, and disclosure access.
+Full repository validation and Pages build are required. Greptile was signed out.
+Rollback: map Budget Manager to 122.29.147 and deploy Pages.
+
 ## Standalone Modification Elements — 122.29.147, November 13, 2026
 
 The pure Budget Modification composer has five fixed amount rows in element order
