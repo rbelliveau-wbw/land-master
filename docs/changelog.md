@@ -1,5 +1,19 @@
 # Changelog
 
+
+## Budget Manager 122.29.147 — November 13, 2026
+
+Standalone Budget Modifications now use five ordered element amount rows, each
+with its own sign, while retaining one request and one approval chain. Mixed
+signs and zero-net transfers preserve gross approval thresholds. Email and a
+matching Excel attachment include signed element/current/projected detail.
+Creator promotion of five existing functions is required; see
+[the deployment guide](budget-modification-elements-2026-11-13.md). No schema or
+Custom API changes. Regression: create/edit/reopen, exact cents, gross threshold
+routing, PO balances, legacy callers and native email/workbook round trips.
+Greptile remains signed out. Rollback: widget 122.29.145 and prior function bodies;
+retain signed-aware balance readers if signed records already exist.
+
 ## 2026-10-21 — Acquisition agreement types and action summaries
 
 Proforma Manager 1.80.124 adds the PSA / LOI selector and fixes AI Review close

@@ -32,7 +32,7 @@ function runtime({grant={},login='demo',owners=[id.actor],duplicate=false,modSta
     function map(value){Object.defineProperties(value,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=v;}}});return value;}
     function Map(){return map({});}function List(){return [];}function ifnull(value,fallback){return value==null?fallback:value;}
     function delugeMap(...pairs){var value={};for(var i=0;i<pairs.length;i+=2)value[pairs[i]]=pairs[i+1];return map(value);}
-    Array.prototype.add=function(value){this.push(value);};Array.prototype.count=Array.prototype.size=function(){return this.length;};
+    Array.prototype.add=function(value){this.push(value);};Array.prototype.get=function(i){return this[i]??null;};Number.prototype.abs=function(){return Math.abs(this);};String.prototype.toFile=function(name){return {name,content:String(this)};};Array.prototype.count=Array.prototype.size=function(){return this.length;};
     Object.prototype.toString=function(){return JSON.stringify(this,(_,value)=>typeof value==='bigint'?value.toString():value);};
     String.prototype.toLong=Number.prototype.toLong=function(){return BigInt(this);};BigInt.prototype.toLong=function(){return this.valueOf();};String.prototype.toDecimal=function(){return Number(this);};String.prototype.toDate=function(){return String(this);};
     var zoho={loginuser:login,adminuser:admin,currentdate:'2026-10-26',currenttime:'2026-10-26T12:00:00'};

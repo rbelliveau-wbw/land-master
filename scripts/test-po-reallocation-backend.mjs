@@ -142,3 +142,15 @@ for(const nets of [[9999,9999,9999,9999,9999],[15000,-9000]]){
 }
 
 for(const net of ['9999.00','9999.99','10000.00','10000.01']){const r=runtime(),amount=(34000+Number(net)).toFixed(2),p=payload({amount,deltas:['-5000.00','-9000.00','-20000.00',amount,'0.00']});const out=r.call(p);assert.equal(out.success,true,JSON.stringify(out));const capture=JSON.parse(r.tables().Approval_Route_Snapshot[0].Context_JSON);assert.equal(capture.netBudgetChange,net);assert.deepEqual(out.snapshot.approvalBundle.rows.map(row=>row.role),Number(net)>=10000?['VP','CFO','COO']:['VP','CFO']);}
+
+// Standalone signed modifications use their own completed approval chain.
+r=runtime();r.c.tables.Payment_Request=[];r.c.tables.PO_Item=[];
+r.c.tables.Budget_Modification=[{ID:131,Budget:61,Budget_Item:71,Status:'Approved',Reference_Number:'CO-131',Amount:1000,Modification_Type:'Decrease',Component_Reallocation:true,Labor_Budget:5000,Materials_Budget:-4000,Equipment_Budget:0,Subcontractor_Budget:0,Other_Budget:0}];
+r.c.tables.Budget_Approvals=[{ID:132,Budget:61,Budget_Modification:131,Type1:'Modification',Status:'Approved'}];
+vm.runInContext('tables=JSON.parse(JSON.stringify(tables));',r.c);
+financial=balances(r);assert.equal(financial.success,true,JSON.stringify(financial));assert.equal(financial.balances[0].modCents,'-100000');assert.deepEqual(financial.balances[0].componentBalances.map(part=>part.modCents),['-500000','400000','0','0','0']);
+r.c.tables.Budget_Approvals[0].Status='Pending';assert.equal(balances(r).success,false,'an incomplete standalone chain cannot authorize signed financial allocations');r.c.tables.Budget_Approvals[0].Status='Approved';
+r.c.tables.Budget_Modification[0].Reference_Number='PO:missing-contract';assert.equal(balances(r).success,false,'PO provenance still requires its verified PO bundle');r.c.tables.Budget_Modification[0].Reference_Number='CO-131';
+r.c.tables.Budget_Modification[0].Materials_Budget=-5000;r.c.tables.Budget_Modification[0].Amount=0;r.c.tables.Budget_Modification[0].Modification_Type='Increase';financial=balances(r);assert.equal(financial.success,true,JSON.stringify(financial));assert.equal(financial.balances[0].modCents,'0');assert.deepEqual(financial.balances[0].componentBalances.map(part=>part.modCents),['500000','-500000','0','0','0']);
+r.c.tables.Budget_Modification[0].Amount=1;assert.equal(balances(r).success,false,'inconsistent normalized parts cannot enter PO availability');
+console.log('Standalone signed allocations: completed-chain provenance, exact PO balances, net-zero transfers, forged PO references and malformed totals passed.');

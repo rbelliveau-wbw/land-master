@@ -16,10 +16,11 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		return "ERROR: Budget Item not found.";
 	}
-	// Reuse the native budget-components-v1 envelope in the existing amount
-	// argument. The widget's single element picker sends that element's amount
-	// plus explicit zeroes for the other four; legacy decimal callers stay valid.
+	// V2 accepts signed normalized components; V1 and scalar callers retain their contract.
+	// One modification owns all five components and one approval chain.
 	componentAmounts = Map();
+	signedComponents = false;
+	componentGross = 0.0;
 	classificationType = ""; classificationComment = "";
 	amountInput = ifnull(amount,"0").trim();
 	if(amountInput.startsWith("{"))
@@ -27,10 +28,11 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		try
 		{
 			componentRequest = amountInput.toMap();
-			if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
+			if((componentRequest.get("contract") != "budget-components-v1" && componentRequest.get("contract") != "budget-components-v2") || componentRequest.get("components") == null)
 			{
 				return "ERROR: Unsupported budget component request.";
 			}
+			signedComponents = componentRequest.get("contract") == "budget-components-v2";
 			classification = componentRequest.get("classification");
 			if(classification != null)
 			{
@@ -50,12 +52,13 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 					return "ERROR: All five budget component values are required.";
 				}
 				componentValue = componentRaw.toString().toDecimal();
-				if(componentValue < 0 || componentValue.round(2) != componentValue)
+				if((componentValue < 0 && signedComponents != true) || componentValue.round(2) != componentValue || componentValue.abs() > 9999999999999.99)
 				{
-					return "ERROR: Budget components must be nonnegative amounts with at most two decimal places.";
+					return "ERROR: Budget components must be valid currency amounts with at most two decimal places.";
 				}
 				componentAmounts.put(componentField,componentValue);
 				vAmount = vAmount + componentValue;
+				componentGross = componentGross + componentValue.abs();
 			}
 		}
 		catch (componentError)
@@ -67,7 +70,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	{
 		vAmount = amountInput.toDecimal();
 	}
-	if(vAmount <= 0)
+	if((signedComponents != true && vAmount <= 0) || (signedComponents == true && (componentGross <= 0 || componentGross > 9999999999999.99 || vAmount < 0 || (modType != "Increase" && modType != "Decrease") || (vAmount == 0 && modType == "Decrease"))))
 	{
 		return "ERROR: Amount must be greater than zero.";
 	}
@@ -141,7 +144,9 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		}
 	}
 	policySubmitter = User_Access[User == zoho.loginuser];
-	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(vAmount.toString())};
+	policyAmount = vAmount;
+	if(signedComponents == true) { policyAmount = componentGross; }
+	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(policyAmount.toString())};
 	// Validate the current Settings rule before creating the modification.
 	policyPreview = thisapp.resolveApprovalRoute(policyContext);
 	if(policyPreview.get("success") != true)
@@ -151,6 +156,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 	// Reference goes IN the insert — post-insert assignment on the fresh row was
 	// dropping it in production.
 	vRef = ifnull(reference,"").trim();
+	if(vRef.startsWith("PO:")) { return "ERROR: PO references are reserved for Purchase Orders."; }
 	newModId = insert into Budget_Modification
 	[
 		Added_User=zoho.loginuser
@@ -161,6 +167,7 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		Type_Comment=classificationComment
 		Modification_Type=vType
 		Amount=vAmount
+		Component_Reallocation=signedComponents
 		Labor_Budget=componentAmounts.get("Labor_Budget")
 		Materials_Budget=componentAmounts.get("Materials_Budget")
 		Equipment_Budget=componentAmounts.get("Equipment_Budget")

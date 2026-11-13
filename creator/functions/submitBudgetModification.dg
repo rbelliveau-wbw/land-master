@@ -105,7 +105,12 @@ string submitBudgetModification(int modificationId)
 		}
 	}
 	policySubmitter = User_Access[User == zoho.loginuser];
-	policyContext = {"workflow":"Budget Modification","recordId":vModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+	policyAmount = ifnull(modRec.Amount,0);
+	if(modRec.Component_Reallocation == true)
+	{
+		policyAmount = ifnull(modRec.Labor_Budget,0).abs() + ifnull(modRec.Materials_Budget,0).abs() + ifnull(modRec.Equipment_Budget,0).abs() + ifnull(modRec.Subcontractor_Budget,0).abs() + ifnull(modRec.Other_Budget,0).abs();
+	}
+	policyContext = {"workflow":"Budget Modification","recordId":vModId.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(policyAmount.toString())};
 	policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 	if(policyExecution.get("success") != true)
 	{

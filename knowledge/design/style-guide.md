@@ -765,3 +765,12 @@ Land & Projects toolbar filters use the restored compact 11px/800 text and
 34px height, with matching label/value sizing, padding and gaps for every
 filter. Keep Title Case labels and content-fitting widths. This is the user
 requested compact exception to the normal 14px control text (November 13, 2026).
+
+## Standalone Budget Modification Amounts
+
+Use the five fixed element rows in numeric order (1–5), with a readable element
+label, independent Increase/Decrease toggle and currency amount per row. Preserve
+the current modal frame and footer. Sign changes patch mounted controls; they do
+not rebuild the form or discard other fields. Display the combined net change
+and gross changes in the existing preview, alongside per-element projections.
+The scope remains one budget item, one modification and one approval chain.

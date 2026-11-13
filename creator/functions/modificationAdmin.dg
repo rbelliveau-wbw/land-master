@@ -279,9 +279,12 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 		{
 			return "ERROR: Modification not found.";
 		}
+		if(ifnull(reference,"").trim().startsWith("PO:")) { return "ERROR: PO references are reserved for Purchase Orders."; }
 		classification = null;
 		vAmt = ifnull(amount,"").trim();
 		componentAmounts = Map();
+		signedComponents = false;
+		componentGross = 0.0;
 		hasComponentRequest = vAmt.startsWith("{");
 		if(vAmt != "")
 		{
@@ -290,10 +293,11 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 				try
 				{
 					componentRequest = vAmt.toMap();
-					if(componentRequest.get("contract") != "budget-components-v1" || componentRequest.get("components") == null)
+					if((componentRequest.get("contract") != "budget-components-v1" && componentRequest.get("contract") != "budget-components-v2") || componentRequest.get("components") == null)
 					{
 						return "ERROR: Unsupported budget component request.";
 					}
+					signedComponents = componentRequest.get("contract") == "budget-components-v2";
 					classification = componentRequest.get("classification");
 					if(classification != null)
 					{
@@ -313,12 +317,13 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 							return "ERROR: All five budget component values are required.";
 						}
 						componentValue = componentRaw.toString().toDecimal();
-						if(componentValue < 0 || componentValue.round(2) != componentValue)
+						if((componentValue < 0 && signedComponents != true) || componentValue.round(2) != componentValue || componentValue.abs() > 9999999999999.99)
 						{
-							return "ERROR: Budget components must be nonnegative amounts with at most two decimal places.";
+							return "ERROR: Budget components must be valid currency amounts with at most two decimal places.";
 						}
 						componentAmounts.put(componentField,componentValue);
 						vAmount = vAmount + componentValue;
+						componentGross = componentGross + componentValue.abs();
 					}
 				}
 				catch (componentError)
@@ -330,7 +335,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			{
 				vAmount = vAmt.toDecimal();
 			}
-			if(vAmount <= 0)
+			if((signedComponents != true && vAmount <= 0) || (signedComponents == true && (componentGross <= 0 || componentGross > 9999999999999.99 || vAmount < 0 || (modType != "Increase" && modType != "Decrease") || (vAmount == 0 && modType == "Decrease"))))
 			{
 				return "ERROR: Amount must be greater than zero.";
 			}
@@ -350,6 +355,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			modRec.Amount=vAmount;
 			if(hasComponentRequest)
 			{
+				modRec.Component_Reallocation=signedComponents;
 				modRec.Labor_Budget=componentAmounts.get("Labor_Budget");
 				modRec.Materials_Budget=componentAmounts.get("Materials_Budget");
 				modRec.Equipment_Budget=componentAmounts.get("Equipment_Budget");
@@ -491,7 +497,12 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			// or guess which modification owns a historical orphan approval.
 			if(linked.count() == 0 && ifnull(modRec.Status,"") == "Submitted")
 			{
-				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(modRec.Amount.toString())};
+				policyAmount = ifnull(modRec.Amount,0);
+				if(modRec.Component_Reallocation == true)
+				{
+					policyAmount = ifnull(modRec.Labor_Budget,0).abs() + ifnull(modRec.Materials_Budget,0).abs() + ifnull(modRec.Equipment_Budget,0).abs() + ifnull(modRec.Subcontractor_Budget,0).abs() + ifnull(modRec.Other_Budget,0).abs();
+				}
+				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(policyAmount.toString())};
 				policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 				if(policyExecution.get("success") == true && policyExecution.get("shared") == true)
 				{
