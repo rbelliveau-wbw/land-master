@@ -1,3 +1,31 @@
+## Native Bulk Lot Updates — 0.13.21
+
+Manage Lots bulk editing follows Tax Parcel Management's native SDK v2
+DATA.updateRecords pattern: exact captured string IDs, identical payload groups,
+and chunks of at most 200. Single-lot inline saves retain updateRecordById.
+Already matching records remain no-ops. Fresh selected-field/subdivision/archive
+checks still finish for the entire selection before any write; chosen Builders
+still receive the existing fresh Type1 check. Native permissions and workflows
+remain enabled, and Status/takedown assignments remain outside the edit allowlist.
+
+Each batch must return the exact selected ID set/count. Native rejections stay
+distinct from unknown results. Unknown/partial replies stop later chunks, retain
+physical pending locks and permit only existing read-only recovery. Normal saved
+row confirmation reads groups of 25 instead of one read per lot, without comparing
+saved editable values. The existing progress dialog and selection remain intact.
+A 100-lot edit needs one write, four preflight reads and four confirmation reads
+(instead of 100 writes and 100 confirmation reads plus preflight). Each grouped
+read may involve additional native count/page requests. No live timing is promised.
+
+Changed source: lot-edit-controller.js and the widget version stamp; regression
+coverage: test-lot-edit-controller.mjs. Existing Lots fields: Builder1, Lot_Size,
+Base_Price, Earnest_Money, Appraised_Value, Additional_Tax, Address, Notes, On_Hold.
+No forms, fields, functions, Custom APIs or permissions added; no Creator
+publication required. Tests cover 100/200/201/450 destinations, exact selections,
+precision, no-ops, stale fields, Builder-only choices, reordered/partial/malformed
+receipts, rejection, lost replies, timeouts, pending locks and no replay. Live bulk
+writes are not executed as part of verification. Rollback: 0.13.20.
+
 ## Single-row inventory toolbar — 0.13.18, October 27, 2026
 
 The inventory controls occupy one row again, with List — Edit mode — Grid
