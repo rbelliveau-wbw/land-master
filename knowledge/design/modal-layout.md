@@ -39,3 +39,13 @@ including progress temporarily lifted out of the inline screen. The desktop
 fixture also checks that native dialogs disappear when closed and reopen at
 the same geometry, and that PO activity retains its frame through progress,
 result and return-to-activity transitions.
+
+## Standalone Budget Modification Editor
+
+The approved November 13 composer uses a 1220px-wide frame capped at 760px,
+with 16px viewport clearance on each edge. Keep its real attachment tabs and
+item identity in one fixed context row, its fields left, and its financial
+preview right. The core form fits at 1280 x 720 without scrolling. The body
+retains safe overflow for expanded prior-history details and smaller desktop
+windows; the header and committing footer stay fixed. Other Budget request,
+read-only detail and picker frames retain the shared defaults.
