@@ -63,6 +63,10 @@
     if(!/^\d+$/.test(text(lotId)))throw Error('The Lot was saved without a usable ID. Review it in Creator before creating its Property.');
     return {Common_Name:row.code,Property_ID:row.code,Land_Type:'Residential',Subtype:'L&B Res',Projects:[project],Subdivisions:[sid],Lots:text(lotId),City:sub.importCity,County:sub.importCounty};
   }
+  function lotData(r,sub){
+    const data={Lot_Code:r.code,Status:'Open',Subdivision:r.subId,Subdivision_Code:text(sub.Subdivision_Code),Phase:Number(sub.Phase),Block:text(r.block),Lot_Number:Number(r.lot),City:sub.importCity,County:sub.importCounty,Archived:false,On_Hold:false};if(text(r.width))data.Lot_Size=Number(r.width);return data;
+  }
+  function duplicateIssue(issue){return issue==='Already in Lots'||issue==='Duplicate staged lot';}
   function recordStatus(state){return state||'Create New';}
   function mount(ctx){
     const el=document.getElementById('platModal'),body=document.getElementById('piBody'),foot=document.getElementById('piFootActions'),meta=document.getElementById('piFootMeta');
@@ -113,7 +117,8 @@
       const outcome=document.getElementById('siPairOutcome');outcome.dataset.state=p.creating?'saving':complete?'saved':'error';outcome.className='si-pair-outcome'+(complete?' success':!p.creating?' warning':'');
       const rate=p.creating&&ctx.rate?ctx.rate():null;
       const waiting=rate&&rate.waitMs>0?'Waiting For Creator — Resuming In '+Math.ceil(rate.waitMs/1000)+'s':'';
-      outcome.textContent=p.creating?(waiting||'Creating Lots & Properties…'):complete?run.created+' Lots And '+run.properties+' Properties Created':run.created+' Lots Saved · '+run.properties+' Properties Saved — Needs Review';
+      outcome.textContent=(p.creating?(waiting||'Creating Lots & Properties…'):complete?(run.total?run.created+' Lots And '+run.properties+' Properties Created':'No New Records Needed'):run.created+' Lots Saved · '+run.properties+' Properties Saved — Needs Review')+(run.skipped?' · '+run.skipped+' Duplicate Rows Skipped':'');
+      document.getElementById('siPairMeter').setAttribute('aria-valuemax',String(Math.max(1,total)));
       document.getElementById('siPairMeter').setAttribute('aria-valuenow',String(saved));
       document.getElementById('siPairBar').style.width=(total?saved/total*100:0)+'%';
       const stages=[['Check Existing Lots',run.stage>0?'Done':p.creating?'Running':'Needs Review'],['Create Lots & Properties',run.stage<1?(p.creating?'Up Next':'Not Started'):p.creating?'Running':complete?'Done':'Needs Review'],['Finish Import',p.creating?'Up Next':complete?'Done':'Needs Review']];
@@ -121,7 +126,7 @@
       if(!run.rendered)run.rendered=[];
       rows.forEach((r,i)=>{const next=[r.lotState||'Waiting',r.propertyState||'Waiting',r.error||''],old=run.rendered[i]||[];if(old[0]!==next[0])document.getElementById('siPairLot'+i).innerHTML=statusCell(next[0]);if(old[1]!==next[1])document.getElementById('siPairProperty'+i).innerHTML=statusCell(next[1]);if(old[2]!==next[2])document.getElementById('siPairError'+i).textContent=next[2];run.rendered[i]=next;});
       document.getElementById('siPairError').textContent=p.error||'';
-      meta.textContent=saved+' Of '+total+' Records Saved';
+      meta.textContent=total?saved+' Of '+total+' Records Saved':'No New Records Needed';
       document.getElementById('piClose').disabled=!!busy();document.getElementById('siPairClose').disabled=!!busy();
     }
     async function file(f){if(busy())return;p.error='';p.rows=[];p.source=[];p.reading=true;p.fileName=f.name;paint();try{if(f.size>10*1024*1024)throw Error('The file exceeds 10 MB. Split it into smaller spreadsheets.');let rows;
@@ -139,10 +144,43 @@
         p.scanPhase='Checking for lots already in the system';paint();await refreshExisting(subs);p.step=2;
       }catch(e){p.error=e.message;}finally{p.scanning=false;paint();}}
     async function refreshExisting(subs){existing.clear();const groups=await Promise.all(subs.map(s=>ctx.readLots(String(s.ID))));for(const rows of groups)for(const l of rows)if(l.Lot_Code)existing.add(text(l.Lot_Code).toUpperCase());}
+    async function createBatches(rows,subs,checkScope){
+      const size=Math.min(50,ctx.batchSize||50);
+      async function save(type,group,payloads){
+        try{return await ctx.batch(type,payloads);}catch(error){return group.map(()=>({ok:false,error}));}
+      }
+      function failed(r,error,kind){r.error=ctx.error(error);r[kind+'State']=error.uncertain?'Needs Review':'Failed';p.run.failed++;}
+      for(let offset=0;offset<rows.length;offset+=size){
+        checkScope();const group=[];
+        for(const r of rows.slice(offset,offset+size)){
+          const flags=issues(r,subs,p.rows,existing,ctx.cities,ctx.counties);
+          if(flags.length){r.error=flags.join(' · ');r.lotState='Skipped';r.propertyState='Skipped';p.run.failed++;p.run.completed++;}else group.push(r);
+        }
+        if(!group.length){paint();continue;}
+        group.forEach(r=>{r.lotState='Creating…';});paint();
+        const lots=await save('lot',group,group.map(r=>lotData(r,subs.find(s=>String(s.ID)===r.subId))));
+        let stop=false;
+        group.forEach((r,i)=>{
+          const result=lots[i];
+          if(result.ok){r.created=true;r.on=false;r.lotState='Saved';r.lotId=result.id;existing.add(r.code.toUpperCase());p.run.created++;if(!/^\d+$/.test(text(r.lotId))){r.error='Lot saved without a usable matching ID. Review it in Creator before creating its Property.';stop=true;}}
+          else{failed(r,result.error,'lot');r.propertyState='Not Created';if(result.error.uncertain||ctx.throttled&&ctx.throttled(result.error))stop=true;}
+        });paint();
+        if(stop){group.filter(r=>r.created).forEach(r=>{r.propertyState='Not Created';r.error=r.error||'Import stopped before Property creation.';p.run.failed++;});p.run.completed+=group.length;p.error='A Lot batch needs review. Saved Lots will not be replayed.';paint();break;}
+        const children=group.filter(r=>r.created);
+        if(children.length){
+          checkScope();children.forEach(r=>{r.propertyState='Creating…';});paint();
+          const properties=await save('property',children,children.map(r=>propertyData(r,subs.find(s=>String(s.ID)===r.subId),r.lotId)));
+          children.forEach((r,i)=>{const result=properties[i];if(result.ok){r.propertyCreated=true;r.propertyId=result.id;r.propertyState='Saved';p.run.properties++;}else{failed(r,result.error,'property');stop=true;}});
+        }
+        p.run.completed+=group.length;p.progress=p.run.completed;paint();
+        if(stop){p.error='A Property batch needs review. Import stopped before creating more Lots.';paint();break;}
+      }
+    }
     async function create(){
       if(busy()||p.run)return;
       const subs=chosen(),rows=p.rows.filter(r=>r.on&&!r.created);if(!rows.length)return;p.rows.forEach(r=>r.error='');
-      if(rows.some(r=>issues(r,subs,p.rows,existing,ctx.cities,ctx.counties).length)){p.error='Resolve the highlighted rows or uncheck them before creating records.';paint();return;}
+      const reviewFlags=rows.map(r=>issues(r,subs,p.rows,existing,ctx.cities,ctx.counties));
+      if(reviewFlags.some(flags=>!flags.some(duplicateIssue)&&flags.length)){p.error='Resolve the highlighted rows or uncheck them before creating records.';paint();return;}
       if(typeof ctx.addProperty!=='function'||typeof ctx.recordId!=='function'){p.error='Property creation is unavailable. Reload Land & Projects.';paint();return;}
       if(subs.some(s=>!/^\d+$/.test(lookupId(s.Project)))){p.error='The subdivision needs a valid parent Project before importing.';paint();return;}
       p.creating=true;p.step=3;p.error='';p.progress=0;p.total=rows.length;
@@ -153,12 +191,18 @@
       function throttled(error){return ctx.throttled&&ctx.throttled(error);}
       function checkScope(){if(ctx.scope&&ctx.scope()!==p.run.scope)throw Error('The Creator session changed. Review saved records before another import.');}
       try{
-        checkScope();await refreshExisting(subs);checkScope();p.run.stage=1;paint();
-        for(const r of rows){
+        checkScope();await refreshExisting(subs);checkScope();
+        // Evaluate the entire selection before changing on/off state so every
+        // occurrence of a repeated spreadsheet code is excluded consistently.
+        const duplicateFlags=rows.map(r=>issues(r,subs,p.rows,existing,ctx.cities,ctx.counties).filter(duplicateIssue));
+        const validRows=rows.filter((r,i)=>{if(!duplicateFlags[i].length)return true;r.on=false;r.lotState='Skipped';r.propertyState='Skipped';r.error=duplicateFlags[i].join(' · ');return false;});
+        p.run.skipped=rows.length-validRows.length;p.run.total=validRows.length;p.total=validRows.length;p.run.stage=1;paint();
+        if(ctx.batch)await createBatches(validRows,subs,checkScope);
+        else for(const r of validRows){
           checkScope();const flags=issues(r,subs,p.rows,existing,ctx.cities,ctx.counties);
           if(flags.length){r.error=flags.join(' · ');r.lotState='Skipped';r.propertyState='Skipped';p.run.failed++;p.run.completed++;paint();continue;}
           const sub=subs.find(s=>String(s.ID)===r.subId);
-          const data={Lot_Code:r.code,Status:'Open',Subdivision:r.subId,Subdivision_Code:text(sub.Subdivision_Code),Phase:Number(sub.Phase),Block:text(r.block),Lot_Number:Number(r.lot),City:sub.importCity,County:sub.importCounty,Archived:false,On_Hold:false};if(text(r.width))data.Lot_Size=Number(r.width);
+          const data=lotData(r,sub);
           p.run.current=r.code;r.lotState='Creating…';paint();
           try{const response=await ctx.add(data);r.created=true;r.on=false;r.lotState='Saved';r.lotId=ctx.recordId(response);existing.add(r.code.toUpperCase());p.run.created++;}
           catch(e){r.error=ctx.error(e);r.lotState=e.uncertain?'Needs Review':'Failed';r.propertyState='Not Created';p.run.failed++;p.run.completed++;paint();if(throttled(e)){p.error='Creator is still limiting requests. Import stopped; review the saved rows before another import.';break;}if(e.uncertain){p.error='A Lot save could not be confirmed. Review saved records in Creator before another import.';break;}continue;}
