@@ -8,25 +8,25 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.151"></script>
-<script src="pf-save-audit.js?v=1.80.151"></script>
-<script src="pf-input-rules.js?v=1.80.151"></script>
-<script src="pf-input-validation.js?v=1.80.151"></script>
-<script src="pf-progress.js?v=1.80.151"></script>
+<script src="pf-save-verification.js?v=1.80.152"></script>
+<script src="pf-save-audit.js?v=1.80.152"></script>
+<script src="pf-input-rules.js?v=1.80.152"></script>
+<script src="pf-input-validation.js?v=1.80.152"></script>
+<script src="pf-progress.js?v=1.80.152"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.151">
-<script src="interaction-motion.js?v=1.80.151"></script>
-<script src="interaction-surfaces.js?v=1.80.151"></script>
-<script src="number-edit-commit.js?v=1.80.151"></script>
-<script src="number-transitions.js?v=1.80.151"></script>
-<script src="number-views.js?v=1.80.151"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.151">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.152">
+<script src="interaction-motion.js?v=1.80.152"></script>
+<script src="interaction-surfaces.js?v=1.80.152"></script>
+<script src="number-edit-commit.js?v=1.80.152"></script>
+<script src="number-transitions.js?v=1.80.152"></script>
+<script src="number-views.js?v=1.80.152"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.152">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.151"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.151">
-<script src="comments.js?v=1.80.151"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.151">
+<script src="budget-transfer-ui.js?v=1.80.152"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.152">
+<script src="comments.js?v=1.80.152"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.152">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1850,8 +1850,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.151"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.151">
+<script src="success-feedback.js?v=1.80.152"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.152">
 </head>
 <body>
 
@@ -2266,7 +2266,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.151";
+var PFW_VERSION="1.80.152";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -9459,6 +9459,10 @@ function syncLOIReverseLookups(l,pfId,silent){
    ID, so the name is derived, never typed - typos in the series number were the point
    of taking the free-text name away. */
 var QC_ENTITY_TEMPLATES=["WBW Single Development Group, LLC-Series XXX","WBW Single Land Investment, LLC-Series XXX"];
+function qcCompanyFacilityId(tpl,suffix){
+  var index=QC_ENTITY_TEMPLATES.indexOf(String(tpl||""));
+  return index<0||!/^\d{3}$/.test(String(suffix||""))?"":(index===0?"5":"4")+suffix;
+}
 function qcCompanyName(tpl,fid){ return String(tpl||"").replace("XXX",String(fid||"").slice(-3)); }
 function loiQuickCompanySync(){
   if(S.quickCreateKind!=="company") return;
@@ -9466,10 +9470,10 @@ function loiQuickCompanySync(){
   var fidEl=document.querySelector('#loiQuickBody [data-qc-k="Facility_ID"]');
   var pv=document.getElementById("qcNamePreview");
   if(!tplEl||!fidEl||!pv) return;
-  /* forced to digits, forced to 4 */
-  var clean=String(fidEl.value||"").replace(/\D/g,"").slice(0,4);
+  /* Keep the three-digit series suffix as text, including leading zeroes. */
+  var clean=String(fidEl.value||"").replace(/\D/g,"").slice(0,3);
   if(fidEl.value!==clean) fidEl.value=clean;
-  var ok=!!tplEl.value && /^\d{4}$/.test(clean);
+  var ok=!!qcCompanyFacilityId(tplEl.value,clean);
   if(ok){ pv.textContent=qcCompanyName(tplEl.value,clean); pv.classList.remove("empty"); }
   else { pv.textContent=""; }
   var save=document.getElementById("loiQuickSave");
@@ -9477,7 +9481,7 @@ function loiQuickCompanySync(){
     save.disabled=false;
     save.classList.toggle("qc-off",!ok);
     save.setAttribute("aria-disabled",ok?"false":"true");
-    save.title=ok?"":"Pick an entity and enter a 4-digit Facility ID";
+    save.title=ok?"":"Pick an entity and enter the last 3 digits of the Facility ID";
   }
 }
 document.addEventListener("input",function(e){ if(e.target&&e.target.getAttribute&&e.target.getAttribute("data-qc-k")) loiQuickCompanySync(); });
@@ -9578,9 +9582,9 @@ function openLOIQuickCreate(kind){
   if(!canEditLOI()){auditLog("warn","LOI Company quick create blocked — Pro Forma is read-only",{proformaId:String(S.ed.id||"")});toast("This Pro Forma is read-only.","err");return;}
   S.quickCreateKind="company";document.getElementById("loiQuickIcon").textContent="C";document.getElementById("loiQuickTitle").textContent="Create Purchasing Company";document.getElementById("loiQuickSub").textContent="";document.getElementById("loiQuickBody").innerHTML=
     '<div class="qc-field wide"><label>Entity<span class="qc-required">*</span></label><select data-qc-k="Entity_Template"><option value="">\u2014 Select entity \u2014</option>'+QC_ENTITY_TEMPLATES.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('')+'</select></div>'
-    +'<div class="qc-field wide"><label>Facility ID<span class="qc-required">*</span></label><input data-qc-k="Facility_ID" type="text" inputmode="numeric" maxlength="4" placeholder="4 digits \u2014 the last 3 become the Series" autocomplete="off"/></div>'
+    +'<div class="qc-field wide"><label>Facility ID (Last 3 Digits)<span class="qc-required">*</span></label><input data-qc-k="Facility_ID" type="text" inputmode="numeric" maxlength="3" placeholder="123" autocomplete="off"/></div>'
     +'<div class="qc-preview" id="qcNamePreview"></div>';
-  var er=document.getElementById("loiQuickError");er.textContent="";er.classList.remove("show");var save=document.getElementById("loiQuickSave");save.disabled=false;save.textContent="Create & Add";save.classList.add("qc-off");save.setAttribute("aria-disabled","true");save.title="Pick an entity and enter a 4-digit Facility ID";document.getElementById("loiQuickModal").classList.add("show");setTimeout(function(){var f=document.querySelector("#loiQuickBody [data-qc-k]");if(f)f.focus();},25);
+  var er=document.getElementById("loiQuickError");er.textContent="";er.classList.remove("show");var save=document.getElementById("loiQuickSave");save.disabled=false;save.textContent="Create & Add";save.classList.add("qc-off");save.setAttribute("aria-disabled","true");save.title="Pick an entity and enter the last 3 digits of the Facility ID";document.getElementById("loiQuickModal").classList.add("show");setTimeout(function(){var f=document.querySelector("#loiQuickBody [data-qc-k]");if(f)f.focus();},25);
 }
 function closeLOIQuickCreate(){document.getElementById('loiQuickModal').classList.remove('show');S.quickCreateKind='';}
 function quickCreateValues(){var o={};document.querySelectorAll('#loiQuickBody [data-qc-k]').forEach(function(el){o[el.getAttribute('data-qc-k')]=String(el.value||'').trim();});return o;}
@@ -9592,9 +9596,10 @@ function submitLOIQuickCreate(){
   if(S.quickCreateKind!=="company"||!l)return;
   if(!canEditLOI()){closeLOIQuickCreate();auditLog("warn","LOI Company quick create submit blocked — Pro Forma is read-only",{proformaId:String(S.ed&&S.ed.id||"")});toast("This Pro Forma is read-only.","err");return;}
   var v=quickCreateValues();
-  var qcFid=String(v.Facility_ID||"").replace(/\D/g,"");
+  var qcSuffix=String(v.Facility_ID||"");
+  var qcFid=qcCompanyFacilityId(v.Entity_Template,qcSuffix);
   if(!v.Entity_Template){showQuickCreateError("Pick an entity.");return;}
-  if(!/^\d{4}$/.test(qcFid)){showQuickCreateError("Facility ID must be exactly 4 digits.");return;}
+  if(!qcFid){showQuickCreateError("Select a listed entity and enter exactly 3 digits for the Facility ID suffix.");return;}
   var qcName=qcCompanyName(v.Entity_Template,qcFid);
 
   var pfId=String(S.ed.id||"");
