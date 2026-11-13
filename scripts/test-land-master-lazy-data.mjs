@@ -24,6 +24,7 @@ function harness({read,choices}={}){
     sdkGetAll(report,criteria,onProgress,options){reads.push({report,options});return Promise.resolve(read?read(report,options,reads.length):fixture[report]);},
     loadLocationChoices:choices||(async()=>{}),LMPerf:{start(){},end(name,meta){metrics.push({name,...meta});},mark(name,meta){metrics.push({name,...meta});}},diag(label,details){if(details?.error)errors.push(details.error);},beginLoadProgress(){},updateLoadProgress(){},finishLoadProgress(){},setLoadRendering(){},
     requestAnimationFrame(fn){fn();},setTimeout(fn){fn();},showAppConfirm(title,message,label,action){c.confirmedAction=action;},closeFilterPopup(){},closeBulkModal(){c.S.bulkOpen=false;},
+    requireMutationSuccess:response=>response,MassUpdateUI:{reset(){},release(){}},LMMassUpdate:{create:()=>({})},LMMassUpdateUI:{create:()=>({reset(){},release(){},start(){},patch(){}})},
     recordDialogFocus:{open(){},close(){}},propertyWorkspace:{closeDate(){},afterRender(){}},propertyTransferCount:()=>null,
     renderTable(){},renderCounts(){},renderFilterButtons(){}});
   c.window=c;vm.runInContext(controller,c);
@@ -91,12 +92,11 @@ h.c.openBulkModal();h.nodes.get('bulkField').value='Facility_ID';h.c.renderBulkV
 const valueControl={value:'000073',disabled:false,getAttribute:name=>name==='data-ftype'?'text':''};
 const valueWrap=h.nodes.get('bulkValueWrap');valueWrap.querySelector=()=>valueControl;valueWrap.querySelectorAll=()=>[valueControl];const valueMarkup=valueWrap.innerHTML;
 let save=deferred(),writes=[],closedPicker=0;h.c.LMPickers={close(){closedPicker++;}};h.c.renderBulk=()=>{};
-h.c.updateRecord=(id,data,report)=>{writes.push({id,data,report});return writes.length===1?save.promise:Promise.reject({code:2899,message:'Denied'});};
+h.c.MassUpdate={run(input){writes.push(input);return save.promise;}};
 h.c.applyBulk();assert.equal(h.c.S.bulkSaving,true);assert.equal(h.nodes.get('bulkField').disabled,true);assert.equal(valueControl.disabled,true);assert.equal(closedPicker,1);
 const choiceToken=h.c.S.bulkChoiceToken;h.nodes.get('bulkField').value='Account_Number';h.c.renderBulkValue();h.c.applyBulk();await settle();
 assert.equal(h.c.S.bulkField,'Facility_ID');assert.equal(h.nodes.get('bulkField').value,'Facility_ID');assert.equal(h.c.S.bulkChoiceToken,choiceToken);assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(writes.length,1,'a repeated Apply during saving cannot replay requests');
-save.resolve({code:3000,data:{ID:'401'}});await settle();assert.equal(h.c.S.bulkSaving,false);assert.equal(h.c.S.bulkOpen,true);assert.equal(h.nodes.get('bulkField').disabled,false);assert.equal(valueControl.disabled,false);assert.equal(h.nodes.get('bulkApplyBtn').disabled,false);assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(h.nodes.get('bulkMsgModal').textContent,'Saved 1 · 1 failed');assert.equal(writes[0].data.Facility_ID,'000073');assert.equal(writes[1].data.Facility_ID,'000073');
-h.c.updateRecord=(id,data,report)=>{writes.push({id,data,report});return Promise.resolve({code:3000,data:{ID:id}});};h.c.applyBulk();await settle();assert.equal(writes.length,4);assert.ok(writes.every(write=>write.report==='All_Companies'&&write.data.Facility_ID==='000073'),'explicit retry keeps the original field and exact leading-zero value');assert.equal(h.c.S.bulkOpen,false);assert.equal(h.c.S.bulkSaving,false);
+save.resolve({entries:[{id:'401',state:'saved'},{id:'402',state:'unknown',error:new Error('Reply lost')}]});await settle();assert.equal(h.c.S.bulkSaving,false);assert.equal(h.c.S.bulkOpen,true,'partial results remain mounted');assert.equal(valueWrap.innerHTML,valueMarkup);assert.equal(valueControl.value,'000073');assert.equal(writes[0].payload.Facility_ID,'000073');assert.equal(writes[0].report,'All_Companies');assert.deepEqual(Array.from(writes[0].ids),['401','402']);assert.equal(writes.length,1,'host delegates the captured selection once; native outcome/replay guards are covered by test-land-mass-update');
 
 function inlineFixture(h){
  vm.runInContext(section('function inputRaw','function performExternalMappingOperation'),h.c);

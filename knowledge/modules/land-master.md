@@ -1,3 +1,41 @@
+## Native Mass Updates (8.17.30)
+
+Land And Projects mass updates now follow Tax Parcel Management's native SDK v2
+DATA.updateRecords method: capture selected string IDs and one field value,
+prepare each Property payload, group identical payloads, and send chunks of at
+most 200 with exact ID criteria. A 100-record Company update takes one write
+instead of 100 individual writes. Native validation, permissions and default
+workflows remain enabled; the shared 45-call scheduler is unchanged.
+
+The Land-specific adapter reuses requireMutationSuccess, sdkGetAll,
+LMPropertySubtypes.prepare and LMPropertyLots.error. Tax's controller cannot be
+used directly because it owns Tax-specific scopes, fields, references and drafts.
+Property/Lot checks use fresh, deduplicated Lot and Subdivision reads in groups
+of 25 IDs rather than two reads per Property. Prepared payloads that differ
+(such as a required Subtype clear) never share a write.
+
+Native results must acknowledge the exact captured ID set and count. Per-record
+validation rejections show Failed; uncertain replies show Needs Review, stop
+later chunks and block another mass write to those IDs in that data generation.
+Successful IDs leave the selection. There is no automatic replay. Review saved
+records before an explicit refresh/new attempt. Display refresh uses bounded-size
+25-ID queries; it never compares editable values or reverses acknowledged saves.
+The existing dialog opens progress immediately, traps focus, makes background
+controls inert, locks pending closes, patches per-record results and remains
+open until dismissed. Shared overlay/meter motion respects reduced motion.
+
+Affected forms/reports: Property/All_Property, Subdivision/All_Subdivisions and
+Company/All_Companies, using their existing mass-edit fields (including Company1).
+No schema, Creator function, Custom API or permission change; no Creator
+publication required. Regression: 1/100/200/201/450 records, exact partial
+selections, string IDs, leading zeroes, subtype and Lot relationship checks,
+reordered/partial/malformed native replies, actual rejections, no replay, session
+drift, duplicate sends and optional display-read failures. Browser verification
+uses the actual widget in local demo mode; live production bulk writes were not
+executed. Greptile review is blocked because the pinned CLI is signed out.
+Rollback: map Development and Production Land Master to 8.17.28.
+
+
 ## Compact Toolbar Filters (8.17.29)
 
 Restores the pre-8.17.28 compact 11px/800 filter text requested by the user.
