@@ -1,3 +1,16 @@
+## Offer Company Facility ID — 1.80.152, November 13, 2026
+
+Create Purchasing Company accepts exactly three suffix digits. The existing
+Development Group entity (Development Services) adds 5; Land Investment adds 4.
+For example, 007 produces Facility ID 5007 or 4007. The company name retains
+Series 007. Preview, validation and submission use the same entity mapping;
+existing companies and Property Facility IDs are unchanged.
+
+Affected fields: Company.Company_Name and Company.Facility_ID through the existing
+Save_PF quick_create_company operation (proforma_save). No Creator changes or
+publication are required. Regression: both entities, leading zeroes, entity
+switches, invalid input and the submitted native payload. Rollback: 1.80.151.
+
 ## Approval Delete Icon — 1.80.151
 
 The saved approval Delete action uses the existing attachment trashcan SVG in a compact bottom-right icon button. Permissions, confirmation and routing are unchanged. No Creator update is required. Rollback: 1.80.149.
