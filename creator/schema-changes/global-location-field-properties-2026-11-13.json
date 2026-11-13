@@ -1,0 +1,25 @@
+{
+  "purpose": "Allow current global location values without a second static field-choice restriction.",
+  "environment": "Development",
+  "status": "Saved And Reopened In Native Creator IDE",
+  "production_published": false,
+  "production_testing": "User-Owned; No Production Record Writes Performed",
+  "workflow_changes": false,
+  "function_changes": false,
+  "property": "Allow Other Choices",
+  "native_script_property": "others option = true",
+  "fields": [
+    {"form": "Property", "field": "County", "before": false, "after": true},
+    {"form": "Add_Pro_Forma", "field": "Territory", "before": false, "after": true},
+    {"form": "Project", "field": "County", "before": false, "after": true},
+    {"form": "Project", "field": "Territory", "before": false, "after": true},
+    {"form": "Subdivision", "field": "County", "before": false, "after": true},
+    {"form": "Subdivision", "field": "Territory", "before": false, "after": true},
+    {"form": "Lots", "field": "County", "before": false, "after": true},
+    {"form": "Contract", "field": "County", "before": false, "after": true},
+    {"form": "Contract", "field": "Territory", "before": false, "after": true}
+  ],
+  "preserved": ["Field Types", "Field Links", "Existing Static Choices", "Required Settings", "Existing Records", "Workflows", "Permissions"],
+  "promotion": "The user promotes only these nine field properties through Creator environments.",
+  "rollback": "Restore the prior widget releases, then disable Allow Other Choices if required. Do not delete saved values or global entries."
+}

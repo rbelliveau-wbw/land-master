@@ -4,24 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.31"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.32"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script>LMData.configure({maxRequestsPerMinute:45,readRetryOnThrottle:true});</script>
 <script src="land-data.js"></script>
-<script src="mass-update.js?v=8.17.31"></script>
-<script src="mass-update-ui.js?v=8.17.31"></script>
-<script src="property-workspace.js?v=8.17.31"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.31">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.31">
-<script src="searchable-pickers.js?v=8.17.31" defer></script>
-<script src="property-subtypes.js?v=8.17.31"></script>
-<script src="property-lots.js?v=8.17.31"></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.31">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.31">
-<script src="spreadsheet-import.js?v=8.17.31"></script>
-<script src="lot-import-batch.js?v=8.17.31"></script>
-<script src="lot-import.js?v=8.17.31"></script>
+<script src="mass-update.js?v=8.17.32"></script>
+<script src="mass-update-ui.js?v=8.17.32"></script>
+<script src="property-workspace.js?v=8.17.32"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.32">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.32">
+<script src="searchable-pickers.js?v=8.17.32" defer></script>
+<script src="property-subtypes.js?v=8.17.32"></script>
+<script src="property-lots.js?v=8.17.32"></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.32">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.32">
+<script src="spreadsheet-import.js?v=8.17.32"></script>
+<script src="lot-import-batch.js?v=8.17.32"></script>
+<script src="lot-import.js?v=8.17.32"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -451,15 +451,15 @@ tr.ghead:hover td{background:#edf2f9}
 #bulkResults [data-state="unknown"]>span{color:var(--amber)}
 #bulkModal .bulk-actions{flex-shrink:0;flex-wrap:wrap}
 </style>
-<script src="success-feedback.js?v=8.17.31"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.31">
-<script src="interaction-motion.js?v=8.17.31"></script>
-<script src="interaction-surfaces.js?v=8.17.31"></script>
-<script src="number-edit-commit.js?v=8.17.31"></script>
-<script src="number-transitions.js?v=8.17.31"></script>
-<script src="number-surfaces.js?v=8.17.31"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.31">
-<link rel="stylesheet" href="modal-layout.css?v=8.17.31">
+<script src="success-feedback.js?v=8.17.32"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.32">
+<script src="interaction-motion.js?v=8.17.32"></script>
+<script src="interaction-surfaces.js?v=8.17.32"></script>
+<script src="number-edit-commit.js?v=8.17.32"></script>
+<script src="number-transitions.js?v=8.17.32"></script>
+<script src="number-surfaces.js?v=8.17.32"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.32">
+<link rel="stylesheet" href="modal-layout.css?v=8.17.32">
 </head>
 <body>
 
@@ -631,7 +631,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.31-LAZY-CORE",
+  version: "8.17.32-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1558,7 +1558,7 @@ function loadData(){
   S.coreLoadPromise=loading;function settled(){if(S.coreLoadPromise===loading){S.coreLoadPromise=null;setCoreRefreshing(false);}}loading.then(settled,settled);return loading;
 }
 
-var lotImport=LMLotImport.mount({version:CFG.version,subdivisions:function(){return S.subdivisions},selected:function(){return S.scope==='subs'?Object.keys(S.checked).filter(id=>S.checked[id]):[]},live:function(){return S.liveSDK&&!S.demo},prepare:function(){closeNewMenu();closeFilterPopup();closeLookupPopup();closeProjectPopup();if(window.LMPickers)LMPickers.close(false)},unavailable:function(){setStatus('warn','Open Import Lots inside Zoho Creator')},add:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('lot',data)},addProperty:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('property',data)},recordId:landCreatedRecordId,batch:function(type,records){if(!S.lotImportBatch)S.lotImportBatch=createLotImportBatch();return S.lotImportBatch.write(type,records);},batchSize:50,scope:function(){return landCreateScope()+':'+LandData.generation();},reload:loadData,log:function(level,label,details){auditOnly(label,details,level==='error');if(level==='error')queueErrorEmail(label,details)}});
+var lotImport=LMLotImport.mount({version:CFG.version,cities:function(){return OPTS.subCity;},counties:function(){return OPTS.lotCounty;},subdivisions:function(){return S.subdivisions},selected:function(){return S.scope==='subs'?Object.keys(S.checked).filter(id=>S.checked[id]):[]},live:function(){return S.liveSDK&&!S.demo},prepare:function(){closeNewMenu();closeFilterPopup();closeLookupPopup();closeProjectPopup();if(window.LMPickers)LMPickers.close(false)},unavailable:function(){setStatus('warn','Open Import Lots inside Zoho Creator')},add:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('lot',data)},addProperty:function(data){if(!S.liveSDK||S.demo)return Promise.reject(new Error('Creator connection required.'));return createRecord('property',data)},recordId:landCreatedRecordId,batch:function(type,records){if(!S.lotImportBatch)S.lotImportBatch=createLotImportBatch();return S.lotImportBatch.write(type,records);},batchSize:50,scope:function(){return landCreateScope()+':'+LandData.generation();},reload:loadData,log:function(level,label,details){auditOnly(label,details,level==='error');if(level==='error')queueErrorEmail(label,details)}});
 // Reuse Tax's native full-name title without changing any lookup/edit handler.
 function landLookupNameTitle(event){
   var target=event.target,button=target&&target.closest?target.closest('.table-lookup-btn,.field-lookup-btn,.table-project-btn'):null;

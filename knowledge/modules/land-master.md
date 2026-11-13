@@ -1,3 +1,7 @@
+## Global Location List Validation — 8.17.32, November 13, 2026
+
+Import Lots validates source Subdivision City/County against the same loaded global lists used by Land & Projects. Its host reads current list references on every validation instead of retaining copied Lots field choices. A new global location is accepted without changing the import code. Provenance, duplicate, row, destination-ID, and partial-result safeguards remain. Creator Development Allow Other Choices properties for downstream scalar fields are recorded in the [field inventory](../../creator/schema-changes/global-location-field-properties-2026-11-13.json). No workflows, functions, or Custom APIs change. The user owns Creator promotion and Production testing. Rollback: Land Master 8.17.31 and the prior field properties after reviewing saved values.
+
 ## Native Mass Updates (8.17.30)
 
 Land And Projects mass updates now follow Tax Parcel Management's native SDK v2

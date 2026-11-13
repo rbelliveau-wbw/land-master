@@ -250,8 +250,10 @@ for (const required of [
 }
 for (const required of [
   "api_name:LMRuntime.apiName('Get_Land_Master_Choices')",
-  'loadCityChoices(cancelled,next)',
+  'ensurePFLocationChoices()',
   'CFG.choices.cities=value.cities',
+  'CFG.choices.counties=value.counties',
+  'CFG.choices.territory=value.territory',
   'loiComboPop',
   'function loiChoiceMatch(list,text)',
   'if(canon===null){ t.value=""; canon=""; }',

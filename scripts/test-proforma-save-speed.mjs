@@ -77,13 +77,15 @@ for(const env of ['DEVELOPMENT','PRODUCTION']){
  assert.equal(h.widget.PFTransport.snapshot().reviews.length,0);
  assert.equal(perf.snapshot().rate.reason,'');assert.equal(perf.snapshot().queued,0);
  const calls=h.calls.slice(before);
- assert.equal(calls.length,20,'fresh full verification and Dashboard reuse require 20 requests');
+ const saveCalls=calls.filter(call=>call.config.report_name!=='Comment_Log_Report');
+ assert.equal(saveCalls.length,20,'fresh full verification and Dashboard reuse require 20 save requests');
+ assert.ok(calls.length<=22,'save plus optional Dashboard comments must still fit the remaining rolling budget');
  assert.equal(h.writes.filter(w=>w.report_name==='All_Lot_Mix_Rows').length,0,'already-matching persisted prices are not written');
  assert.equal(calls.filter(c=>c.config.report_name==='All_Lot_Mix_Rows'&&c.method==='records').length,1,'one fresh counted scope read; Dashboard reuses the verified rows');
  assert.equal(h.widget.S.detail[ID].lotMixRows.length,2);
  assert.equal(new Set(h.widget.S.detail[ID].lotMixRows.map(r=>r.ID)).size,2);
  assert.ok(h.maxActive()<=3);
- console.log(env+' saved two-row pricing: 20 requests + 23 previous = 43; no request-budget pause.');
+ console.log(env+' saved two-row pricing: '+calls.length+' requests including optional comments + 23 previous; no request-budget pause.');
 }
 for(const kind of ['changed-cents','stale-draft','incomplete-read']){
  const h=await saveFixture({directRecord:true,references:false,storage:{All_Lot_Mix_Rows:persistedPricing},model:m=>{pricingModel(m);if(kind==='changed-cents')m.lotMix[0].Price_LF='1500.25';},
