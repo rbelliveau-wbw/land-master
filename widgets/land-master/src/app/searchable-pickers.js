@@ -35,7 +35,7 @@
     list.replaceChildren();
     var query = search.value.trim().toLowerCase(), group = null, showDisabled = active.getAttribute('data-show-disabled') === '1';
     var options = Array.from(active.options);
-    if (label(active) === 'County') options.sort(function (a, b) { return a.textContent.localeCompare(b.textContent, undefined, {sensitivity:'base'}); });
+    if (/^(City|County|Territory)$/.test(label(active))) options.sort(function (a, b) { return a.textContent.localeCompare(b.textContent, undefined, {sensitivity:'base'}); });
     options.forEach(function (option) {
       if (!option.value || (!showDisabled && option.disabled) || option.textContent.toLowerCase().indexOf(query) < 0) return;
       if (option.parentElement.tagName === 'OPTGROUP' && group !== option.parentElement) {
@@ -104,9 +104,10 @@
     if (select.disabled) return;
     initMenu(); if (active === select) return close(true); close(false); active = select;
     search.value = ''; search.placeholder = 'Search ' + label(select) + '…';
-    var searchable = select.multiple || select.getAttribute('data-ftype') === 'lookup' || label(select) === 'County';
+    var searchable = select.multiple || select.getAttribute('data-ftype') === 'lookup' || /^(City|County|Territory)$/.test(label(select));
     menu.querySelector('.lm-picker-head').hidden = !searchable;
     menu.classList.toggle('lm-picker-single', !select.multiple);
+    menu.classList.toggle('lm-location-picker', /^(City|County|Territory)$/.test(label(select)));
     list.setAttribute('aria-label', label(select)); list.setAttribute('aria-multiselectable', String(select.multiple));
     footer.querySelector('[data-visible]').hidden = !select.multiple;
     footer.querySelector('[data-done]').hidden = !select.multiple;
@@ -131,6 +132,7 @@
     Array.from(selects).forEach(function (select) {
       if (select._pickerButton) { refresh(select); return; }
       var button = document.createElement('button'); button.type = 'button'; button.className = 'lm-picker-trigger';
+      button.classList.toggle('lm-location-picker', /^(City|County|Territory)$/.test(label(select)));
       button.id = 'lmPickerTrigger'+(++sequence); button.setAttribute('aria-haspopup', 'listbox'); button.setAttribute('aria-expanded', 'false'); button.setAttribute('aria-controls', 'lmPickerMenu');
       button.innerHTML = '<span class="lm-picker-label"></span>'+chevron;
       select.hidden = true; select.setAttribute('aria-hidden', 'true'); select.tabIndex = -1;
