@@ -19,12 +19,14 @@ API changes are needed. Publish before using the new editor for live requests.
 V2 saves fail without writes against old native functions. Existing V1/scalar
 callers remain compatible after promotion. The native email attachment uses the
 same SpreadsheetML/toFile/sendmail pattern as PO approval attachments. Net change
-controls financial rollups; gross changes control amount-based approval steps.
+controls financial rollups; its absolute value controls amount-based approval steps.
+Opposing elements offset: +$6,000 and -$6,000 use $0 for routing. COO under an
+Above $10,000 rule applies only when the absolute net exceeds $10,000.
 
 ## Validation And Rollback
 
 Local tests execute actual widget handlers and native source against fixtures,
-including mixed signs, net zero, a real captured Settings chain, gross threshold
+including mixed signs, net zero, a real captured Settings chain, absolute net threshold
 steps, PO availability and workbook numeric/string round trips. The in-app
 desktop fixture verified order, signs, readable controls and mounted-field
 continuity. Greptile could not run because its CLI is signed out. Native Creator
@@ -50,3 +52,16 @@ Rollback the widget mapping to **122.29.145** and restore the previous five
 function bodies from the feature base. Preserve already saved signed records:
 rolling back the PO balance reader after using V2 can make those allocations
 unavailable until the signed-aware reader is restored. Do not rewrite history.
+
+## Net Threshold Correction
+
+The creation, Draft submission and missing-chain repair functions now route on
+absolute net Amount. Gross Changes remains informational in email and Excel.
+Existing captured approval routes are preserved. Promote the corrected
+`createBudgetModification`, `submitBudgetModification` and `modificationAdmin`
+from Development: all three corrected bodies saved and matched after reopening
+on November 13, 2026. No schema or API changes. Backups and verification are in
+`tmp/creator-net-threshold-development/`. The focused native-body, routing and
+permission regressions passed; no live requests or emails were sent.
+To roll back only this correction, restore the three pre-correction bodies from
+commit `7a587878`; this restores gross-based thresholds without altering records.

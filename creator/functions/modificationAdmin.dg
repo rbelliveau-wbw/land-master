@@ -516,11 +516,7 @@ string modificationAdmin(string action, int modificationId, int budgetId, string
 			// or guess which modification owns a historical orphan approval.
 			if(linked.count() == 0 && ifnull(modRec.Status,"") == "Submitted")
 			{
-				policyAmount = ifnull(modRec.Amount,0);
-				if(modRec.Component_Reallocation == true)
-				{
-					policyAmount = ifnull(modRec.Labor_Budget,0).abs() + ifnull(modRec.Materials_Budget,0).abs() + ifnull(modRec.Equipment_Budget,0).abs() + ifnull(modRec.Subcontractor_Budget,0).abs() + ifnull(modRec.Other_Budget,0).abs();
-				}
+				policyAmount = ifnull(modRec.Amount,0).abs();
 				policyContext = {"workflow":"Budget Modification","recordId":modRec.ID.toString(),"budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":ifnull(modRec.Approval_Track,"Development"),"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(policyAmount.toString())};
 				policyExecution = thisapp.applySharedApprovalPolicy(policyContext);
 				if(policyExecution.get("success") == true && policyExecution.get("shared") == true)

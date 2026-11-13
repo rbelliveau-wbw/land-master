@@ -85,9 +85,23 @@ progress.approvalProgress=null;progress.openModificationProgress('','71',null,()
 await Promise.resolve();await Promise.resolve();
 assert.equal(progress.approvalProgress.modificationId,'9007199254740994');assert.equal(progress.checks,1,'successful submissions retain targeted native reconciliation');
 
-// Opposing amounts must not bypass amount-conditioned Settings steps.
+// Amount-conditioned Settings steps use the absolute net of all element changes.
+for(const [values,wanted,direction='Increase'] of [
+  [[6000,5000,0,0,0],['CFO','COO']],
+  [[11000,-2000,0,0,0],['CFO']],
+  [[20000,-9000,0,0,0],['CFO','COO']],
+  [[2000,2000,2000,2000,2000],['CFO']],
+  [[2000,2000,2000,2000,2000.01],['CFO','COO']],
+  [[6000,5000,0,0,0],['CFO','COO'],'Decrease']
+]){
+  const fields=['Labor_Budget','Materials_Budget','Equipment_Budget','Subcontractor_Budget','Other_Budget'];
+  const amount=JSON.stringify({contract:'budget-components-v2',components:Object.fromEntries(fields.map((field,i)=>[field,values[i].toFixed(2)]))});
+  h=runtime();assert.match(h.run('createBudgetModification',['61',direction,amount,'Threshold verification','','2026-11-13','Construction']),/^OK:/);
+  assert.deepEqual(h.snapshot().Budget_Approvals.map(row=>row.Title),wanted,'cumulative signed lines retain the strict Above $10,000 boundary');
+  assert.equal(h.snapshot().Budget_Modification.length,1);assert.equal(h.snapshot().Approval_Route_Snapshot.length,1);
+}
 const zeroNet=JSON.stringify({contract:'budget-components-v2',components:{Labor_Budget:'6000.00',Materials_Budget:'-6000.00',Equipment_Budget:'0.00',Subcontractor_Budget:'0.00',Other_Budget:'0.00'}});
-h=runtime();assert.match(h.create(zeroNet),/^OK:/);assert.equal(h.snapshot().Budget_Modification.length,1);assert.equal(h.snapshot().Budget_Modification[0].Amount,0);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO','COO']);assert.equal(h.snapshot().Approval_Route_Snapshot.length,1,'all components share one captured policy route');
-const signedDraft={...mod,Amount:0,Component_Reallocation:true,Labor_Budget:6000,Materials_Budget:-6000,Equipment_Budget:0,Subcontractor_Budget:0,Other_Budget:0};h=runtime({modifications:[signedDraft]});assert.match(h.submit(),/^OK:/);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO','COO']);
-h=runtime({modifications:[{...signedDraft,Status:'Submitted'}]});assert.match(h.repair(),/^OK:/);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO','COO']);assert.equal(h.emails.length,0);
-console.log('Standalone mixed-element gross amounts retain Settings threshold steps on create, Draft submit, and missing-chain repair, including net-zero transfers.');
+h=runtime();assert.match(h.create(zeroNet),/^OK:/);assert.equal(h.snapshot().Budget_Modification.length,1);assert.equal(h.snapshot().Budget_Modification[0].Amount,0);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO']);assert.equal(h.snapshot().Approval_Route_Snapshot.length,1,'all components share one captured policy route');
+const signedDraft={...mod,Amount:0,Component_Reallocation:true,Labor_Budget:6000,Materials_Budget:-6000,Equipment_Budget:0,Subcontractor_Budget:0,Other_Budget:0};h=runtime({modifications:[signedDraft]});assert.match(h.submit(),/^OK:/);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO']);
+h=runtime({modifications:[{...signedDraft,Status:'Submitted'}]});assert.match(h.repair(),/^OK:/);assert.deepEqual(h.snapshot().Budget_Approvals.map(r=>r.Title),['CFO']);assert.equal(h.emails.length,0);
+console.log('Standalone mixed-element absolute net amounts determine Settings threshold steps on create, Draft submit, and missing-chain repair, including net-zero transfers.');

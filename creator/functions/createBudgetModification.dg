@@ -163,8 +163,8 @@ string createBudgetModification(int itemId, string modType, string amount, strin
 		}
 	}
 	policySubmitter = User_Access[User == zoho.loginuser];
-	policyAmount = vAmount;
-	if(signedComponents == true) { policyAmount = componentGross; }
+	// Approval thresholds use the absolute net change, including zero-net transfers.
+	policyAmount = vAmount.abs();
 	policyContext = {"workflow":"Budget Modification","budgetId":vBudgetId.toString(),"territory":policyTerritory,"department":vTrack,"submitterId":ifnull(policySubmitter.ID,0).toString(),"amount":thisapp.poCurrencyString(policyAmount.toString())};
 	// Validate the current Settings rule before creating the modification.
 	policyPreview = thisapp.resolveApprovalRoute(policyContext);

@@ -50,8 +50,9 @@ net is `Amount`, net direction is `Modification_Type` (Increase for zero net),
 and all five existing component fields are normalized by that direction.
 `Component_Reallocation=true` now also identifies signed standalone modifications.
 At least one nonzero component, exact cents and supported capacity are required.
-The sum of absolute component changes supplies Settings amount thresholds on
-create, Draft submit and missing-chain repair, including net-zero requests.
+The absolute net change supplies Settings amount thresholds on create, Draft
+submit and missing-chain repair. Opposing components offset; +$6,000 and -$6,000
+use $0 for routing. Gross changes remain informational in email and Excel.
 
 Native acceptance precedes the existing SDK edit reassertion, preventing old
 function bodies from leaving partial V2 financial edits. Scalar/V1 callers keep

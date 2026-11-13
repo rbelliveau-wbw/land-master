@@ -136,14 +136,14 @@ console.log('PASS: actual native modification component create/update bodies; al
 
 const signedEnvelope=values=>JSON.stringify({contract:'budget-components-v2',components:parts(values)});
 for(const [values,type,total,gross] of [[[100,-80,0,0,0],'Increase',20,180],[[100,-80,0,0,0],'Decrease',20,180],[[100,-100,0,0,0],'Increase',0,200]]){
- h=runtime();assert.match(h.create(signedEnvelope(values),type),/^OK:/);let saved=h.snapshot().Budget_Modification.at(-1);assert.equal(saved.Amount,total);assert.equal(saved.Component_Reallocation,true);assert.equal(saved.Modification_Type,type);assert.deepEqual(Object.fromEntries(fields.map(f=>[f,saved[f]])),parts(values));assert.equal(h.events().filter(e=>e.kind==='approval-chain').length,1);assert.equal(h.events().find(e=>e.kind==='route-preview').amount,String(gross),'gross changes drive approval thresholds');
+ h=runtime();assert.match(h.create(signedEnvelope(values),type),/^OK:/);let saved=h.snapshot().Budget_Modification.at(-1);assert.equal(saved.Amount,total);assert.equal(saved.Component_Reallocation,true);assert.equal(saved.Modification_Type,type);assert.deepEqual(Object.fromEntries(fields.map(f=>[f,saved[f]])),parts(values));assert.equal(h.events().filter(e=>e.kind==='approval-chain').length,1);assert.equal(h.events().find(e=>e.kind==='route-preview').amount,String(total),'absolute net change drives approval thresholds');
  h=runtime();assert.match(h.update(signedEnvelope(values),type),/^OK:/);saved=h.snapshot().Budget_Modification[0];assert.equal(saved.Amount,total);assert.equal(saved.Component_Reallocation,true);assert.equal(saved.Modification_Type,type);assert.deepEqual(Object.fromEntries(fields.map(f=>[f,saved[f]])),parts(values));
 }
 for(const [values,type] of [[[-100,80,0,0,0],'Increase'],[[0,0,0,0,0],'Increase'],[[100,-100,0,0,0],'Decrease'],[[1.001,0,0,0,0],'Increase']]){
  for(const method of ['create','update']){h=runtime();const before=h.snapshot();assert.match(h[method](signedEnvelope(values),type),/^ERROR:/);assert.deepEqual(h.snapshot(),before);assert.equal(h.c.writes.length,0);}
 }
 for(const method of ['create','update']){h=runtime();const before=h.snapshot();const args=method==='create'?[ids.item,'Increase',signedEnvelope([1,0,0,0,0]),'Reason','PO:forged','','Construction']:['update',ids.modification,ids.budget,'Increase',signedEnvelope([1,0,0,0,0]),'Reason','PO:forged',''];const result=vm.runInContext(`thisapp.${method==='create'?'createBudgetModification':'modificationAdmin'}(${args.map(JSON.stringify).join(',')})`,h.c);assert.match(result,/^ERROR: PO references/);assert.deepEqual(h.snapshot(),before);}
-console.log('Native V2: mixed signs, zero net, positive/decrease normalization, one approval chain, gross threshold basis, no-write validation and reserved PO references passed.');
+console.log('Native V2: mixed signs, zero net, positive/decrease normalization, one approval chain, absolute net threshold basis, no-write validation and reserved PO references passed.');
 
 // Execute the actual mail producer, reopen its native Excel attachment, and
 // compare numeric cells with the independently signed modification values.
