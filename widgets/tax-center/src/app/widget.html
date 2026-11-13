@@ -825,16 +825,21 @@ tr.bulk-on{background:var(--psoft)}
 .unique-note[hidden]{display:none}
 .unique-note::before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:currentColor}
 .unique-note[data-state="duplicate"],.unique-note[data-state="invalid"],.unique-note[data-state="error"]{color:#b42318;font-weight:700}
+
+/* Location record fields retain native values and save handlers. */
+select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-item,.ss-pop.ss-location .ss-empty{font-size:14px}
+.ss-location .ss-item.selected::after{content:none}
+.ss-location-check{display:block;margin-left:auto;width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<script src="success-feedback.js?v=19.17.37"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.37">
-<script src="interaction-motion.js?v=19.17.37"></script>
-<script src="interaction-surfaces.js?v=19.17.37"></script>
-<script src="number-edit-commit.js?v=19.17.37"></script>
-<script src="number-transitions.js?v=19.17.37"></script>
-<script src="number-surfaces.js?v=19.17.37"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.37">
-<link rel="stylesheet" href="modal-layout.css?v=19.17.37">
+<script src="success-feedback.js?v=19.17.38"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.38">
+<script src="interaction-motion.js?v=19.17.38"></script>
+<script src="interaction-surfaces.js?v=19.17.38"></script>
+<script src="number-edit-commit.js?v=19.17.38"></script>
+<script src="number-transitions.js?v=19.17.38"></script>
+<script src="number-surfaces.js?v=19.17.38"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.38">
+<link rel="stylesheet" href="modal-layout.css?v=19.17.38">
 </head>
 <body>
 
@@ -1222,8 +1227,8 @@ tr.bulk-on{background:var(--psoft)}
           </select>
         </div>
         <div class="fg"><span class="fl">County</span>
-          <select class="fi" id="atCounty">
-            <option value="">— Select county —</option>
+          <select class="fi searchable-select location-select" aria-label="County" id="atCounty">
+            <option value="">— Select County —</option>
           </select>
         </div>
         <div class="fg"><span class="fl">Acres</span><input class="fi" id="atAcres" placeholder="0.00"/></div>
@@ -1266,8 +1271,8 @@ tr.bulk-on{background:var(--psoft)}
         </div>
         <div class="fg"><span class="fl">Property ID</span><input class="fi" id="apPropId" placeholder="e.g. ABC-001"/></div>
         <div class="fg"><span class="fl">County<span class="freq">*</span></span>
-          <select class="fi" id="apCounty">
-            <option value="">— Select county —</option>
+          <select class="fi searchable-select location-select" aria-label="County" id="apCounty">
+            <option value="">— Select County —</option>
           </select>
           <div class="ferr" id="apCountyErr">County is required.</div>
         </div>
@@ -1346,7 +1351,7 @@ tr.bulk-on{background:var(--psoft)}
         </div>
         <div class="fg"><span class="fl">Property ID</span><input class="fi" id="epPropId"/></div>
         <div class="fg"><span class="fl">County<span class="freq">*</span></span>
-          <select class="fi" id="epCounty"></select>
+          <select class="fi searchable-select location-select" aria-label="County" id="epCounty"></select>
           <div class="ferr" id="epCountyErr">County is required.</div>
         </div>
         <div class="fg"><span class="fl">Land Type</span>
@@ -1397,7 +1402,7 @@ tr.bulk-on{background:var(--psoft)}
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.37',
+  version: '19.17.38',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -3248,7 +3253,7 @@ function renderLotRow(r, hidden){
   state.data.companies.forEach(function(c){html+='<option value="'+esc(String(c.id||c.name))+'"'+(r.company===c.name?' selected':'')+'>'+esc(c.name)+'</option>';});
   html+='</select></td>';
   // col 6: county (editable select)
-  html+='<td onclick="event.stopPropagation()"><select class="cell-select" style="max-width:100px;font-size:11px" onchange="taxInline(\''+jsArg(r.id)+'\',{County:this.value})">';
+  html+='<td onclick="event.stopPropagation()"><select class="cell-select searchable-select location-select" aria-label="County" style="max-width:100px;font-size:14px" onchange="taxInline(\''+jsArg(r.id)+'\',{County:this.value})">';
   html+='<option value="">—</option>';
   (function(){var seen={};state.data.parcelYears.concat(state.data.rawLand).forEach(function(x){if(x.county&&!seen[x.county]){seen[x.county]=1;}});Object.keys(seen).sort().forEach(function(c){html+='<option'+(r.county===c?' selected':'')+'>'+esc(c)+'</option>';});})();
   html+='</select></td>';
@@ -3512,7 +3517,7 @@ function getUniqueCounties(){
 function populateCountyDatalist(id){
   var sel=$(id); if(!sel) return;
   var current=sel.value;
-  var opts='<option value="">— Select county —</option>';
+  var opts='<option value="">— Select County —</option>';
   getUniqueCounties().forEach(function(c){opts+='<option value="'+esc(c)+'">'+esc(c)+'</option>';});
   sel.innerHTML=opts;
   if(current) sel.value=current;
@@ -4717,7 +4722,7 @@ function renderPropertyTab(){
     html+='<tr class="lot-row'+(isBulk?' bulk-on':'')+'"><td onclick="event.stopPropagation()" style="padding:4px 6px"><input type="checkbox" class="bulk-check"'+(isBulk?' checked':'')+' onclick="handlePropCheckboxClick(event,\''+jsArg(String(p.id||''))+'\')"/></td><td onclick="event.stopPropagation()" style="padding:6px 4px"><button class="drill-btn" onclick="openPropertyEdit(\''+jsArg(String(p.id||''))+'\')" title="Edit property" style="width:28px;height:28px">✎</button></td>';
     html+='<td onclick="event.stopPropagation()"><input class="cell-input" style="font-weight:600;font-size:12px;min-width:120px;text-align:left" value="'+esc(p.commonName||'')+'" onblur="taxPropInline(\''+jsArg(String(p.id||''))+'\',{Common_Name:this.value})"/></td>';
     html+='<td onclick="event.stopPropagation()"><input class="cell-input" style="font-size:11px;font-family:ui-monospace,monospace;min-width:70px;text-align:left" value="'+esc(p.propertyId||'')+'" placeholder="—" onblur="taxPropInline(\''+jsArg(String(p.id||''))+'\',{Property_ID:this.value})"/></td>';
-    html+='<td onclick="event.stopPropagation()"><select class="cell-select" data-v="'+esc(p.county||'')+'" style="max-width:100px" onchange="taxPropInline(\''+jsArg(String(p.id||''))+'\',{County:this.value})">'+countyOpts+'</select></td>';
+    html+='<td onclick="event.stopPropagation()"><select class="cell-select searchable-select location-select" aria-label="County" data-v="'+esc(p.county||'')+'" style="max-width:100px" onchange="taxPropInline(\''+jsArg(String(p.id||''))+'\',{County:this.value})">'+countyOpts+'</select></td>';
     html+='<td onclick="event.stopPropagation()"><select class="cell-select" data-v="'+esc(p.landType||'')+'" style="max-width:115px" onchange="taxPropInline(\''+jsArg(String(p.id||''))+'\',{Land_Type:this.value})">'+landTypeOpts+'</select></td>';
     html+='<td onclick="event.stopPropagation()"><select class="cell-select searchable-select" data-v="'+esc(companyValueByName[p.company]||'')+'" style="max-width:130px" onchange="taxPropInline(\''+jsArg(String(p.id||''))+'\',{Company1:this.value})">'+companyOpts+'</select></td>';
     html+='<td onclick="event.stopPropagation()"><input class="cell-input" style="text-align:right;width:48px" value="'+esc(p.acres||'')+'" onblur="taxPropInline(\''+jsArg(String(p.id||''))+'\',{Acres:this.value})"/></td>';
@@ -4816,6 +4821,7 @@ function ssEnsurePop(){
   if(_ssPop)return _ssPop;
   _ssPop=document.createElement('div');
   _ssPop.className='ss-pop hidden';
+  _ssPop.setAttribute('data-lm-motion','popover');
   _ssPop.innerHTML='<div class="ss-search-wrap"><svg class="ss-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="text" class="ss-search" placeholder="Search…" autocomplete="off" spellcheck="false"/></div><div class="ss-list"></div>';
   document.body.appendChild(_ssPop);
   var srch=_ssPop.querySelector('.ss-search');
@@ -4837,6 +4843,7 @@ function ssOpen(sel){
   if(!sel||sel.disabled)return;
   _ssSel=sel;
   var pop=ssEnsurePop();
+  pop.classList.toggle('ss-location',sel.classList.contains('location-select'));
   // Position relative to the select.
   var r=sel.getBoundingClientRect();
   // The popup must fit the LONGEST option, not the (often narrow) anchor select —
@@ -4857,6 +4864,8 @@ function ssOpen(sel){
   // Decide above/below based on available room (list rendered first for height).
   var srch=pop.querySelector('.ss-search');
   srch.value='';
+  srch.placeholder=sel.classList.contains('location-select')?'Search County':'Search…';
+  srch.setAttribute('aria-label',sel.classList.contains('location-select')?'Search County':'Search Choices');
   ssRenderList('');
   var ph=pop.offsetHeight;
   var vh=document.documentElement.clientHeight;
@@ -4876,14 +4885,16 @@ function ssRenderList(query){
   var q=(query||'').trim().toLowerCase();
   _ssItems=[];
   var frag='';
-  for(var i=0;i<_ssSel.options.length;i++){
-    var o=_ssSel.options[i];
+  var options=Array.from(_ssSel.options).map(function(option,index){return {option:option,index:index};});
+  if(_ssSel.classList.contains('location-select'))options.sort(function(a,b){return Number(!!a.option.value)-Number(!!b.option.value)||a.option.text.localeCompare(b.option.text,undefined,{sensitivity:'base'});});
+  for(var oi=0;oi<options.length;oi++){
+    var i=options[oi].index,o=options[oi].option;
     var text=o.text||'';
     var isPlaceholder=(o.value===''&&(!text||/^[\s—\-]*(?:—|choose|none|select|set)/i.test(text.trim())||text.trim()==='—'));
     if(q && text.toLowerCase().indexOf(q)<0)continue;
     _ssItems.push(i);
     var cls='ss-item'+(o.selected?' selected':'')+(isPlaceholder?' ss-clear':'');
-    frag+='<div class="'+cls+'" data-oi="'+i+'">'+esc(text||' ')+'</div>';
+    frag+='<div class="'+cls+'" data-oi="'+i+'">'+esc(text||' ')+(_ssSel.classList.contains('location-select')&&o.selected?'<svg class="ss-location-check" viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg>':'')+'</div>';
   }
   if(!_ssItems.length){list.innerHTML='<div class="ss-empty">'+(q?'No matches for "'+esc(query)+'"':'No options')+'</div>';}
   else list.innerHTML=frag;

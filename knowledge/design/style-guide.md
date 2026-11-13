@@ -371,11 +371,15 @@ This reflects Robby's October 13 correction: "Just the dots need color."
 
 ## Record dropdowns
 
-City, County, and Territory record fields in Land & Projects and Pro Forma use
+City, County, and Territory record dropdowns across all modules use
 alphabetical, searchable single selection. Preserve source values, required
 fields, existing save handlers, and multi-select report filters. Pro Forma Offer
 City/County controls retain canonical-choice validation for existing and staged
-Properties; Territory reuses the Land picker scoped to its record field.
+Properties; Territory reuses the Land picker scoped to its record field. Tax
+County controls reuse Tax’s existing searchable-select popup, preserving original
+option indices for saves after sorting. Settings Territory scope is sorted by
+display name and retains its All Territories option. Legal and Crew record
+pickers already use searchable alphabetical single selection.
 
 
 Legal's main Contracts report includes an alphabetized Territory multi-select
