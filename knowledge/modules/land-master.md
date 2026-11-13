@@ -1,3 +1,31 @@
+## Import Dev Entity And Property Report Styling (8.17.28)
+
+Lot AI Import now sets the new Property's `Company1` (Company) from its
+Subdivision's `Company1` (Dev Entity / native Development Company). The native
+Production report headers confirmed both field link names on November 13, 2026;
+Windmill Preserve - Phase 02 uses WBW Development Services, LLC-Series 061.
+The existing fresh Subdivision read before each Property batch supplies the
+current entity, replacing any review snapshot without extra API calls. A blank
+entity omits Company; an invalid lookup stops the Property batch. Lost-reply
+recovery retains the exact frozen payload actually dispatched. Existing Property
+records and ordinary editor saves are unchanged.
+
+Subdivision and Deed To now share the other Property toolbar filters' Title Case,
+14px type treatment. Lot Code badges use compact 12px/600 text and reduced
+padding beside the table values. Search, multi-selection and active-state
+behavior are unchanged. See the [Lot Lists guide](../design/lot-lists.md).
+
+Changed source: `widget.html`, `property-workspace.css`, `spreadsheet-import.js`,
+`lot-import-batch.js`; tests: `test-spreadsheet-import-close.mjs`. Affected field:
+existing `Property.Company1`, read from existing `Subdivision.Company1`.
+No new forms, fields, Creator functions, Custom APIs or permissions; this is a
+widget deployment using the current Creator schema, with no Creator publication
+required. Regression: fresh object/string Company lookups, cleared entity,
+invalid entity, exact recovery payload, parent/session guards, duplicate skipping
+and the unchanged 162-pair/28-call fixture; desktop filter/badge appearance.
+The actual full live import remains for the user's retry. Rollback: map Land
+Master Development and Production to 8.17.27.
+
 ## Native Lot And Property Import Batches (8.17.27)
 
 The reviewed import now uses authenticated SDK v2 DATA.addRecords array payloads in chunks of 50. Each chunk creates Lots, performs two fresh counted report reads for the saved Lot IDs and their parent Subdivisions, then creates Properties for the successful Lots. Native record validation and all default workflows remain enabled. The shared 45-call/61-second limiter remains as protection, rather than the main way to handle import volume.

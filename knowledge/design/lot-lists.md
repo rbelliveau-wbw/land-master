@@ -2,6 +2,21 @@
 
 Repository-wide rule for applicable surfaces; see [scope and exceptions](README.md).
 
+## Property Report Filters And Lot Codes
+
+Property report toolbar filters share one type treatment, including Subdivision
+and Deed To: Title Case labels, 14px text, matching weight and alignment, and
+the existing white/blue inactive/active states. Keep the toolbar on one
+horizontally scrolling row and reuse the searchable multi-select behavior.
+Do not apply individual capitalization exceptions to one filter.
+
+Property report Lot Code badges use 12px, weight 600, 1.25 line height and
+3px/8px padding. This compact identifier sits beside 11px table values; retain
+the soft blue surface and full code without letting the badge dominate the row.
+This is a requested compact-table exception to the normal 14px control text.
+The current adoption is Land & Projects; other lot report layouts retain their
+documented hierarchy.
+
 Lots defaults to a compact list, with Grid available in the centered inventory switch. Group
 by subdivision, then natural-sorted Block and Lot. Put each group identity in
 its header once. Row identity runs Select, Notes, Block, Lot, Lot code, Status,
