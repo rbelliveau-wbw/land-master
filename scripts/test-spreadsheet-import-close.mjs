@@ -381,3 +381,94 @@ for(const kind of ['add','addProperty']){
   await h.importer.create();assert.equal(calls,1,'a throttled write cannot replay from a terminal run');
 }
 console.log('162-pair pacing: 324 records, 45 calls per rolling 61 seconds, existing startup usage, countdown, pending locks, timer cleanup and terminal throttle stop passed.');
+
+// Native array payloads through the actual host adapter and mounted importer.
+function batchHarness(count=162,options={}){
+  const h=harness(count),c=h.sandbox,host=fs.readFileSync('widgets/land-master/src/app/widget.html','utf8');
+  const native=[],lots=new Map(),properties=new Map();let next=90071992547419900n,epoch=1;
+  lots.set('90071992547419899',{ID:'90071992547419899',Lot_Code:'SC01-B99-L999',Subdivision:{ID:subdivision.ID}});
+  c.S={liveSDK:true,demo:false,coreRefreshing:false};c.LandData={generation:()=>epoch};c.LMRuntime={current:()=>({environment:'DEVELOPMENT',user:'fixture',appLinkName:'land-master'})};c.window.LMRuntime=c.LMRuntime;
+  c.window.setTimeout=setTimeout;c.window.clearTimeout=clearTimeout;
+  for(const file of ['shared/creator-data.js','widgets/land-master/src/app/property-lots.js','widgets/land-master/src/app/property-subtypes.js','widgets/land-master/src/app/lot-import-batch.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c);
+  for(const name of ['LMData','LMPropertyLots','LMPropertySubtypes','LMLotImportBatch'])c[name]=c.window[name];
+  function actual(name){const start=host.indexOf('function '+name+'(');assert.ok(start>=0);return host.slice(start,host.indexOf('\nfunction ',start));}
+  for(const name of ['extractRecordId','landCreateFreeze','landCreateScope','landCreateKey','landCreateStore','landCreateCandidateId','landCreateFailure','landCreateResponseFailure','requireCreateSuccess','createLotImportBatch'])vm.runInContext(actual(name),c);
+  function rows(config){const ids=[...config.criteria.matchAll(/ID == (\d+)/g)].map(m=>m[1]);if(config.report_name==='All_Subdivisions')return options.reparent?[{...subdivision,Project:{ID:'999'}}]:[subdivision];return [...lots.values()].filter(l=>!ids.length||ids.includes(l.ID));}
+  c.ZOHO={CREATOR:{DATA:{
+    async getRecordCount(config){native.push({method:'count',...config});return {code:3000,result:{records_count:rows(config).length}};},
+    async getRecords(config){native.push({method:'records',...config});return {code:3000,data:rows(config)};},
+    async addRecords(config){
+      native.push({method:'create',...config});assert.ok(Array.isArray(config.payload.data));assert.ok(config.payload.data.length<=50);assert.equal(config.payload.skip_workflow,undefined);assert.equal(config.app_name,undefined);
+      if(options.gate)await options.gate.promise;
+      if(options.unknown&&config.form_name===options.unknown)throw Error('Lost batch reply');
+      const result=config.payload.data.map((data,i)=>{
+        if(config.form_name===options.failForm&&i===1)return {code:2899,message:'Native validation failed'};
+        const ID=String(++next),row={...data,ID};
+        if(config.form_name==='Lots'){lots.set(ID,{...row,Subdivision:{ID:data.Subdivision}});h.calls.add.push(data);}else{properties.set(ID,row);h.calls.properties.push(data);}
+        return {code:3000,data:options.missingId?{}:{ID,...(options.noEcho?{}:config.form_name==='Lots'?{Lot_Code:data.Lot_Code}:{Property_ID:data.Property_ID})}};
+      });
+      if(options.changeScope)epoch++;
+      if(options.outerError)return {code:3000,result:{code:2899,message:'Nested native denial'}};
+      if(options.incomplete)result.pop();
+      if(options.reordered)result.reverse();
+      return options.bare||options.bareForm===config.form_name?{code:3000}:{code:3000,result};
+    }
+  }}};
+  c.sdkGetAll=(reportName,criteria,progress,settings)=>c.LMData.readAll({reportName,criteria,api:c.ZOHO.CREATOR.DATA,...settings});
+  vm.runInContext(host.match(/<script>(LMData.configure\([^<]+)<\/script>/)[1],c);
+  const adapter=c.createLotImportBatch();h.hostContext.batch=adapter.write;h.hostContext.batchSize=adapter.size;h.hostContext.scope=()=>c.landCreateScope()+':'+epoch;
+  h.hostContext.readLots=async()=>{const groups=await Promise.all(['All_Lots_All_Fields','All_Active_Lots_List_View'].map(reportName=>c.LMData.readAll({reportName,criteria:'(Subdivision == '+subdivision.ID+')',fresh:true,api:c.ZOHO.CREATOR.DATA})));return groups.flat();};
+  return {...h,native,lots,properties,adapter,c};
+}
+{
+  const h=batchHarness();for(let i=0;i<13;i++)await h.c.LMData.request('startup',()=>true,{readOnly:true});await h.importer.create();assert.equal(h.c.window.LMPerf.snapshot().rate.dispatched,41);assert.equal(h.native.length,28,'162 pairs require four duplicate-read calls plus four six-call chunks');
+  assert.deepEqual(h.native.filter(c=>c.method==='create').map(c=>[c.form_name,c.payload.data.length]),[['Lots',50],['Property',50],['Lots',50],['Property',50],['Lots',50],['Property',50],['Lots',12],['Property',12]]);
+  assert.equal(h.state.run.created,162);assert.equal(h.state.run.properties,162);assert.equal(h.state.run.failed,0);assert.equal(h.node('siPairMeter')['aria-valuenow'],'324');
+  for(const property of h.properties.values()){const lot=h.lots.get(property.Lots);assert.equal(lot.Lot_Code,property.Property_ID);assert.equal(property.Subdivisions[0],subdivision.ID);assert.equal(property.Projects[0],subdivision.Project.ID);}
+  await h.importer.create();assert.equal(h.native.length,28,'terminal Create cannot replay a batch');assert.equal(Object.keys(h.c.S.createPending).length,0);
+}
+{
+  const h=batchHarness(3,{failForm:'Lots'});await h.importer.create();assert.equal(h.state.run.created,2);assert.equal(h.state.run.properties,2);assert.equal(h.state.rows[1].lotState,'Failed');assert.equal(h.state.rows[1].propertyState,'Not Created');
+}
+{
+  const h=batchHarness(60,{failForm:'Property'});await h.importer.create();assert.equal(h.state.run.created,50);assert.equal(h.state.run.properties,49);assert.equal(h.state.rows[50].lotState,'Not Created','stop before another chunk can create more orphan Lots');
+}
+for(const unknown of ['Lots','Property']){
+  const h=batchHarness(60,{unknown});await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create').length,unknown==='Lots'?1:2);assert.match(h.state.error,/needs review/);assert.equal(h.state.rows[50].lotState,'Not Created');
+  await assert.rejects(h.adapter.write(unknown==='Lots'?'lot':'property',[unknown==='Lots'?{Lot_Code:'SC01-B01-L01'}:{Lots:'1'}]),/previous create/);
+}
+for(const mode of ['missingId','incomplete','reparent','changeScope']){
+  const h=batchHarness(3,{[mode]:true});await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create'&&c.form_name==='Property').length,0,mode+' cannot send children to an unverified destination');assert.equal(h.state.run.properties,0);assert.ok(h.state.error);
+}
+{
+  const h=batchHarness(1,{bare:true});await h.importer.create();assert.equal(h.state.run.created,1,'resolved native success remains Saved even without optional ID');assert.equal(h.state.rows[0].lotState,'Saved');assert.equal(h.state.run.properties,0,'dependent writes still need a real Lot ID');
+}
+{
+  const gate=deferred(),h=batchHarness(2,{gate});const task=h.importer.create();while(!h.native.some(c=>c.method==='create'))await new Promise(r=>setImmediate(r));
+  await h.importer.close();await h.importer.create();assert.equal(h.state.open,true);assert.equal(h.native.filter(c=>c.method==='create').length,1);gate.resolve();await task;assert.equal(h.state.run.properties,2);
+}
+console.log('Native batch import: 162 Lots + 162 Properties in 28 calls; 50-row chunks, exact parent identities, partial failures, unknown no-replay, missing IDs, reordered/incomplete results, reparent/session drift and pending locks passed.');
+
+{const h=batchHarness(2,{bareForm:'Property'});await h.importer.create();assert.equal(h.state.run.properties,2,'resolved Property batch success never requires optional returned IDs');assert.equal(h.state.error,'');}
+{const h=batchHarness(2);h.c.S.createReviews={property:{key:'property'}};await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create').length,0,'unresolved Property replies must block new Lot batches');}
+
+for(const options of [{reordered:true,noEcho:true},{outerError:true}]){const h=batchHarness(3,options);await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create'&&c.form_name==='Property').length,0);assert.ok(h.state.error);}
+
+{const h=batchHarness(3,{reordered:true});await h.importer.create();assert.equal(h.state.run.created,3);assert.equal(h.state.run.properties,3,'native identity echoes map reordered results to the right rows');}
+{const h=batchHarness(2,{reordered:true,failForm:'Property'});await h.importer.create();assert.equal(h.state.rows[0].propertyState,'Saved');assert.equal(h.state.rows[1].propertyState,'Needs Review');assert.equal(h.state.run.properties,1);}
+
+// Duplicate rows are automatically excluded without preventing valid rows.
+{
+  const h=batchHarness(3);h.lots.set('90071992547419898',{ID:'90071992547419898',Lot_Code:'SC01-B01-L01',Subdivision:{ID:subdivision.ID}});
+  await h.importer.create();assert.equal(h.state.run.created,2);assert.equal(h.state.run.properties,2);assert.equal(h.state.run.skipped,1);assert.equal(h.state.rows[0].lotState,'Skipped');assert.equal(h.state.rows[0].propertyState,'Skipped');assert.equal(h.state.error,'');assert.match(h.node('siPairOutcome').textContent,/1 Duplicate Rows Skipped/);assert.equal(h.node('siPairMeter')['aria-valuemax'],'4');await h.importer.close();assert.equal(h.calls.confirm.length,0);
+}
+{
+  const h=batchHarness(3);h.state.rows[1].lot='1';h.state.rows[1].width='77';await h.importer.create();assert.equal(h.state.run.created,1);assert.equal(h.state.run.properties,1);assert.equal(h.state.run.skipped,2);assert.equal(h.state.rows[0].lotState,'Skipped');assert.equal(h.state.rows[1].lotState,'Skipped');assert.equal(h.state.rows[2].lotState,'Saved');assert.equal(h.state.run.failed,0);assert.equal(h.state.error,'');
+}
+{
+  const h=batchHarness(2);h.state.rows[1].lot='1';await h.importer.create();assert.equal(h.native.filter(c=>c.method==='create').length,0);assert.equal(h.state.run.skipped,2);assert.equal(h.state.run.total,0);assert.equal(h.state.error,'');assert.match(h.node('siPairOutcome').textContent,/No New Records Needed/);await h.importer.close();assert.equal(h.calls.confirm.length,0);
+}
+{
+  const h=batchHarness(2);h.state.rows[1].width='bad';await h.importer.create();assert.equal(h.native.length,0,'other invalid rows still require review before any write');assert.match(h.state.error,/Resolve the highlighted/);
+}
+console.log('Automatic duplicate skipping: existing Lots, all repeated spreadsheet occurrences, differing duplicate widths, valid siblings, all-duplicate no-op, accurate saved totals and ordinary validation preserved.');
