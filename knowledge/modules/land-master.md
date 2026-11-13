@@ -1,4 +1,4 @@
-## Native Mass Updates (8.17.29)
+## Native Mass Updates (8.17.30)
 
 Land And Projects mass updates now follow Tax Parcel Management's native SDK v2
 DATA.updateRecords method: capture selected string IDs and one field value,
@@ -34,6 +34,17 @@ drift, duplicate sends and optional display-read failures. Browser verification
 uses the actual widget in local demo mode; live production bulk writes were not
 executed. Greptile review is blocked because the pinned CLI is signed out.
 Rollback: map Development and Production Land Master to 8.17.28.
+
+
+## Compact Toolbar Filters (8.17.29)
+
+Restores the pre-8.17.28 compact 11px/800 filter text requested by the user.
+Every toolbar filter uses the same 34px height, 11px label/value text, padding
+and spacing, including Subdivision, Deed To and Activity. Labels retain Title
+Case; widths continue to fit their content. Selection, search and active-state
+behavior are unchanged. No Creator forms, fields, functions or Custom APIs
+change, and no Creator publication is required. Rollback: map Land Master
+Development and Production to 8.17.28.
 
 ## Import Dev Entity And Property Report Styling (8.17.28)
 
