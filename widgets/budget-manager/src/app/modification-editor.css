@@ -63,3 +63,22 @@
 #modOverlay.mod-editor #modRequestType:hover{border-color:#82a9d8;background:#f4f8ff}
 #modOverlay.mod-editor #modRequestType:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
 #modOverlay.mod-editor #modRequestType:disabled{background:#f0f3f7;color:#5c7394;cursor:default}
+
+/* Five ordered element amounts share one standalone modification. */
+.mod-amount-heading{font-size:14px;font-weight:600;margin-bottom:8px}
+.mod-amounts{display:grid;gap:10px}
+.mod-amount-row{display:grid;grid-template-columns:minmax(150px,1fr) minmax(220px,1.8fr);gap:14px;align-items:center}
+.mod-amount-row>label{font-size:14px;margin:0}
+.mod-amount-row input{font-size:14px;text-align:right;font-variant-numeric:tabular-nums;min-height:44px}
+.mod-amount-row .sign-seg{flex-shrink:0}
+.mod-amount-row .sgn:focus-visible{outline:2px solid var(--blue);outline-offset:-3px}
+@media(max-width:480px){.mod-amount-row{grid-template-columns:1fr;gap:5px}.mod-amounts{gap:14px}}
+
+#modOverlay.mod-editor .mod-amount-row .amt-row{grid-template-columns:96px minmax(0,1fr)}
+#modOverlay.mod-editor .mod-amount-row>label{margin:0}
+
+.mod-saved-elements{margin:18px 0;overflow:auto;font-size:14px}
+.mod-saved-elements table{width:100%;border-collapse:collapse}
+.mod-saved-elements th,.mod-saved-elements td{padding:8px 6px;border-bottom:1px solid #dde4ef;font-size:14px;text-align:left}
+.mod-saved-elements td,.mod-saved-elements th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.mod-saved-elements tbody th{font-weight:500}

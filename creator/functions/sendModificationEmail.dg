@@ -108,6 +108,7 @@ string sendModificationEmail(int modificationId, string action)
 		signPrefix = "-";
 	}
 	amountText = signPrefix + "$" + modAmount.toString();
+	componentGross = ifnull(modRec.Labor_Budget,0).abs() + ifnull(modRec.Materials_Budget,0).abs() + ifnull(modRec.Equipment_Budget,0).abs() + ifnull(modRec.Subcontractor_Budget,0).abs() + ifnull(modRec.Other_Budget,0).abs();
 	// ---- HTML escaping ----
 	itemNameSafe = itemName.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 	budgetLabelSafe = budgetLabel.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
@@ -168,15 +169,36 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		if(componentValue != null && componentValue != 0)
 		{
-			detailCard = detailCard + "<div style='margin-top:4px;font-size:13px;color:#475569;'>" + componentLabels.get(componentIndex) + ": " + signPrefix + "$" + componentValue.toString() + "</div>";
+			signedValue = componentValue;
+			if(modType == "Decrease") { signedValue = 0 - signedValue; }
+			componentSign = "+"; if(signedValue < 0) { componentSign = "-"; }
+			detailCard = detailCard + "<div style='margin-top:4px;font-size:14px;color:#475569;'>" + componentLabels.get(componentIndex) + ": " + componentSign + "$" + signedValue.abs().toString() + "</div>";
 		}
 		componentIndex = componentIndex + 1;
 	}
+	if(modRec.Component_Reallocation == true) { detailCard = detailCard + "<div style='margin-top:8px;font-size:14px;'><b>Gross Changes:</b> $" + componentGross + "</div>"; }
 	if(classificationTypeSafe != "") { detailCard = detailCard + "<div style='margin-top:8px;font-size:14px;'><b>Type:</b> " + classificationTypeSafe + "</div>"; }
 	if(classificationCommentSafe != "") { detailCard = detailCard + "<div style='margin-top:8px;font-size:14px;'><b>Type Comment:</b> " + classificationCommentSafe + "</div>"; }
 	detailCard = detailCard + "<div style='margin-top:8px;font-size:13px;color:#475569;'><b>Reason:</b> " + modReasonSafe + "</div>";
 	detailCard = detailCard + "</div>";
 	linkBlock = "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Budget Page</a>";
+	// Same native SpreadsheetML/toFile attachment pattern as PO approval mail.
+	attachmentXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet'><Styles><Style ss:ID='Default' ss:Name='Normal'><Font ss:FontName='Calibri' ss:Size='11'/><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00;-$#,##0.00'/></Style></Styles><Worksheet ss:Name='Budget Modification'><Table><Column ss:Width='160'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/>";
+	metadataRows = List();
+	metadataRows.add({"Budget",budgetLabelSafe}); metadataRows.add({"Budget Item",itemNameSafe}); metadataRows.add({"Reference",modRefSafe});
+	metadataRows.add({"Type",classificationTypeSafe}); metadataRows.add({"Type Comment",classificationCommentSafe});
+	metadataRows.add({"Reason",modReason.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")});
+	for each metadata in metadataRows
+	{
+	  attachmentXml = attachmentXml + "<Row><Cell><Data ss:Type='String'>" + metadata.get(0) + "</Data></Cell><Cell ss:MergeAcross='4'><Data ss:Type='String'>" + metadata.get(1) + "</Data></Cell></Row>";
+	}
+	netChange = modAmount; if(modType == "Decrease") { netChange = 0 - netChange; }
+	summaryRows = List(); summaryRows.add({"Net Modification",netChange}); summaryRows.add({"Gross Changes",componentGross});
+	for each summary in summaryRows
+	{
+	  attachmentXml = attachmentXml + "<Row><Cell><Data ss:Type='String'>" + summary.get(0) + "</Data></Cell><Cell ss:StyleID='Money'><Data ss:Type='Number'>" + summary.get(1) + "</Data></Cell></Row>";
+	}
+	attachmentXml = attachmentXml + "<Row><Cell><Data ss:Type='String'>Element</Data></Cell><Cell><Data ss:Type='String'>Final</Data></Cell><Cell><Data ss:Type='String'>Approved Mods</Data></Cell><Cell><Data ss:Type='String'>Current Revised</Data></Cell><Cell><Data ss:Type='String'>This Modification</Data></Cell><Cell><Data ss:Type='String'>Revised If Approved</Data></Cell></Row>";
 	if(modRec.Budget_Item != null)
 	{
 		changeParts = {"1":modRec.Labor_Budget,"2":modRec.Materials_Budget,"3":modRec.Equipment_Budget,"4":modRec.Subcontractor_Budget,"5":modRec.Other_Budget};
@@ -189,6 +211,13 @@ string sendModificationEmail(int modificationId, string action)
 			if(change != null) { change = changeSign * change; }
 			projected = null;
 			if(values.get(5) != null && change != null) { projected = values.get(5); if(modRec.Status != "Approved") { projected = projected + change; } }
+			attachmentXml = attachmentXml + "<Row><Cell><Data ss:Type='String'>" + element.get("label") + "</Data></Cell>";
+			for each attachmentValue in {values.get(3),values.get(4),values.get(5),change,projected}
+			{
+			  if(attachmentValue == null) { attachmentXml = attachmentXml + "<Cell><Data ss:Type='String'>Unavailable</Data></Cell>"; }
+			  else { attachmentXml = attachmentXml + "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + attachmentValue + "</Data></Cell>"; }
+			}
+			attachmentXml = attachmentXml + "</Row>";
 			rowNonzero = false;
 			for each amount in {values.get(3),values.get(4),values.get(5),change,projected}
 			{
@@ -211,6 +240,8 @@ string sendModificationEmail(int modificationId, string action)
 			detailCard = detailCard + modElementBody + "</table>";
 		}
 	}
+	attachmentXml = attachmentXml + "</Table></Worksheet></Workbook>";
+	modificationFile = attachmentXml.toFile("Budget-Modification-" + vModId + ".xls");
 	linkBlock = linkBlock + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	linkBlock = linkBlock + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
 	// ---- created / approved: notify the next pending approver ----
@@ -235,6 +266,7 @@ string sendModificationEmail(int modificationId, string action)
 				to :approverEmail
 				subject :emailSubject
 				message :emailBody
+				Attachments :file:modificationFile
 			]
 			nextApprovalRec.Status="Pending";
 			nextApprovalRec.Sent_Date=zoho.currentdate;
@@ -282,6 +314,7 @@ string sendModificationEmail(int modificationId, string action)
 					to :rowEmail2
 					subject :emailSubject2
 					message :emailBody2
+					Attachments :file:modificationFile
 				]
 				if(notifiedList != "")
 				{

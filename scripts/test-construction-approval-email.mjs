@@ -92,7 +92,8 @@ const count=runtime.mails.length;assert.match(runtime.sendApprovalEmail(1,2),/co
 // Execute the actual related email rendering blocks with the same native
 // element DTOs; shared download and attachment helpers remain unfiltered.
 const modSource=fs.readFileSync('creator/functions/sendModificationEmail.dg','utf8');
-const modBlock=modSource.slice(modSource.lastIndexOf('if(modRec.Budget_Item != null)',modSource.indexOf('linkBlock = linkBlock +')),modSource.indexOf('linkBlock = linkBlock +'));
+const modDetailEnd=modSource.indexOf('attachmentXml = attachmentXml + "</Table></Worksheet></Workbook>"');
+const modBlock=modSource.slice(modSource.lastIndexOf('if(modRec.Budget_Item != null)',modDetailEnd),modDetailEnd);
 vm.runInContext(compile('string renderModificationElements(map modRec,string modType) { detailCard=""; '+modBlock+' return detailCard; }'),runtime);
 const poSource=fs.readFileSync('creator/functions/sendPurchaseOrderEmail.dg','utf8');
 const poStart=poSource.indexOf('for each element in thisapp.poElementExportRows(purchaseOrderId)');

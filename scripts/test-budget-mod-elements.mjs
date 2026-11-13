@@ -24,7 +24,7 @@ const context=vm.createContext({S:state,findItemById:id=>String(id)===IID?item:n
 vm.runInContext(`var MOD_REQUEST_TYPES=["Eng","Dev","Muni","Constr","Purch"];var BUDGET_ELEMENTS=${map};\n`+[
   'v','cleanVal','isObj','rawPath','firstRaw','lookupId','lookupMatchesId','catDept','esc','escAttr','modStatusOf','modSignedAmount','modsForItem',
   'budgetElementNumber','budgetElementSnapshot','budgetElementDepartmentIndex','budgetElementValues','budgetPrelimElementSnapshot','budgetElementModAmounts',
-  'budgetModInitialElement','budgetModClassifiedPayload','budgetModComponentPayload','budgetModElementPicker','budgetModElementPreview','submitModification','updateModification'
+  'budgetModSavedElementDetail','fmt','fmtModAmount','budgetModInitialAmounts','budgetModAmountRows','budgetModSignedAmounts','budgetModMultiPayload','budgetModInitialElement','budgetModClassifiedPayload','budgetModComponentPayload','budgetModElementPicker','budgetModElementPreview','submitModification','updateModification'
 ].map(extract).join('\n'),context);
 const plain=value=>JSON.parse(JSON.stringify(value));
 assert.equal(context.budgetModInitialElement({...item,Budget_Category:{ID:'dev'}},null),'5');
@@ -70,3 +70,23 @@ context.updateModification();for(let i=0;i<4;i++)await new Promise(resolve=>setI
 assert.equal(writes.at(-1).data.Type_field,'Dev');assert.equal(writes.at(-1).data.Type_Comment,'City scope');
 assert.deepEqual(JSON.parse(api.at(-1).args.amount).classification,{type:'Dev',comment:'City scope'});
 console.log('Standalone types: five valid choices, blank legacy values, 50/51-character boundaries and native edit persistence passed.');
+
+// The actual new five-row composer supports mixed signs and net-zero transfers.
+function multi(values){const m={itemId:IID,busy:false,elementAmounts:context.budgetModInitialAmounts(null)};values.forEach((n,i)=>{m.elementAmounts[String(i+1)]={amount:String(Math.abs(n)),type:n<0?'Decrease':'Increase'};});return m;}
+for(const [values,type,total] of [[[100,-80,0,0,0],'Increase',20],[[-100,80,0,0,0],'Decrease',20],[[100,-100,0,0,0],'Increase',0],[[.1,.2,0,0,0],'Increase',.3]]){
+ const modal=multi(values),saved=context.budgetModMultiPayload(modal),envelope=JSON.parse(saved.amount);
+ assert.equal(envelope.contract,'budget-components-v2');assert.equal(saved.type,type);assert.equal(saved.total,total);
+ const record={Amount:total,Modification_Type:type,Component_Reallocation:true,...saved.fields};
+ const reopened=context.budgetModInitialAmounts(record);assert.deepEqual(plain(context.budgetModSignedAmounts({elementAmounts:reopened},true)),values.map(n=>Math.round(n*100)));
+ assert.equal(JSON.stringify(modal),JSON.stringify(multi(values)),'serializing cannot mutate the draft');
+}
+const grid=context.budgetModAmountRows(multi([1,2,3,4,5]));assert.deepEqual([...grid.matchAll(/data-mod-amount-row='(\d)'/g)].map(m=>m[1]),['1','2','3','4','5']);assert.equal((grid.match(/aria-pressed='true'/g)||[]).length,5);assert.doesNotMatch(grid,/<select/);
+for(const bad of ['-1','1.001','NaN','Infinity','1e3','abc']){const m=multi([1,0,0,0,0]);m.elementAmounts['1'].amount=bad;assert.throws(()=>context.budgetModMultiPayload(m));}
+assert.throws(()=>context.budgetModMultiPayload(multi([0,0,0,0,0])));
+let newModal=multi([100,-100,0,0,0]);state.modModal=newModal;const beforeCreate=api.length;context.submitModification();await action;assert.equal(api.length,beforeCreate+1,'one native create for every element');assert.equal(api.at(-1).args.modType,'Increase');assert.equal(JSON.parse(api.at(-1).args.amount).components.Materials_Budget,'-100.00');
+newModal={...multi([-100,80,0,0,0]),editId:MID};state.modModal=newModal;context.updateModification();for(let i=0;i<6;i++)await new Promise(resolve=>setImmediate(resolve));assert.equal(writes.at(-1).data.Amount,'20');assert.equal(writes.at(-1).data.Modification_Type,'Decrease');assert.equal(writes.at(-1).data.Component_Reallocation,true);assert.equal(writes.at(-1).data.Materials_Budget,'-80.00');
+const beforeDenied=writes.length;context.sdkRunBudgetFunction=async()=>({result:'ERROR: Unsupported budget component request.'});state.modModal={...multi([10,-5,0,0,0]),editId:MID};context.updateModification();for(let i=0;i<6;i++)await new Promise(resolve=>setImmediate(resolve));assert.equal(writes.length,beforeDenied,'old/unpromoted native functions cannot leave SDK financial writes behind');
+console.log('Five-row modifications: 1–5 order, separate signs, net increase/decrease/zero, exact cents, create/edit round trips, invalid inputs and no SDK writes before native V2 acceptance passed.');
+
+const savedBreakdown=context.budgetModSavedElementDetail({Amount:20,Modification_Type:'Decrease',Component_Reallocation:true,...parts([100,-80,0,0,0])});assert.match(savedBreakdown,/>−\$100</);assert.match(savedBreakdown,/>\+\$80</);assert.match(savedBreakdown,/Gross Changes/);assert.deepEqual([...savedBreakdown.matchAll(/data-mod-element-row='(\d)'/g)].map(m=>m[1]),['1','2','3','4','5']);assert.match(context.budgetModSavedElementDetail({Amount:20,Labor_Budget:20}),/unavailable/);
+console.log('Saved approval details retain five ordered signed amounts and net/gross totals without inventing allocations for legacy records.');

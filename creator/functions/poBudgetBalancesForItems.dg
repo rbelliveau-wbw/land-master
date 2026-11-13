@@ -174,7 +174,17 @@ map poBudgetBalancesForItems(string budgetId,list budgetItemIds)
 			unallocatedModificationCount = 0;
 			for each  modification in Budget_Modification[Budget == budgetKey && Budget_Item == item.ID && Status == "Approved"]
 			{
-				if(modification.Component_Reallocation == true && verifiedReallocations.get(modification.ID.toString()) != true) { result.put("error","An approved reallocation has no verified PO approval contract."); return result; }
+				if(modification.Component_Reallocation == true && verifiedReallocations.get(modification.ID.toString()) != true)
+				{
+				  if(ifnull(modification.Reference_Number,"").startsWith("PO:")) { result.put("error","An approved reallocation has no verified PO approval contract."); return result; }
+				  standaloneApprovals = Budget_Approvals[Budget_Modification == modification.ID && Type1 == "Modification"];
+				  standaloneApproved = standaloneApprovals.count() > 0;
+				  for each standaloneApproval in standaloneApprovals
+				  {
+					if(standaloneApproval.Status != "Approved" || standaloneApproval.Budget != budgetKey) { standaloneApproved = false; }
+				  }
+				  if(standaloneApproved != true) { result.put("error","An approved standalone reallocation has no completed approval chain."); return result; }
+				}
 				modText = thisapp.poCurrencyString(modification.Amount.toString());
 				if(modText == "" || !modificationTypes.contains(modification.Modification_Type))
 				{
@@ -200,6 +210,17 @@ map poBudgetBalancesForItems(string budgetId,list budgetItemIds)
 					{
 						allocatedModification = false;
 					}
+				}
+				if(allocatedModification && modification.Component_Reallocation == true)
+				{
+				  normalizedTotal = 0.0; normalizedGross = 0.0;
+				  for each normalizedElement in costElements
+				  {
+					normalizedValue = modNativeParts.get(normalizedElement).toString().toDecimal();
+					normalizedTotal = normalizedTotal + normalizedValue;
+					normalizedAbsolute = normalizedValue; if(normalizedAbsolute < 0) { normalizedAbsolute = 0 - normalizedAbsolute; } normalizedGross = normalizedGross + normalizedAbsolute;
+				  }
+				  if(normalizedGross <= 0 || normalizedTotal != modification.Amount || modification.Amount < 0 || (modification.Amount == 0 && modification.Modification_Type == "Decrease")) { result.put("error","Approved reallocation component totals differ."); return result; }
 				}
 				if(allocatedModification)
 				{

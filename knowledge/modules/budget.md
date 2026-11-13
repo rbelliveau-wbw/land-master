@@ -1,3 +1,48 @@
+## Standalone Modification Elements — 122.29.147, November 13, 2026
+
+The pure Budget Modification composer has five fixed amount rows in element order
+1 Labor, 2 Materials, 3 Equipment, 4 Subcontractor, 5 Other. Each row has its own
+Increase/Decrease control; blank amounts are zero. One modification record and
+one captured Settings approval chain cover the full request. Existing saved
+multi-element allocations reopen without collapsing into one selected element.
+
+The existing `budget-components-v2` envelope (in the existing `amount` argument)
+extends V1/scalar compatibility with signed normalized components. The absolute
+net is `Amount`, net direction is `Modification_Type` (Increase for zero net),
+and all five existing component fields are normalized by that direction.
+`Component_Reallocation=true` now also identifies signed standalone modifications.
+At least one nonzero component, exact cents and supported capacity are required.
+The sum of absolute component changes supplies Settings amount thresholds on
+create, Draft submit and missing-chain repair, including net-zero requests.
+
+Native acceptance precedes the existing SDK edit reassertion, preventing old
+function bodies from leaving partial V2 financial edits. Scalar/V1 callers keep
+their contracts. Standalone callers cannot claim a reserved `PO:` reference.
+Approved signed standalone records enter PO balances only with their own complete
+Approved Modification chain; PO records still require verified PO provenance.
+
+Approval and rejection emails show each signed element and gross changes, with
+a matching native Excel attachment containing all five ordered rows, current
+and projected amounts, net/gross totals, reason, reference and classification.
+Existing uploaded file attachments retain their associations and staging flow.
+The existing numeric-transition registry covers net/gross and element previews;
+sign changes patch mounted controls, retaining other fields and focus.
+
+**Creator Promotion Required:** `createBudgetModification`, `modificationAdmin`,
+`submitBudgetModification`, `poBudgetBalancesForItems`, `sendModificationEmail`.
+No forms, fields, Custom APIs or permissions are added. PMP deploys the repository
+widget only; the user promotes these five bodies in Creator. Until then, old
+functions reject V2 requests before writes. Native compilation, delivery of a
+real email/attachment and production financial writes remain unverified.
+
+Validation: actual composer create/edit paths, V1/scalar compatibility, mixed
+net increase/decrease/zero, exact cents and invalid/no-write inputs, preserved
+allocations, one real Settings route, threshold create/submit/repair, downstream
+PO allocation/provenance, and actual native email/Excel round trips. Desktop
+in-app fixture confirmed row order, per-row signs, net/gross previews, 14px labels,
+44px inputs and the fixed modal footer. Greptile is signed out; no review claimed.
+Rollback: Budget Manager 122.29.145 and the five previous native function bodies.
+
 ## PO attachment read recovery — November 11, 2026
 
 Budget 122.29.137 fixes the Construction profile's false superseded-read error
