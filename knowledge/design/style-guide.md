@@ -748,3 +748,9 @@ Budget Modification Type uses a selection-only button with a chevron and the
 five existing options (Eng, Dev, Muni, Constr, Purch). Omit Clear and free-text
 entry. Preserve existing blank values as Choose Type without inventing a value.
 Support keyboard selection and retain the 50-character Type Comment field.
+
+
+Land & Projects toolbar filters use the restored compact 11px/800 text and
+34px height, with matching label/value sizing, padding and gaps for every
+filter. Keep Title Case labels and content-fitting widths. This is the user
+requested compact exception to the normal 14px control text (November 13, 2026).

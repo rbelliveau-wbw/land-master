@@ -1,3 +1,13 @@
+## Compact Toolbar Filters (8.17.29)
+
+Restores the pre-8.17.28 compact 11px/800 filter text requested by the user.
+Every toolbar filter uses the same 34px height, 11px label/value text, padding
+and spacing, including Subdivision, Deed To and Activity. Labels retain Title
+Case; widths continue to fit their content. Selection, search and active-state
+behavior are unchanged. No Creator forms, fields, functions or Custom APIs
+change, and no Creator publication is required. Rollback: map Land Master
+Development and Production to 8.17.28.
+
 ## Import Dev Entity And Property Report Styling (8.17.28)
 
 Lot AI Import now sets the new Property's `Company1` (Company) from its
