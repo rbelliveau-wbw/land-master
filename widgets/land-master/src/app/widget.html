@@ -4,22 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.28"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.29"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script>LMData.configure({maxRequestsPerMinute:45,readRetryOnThrottle:true});</script>
 <script src="land-data.js"></script>
-<script src="property-workspace.js?v=8.17.28"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.28">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.28">
-<script src="searchable-pickers.js?v=8.17.28" defer></script>
-<script src="property-subtypes.js?v=8.17.28"></script>
-<script src="property-lots.js?v=8.17.28"></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.28">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.28">
-<script src="spreadsheet-import.js?v=8.17.28"></script>
-<script src="lot-import-batch.js?v=8.17.28"></script>
-<script src="lot-import.js?v=8.17.28"></script>
+<script src="mass-update.js?v=8.17.29"></script>
+<script src="mass-update-ui.js?v=8.17.29"></script>
+<script src="property-workspace.js?v=8.17.29"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.29">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.29">
+<script src="searchable-pickers.js?v=8.17.29" defer></script>
+<script src="property-subtypes.js?v=8.17.29"></script>
+<script src="property-lots.js?v=8.17.29"></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.29">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.29">
+<script src="spreadsheet-import.js?v=8.17.29"></script>
+<script src="lot-import-batch.js?v=8.17.29"></script>
+<script src="lot-import.js?v=8.17.29"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -430,16 +432,34 @@ tr.ghead:hover td{background:#edf2f9}
 .subform-empty-note{padding:6px 2px;color:var(--muted);font-size:11px}
 @media(max-width:760px){.bulk-dialog{width:calc(100vw - 16px);max-height:calc(100vh - 16px)}.bulk-body{padding:14px}.bulk-actions{margin-left:-14px;margin-right:-14px;margin-bottom:-14px;padding-left:14px;padding-right:14px}}
 
+/* Mass Update Uses The Existing Mounted Dialog And Shared Motion. */
+#bulkModal .bulk-dialog{height:auto;min-height:0;max-height:calc(100dvh - 32px)}
+#bulkModal .bulk-body{min-height:0;display:flex;flex-direction:column;overflow:hidden}
+#bulkModal .fl,#bulkModal .input,#bulkModal .btn,#bulkModal .hint,#bulkModal .bulk-warning,#bulkModal .field-lookup-btn,#bulkModal .lm-picker-trigger{font-size:14px}
+#bulkModal .fl{text-transform:none;letter-spacing:normal}
+#bulkModal [hidden]{display:none!important}
+#bulkProgress{min-height:0;display:flex;flex-direction:column}
+#bulkContext,#bulkProgressStatus{margin:0 0 12px;font-size:14px;overflow-wrap:anywhere}
+#bulkStages{font-size:14px;font-weight:700;color:var(--muted)}
+#bulkProgressBar{height:8px;background:var(--border);border-radius:8px;overflow:hidden;margin:12px 0}
+#bulkProgressFill{height:100%;width:0;display:block;background:var(--green)}
+#bulkResults{list-style:none;padding:0;margin:0;overflow:auto;min-height:0;max-height:330px}
+#bulkResults li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+#bulkResults strong,#bulkResults li>div{overflow-wrap:anywhere}
+#bulkResults li>div{grid-column:1/-1;color:var(--red)}
+#bulkResults [data-state="saved"]>span{color:var(--green)}
+#bulkResults [data-state="unknown"]>span{color:var(--amber)}
+#bulkModal .bulk-actions{flex-shrink:0;flex-wrap:wrap}
 </style>
-<script src="success-feedback.js?v=8.17.28"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.28">
-<script src="interaction-motion.js?v=8.17.28"></script>
-<script src="interaction-surfaces.js?v=8.17.28"></script>
-<script src="number-edit-commit.js?v=8.17.28"></script>
-<script src="number-transitions.js?v=8.17.28"></script>
-<script src="number-surfaces.js?v=8.17.28"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.28">
-<link rel="stylesheet" href="modal-layout.css?v=8.17.28">
+<script src="success-feedback.js?v=8.17.29"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.29">
+<script src="interaction-motion.js?v=8.17.29"></script>
+<script src="interaction-surfaces.js?v=8.17.29"></script>
+<script src="number-edit-commit.js?v=8.17.29"></script>
+<script src="number-transitions.js?v=8.17.29"></script>
+<script src="number-surfaces.js?v=8.17.29"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.29">
+<link rel="stylesheet" href="modal-layout.css?v=8.17.29">
 </head>
 <body>
 
@@ -536,13 +556,20 @@ tr.ghead:hover td{background:#edf2f9}
 <div class="record-modal" id="bulkModal" aria-hidden="true">
   <div class="bulk-dialog" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
     <div class="record-head">
-      <div class="record-heading"><div class="record-kicker">MASS UPDATE</div><div class="record-title" id="bulkTitle">Mass update records</div><div class="record-subtitle">One field and value will be applied to every selected record.</div></div>
+      <div class="record-heading"><div class="record-title" id="bulkTitle">Mass Update Records</div></div>
       <button class="record-head-btn record-close" id="bulkClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="bulk-body">
-      <div class="fg full"><div class="fl">Field to update</div><select class="input" id="bulkField"></select></div>
+      <div class="fg full"><div class="fl">Field To Update</div><select class="input" id="bulkField"></select></div>
       <div id="bulkValueWrap"></div>
-      <div class="bulk-warning">This saves each selected record separately. Records that fail validation will be listed in the audit log and emailed automatically.</div>
+      <div class="bulk-warning">Updates run in batches with native validation and workflows.</div>
+      <section id="bulkProgress" hidden>
+        <p id="bulkContext"></p>
+        <div id="bulkStages"></div>
+        <div id="bulkProgressBar" role="progressbar" aria-label="Saved Records" aria-valuemin="0" aria-valuenow="0"><i id="bulkProgressFill"></i></div>
+        <p id="bulkProgressStatus" role="status" aria-live="polite"></p>
+        <ol id="bulkResults"></ol>
+      </section>
       <div class="panel-actions bulk-actions"><span class="hint" id="bulkMsgModal"></span><span class="action-spacer"></span><button class="btn" id="bulkCancelBtn">Cancel</button><button class="btn primary" id="bulkApplyBtn" disabled>Save Mass Update</button></div>
     </div>
   </div>
@@ -604,7 +631,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.28-LAZY-CORE",
+  version: "8.17.29-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1363,14 +1390,36 @@ function closeNewMenu(){$("newMenu").classList.remove('show');}
 
 
 /* bulk update */
-function renderBulk(){var ids=Object.keys(S.checked);if(!ids.length){$("bulkbar").innerHTML='';return;}$("bulkbar").innerHTML='<div class="bulkbar"><b>'+ids.length+' SELECTED</b><span>Open a mass-update window to apply one field value to every selected record.</span><div style="flex:1"></div><button class="btn primary sm" id="bulkOpen">Mass update…</button><button class="btn sm inverse" id="bulkClear">Clear</button></div>';}
-function bulkFieldDefs(){var fake=currentList()[0]||{},d=descriptor(currentType(),fake),allowed={};d.bulk.forEach(function(k){allowed[k]=1;});return d.fields.filter(function(f){return allowed[f.k];});}
-function openBulkModal(){if(!allowTableEdit())return false;if(!Object.keys(S.checked).length)return;S.bulkOpen=true;S.bulkField='';var defs=bulkFieldDefs();var bn=Object.keys(S.checked).length;$("bulkTitle").textContent='Mass update '+bn+' '+typeLabel(currentType()).toLowerCase()+' record'+(bn===1?'':'s');$("bulkField").innerHTML='<option value="">Choose a field…</option>'+defs.map(function(f){return'<option value="'+esc(f.k)+'">'+esc(f.label)+'</option>';}).join('');$("bulkValueWrap").innerHTML='<div class="related-empty">Choose a field to set.</div>';$("bulkApplyBtn").disabled=true;$("bulkMsgModal").textContent='';$("bulkModal").classList.add('show');$("bulkModal").setAttribute('aria-hidden','false');}
-function closeBulkModal(){if(S.bulkSaving)return;S.bulkChoiceToken++;S.bulkOpen=false;$("bulkModal").classList.remove('show');$("bulkModal").setAttribute('aria-hidden','true');}
+function renderBulk(){var ids=Object.keys(S.checked);if(!ids.length){$("bulkbar").innerHTML='';return;}$("bulkbar").innerHTML='<div class="bulkbar"><b>'+ids.length+' SELECTED</b><span>Open a mass-update window to apply one field value to every selected record.</span><div style="flex:1"></div><button class="btn primary sm" id="bulkOpen">Mass Update…</button><button class="btn sm inverse" id="bulkClear">Clear</button></div>';}
+function bulkFieldDefs(){var fake=currentList()[0]||{},d=descriptor(currentType(),fake),allowed={};d.bulk.forEach(function(k){allowed[k]=1;});return d.fields.filter(function(f){return allowed[f.k];}).map(function(f){return Object.assign({},f,{label:f.label.replace(/\b[a-z]/g,function(c){return c.toUpperCase();})});});}
+function openBulkModal(){if(S.bulkSaving||!allowTableEdit())return false;MassUpdateUI.reset();if(!Object.keys(S.checked).length)return;S.bulkOpen=true;S.bulkField='';var defs=bulkFieldDefs();var bn=Object.keys(S.checked).length;$("bulkTitle").textContent='Mass Update '+bn+' '+typeLabel(currentType())+' Record'+(bn===1?'':'s');$("bulkField").innerHTML='<option value="">Choose a field…</option>'+defs.map(function(f){return'<option value="'+esc(f.k)+'">'+esc(f.label)+'</option>';}).join('');$("bulkValueWrap").innerHTML='<div class="related-empty">Choose a field to set.</div>';$("bulkApplyBtn").disabled=true;$("bulkMsgModal").textContent='';$("bulkModal").classList.add('show');$("bulkModal").setAttribute('aria-hidden','false');}
+function closeBulkModal(){if(S.bulkSaving)return;S.bulkChoiceToken++;S.bulkOpen=false;MassUpdateUI.release();$("bulkModal").classList.remove('show');$("bulkModal").setAttribute('aria-hidden','true');}
 function renderBulkValue(){if(!allowTableEdit())return false;if(S.bulkSaving){$("bulkField").value=S.bulkField;return;}var field=$("bulkField").value,def=bulkFieldDefs().filter(function(f){return f.k===field;})[0],token=++S.bulkChoiceToken,generation=LandData.generation();S.bulkField=field;$("bulkApplyBtn").disabled=true;if(!def){$("bulkValueWrap").innerHTML='<div class="related-empty">Choose a field to set.</div>';return;}var needs=def.lookup==='builder'?['builders']:[];$("bulkValueWrap").innerHTML='<div class="related-empty">Loading choices…</div>';ensureLandData(needs,generation).then(function(){if(!S.bulkOpen||S.bulkSaving||token!==S.bulkChoiceToken||generation!==LandData.generation())return;var copy={};Object.keys(def).forEach(function(k){copy[k]=def[k];});copy.v=copy.type==='multilookup'?[]:'';copy.k='bulk_value';copy.label='New '+def.label;if(currentType()==='property'&&field==='Subtype')copy.subtypeTypes=Object.keys(S.checked).map(function(id){var record=recordFor('property',id);return String(record&&record.Land_Type||'');});$("bulkValueWrap").innerHTML=fieldHTML(copy).replace(/class="input pf/g,'class="input bulk-value').replace(/data-field="bulk_value"/g,'data-field="'+esc(def.k)+'"');$("bulkApplyBtn").disabled=false;}).catch(function(error){if(!S.bulkOpen||token!==S.bulkChoiceToken||error.cancelled)return;$("bulkValueWrap").innerHTML='<div class="related-empty">Choices unavailable. Choose the field again to retry.</div>';diag('Bulk choices unavailable',{field:field,error:error});});}
 function bulkInput(){var el=$("bulkValueWrap").querySelector('.bulk-value'),def=bulkFieldDefs().filter(function(f){return f.k===S.bulkField;})[0];if(!el||!def)return null;var ft=el.getAttribute('data-ftype')||def.type||'text',raw=inputRaw(el,ft);return{def:def,ftype:ft,raw:raw,kind:el.getAttribute('data-lookup')||def.lookup||''};}
 function setBulkSaving(saving){S.bulkSaving=saving;$("bulkField").disabled=saving;$("bulkValueWrap").querySelectorAll('input,select,textarea,button').forEach(function(control){control.disabled=saving;});if(saving&&window.LMPickers)LMPickers.close(false);}
-function applyBulk(){if(!allowTableEdit()||S.bulkSaving)return false;var ids=Object.keys(S.checked),b=bulkInput();if(!ids.length||!b)return;if(currentType()==='property'){try{ids.forEach(function(id){var data={};data[b.def.k]=payloadValue(b.ftype,b.raw);LMPropertySubtypes.prepare(recordFor('property',id),data);});}catch(error){$('bulkMsgModal').textContent=error.message;return;}}setBulkSaving(true);$("bulkApplyBtn").disabled=true;$("bulkCancelBtn").disabled=true;var done=0,failures=[];setStatus('warn','Mass update…');function step(i){if(i>=ids.length){setBulkSaving(false);$("bulkCancelBtn").disabled=false;$("bulkMsgModal").textContent='Saved '+done+(failures.length?' · '+failures.length+' failed':'');if(failures.length){setStatus('err','Partial mass update');diag('Mass update completed with failures',{type:currentType(),field:b.def.k,saved:done,failures:failures});}else{setStatus('ok','Mass update saved');diag('Mass update complete',{type:currentType(),field:b.def.k,saved:done},true);}renderTable();renderCounts();if(!failures.length){S.checked={};renderBulk();setTimeout(closeBulkModal,350);}else $("bulkApplyBtn").disabled=false;return;}var data={};data[b.def.k]=payloadValue(b.ftype,b.raw);$("bulkMsgModal").textContent='Saving '+(i+1)+' of '+ids.length+'…';updateRecord(ids[i],data,reportForType(currentType())).then(function(){var rec=recordFor(currentType(),ids[i]);if(rec)applyLocalField(rec,b.def.k,b.ftype,b.raw,b.kind);done++;step(i+1);}).catch(function(err){failures.push({recordId:ids[i],error:errMeta(err)});step(i+1);});}step(0);}
+var MassUpdateUI=LMMassUpdateUI.create({close:closeBulkModal,name:function(type,id){var rec=recordFor(type,id)||{};return String(rec.Common_Name||rec.Property_ID||rec.Subdivision_Name||rec.Company_Name||id);}});
+var MassUpdate=LMMassUpdate.create({
+  scope:function(){return landCreateScope()+':'+LandData.generation();},ready:function(){return !S.coreRefreshing&&(S.demo||S.liveSDK&&LandData.coreReady());},demo:function(){return S.demo;},api:function(){return ZOHO.CREATOR.DATA;},request:function(task,run){return LMData.request(task,run);},
+  read:function(report,criteria,check){return sdkGetAll(report,criteria,null,{isCancelled:function(){try{check();return false;}catch(error){return true;}}});},
+  record:recordFor,prepare:function(record,data){LMPropertySubtypes.prepare(record,data);},failed:function(response){return responseBad(response)||LMData.responseFailed(response);},accept:requireMutationSuccess,
+  saved:function(type,id,data){var rec=recordFor(type,id);if(!rec)return;Object.keys(data).forEach(function(field){var def=descriptor(type,rec).fields.filter(function(f){return f.k===field;})[0];if(def)applyLocalField(rec,field,def.type,data[field],def.lookup);else rec[field]=data[field];});delete S.checked[id];},
+  refreshed:function(type,rows){rows.forEach(function(row,id){var rec=recordFor(type,id);if(rec)Object.assign(rec,row);});},progress:function(ledger){MassUpdateUI.patch(ledger);}
+});
+function applyBulk(){
+  if(!allowTableEdit()||S.bulkSaving||S.tableWrites||S.panelSaving)return false;
+  var ids=Object.keys(S.checked),b=bulkInput();if(!ids.length||!b)return;
+  var type=currentType(),data={};data[b.def.k]=payloadValue(b.ftype,b.raw);
+  var input={type:type,report:reportForType(type),ids:ids,payload:data};
+  setBulkSaving(true);MassUpdateUI.start(input,b.def.label+' → '+((b.kind?lookupLabel(b.kind,b.raw):String(b.raw))||'Blank'));
+  setStatus('warn','Mass update…');
+  return MassUpdate.run(input).then(function(ledger){
+    var saved=ledger.entries.filter(function(row){return row.state==='saved';}).length,failures=ledger.entries.filter(function(row){return row.state!=='saved';});
+    setStatus(failures.length?'err':'ok',failures.length?'Mass update needs review':'Mass update saved');
+    diag(failures.length?'Mass update needs review':'Mass update complete',{type:type,field:b.def.k,saved:saved,failures:failures.map(function(row){return{recordId:row.id,state:row.state,error:errMeta(row.error)};})},!failures.length);
+    return ledger;
+  }).catch(function(error){MassUpdateUI.patch({finished:true,entries:ids.map(function(id){return{id:id,state:'not-sent',error:error};}),error:error.message});setStatus('err','Mass update not sent');diag('Mass update not sent',{type:type,error:errMeta(error)});
+  }).finally(function(){setBulkSaving(false);renderTable();renderCounts();renderBulk();});
+}
 
 /* root rendering */
 function renderCounts(){$("ctProps").textContent=S.properties.length;$("ctSubs").textContent=S.projects.length;$("ctCos").textContent=S.companies.length;$("issueCt").textContent=issueCount();$("btnIssues").classList.toggle('active',S.issuesOnly);}

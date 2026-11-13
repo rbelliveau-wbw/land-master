@@ -49,7 +49,7 @@ await context.updateRecord(id,{Land_Type:'Commercial'},'All_Property');
 assert.equal(writes[0].id,id);assert.equal(writes[0].payload.data.Subtype,'');
 await context.updateRecord(id,{Notes:'Unrelated'},'Other_Report');assert.equal(writes[1].payload.data.Subtype,undefined);
 assert.match(actual('createRecord'),/LMPropertySubtypes.prepare/);
-assert.match(actual('applyBulk'),/ids.forEach[\s\S]*LMPropertySubtypes.prepare[\s\S]*setBulkSaving\(true\)/,'all targets are preflighted before any write');
+assert.match(actual('applyBulk'),/MassUpdate.run\(input\)/,'mass updates use the batch adapter; its all-target preflight is exercised by test-land-mass-update');
 assert.match(actual('savePanel'),/validatePropertySubtypePanel\(\)/);
 assert.match(actual('tableEditorHTML'),/data-show-disabled="1"/);
 assert.match(actual('fieldHTML'),/f.subtypeTypes/);

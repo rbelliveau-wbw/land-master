@@ -217,3 +217,16 @@ write, invent a percentage, or allow duplicate recovery/dismissal during it.
 ## AI Lot And Property Import — November 12, 2026
 
 Land & Projects 8.17.22 uses one mounted results table for paired native creates. Lot Record and Property Record share identical labels and status styling: Waiting, Creating…, Saved, Failed or Needs Review. Do not distinguish a saved Property as Saved & Linked. Each Property is net new; existing Project/Subdivision/Lot lookups are still populated. Property ID is the internal Lot Code until users obtain the real CAD parcel ID. Native accepted-write policy applies; a returned Lot ID is required to address the following lookup write. Saved counts reflect native acknowledgements, not elapsed time; optional display refresh cannot reverse them. Pending closes and duplicate sends are locked, unknown replies stop later writes, and results stay until dismissed. See [the import contract](../../docs/lot-property-import.md).
+
+## Land And Projects Mass Update — November 13, 2026
+
+The mass-update editor becomes its own mounted progress/results view on Save
+Mass Update. Show the field and destination value, current real stage, saved
+count/bar and one result per selected record (Waiting, Saving…, Saved, Failed,
+Needs Review or Not Sent). Counts reflect exact native destination acknowledgements.
+Keep results visible until Close; lock Escape/Close and background controls while
+pending, trap focus, and restore it on dismissal. Use the existing navy dialog,
+14px necessary labels/status/actions and shared overlay/meter motion. Native
+rejections and unknown writes remain distinct; only successful IDs leave the
+selection, and unknown replies never automatically replay. Optional display
+refresh failures cannot reverse native acknowledged saves.
