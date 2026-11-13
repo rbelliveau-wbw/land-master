@@ -1469,3 +1469,7 @@ release require the separate [Creator publication](../../docs/proforma-settings-
 ## Dashboard Summary Layout — November 12, 2026
 
 Release 1.80.149 moves the unchanged construction-rate and sale-price card to the second position. The first card retains ROI, IRR, XIRR and Gross Profit, with Gross Profit below the return ratios and the existing Total Acres and Land Cost / Acre values added in its right column. The original assumption readouts remain. Inflow/outflow components, all cash snapshots, Positive Cash Flow, Peak Cash Out and peak timing remain. All calculations, rounding, incomplete-schedule behavior and field-exit numeric transitions are preserved; the existing numeric-view adapter captures the added `.k-big` values. No Creator forms, fields, functions, Custom APIs or publication change. Rollback: map Production to 1.80.147.
+
+### Global City Options — November 13, 2026
+
+Pro Forma and Offer property City pickers load the global `City` variable through the existing environment-routed `Get_Land_Master_Choices` API. Options publish atomically with deferred record references, trimmed, deduplicated and alphabetized. Failed or malformed reads block opening the editor and remain retryable instead of presenting an outdated fixed list. Saved City values and County behavior are preserved. No Creator publication is required. Regression: global additions including College Station, nested native responses, denied reads, retry, and superseded reference loads. Rollback: Proforma Manager 1.80.152.
