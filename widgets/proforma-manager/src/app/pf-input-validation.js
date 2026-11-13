@@ -23,7 +23,7 @@
     var d=new Date(+m[1],+m[2]-1,+m[3]);
     return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3];
   }
-  function record(form,row,keys,normalizeNumber){
+  function record(form,row,keys,normalizeNumber,choiceOverrides){
     var rules=root.LMPFInputRules[form],out=[];
     (keys||Object.keys(row||{})).forEach(function(key){
       var rule=rules[key],raw=row&&row[key],s=text(raw);if(!rule)return;
@@ -44,7 +44,8 @@
         try{var u=new URL(s);if(!/^https?:$/.test(u.protocol)||!u.hostname||/\s/.test(s))message='enter a complete http:// or https:// URL.';}catch(e){message='enter a complete http:// or https:// URL.';}
       }
       if(!message&&rule.type==='textarea'&&new TextEncoder().encode(s).length>65535)message='exceeds the 64 KB text limit.';
-      if(!message&&rule.choices&&rule.choices.indexOf(s)<0)message='choose a supported value.';
+      var choices=choiceOverrides&&Object.prototype.hasOwnProperty.call(choiceOverrides,key)?choiceOverrides[key]:rule.choices;
+      if(!message&&choices&&choices.indexOf(s)<0)message='choose a supported value.';
       if(message)out.push(rule.label+': '+message);
     });
     return out;
