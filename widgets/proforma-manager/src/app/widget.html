@@ -8,27 +8,27 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.159"></script>
-<script src="pf-save-audit.js?v=1.80.159"></script>
-<script src="pf-input-rules.js?v=1.80.159"></script>
-<script src="pf-input-validation.js?v=1.80.159"></script>
-<script src="pf-progress.js?v=1.80.159"></script>
+<script src="pf-save-verification.js?v=1.80.160"></script>
+<script src="pf-save-audit.js?v=1.80.160"></script>
+<script src="pf-input-rules.js?v=1.80.160"></script>
+<script src="pf-input-validation.js?v=1.80.160"></script>
+<script src="pf-progress.js?v=1.80.160"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<script src="location-pickers.js?v=1.80.159" defer></script>
-<link rel="stylesheet" href="location-pickers.css?v=1.80.159">
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.159">
-<script src="interaction-motion.js?v=1.80.159"></script>
-<script src="interaction-surfaces.js?v=1.80.159"></script>
-<script src="number-edit-commit.js?v=1.80.159"></script>
-<script src="number-transitions.js?v=1.80.159"></script>
-<script src="number-views.js?v=1.80.159"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.159">
+<script src="location-pickers.js?v=1.80.160" defer></script>
+<link rel="stylesheet" href="location-pickers.css?v=1.80.160">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.160">
+<script src="interaction-motion.js?v=1.80.160"></script>
+<script src="interaction-surfaces.js?v=1.80.160"></script>
+<script src="number-edit-commit.js?v=1.80.160"></script>
+<script src="number-transitions.js?v=1.80.160"></script>
+<script src="number-views.js?v=1.80.160"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.160">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.159"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.159">
-<script src="comments.js?v=1.80.159"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.159">
+<script src="budget-transfer-ui.js?v=1.80.160"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.160">
+<script src="comments.js?v=1.80.160"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.160">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1855,8 +1855,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.159"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.159">
+<script src="success-feedback.js?v=1.80.160"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.160">
 </head>
 <body>
 
@@ -2271,7 +2271,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.159";
+var PFW_VERSION="1.80.160";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -2371,14 +2371,14 @@ var CFG = {
      The widget verifies the server did it and only writes months itself as a fallback. */
   serverEngine: true,
   choices: {
-    territory: ["Bryan/College Station","Corpus Christi","Dallas/Fort Worth","Fort Hood","Houston","North Austin","San Antonio","South Austin","Temple/Belton","Waco"],
+    territory: [],
     probability: ["N/A","Closed Lost","Low","Medium","High","Closed Won"],
     mudpid: ["TRUE","FALSE"],
     constLength: ["7","8","9","10","11","12","13","14","15","16","17","18"],
     costApplication: ["Across Phases","Engineering End","Construction Start","Construction End","Specific Months"],
     installmentTypes: ["Purchase","Sale","PID/MUD"],
-    counties: ["Bell","Terrell","Grant","Burleson","Matagorda","Val Verde","Multiple","Bexar","Falls","Montrose","San Miguel","Williamson","McLennan","Comal","Brazos","Coryell","Guadalupe","Harris","Grayson","Collin","Tarrant","Johnson","Kaufman","Ellis","Denton","Hunt","Dallas","Cooke","Navarro"],
-    /* Loaded from the global City variable before record options become available. */
+    counties: [],
+    /* Loaded from the current global variables before editing. */
     cities: []
   }
 };
@@ -4840,18 +4840,36 @@ function companyLabel(r){
 
 // Publish all deferred reference collections together, only for this actor/load.
 S.referenceGeneration=0;S.referenceContext='';S.referencePromise=null;
+S.locationContext='';S.locationPromise=null;
+function pfLocationChoicesReady(){return S.locationContext===JSON.stringify(LMRuntime.current());}
+function ensurePFLocationChoices(){
+  if(pfLocationChoicesReady())return Promise.resolve(true);
+  if(S.locationPromise)return S.locationPromise;
+  var generation=S.referenceGeneration,context=JSON.stringify(LMRuntime.current()),next={};
+  function stale(){return generation!==S.referenceGeneration||context!==JSON.stringify(LMRuntime.current());}
+  function publish(value){if(stale())return;CFG.choices.cities=value.cities;CFG.choices.counties=value.counties;CFG.choices.territory=value.territory;S.locationContext=context;}
+  var promise=S.useMock?loadCityChoices(stale,next).then(function(){publish(next);return true;}):PFTransport.load('location-options',function(check){return loadCityChoices(function(){return check()||stale();},next).then(function(){return next;});},publish,PFTransport.workflow()||{referenceOnly:true}).then(function(result){if(!result.published||!pfLocationChoicesReady())throw new Error('Location options are unavailable. Retry opening the record.');return true;});
+  S.locationPromise=promise;
+  promise.then(function(){if(S.locationPromise===promise)S.locationPromise=null;},function(){if(S.locationPromise===promise)S.locationPromise=null;});
+  return promise;
+}
+function pfLocationAction(action){
+  if(!pfPublicReady())return Promise.resolve(false);
+  var navigation=++S.navigationGeneration;showView('loading');document.getElementById('loadmsg').textContent='Loading location options…';
+  return ensurePFLocationChoices().then(function(){return navigation===S.navigationGeneration?action():false;},function(error){if(navigation===S.navigationGeneration){showView('vList');toast('Location options could not load. Retry opening the record.','err');auditLog('error','Global location load failed',{error:errMeta(error)});}return false;});
+}
 function pfReferencesReady(){return S.referenceContext===JSON.stringify(LMRuntime.current());}
 function ensurePFReferences(options){
   if(pfReferencesReady())return Promise.resolve(true);
   if(S.referencePromise)return S.referencePromise;
   var generation=S.referenceGeneration,context=JSON.stringify(LMRuntime.current());
-  var next={cities:[],companies:[],builders:[],properties:[],templates:{items:[],curvesByLen:{}}};
+  var next={companies:[],builders:[],properties:[],templates:{items:[],curvesByLen:{}}};
   var promise=PFTransport.load('reference-options',function(check){
     var cancelled=function(){return check()||generation!==S.referenceGeneration||context!==JSON.stringify(LMRuntime.current());};
-    return Promise.all([loadCityChoices(cancelled,next),loadCompanies(cancelled,next),loadBuilders(cancelled,next),loadProperties(cancelled,next),loadTemplates(cancelled,next)]).then(function(){if(cancelled())throw new Error('Reference load superseded.');return next;});
+    return Promise.all([ensurePFLocationChoices(),loadCompanies(cancelled,next),loadBuilders(cancelled,next),loadProperties(cancelled,next),loadTemplates(cancelled,next)]).then(function(){if(cancelled())throw new Error('Reference load superseded.');return next;});
   },function(value){
     if(generation!==S.referenceGeneration||context!==JSON.stringify(LMRuntime.current()))return;
-    CFG.choices.cities=value.cities;S.companies=value.companies;S.builders=value.builders;S.properties=value.properties;S.templates=value.templates;S.referenceContext=context;
+    S.companies=value.companies;S.builders=value.builders;S.properties=value.properties;S.templates=value.templates;S.referenceContext=context;
     auditLog('success','Deferred reference data complete',{companies:S.companies.length,sellers:S.builders.length,properties:S.properties.length,templateItems:S.templates.items.length});
     if(S.view==='vList'&&!(options&&options.preserveView))renderList();
   },PFTransport.workflow()||{referenceOnly:true}).then(function(result){if(!result.published||!pfReferencesReady())throw new Error('Reference data is not ready. Finish the current operation and retry.');return true;});
@@ -4869,12 +4887,14 @@ function pfReferenceAction(action){
 }
 
 function loadCityChoices(check,target){
-  if(S.useMock){target.cities=['College Station','Temple'];return Promise.resolve();}
+  if(S.useMock){target.cities=['College Station','Temple'];target.counties=['Bell','Burleson'];target.territory=['North Austin','Temple/Belton'];return Promise.resolve();}
   return sdkInvoke({api_name:LMRuntime.apiName('Get_Land_Master_Choices'),http_method:'GET'}).then(function(response){
     if(check())throw new Error('Reference load superseded.');
     var choices=parseSaveApiResult(response);
-    if(!choices||!Array.isArray(choices.City))throw new Error('Global City options are unavailable. Retry opening the record.');
-    target.cities=choices.City.map(function(value){return String(value).trim();}).filter(function(value,index,all){return value&&all.indexOf(value)===index;}).sort(function(a,b){return a.localeCompare(b);});
+    [['City','cities'],['County','counties'],['Territory','territory']].forEach(function(pair){
+      if(!choices||!Array.isArray(choices[pair[0]]))throw new Error('Global '+pair[0]+' options are unavailable. Retry opening the record.');
+      target[pair[1]]=choices[pair[0]].map(function(value){return String(value).trim();}).filter(function(value,index,all){return value&&all.indexOf(value)===index;}).sort(function(a,b){return a.localeCompare(b);});
+    });
   });
 }
 
@@ -8538,6 +8558,7 @@ function duplicateProforma(pfId){
 }
 function openEdit(pfId,initialPane){
   if((pfId==null||initialPane==='loi')&&!pfReferencesReady())return pfReferenceAction(function(){return openEdit(pfId,initialPane);});
+  if(!pfLocationChoicesReady())return pfLocationAction(function(){return openEdit(pfId,initialPane);});
   if(!pfPublicReady())return false;
   if(initialPane==="approvals"&&!canViewProformaApprovals()){toast("Pro Forma Approvals access is required.","err");initialPane="gen";}
   if(pfId==null){
@@ -11361,7 +11382,7 @@ function pfValidateLOIInputs(l){
   var sellerKeys=["Builder_Name","Email","Phone_Number","Street_Address","City_State_ZIP"];
   var propertyKeys=["Common_Name","Property_ID","Facility_ID","County","City","Acres","TerraVault_URL"];
   // Global lists supply both picker options and save validation, overriding exported choices.
-  function add(form,row,keys,label){check.record(form,row,keys,stripMoney,form==="Property"?{City:CFG.choices.cities}:null).forEach(function(message){errors.push(label+" — "+message);});}
+  function add(form,row,keys,label){check.record(form,row,keys,stripMoney,form==="Property"?{City:CFG.choices.cities,County:CFG.choices.counties}:null).forEach(function(message){errors.push(label+" — "+message);});}
   var sellers=pendingSellerRows(l),properties=pendingPropertyRows(l),seenNames={},seenIds={};
   function unique(row,key,seen,existing,label){
     var value=String(row[key]||"").trim().toLowerCase();if(!value)return;
@@ -11394,7 +11415,7 @@ function pfValidateSaveInputs(m){
   function add(pane,messages){messages.forEach(function(message){if((S.ed.errors[pane]||[]).indexOf(message)<0){errors.push(message);(S.ed.errors[pane]=S.ed.errors[pane]||[]).push(message);}});}
   HEADER_FIELDS.forEach(function(key){
     var pane=LOI_FIELDS.indexOf(key)>=0?"loi":PF_WHOLE_HEADER[key]?PF_WHOLE_HEADER[key][0]:/^Overhead|Overhead$|Interest|Profit_Share/.test(key)?"vpcomp":/Land_Sale/.test(key)?"land":"gen";
-    add(pane,LMPFInputValidation.record("Add_Pro_Forma",m,[key],stripMoney));
+    add(pane,LMPFInputValidation.record("Add_Pro_Forma",m,[key],stripMoney,{Territory:CFG.choices.territory}));
   });
   var d=m.purchaseDate;
   if(d&&(!Number.isInteger(d.y)||!Number.isInteger(d.m)||d.y<1000||d.y>9999||d.m<1||d.m>12))add("sched",["Project Start: choose a valid month and year."]);
@@ -13189,7 +13210,7 @@ function boot(){
 }
 
 function pfBootV2(){
- if(PFTransport.snapshot().pending||PFTransport.snapshot().reviews.length||PFTransport.snapshot().workflow)return Promise.resolve({published:false,blocked:true});pfConnectionRetry(false);S.coreReady=false;S.coreFailed=false;S.detail={};S.detailContext='';S.referenceGeneration++;S.referenceContext='';S.referencePromise=null;S.companies=[];S.builders=[];S.properties=[];S.templates={items:[],curvesByLen:{}};
+ if(PFTransport.snapshot().pending||PFTransport.snapshot().reviews.length||PFTransport.snapshot().workflow)return Promise.resolve({published:false,blocked:true});pfConnectionRetry(false);S.coreReady=false;S.coreFailed=false;S.detail={};S.detailContext='';S.referenceGeneration++;S.referenceContext='';S.referencePromise=null;S.locationContext='';S.locationPromise=null;S.companies=[];S.builders=[];S.properties=[];S.templates={items:[],curvesByLen:{}};
  return PFTransport.start().then(function(context){S.liveSDK=true;S.useMock=false;S.currentUser=context.runtime.user;S.nativeParams=context.params;S.env={fragment:String(context.params.envUrlFragment||''),name:context.runtime.environment};return boot();}).catch(function(err){S.liveSDK=false;S.useMock=false;S.coreFailed=true;setStatus('Creator connection failed','err');pfConnectionRetry(true);toast(String(err&&err.message||err),'err');return {published:false,error:err};});
 }
 ['input','change','click','keydown','pointerdown'].forEach(function(type){document.addEventListener(type,function(event){var state=PFTransport.snapshot();if(S.useMock||S.coreReady&&!S.coreFailed&&!state.blocked&&!S.scenarioLoading)return;var target=event.target;if(target&&target.closest&&target.closest('#pfNativeProgress,#pfNativeRetry,#auditDrawer')||pfAttachmentInlineEvent(event,state))return;event.preventDefault();event.stopImmediatePropagation();},true);});
@@ -13221,7 +13242,7 @@ if(pfNumberViews){
 if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("proforma-manager",{state:function(){return S;},ready:function(){return !!(S.coreReady&&!S.coreFailed||S.useMock);},actor:function(){return S.perms||S.acc||null;}});
 if(window.ZOHO&&window.ZOHO.CREATOR){window.__pfBoot=pfBootV2();}else{S.liveSDK=false;S.useMock=true;S.coreReady=true;window.__pfBoot=boot();}
 /* internals exposed for automated tests only — no UI or save-path code touches this */
-window.__PFW_TEST__={ensurePFReferences:ensurePFReferences,pfReferencesReady:pfReferencesReady,pfReferenceAction:pfReferenceAction,PFTransport:PFTransport,pfBootV2:pfBootV2,boot:boot,sdkGetAll:sdkGetAll,sdkAdd:sdkAdd,sdkUpdate:sdkUpdate,sdkDelete:sdkDelete,sdkInvoke:sdkInvoke,loadProformas:loadProformas,loadDetail:loadDetail,changeLockFromList:changeLockFromList,changeStageFromList:changeStageFromList,dealRefresh:dealRefresh,dealApplyDriver:dealApplyDriver,saveProforma:saveProforma,deleteAllByCriteria:deleteAllByCriteria,commentWrite:commentWrite,pfSdkUploadFile:pfSdkUploadFile,pfSdkReadFile:pfSdkReadFile,getPfAttachmentBlob:getPfAttachmentBlob,createPfAttachmentRecord:createPfAttachmentRecord,deletePfAttachmentRecord:deletePfAttachmentRecord,uploadPfAttachments:uploadPfAttachments,pfAttachmentActionContext:pfAttachmentActionContext,openPfAttachmentModal:openPfAttachmentModal,handlePfAttachmentClick:handlePfAttachmentClick,recordToModel:recordToModel,validateModel:validateModel,modelToCalc:modelToCalc,buildSavePayload:buildSavePayload,phaseData:phaseData,monthData:monthData,openEdit:openEdit,openDashboard:openDashboard,wireEditInputs:wireEditInputs,setPane:setPane,guardLeaveEdit:guardLeaveEdit,forkModel:forkModel,FORK_CHILD_LISTS:FORK_CHILD_LISTS,newModel:newModel,PFTransportUI:PFTransportUI, subformRow:subformRow, childData:childData, buildHeaderData:buildHeaderData,
+window.__PFW_TEST__={ensurePFLocationChoices:ensurePFLocationChoices,pfLocationChoicesReady:pfLocationChoicesReady,ensurePFReferences:ensurePFReferences,pfReferencesReady:pfReferencesReady,pfReferenceAction:pfReferenceAction,PFTransport:PFTransport,pfBootV2:pfBootV2,boot:boot,sdkGetAll:sdkGetAll,sdkAdd:sdkAdd,sdkUpdate:sdkUpdate,sdkDelete:sdkDelete,sdkInvoke:sdkInvoke,loadProformas:loadProformas,loadDetail:loadDetail,changeLockFromList:changeLockFromList,changeStageFromList:changeStageFromList,dealRefresh:dealRefresh,dealApplyDriver:dealApplyDriver,saveProforma:saveProforma,deleteAllByCriteria:deleteAllByCriteria,commentWrite:commentWrite,pfSdkUploadFile:pfSdkUploadFile,pfSdkReadFile:pfSdkReadFile,getPfAttachmentBlob:getPfAttachmentBlob,createPfAttachmentRecord:createPfAttachmentRecord,deletePfAttachmentRecord:deletePfAttachmentRecord,uploadPfAttachments:uploadPfAttachments,pfAttachmentActionContext:pfAttachmentActionContext,openPfAttachmentModal:openPfAttachmentModal,handlePfAttachmentClick:handlePfAttachmentClick,recordToModel:recordToModel,validateModel:validateModel,modelToCalc:modelToCalc,buildSavePayload:buildSavePayload,phaseData:phaseData,monthData:monthData,openEdit:openEdit,openDashboard:openDashboard,wireEditInputs:wireEditInputs,setPane:setPane,guardLeaveEdit:guardLeaveEdit,forkModel:forkModel,FORK_CHILD_LISTS:FORK_CHILD_LISTS,newModel:newModel,PFTransportUI:PFTransportUI, subformRow:subformRow, childData:childData, buildHeaderData:buildHeaderData,
   modelToCalc:modelToCalc, recordToModel:recordToModel, validateModel:validateModel,
   loadPfComments:loadPfComments, syncPfCommentButton:syncPfCommentButton,
   buildSavePayload:buildSavePayload, monthData:monthData, round0:round0,
