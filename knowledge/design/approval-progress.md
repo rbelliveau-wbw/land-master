@@ -332,3 +332,12 @@ for the unescaped dollar amounts in the old replacement. Show PO_Description
 and current-revision PO_Item.Description with HTML escaping and preserved line
 breaks. Supplemental lines are the additions under review. Keep native routing,
 permissions, workbook generation and delivery/retry guards unchanged.
+
+
+## Pro Forma Packet Approval List
+
+Printed packets show Approved By: in the identity header as two columns of role,
+assigned name and actual status, using the adjacent metadata size approved by the
+user. Preserve overflow identities in continuation pages. A completed packet
+shows Fully Approved and the existing completion email sends it to all distinct
+route approvers; do not add another sender or replay completed approvals.
