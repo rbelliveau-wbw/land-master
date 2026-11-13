@@ -33,7 +33,7 @@
     let run=null,busy=false,nativePending=0,readPending=0;
     const emit=()=>{if(options.changed)options.changed(run);};
     const check=operation=>{if(!options.ready()||!operation.context||options.context()!==operation.context||options.generation()!==operation.generation)throw new Error('The Creator session changed. Refresh before editing.');};
-    function bounded(promise){return new Promise((resolve,reject)=>{let ended=false;const timer=root.setTimeout(()=>{if(ended)return;ended=true;reject(new Error('The request timed out. Saved values need review.'));},options.timeoutMs||30000);Promise.resolve(promise).then(result=>{if(ended)return;ended=true;root.clearTimeout(timer);resolve(result);},error=>{if(ended)return;ended=true;root.clearTimeout(timer);reject(error);});});}
+    function bounded(promise,timeout){return new Promise((resolve,reject)=>{let ended=false;const timer=root.setTimeout(()=>{if(ended)return;ended=true;reject(new Error('The request timed out. Saved values need review.'));},options.timeoutMs||timeout||30000);Promise.resolve(promise).then(result=>{if(ended)return;ended=true;root.clearTimeout(timer);resolve(result);},error=>{if(ended)return;ended=true;root.clearTimeout(timer);reject(error);});});}
     async function read(ids,operation){
       check(operation);readPending++;emit();
       const request=Promise.resolve().then(()=>options.read(ids,()=>options.context()!==operation.context||options.generation()!==operation.generation));
@@ -66,27 +66,46 @@
         const all=[];for(let start=0;start<run.rows.length;start+=30)all.push(...await read(run.rows.slice(start,start+30).map(row=>row.id),operation));
         const byId=new Map(all.map(row=>[row.ID,row]));
         for(const entry of run.rows){const row=byId.get(entry.id);if(!sameScope(row,entry)||!matches(row,entry.before))throw new Error(entry.label+' changed since you opened the editor. No lots were updated.');}
-        run.checked=true;run.stage='saving';emit();let next=0,stop=false;
-        async function worker(){
-          while(!stop&&next<run.rows.length){
-            const entry=run.rows[next++];let sent=false,allowDispatch=true;
+        run.checked=true;run.stage='saving';emit();
+        const grouped=new Map();
+        for(const entry of run.rows){
+          if(matches(byId.get(entry.id),entry.payload)){options.publish(byId.get(entry.id));entry.state='verified';entry.message='Already matches';continue;}
+          const key=JSON.stringify(entry.payload);if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(entry);
+        }
+        const groups=[];for(const entries of grouped.values())for(let offset=0;offset<entries.length;offset+=200)groups.push(entries.slice(offset,offset+200));emit();
+        for(const group of groups){
+            let sent=false,allowDispatch=true,stop=false;
+            const batch=operation.entries.length>1;
             try{
               check(operation);
-              if(matches(byId.get(entry.id),entry.payload)){options.publish(byId.get(entry.id));entry.state='verified';entry.message='Already matches';emit();continue;}
-              entry.state='saving';entry.message='Saving';emit();
+              if(batch&&typeof root.ZOHO.CREATOR.DATA.updateRecords!=='function')throw new Error('Creator batch update is unavailable. Refresh before editing.');
+              group.forEach(entry=>{entry.state='saving';entry.message='Saving';});emit();
               const request=root.LMData.request('manage-lots:update',()=>{
                 if(!allowDispatch)throw new Error('This queued update expired before sending.');
                 check(operation);sent=true;nativePending++;emit();
-                const native=Promise.resolve().then(()=>root.ZOHO.CREATOR.DATA.updateRecordById({report_name:options.report,id:entry.id,payload:{data:entry.payload}}));
+                const native=Promise.resolve().then(()=>batch?root.ZOHO.CREATOR.DATA.updateRecords({report_name:options.report,payload:{criteria:group.map(entry=>'(ID == '+entry.id+')').join(' || '),data:group[0].payload}}):root.ZOHO.CREATOR.DATA.updateRecordById({report_name:options.report,id:group[0].id,payload:{data:group[0].payload}}));
                 native.then(()=>{nativePending--;emit();},()=>{nativePending--;emit();});return native;
               });
-              const response=await bounded(request),id=root.LMManageLots.confirmedId(response);if(id!==entry.id)throw new Error('Creator returned another lot.');
-              entry.state='checking';entry.message='Checking saved values';emit();await verify(entry,operation);
-            }catch(error){stop=true;const raw=error.raw||error.response||error,rejected=raw&&/^(1060|2894|2898|2899|2945)$/.test(String(raw.code))&&!['data','result','details','response','output','ID','id'].some(key=>own(raw,key));entry.state=sent?rejected?'rejected':'unknown':'not-sent';entry.message=error.message||'Update needs review';run.error=entry.message;if(options.error)options.error(error,entry);emit();}
+              const response=await bounded(request,batch?120000:30000);check(operation);
+              let items;
+              if(batch){
+                const outer=response&&typeof response==='object'?{...response}:null;if(outer)delete outer.result;
+                if(!outer||String(outer.code)!=='3000'||outer.error||outer.success===false||/^(error|failed|failure)$/i.test(String(outer.status||''))||['data','details','response','output'].some(key=>own(outer,key))||root.LMData.responseFailed&&root.LMData.responseFailed(outer)||!Array.isArray(response.result)||response.result.length!==group.length)throw Object.assign(new Error(response&&response.message||'Creator did not confirm the exact batch count.'),{raw:response});
+                const expected=new Set(group.map(entry=>entry.id)),seen=new Set();items=new Map();
+                for(const item of response.result){const id=item&&item.data&&item.data.ID;if(!safeId(id)||!expected.has(id)||seen.has(id)||['result','details','response','output','ID','id'].some(key=>own(item,key)))throw new Error('Creator returned conflicting batch destinations.');seen.add(id);items.set(id,item);}
+              }else items=new Map([[group[0].id,response]]);
+              const accepted=[];
+              for(const entry of group){const item=items.get(entry.id);try{if(root.LMManageLots.confirmedId(item)!==entry.id)throw new Error('Creator returned another lot.');entry.state='checking';entry.message='Checking saved values';accepted.push(entry);}catch(error){entry.state=/^(1060|2894|2897|2898|2899|2945|3001)$/.test(String(item&&item.code))?'rejected':'unknown';entry.message=error.message||'Update needs review';run.error=entry.message;stop=true;if(options.error)options.error(error,entry);}}
+              emit();
+              for(let offset=0;offset<accepted.length;offset+=25){
+                const part=accepted.slice(offset,offset+25);
+                try{const rows=await read(part.map(entry=>entry.id),operation),fresh=new Map(rows.map(row=>[row.ID,row]));for(const entry of part){const row=fresh.get(entry.id);if(!sameScope(row,entry))throw new Error('A saved lot changed scope. Review the saved records.');}for(const entry of part){options.publish(fresh.get(entry.id));entry.state='verified';entry.message='Saved and checked';}emit();}
+                catch(error){for(const entry of part){entry.state='unknown';entry.message=error.message;if(options.error)options.error(error,entry);}run.error=error.message;stop=true;emit();}
+              }
+            }catch(error){stop=true;const raw=error.raw||error.response||error,rejected=raw&&/^(1060|2894|2898|2899|2945)$/.test(String(raw.code))&&!['data','result','details','response','output','ID','id'].some(key=>own(raw,key));for(const entry of group){if(entry.state==='verified'||entry.state==='rejected'||entry.state==='unknown')continue;entry.state=sent?rejected?'rejected':'unknown':'not-sent';entry.message=error.message||'Update needs review';if(options.error)options.error(error,entry);}run.error=error.message||'Update needs review';emit();}
             finally{allowDispatch=false;}
-          }
+            if(stop)break;
         }
-        await Promise.all(Array.from({length:Math.min(3,run.rows.length)},worker));
       }catch(error){run.error=error.message||'Could not check selected lots';if(options.error)options.error(error);}
       finally{busy=false;run.finished=true;run.stage=run.rows.every(row=>row.state==='verified')?'verified':'review';emit();}
       return run;
