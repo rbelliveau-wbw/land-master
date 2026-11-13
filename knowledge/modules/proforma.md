@@ -1483,3 +1483,12 @@ Offer validation now uses the loaded global `City` list for both staged and edit
 ### Global City Options — November 13, 2026
 
 Pro Forma and Offer property City pickers load the global `City` variable through the existing environment-routed `Get_Land_Master_Choices` API. Options publish atomically with deferred record references, trimmed, deduplicated and alphabetized. Failed or malformed reads block opening the editor and remain retryable instead of presenting an outdated fixed list. Saved City values and County behavior are preserved. No Creator publication is required. Regression: global additions including College Station, nested native responses, denied reads, retry, and superseded reference loads. Rollback: Proforma Manager 1.80.155.
+
+
+## Approval Packet Header — November 13, 2026
+
+The PDF identity header uses the approved two-column Approved By list at the
+adjacent metadata size, with assigned names and actual route statuses. Long
+identities and routes continue in the packet. Fully approved packets are already
+emailed to every distinct approver, including the final approver. See
+[implementation, verification and rollback](../../docs/proforma-approved-by-2026-11-13.md).

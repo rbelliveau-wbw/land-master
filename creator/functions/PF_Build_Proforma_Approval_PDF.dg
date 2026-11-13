@@ -297,9 +297,9 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		*/
 		page = thisapp.PF_PDF_Rect(0,0,1224,792,canvas,"",0);
 		pfHeader = pfName;
-		if(pfHeader.length() > 33)
+		if(pfHeader.length() > 23)
 		{
-			pfHeader = pfHeader.left(30) + "...";
+			pfHeader = pfHeader.left(20) + "...";
 		}
 		ownerHeader = ownerNamesLabel;
 		territoryHeader = territory;
@@ -310,16 +310,16 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		/* Compact identity, return and flow band from the approved one-sheet layout. */
 		page = page + thisapp.PF_PDF_Rect(28,682,430,82,deepNavy,"",0);
 		page = page + thisapp.PF_PDF_Rect(28,682,430,4,blue,"",0);
-		page = page + thisapp.PF_PDF_Text(46,742,15.5,"bold",white,pfHeader);
-		ownerLines = thisapp.PF_PDF_Wrap("Owners: " + ownerHeader,58);
-		ownerY = 722;
+		page = page + thisapp.PF_PDF_Text(46,744,17,"bold",white,pfHeader);
+		ownerLines = thisapp.PF_PDF_Wrap("Owners: " + ownerHeader,34);
+		ownerY = 726;
 		ownerLineCount = 0;
 		for each ownerLine in ownerLines
 		{
 			if(ownerLineCount < 2)
 			{
-				page = page + thisapp.PF_PDF_Text(46,ownerY,6.7,"regular","0.78 0.85 0.93",ownerLine);
-				ownerY = ownerY - 9;
+				page = page + thisapp.PF_PDF_Text(46,ownerY,9.2,"regular","0.78 0.85 0.93",ownerLine);
+				ownerY = ownerY - 10;
 			}
 			ownerLineCount = ownerLineCount + 1;
 		}
@@ -330,8 +330,77 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 			ownerBlock.put("body",ownerHeader);
 			ownerOverflowBlocks.add(ownerBlock);
 		}
-		page = page + thisapp.PF_PDF_Text(46,697,6.3,"regular","0.78 0.85 0.93","Purchase: " + purchaseLabel + " | Completion: " + completionLabel);
-		page = page + thisapp.PF_PDF_Text(270,697,6.3,"regular","0.78 0.85 0.93",territoryHeader + " | Stage: " + stage + " | Status: " + statusValue);
+		identityDatesY = if(ownerLineCount > 1,700,708);
+		identityStatusY = if(ownerLineCount > 1,686,690);
+		page = page + thisapp.PF_PDF_Text(46,identityDatesY,8.4,"regular","0.78 0.85 0.93","Purchase: " + purchaseLabel + " | Completion: " + completionLabel);
+		page = page + thisapp.PF_PDF_Text(46,identityStatusY,8.4,"regular","0.78 0.85 0.93",territoryHeader + " | Stage: " + stage + " | Status: " + statusValue);
+		// Approved header mockup: two columns at the identity metadata size.
+		page = page + thisapp.PF_PDF_Text(244,748,8.4,"bold",white,"Approved By:");
+		packetApproverIndex = 0;
+		for each packetApprover in approvalRows
+		{
+			packetApproverEmail = ifnull(packetApprover.Approver,"").toString().trim();
+			packetApproverName = packetApproverEmail;
+			if(packetApproverEmail != "")
+			{
+				packetApproverAccess = User_Access[Approver_Email == packetApproverEmail || User == packetApproverEmail];
+				if(packetApproverAccess.ID != null && ifnull(packetApproverAccess.Full_Name,"").toString().trim() != "")
+				{
+					packetApproverName = packetApproverAccess.Full_Name.toString().trim();
+				}
+			}
+			if(packetApproverName == "")
+			{
+				packetApproverName = "Unassigned";
+			}
+			packetApproverRole = ifnull(packetApprover.Title,"Approver").toString();
+			packetApproverLabel = packetApproverRole + " - " + packetApproverName;
+			packetApproverStatus = ifnull(packetApprover.Status,"Not Sent").toString();
+			packetApproverColor = "0.78 0.85 0.93";
+			if(packetApproverStatus == "Approved")
+			{
+				packetApproverColor = "0.60 0.94 0.72";
+			}
+			else if(packetApproverStatus == "Rejected")
+			{
+				packetApproverColor = "1.00 0.73 0.73";
+			}
+			if(packetApproverIndex < 6)
+			{
+				packetApproverX = 244;
+				packetApproverY = 735 - (packetApproverIndex / 2).toLong() * 19;
+				if(packetApproverIndex % 2 == 1)
+				{
+					packetApproverX = 350;
+				}
+				packetApproverShortLabel = packetApproverLabel;
+				if(packetApproverShortLabel.length() > 23)
+				{
+					packetApproverShortLabel = packetApproverShortLabel.left(20) + "...";
+				}
+				page = page + thisapp.PF_PDF_Text(packetApproverX,packetApproverY,8.4,"regular",white,packetApproverShortLabel);
+				page = page + thisapp.PF_PDF_Text(packetApproverX,packetApproverY - 8.5,8.4,"regular",packetApproverColor,packetApproverStatus);
+			}
+			// Full identities and any route overflow remain available in the packet.
+			if(packetApproverIndex >= 6 || packetApproverLabel.length() > 23)
+			{
+				packetApproverBlock = Map();
+				packetApproverBlock.put("title","Approval Details - " + packetApproverRole);
+				packetApproverBody = packetApproverName + " | " + packetApproverEmail + " | " + packetApproverStatus;
+				if(packetApprover.Responded_Date != null)
+				{
+					packetApproverBody = packetApproverBody + " | " + packetApprover.Responded_Date.toString("MMM dd, yyyy HH:mm");
+				}
+				packetApproverBlock.put("body",packetApproverBody);
+				ownerOverflowBlocks.add(packetApproverBlock);
+			}
+			packetApproverIndex = packetApproverIndex + 1;
+		}
+		if(packetApproverIndex == 0)
+		{
+			page = page + thisapp.PF_PDF_Text(244,735,8.4,"regular","0.78 0.85 0.93","No Approvers Assigned");
+		}
+
 		page = page + thisapp.PF_PDF_Rect(472,724,584,40,softBlue,line,0.35);
 		returnX = {488,680,872};
 		returnLabels = {"ROI","IRR","XIRR"};
@@ -358,7 +427,12 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		page = page + thisapp.PF_PDF_Rect(1070,682,126,82,deepNavy,"",0);
 		page = page + thisapp.PF_PDF_Rect(1082,704,102,42,"0.09 0.25 0.44","0.20 0.42 0.68",0.5);
 		page = page + thisapp.PF_PDF_Text(1092,732,5.5,"bold","0.70 0.81 0.93","CURRENT STEP");
-		page = page + thisapp.PF_PDF_Text(1092,714,9.5,"bold",white,ifnull(approvalRow.Title,"Approver").toString());
+		packetStepLabel = ifnull(approvalRow.Title,"Approver").toString();
+		if(statusValue == "Approved")
+		{
+			packetStepLabel = "Fully Approved";
+		}
+		page = page + thisapp.PF_PDF_Text(1092,714,9.5,"bold",white,packetStepLabel);
 		/* Complete Inflows and Outflows sections from the Word template. */
 		page = page + thisapp.PF_PDF_Rect(28,506,151,162,white,line,0.35);
 		page = page + thisapp.PF_PDF_Rect(28,506,4,162,green,"",0);
@@ -1442,7 +1516,7 @@ map PF_Build_Proforma_Approval_PDF(string proformaId, string approvalId)
 		}
 		pageStreams.add(page);
 		pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(offerOverflowBlocks,"Offer details",pfName,2));
-		pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(ownerOverflowBlocks,"Acquisition owners",pfName,1));
+		pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(ownerOverflowBlocks,"Owners And Approval Details",pfName,1));
 		if(commentBlocks.size() > 0)
 		{
 			pageStreams.addAll(thisapp.PF_PDF_Flow_Pages(commentBlocks,"Comments",pfName,3));
