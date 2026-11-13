@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Budget Manager 122.29.149 — November 13, 2026
+
+Retains prior-history expansion across two-column editor rerenders so existing
+Reject/Cancel controls stay visible. Frontend only; no Creator deployment.
+Rollback: 122.29.147 for the preceding layout or 122.29.148 for the initial layout.
+
+
 ## Budget Manager 122.29.148 — November 13, 2026
 
 Implements the approved two-column standalone Budget Modification composer:

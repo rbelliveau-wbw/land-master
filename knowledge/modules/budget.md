@@ -1,3 +1,12 @@
+## Modification History Continuity — 122.29.149, November 13, 2026
+
+The two-column editor retains its prior-history disclosure state across form
+rerenders, including Reject/Cancel controls. Initial history
+starts collapsed. No business or save behavior changes; no Creator deployment.
+Regression: open prior history, click Reject, verify confirmation stays visible,
+then Cancel and verify history stays expanded. Rollback: widget 122.29.147 for
+the preceding layout, or 122.29.148 for the initial two-column layout.
+
 ## Standalone Modification Layout — 122.29.148, November 13, 2026
 
 The approved desktop composer uses a 1220px two-column frame: the existing
