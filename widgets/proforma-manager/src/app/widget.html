@@ -8,25 +8,27 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.152"></script>
-<script src="pf-save-audit.js?v=1.80.152"></script>
-<script src="pf-input-rules.js?v=1.80.152"></script>
-<script src="pf-input-validation.js?v=1.80.152"></script>
-<script src="pf-progress.js?v=1.80.152"></script>
+<script src="pf-save-verification.js?v=1.80.155"></script>
+<script src="pf-save-audit.js?v=1.80.155"></script>
+<script src="pf-input-rules.js?v=1.80.155"></script>
+<script src="pf-input-validation.js?v=1.80.155"></script>
+<script src="pf-progress.js?v=1.80.155"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.152">
-<script src="interaction-motion.js?v=1.80.152"></script>
-<script src="interaction-surfaces.js?v=1.80.152"></script>
-<script src="number-edit-commit.js?v=1.80.152"></script>
-<script src="number-transitions.js?v=1.80.152"></script>
-<script src="number-views.js?v=1.80.152"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.152">
+<script src="location-pickers.js?v=1.80.155" defer></script>
+<link rel="stylesheet" href="location-pickers.css?v=1.80.155">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.155">
+<script src="interaction-motion.js?v=1.80.155"></script>
+<script src="interaction-surfaces.js?v=1.80.155"></script>
+<script src="number-edit-commit.js?v=1.80.155"></script>
+<script src="number-transitions.js?v=1.80.155"></script>
+<script src="number-views.js?v=1.80.155"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.155">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.152"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.152">
-<script src="comments.js?v=1.80.152"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.152">
+<script src="budget-transfer-ui.js?v=1.80.155"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.155">
+<script src="comments.js?v=1.80.155"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.155">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -794,6 +796,7 @@ table.pf-list tr.archived-row .pf-name{color:#64748b}
 .loi-addbar select:hover:not(:focus),.loi-addbar input.loi-pick:hover:not(:focus){background:#e6edf7}
 .loi-addbar select:focus,.loi-addbar input.loi-pick:focus{background:#fff;border-color:var(--primary-2);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 .loi-addbar input.loi-pick.loi-need{background:#fff5f5;border-color:#f6c2c2}
+input.loi-pick[data-combo="city"],input.loi-pick[data-combo="county"],#loiComboPop .loi-combo-opt{font-size:14px}
 /* Searchable single-select combo. NEVER a native <datalist>/<select> popup for these:
    the browser popup is an unstyled OS overlay - dark, clipped by the scrolling table,
    and it reads as broken next to the rest of the module. */
@@ -1850,8 +1853,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.152"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.152">
+<script src="success-feedback.js?v=1.80.155"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.155">
 </head>
 <body>
 
@@ -2266,7 +2269,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.152";
+var PFW_VERSION="1.80.155";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -2380,8 +2383,9 @@ var CFG = {
 
 /* Creator hands these back in entry order. A picker is only searchable if it is also
    scannable, so both vocabularies are sorted once at load. */
-CFG.choices.counties.sort(function(a,b){ return String(a).localeCompare(String(b)); });
-CFG.choices.cities.sort(function(a,b){ return String(a).localeCompare(String(b)); });
+CFG.choices.territory.sort(function(a,b){ return String(a).localeCompare(String(b),undefined,{sensitivity:"base"}); });
+CFG.choices.counties.sort(function(a,b){ return String(a).localeCompare(String(b),undefined,{sensitivity:"base"}); });
+CFG.choices.cities.sort(function(a,b){ return String(a).localeCompare(String(b),undefined,{sensitivity:"base"}); });
 
 /* ── utils ── */
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
@@ -8696,7 +8700,7 @@ function selectF(key, choices, allowBlank){
   var opts=(allowBlank?'<option value=""></option>':"")+choices.map(function(c){
     return '<option value="'+esc(c)+'"'+(String(c)===v?" selected":"")+'>'+esc(c)+'</option>';
   }).join("");
-  return '<select data-k="'+key+'">'+opts+'</select>';
+  return '<select data-k="'+key+'"'+(key==="Territory"?' data-location-picker aria-label="Territory"':'')+'>'+opts+'</select>';
 }
 function roCalc(id){ return '<div class="stat-val" data-calc="'+id+'">—</div>'; }
 function statFld(label, id, hint){ return '<div class="fld stat"><label>'+esc(label)+'</label><div class="stat-val" data-calc="'+id+'">—</div>'+(hint?'<div class="hint">'+esc(hint)+'</div>':'')+'</div>'; }

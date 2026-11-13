@@ -371,6 +371,13 @@ This reflects Robby's October 13 correction: "Just the dots need color."
 
 ## Record dropdowns
 
+City, County, and Territory record fields in Land & Projects and Pro Forma use
+alphabetical, searchable single selection. Preserve source values, required
+fields, existing save handlers, and multi-select report filters. Pro Forma Offer
+City/County controls retain canonical-choice validation for existing and staged
+Properties; Territory reuses the Land picker scoped to its record field.
+
+
 Legal's main Contracts report includes an alphabetized Territory multi-select
 using its existing modern searchable filter popup. Compose it with the other
 report filters and search; keep the same selection, Clear and Done controls.
