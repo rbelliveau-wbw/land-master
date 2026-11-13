@@ -8,27 +8,27 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.156"></script>
-<script src="pf-save-audit.js?v=1.80.156"></script>
-<script src="pf-input-rules.js?v=1.80.156"></script>
-<script src="pf-input-validation.js?v=1.80.156"></script>
-<script src="pf-progress.js?v=1.80.156"></script>
+<script src="pf-save-verification.js?v=1.80.159"></script>
+<script src="pf-save-audit.js?v=1.80.159"></script>
+<script src="pf-input-rules.js?v=1.80.159"></script>
+<script src="pf-input-validation.js?v=1.80.159"></script>
+<script src="pf-progress.js?v=1.80.159"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<script src="location-pickers.js?v=1.80.156" defer></script>
-<link rel="stylesheet" href="location-pickers.css?v=1.80.156">
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.156">
-<script src="interaction-motion.js?v=1.80.156"></script>
-<script src="interaction-surfaces.js?v=1.80.156"></script>
-<script src="number-edit-commit.js?v=1.80.156"></script>
-<script src="number-transitions.js?v=1.80.156"></script>
-<script src="number-views.js?v=1.80.156"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.156">
+<script src="location-pickers.js?v=1.80.159" defer></script>
+<link rel="stylesheet" href="location-pickers.css?v=1.80.159">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.159">
+<script src="interaction-motion.js?v=1.80.159"></script>
+<script src="interaction-surfaces.js?v=1.80.159"></script>
+<script src="number-edit-commit.js?v=1.80.159"></script>
+<script src="number-transitions.js?v=1.80.159"></script>
+<script src="number-views.js?v=1.80.159"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.159">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.156"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.156">
-<script src="comments.js?v=1.80.156"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.156">
+<script src="budget-transfer-ui.js?v=1.80.159"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.159">
+<script src="comments.js?v=1.80.159"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.159">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -1152,6 +1152,8 @@ table.flow td.neg{color:var(--red)}
 /* LOI term fields (Price & Earnest Money, Feasibility & Extensions, etc.) sit ~20% narrower than the standard grid. */
 .ed-pane[data-pane="loi"] .fgrid{grid-template-columns:repeat(6,minmax(96px,184px))}
 .fld.wide{grid-column:span 2}
+.ed-pane[data-pane="loi"] .loi-company-field{grid-column:span 4}
+.loi-company-field>label,.loi-company-field input.loi-pick{font-size:14px}
 @media(max-width:1500px){.fgrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:1050px){.fgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -1853,8 +1855,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.156"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.156">
+<script src="success-feedback.js?v=1.80.159"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.159">
 </head>
 <body>
 
@@ -2269,7 +2271,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.156";
+var PFW_VERSION="1.80.159";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -9285,7 +9287,7 @@ function loiComboRender(){
      point the names stop looking identical */
   p.style.width="auto";
   p.style.minWidth=Math.max(200,Math.round(r.width))+"px";
-  p.style.maxWidth=Math.min(560,window.innerWidth-16)+"px";
+  p.style.maxWidth=Math.min(inp.getAttribute("data-combo")==="company"?1120:560,window.innerWidth-16)+"px";
   p.classList.add("show");
   var w=p.offsetWidth;
   p.style.left=Math.max(8,Math.min(Math.round(r.left),window.innerWidth-w-12))+"px";
@@ -9696,7 +9698,7 @@ function paneLOI(){
 
   var terms='<div class="fgrid">'
     +grp('Purchasing Company')
-    +'<div class="fld wide"><label>Purchasing Company</label>'+companySelect+'</div>'
+    +'<div class="fld loi-company-field"><label>Purchasing Company</label>'+companySelect+'</div>'
     +'<div class="loi-group-label loi-agreement-heading"><span>Agreement</span><div id="loiAgreement" class="loi-agreement" role="group" aria-label="Agreement type">'+["PSA","LOI"].map(function(value){var on=loiAgreementType(l.Agreement_Type)===value;return '<button type="button" data-loi-agreement="'+value+'" aria-pressed="'+on+'" class="'+(on?'on':'')+'"'+loiDisabled+'>'+value+'</button>';}).join('')+'</div></div>'
     +fld("Response Date",loiDateInput("Response_Date","Response Date"))
     +fld("Effective Date",loiDateInput("Assumed_Effective_Date","Effective Date"),"Defaults to today when saved")
@@ -11358,7 +11360,8 @@ function pfValidateLOIInputs(l){
   var check=LMPFInputValidation,errors=check.record("LOI_Worksheet",l,null,stripMoney);
   var sellerKeys=["Builder_Name","Email","Phone_Number","Street_Address","City_State_ZIP"];
   var propertyKeys=["Common_Name","Property_ID","Facility_ID","County","City","Acres","TerraVault_URL"];
-  function add(form,row,keys,label){check.record(form,row,keys,stripMoney).forEach(function(message){errors.push(label+" — "+message);});}
+  // Global lists supply both picker options and save validation, overriding exported choices.
+  function add(form,row,keys,label){check.record(form,row,keys,stripMoney,form==="Property"?{City:CFG.choices.cities}:null).forEach(function(message){errors.push(label+" — "+message);});}
   var sellers=pendingSellerRows(l),properties=pendingPropertyRows(l),seenNames={},seenIds={};
   function unique(row,key,seen,existing,label){
     var value=String(row[key]||"").trim().toLowerCase();if(!value)return;
