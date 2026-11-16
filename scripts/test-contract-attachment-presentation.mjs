@@ -148,3 +148,11 @@ assert.match(source,/\.att-open\{display:block;font-size:13\.5px/);
 assert.match(source,/\.fbtn\{width:34px;height:34px/);
 assert.match(source,/\.att-drop\{border:1\.5px dashed #b9c8dc/,'Legal reference upload styling remains intact');
 console.log('Legal actual attachment surfaces: creator labels, retained upload/file/email actions, reference styles and footer removal passed.');
+
+ctx.S.versions=[{ID:VID,Contract1:{ID:CID},File_field1:{filename:'Caldwell 210 LOI 20261116.docx',filepath:'native_Caldwell.docx'},Email_Attachment:false,Added_User:'Julie King'}];
+let sidebar=ctx.attachCard(CID);
+for(const action of ['previewVersion','downloadVersion','deleteVersion'])assert.ok(sidebar.includes(action+"('"+VID+"'"),'sidebar routes '+action+' through modal handler');
+assert.doesNotMatch(sidebar,/openVersionFile|title="Open file"/,'sidebar never uses the broken direct file navigation');
+ctx.mayEdit=()=>false;sidebar=ctx.attachCard(CID);assert.doesNotMatch(sidebar,/deleteVersion/);assert.match(sidebar,/downloadVersion/);assert.match(sidebar,/previewVersion/);
+ctx.mayEdit=()=>true;ctx.S.contracts[0].Module='Construction';
+console.log('PASS sidebar file actions: shared modal Preview/Download/Delete handlers, exact string IDs, no direct URL and read-only Delete guard.');

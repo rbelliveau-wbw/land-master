@@ -226,3 +226,8 @@ feature's Retry surface, separate from upload/delete/recovery status; successful
 read recovery must not retain a red write-status banner. Request-tab Retry must
 reload that request controller rather than the separate Budget modal. See
 [read-race recovery and regressions](../../docs/po-attachment-read-race-2026-11-11.md).
+
+Contract Management 1.62.66 renders the contract sidebar through the same
+`attachmentModalRows` as the Attachments modal. Preview, Download, Delete and
+Email use the existing handlers and permission guards; the sidebar wraps the
+controls below readable filenames instead of navigating directly to a file URL.
