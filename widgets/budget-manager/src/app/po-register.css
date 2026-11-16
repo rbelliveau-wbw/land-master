@@ -20,6 +20,7 @@
 .requests-view-switch .btn{font-size:14px;min-height:38px}
 .requests-view-switch .btn[aria-pressed=true]{background:#174780;color:#fff;border-color:#174780}
 .requests-workspace .requests-control[hidden]{display:none}
+.requests-workspace.is-po-register .requests-caption{display:none}
 .requests-workspace.is-po-register .requests-eyebrow{display:none}
 .requests-workspace.is-po-register .requests-control>span,.requests-workspace.is-po-register .landing-combo-toggle,.requests-workspace.is-po-register .requests-heading-actions>.btn,.requests-workspace.is-po-register .budget-search input,.requests-workspace.is-po-register .requests-new,.requests-workspace.is-po-register .requests-warning{font-size:14px}
 .requests-workspace:has(.po-register) .requests-eyebrow{display:none}

@@ -1,6 +1,6 @@
 # Purchase Order Register
 
-Budget Manager 122.29.152 adds Purchase Order Report under Requests. The Full
+Budget Manager 122.29.153 adds Purchase Order Report under Requests. The Full
 Register retains all ten requested columns, with no With Supplements button.
 Supplements appear immediately beneath their exact original in sequence order,
 indented in the PO Number column and with their incremental amounts. A missing
