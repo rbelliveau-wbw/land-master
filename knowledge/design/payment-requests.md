@@ -436,3 +436,13 @@ increases against already-approved balances. One approval round covers the PO
 and every linked modification, including zero/negative net records. Capability
 and permission guards are visible before editing; ordinary automatic PO entry
 remains available when native reallocation support is absent.
+
+## Full PO Register
+
+Requests exposes Purchase Order Report as a read-only full-width table with
+all ten spreadsheet columns, 14px readable text and horizontal overflow. Group
+supplements immediately under their exact original PO and indent the first
+column; preserve sequence order and incremental amounts. Do not add a With
+Supplements toggle. Show missing tracking as Not Recorded, and keep unassigned
+business PO numbers distinct from internal references. See
+[the report contract](../../docs/po-register-2026-11-16.md).
