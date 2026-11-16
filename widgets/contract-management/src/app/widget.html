@@ -1166,6 +1166,15 @@ tr.drilled .drill-chev{transform:rotate(90deg);background:#eef4ff;color:var(--na
 .att-row:hover{background:#f8fbff}
 .att-row .attach-icon{width:42px;height:42px;border-radius:10px;font-size:10.5px}
 .att-open{display:block;font-size:13.5px;font-weight:750;color:var(--primary);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* Sidebar files share modal actions, with controls below the filename. */
+.contract-sidebar-files .att-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:10px;padding:12px 0}
+.contract-sidebar-files .att-row>.attach-icon{width:32px;height:32px}
+.contract-sidebar-files .att-row>div:nth-child(2){grid-column:2 / -1}
+.contract-sidebar-files .att-open,.contract-sidebar-files .att-sub,.contract-sidebar-files .att-mail{font-size:14px}
+.contract-sidebar-files .att-open{white-space:normal;overflow-wrap:anywhere}
+.contract-sidebar-files .att-mail{grid-column:2;justify-self:start}
+.contract-sidebar-files .fbtns{grid-column:3;justify-self:end}
+.contract-sidebar-files .fbtn:hover{transform:none}
 .att-open:hover{text-decoration:underline}
 .att-sub{font-size:11px;color:var(--faint);margin-top:2px}
 .fbtns{display:flex;gap:7px;flex:none}
@@ -1985,16 +1994,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.65"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.65">
-<script src="interaction-motion.js?v=1.62.65"></script>
-<script src="interaction-surfaces.js?v=1.62.65"></script>
-<script src="number-edit-commit.js?v=1.62.65"></script>
-<script src="number-transitions.js?v=1.62.65"></script>
-<script src="number-surfaces.js?v=1.62.65"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.65">
-<link rel="stylesheet" href="report-layout.css?v=1.62.65">
-<link rel="stylesheet" href="construction-board.css?v=1.62.65">
+<script src="success-feedback.js?v=1.62.66"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.66">
+<script src="interaction-motion.js?v=1.62.66"></script>
+<script src="interaction-surfaces.js?v=1.62.66"></script>
+<script src="number-edit-commit.js?v=1.62.66"></script>
+<script src="number-transitions.js?v=1.62.66"></script>
+<script src="number-surfaces.js?v=1.62.66"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.66">
+<link rel="stylesheet" href="report-layout.css?v=1.62.66">
+<link rel="stylesheet" href="construction-board.css?v=1.62.66">
 </head>
 <body>
 
@@ -2043,7 +2052,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.65", pageSize: 200, maxPages: 25,
+  version: "1.62.66", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -10833,22 +10842,11 @@ function prDelete(pid,cid){
 }
 function attachCard(cid){
   var vers=versionsFor(cid);
-  var items=vers.map(function(v){
-    var name=fileDisplayName(v)||("Attachment "+v.ID);
-    var lower=name.toLowerCase(), ic="", lbl="DOC";
-    if(/\.pdf$/.test(lower)){ ic="pdf"; lbl="PDF"; }
-    else if(/\.(xls|xlsx)$/.test(lower)){ ic="xls"; lbl="XLS"; }
-    else if(/\.(doc|docx)$/.test(lower)){ ic="doc"; lbl="DOC"; }
-    else if(/\.(png|jpe?g|gif|webp)$/.test(lower)){ lbl="IMG"; }
-    return '<div class="attach-item" style="cursor:pointer" onclick="openVersionFile(\''+v.ID+'\')" title="Open file"><div class="attach-icon '+ic+'">'+lbl+'</div>'
-      +'<div style="flex:1;min-width:0"><div class="attach-name" style="color:var(--primary)">'+esc(name)+'</div>'
-      +'<div class="attach-date">'+esc(fmtDate(v.Date_field1)||"Added")+' · Added by <b>'+esc(attachmentAuthorLabel(v))+'</b>'+(truthy(v.Email_Attachment)?' · <b style="color:var(--green)">on approval email</b>':' · <span style="color:var(--faint)">not on email</span>')+'</div></div>'
-      +'<span style="color:var(--faint);font-size:13px">↗</span></div>';
-  }).join("");
+  var items=vers.length?attachmentModalRows(cid,vers):"";
   return '<div class="side-card"><div class="dark-head"><div><div class="dark-kicker">Contract Files</div><div class="dark-title">Attachments</div></div>'
     +'<div class="dark-badge"><strong>'+vers.length+'</strong><span>Files</span></div></div>'
-    +'<div class="attach-body">'
-    +'<div class="attach-upload"><div><div class="attach-lbl">Add a contract file</div><div class="attach-sub">Upload a version or related document</div></div>'
+    +'<div class="attach-body contract-sidebar-files">'
+    +'<div class="attach-upload"><div><div class="attach-lbl">Add A Contract File</div><div class="attach-sub">Upload a version or related document</div></div>'
     +'<button class="btn sm" style="color:var(--primary);border-color:#93b4f8;background:#eef3ff" onclick="addFile()">+ Add File</button></div>'
     +(items||'<div class="attach-empty">No attachments found for this contract.</div>')
     +'</div></div>';
