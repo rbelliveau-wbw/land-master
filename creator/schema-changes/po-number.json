@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-16",
+  "form": "Payment_Request",
+  "field": "PO_Number",
+  "display_name": "PO Number",
+  "type": "text",
+  "required": false,
+  "automatic_numbering": false,
+  "notes": "Owner requested a string field for a future custom auto-number. Preserve leading zeroes. No allocation, backfill or new numbering rule is included.",
+  "development": "Saved in native form builder and independently reloaded November 16, 2026; PO_Number textbox confirmed. All_Wire_Requests quick-view PO Number column added and independently reloaded/confirmed.",
+  "production": "User promotion required"
+}
