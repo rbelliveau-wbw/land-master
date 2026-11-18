@@ -83,10 +83,14 @@ console.log('PASS: malformed, cyclic and excessive envelopes fail in bounded dec
 // Exercise the actual inline save handler with acknowledged field differences.
 const saveSource=source.slice(source.indexOf('  function save(input) {'),source.indexOf('  async function checkStatus() {'));
 for(const kind of ['different-value','wrong-id','api-failure']){
-  const state={snapshot:{months:[{id,forecast:2,month:'October',year:'2026',builderId:'42'}]},sub:'10',entries:new Map(),pending:0,queue:Promise.resolve()};let sends=0;
-  const ui=vm.createContext({S:state,M:{value:Number,lock:()=>''},creationReview:()=>false,notice:()=>{},patch:()=>{},window:{},request:async()=>{sends++;if(kind==='api-failure')throw Error('Creator rejected the save');return {verifiedForecastId:kind==='wrong-id'?'99':id,verifiedValue:7};},applySnapshot:data=>{state.snapshot=data;}});
+  const active={months:[]}, destination={months:[{id,forecast:2,month:'October',year:'2026',builderId:'42'}]};
+  const state={snapshots:new Map([['10',active],['11',destination]]),sub:'10',entries:new Map(),pending:0,queue:Promise.resolve()};
+  const sent=[];
+  const ui=vm.createContext({S:state,phaseFor:()=> '11',M:{value:Number,lock:()=>''},creationReview:()=>false,notice:()=>{},patch:()=>{},window:{},request:async payload=>{sent.push({...payload});if(kind==='api-failure')throw Error('Creator rejected the save');return {verifiedForecastId:kind==='wrong-id'?'99':id,verifiedValue:7};},applySnapshot:(data,phaseId)=>state.snapshots.set(phaseId,data)});
   vm.runInContext(saveSource,ui);ui.save({dataset:{forecast:id},value:'4',disabled:false});await state.queue;
-  assert.equal(sends,1);assert.equal(state.pending,0);assert.equal(state.entries.get(id).attempted,4);
+  assert.deepEqual(sent,[{action:'save',subdivisionId:'11',forecastId:id,value:4,expected:2}]);
+  assert.equal(state.snapshots.get('10'),active);
+  assert.equal(state.pending,0);assert.equal(state.entries.get(id).attempted,4);
   assert.equal(state.entries.get(id).phase,kind==='different-value'?'saved':'unknown');
 }
 console.log('PASS actual forecast inline save accepts returned value differences and retains wrong-ID/API failures without replay.');

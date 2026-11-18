@@ -1,3 +1,20 @@
+## Project Forecast Workspace — 1.10.0
+
+Builder Forecasts joins the same Creator Project and Subdivision reports used
+by Contract Review with the authorized forecast catalog, using native IDs.
+Territory limits project choices, and a selected project includes all its
+accessible linked phases. All Years with Forecasts includes the saved years of
+each phase. The phase tabs switch the overview independently of the stacked
+forecasts. Project exports include each phase and keep the Subdivision and Code
+columns. If a phase fails to load, Refresh retries it and export waits for a
+complete project.
+
+Add Forecast in the toolbar targets the active phase shown in its dialog. A
+matrix edit, row-level Create Forecast, placeholder assignment or builder note
+targets that row's phase regardless of the overview tab. Creator functions,
+messages and write contracts are unchanged. Rollback restores Forecast Manager
+1.9.3 in the environment mapping.
+
 ## Sold + Forecast default — 1.9.2, November 11, 2026
 
 Fresh page loads select Sold + Forecast in both application state and the pressed
