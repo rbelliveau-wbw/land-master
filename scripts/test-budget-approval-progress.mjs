@@ -8,18 +8,20 @@ const start = html.indexOf('function inspectApprovalProgress(');
 const end = html.indexOf('\nfunction checkApprovalProgress(', start);
 assert.ok(start >= 0 && end > start, 'approval progress evaluator exists');
 
-let finished;
+let finished, pdfRequests, pdfWarnings;
 const context = {
   queueVerifiedApprovalProgress(_progress, kind, message) { finished = { kind, message }; },
+  attachApprovedBudgetPdf() { pdfRequests++; },
+  finishApprovedBudgetPdfWarning(_progress, uncertain) { assert.equal(uncertain,true); pdfWarnings++; },
   renderApprovalProgress() {},
   paceApprovalProgress() {},
 };
 vm.runInNewContext(html.slice(start, end), context);
-function inspect(state, final = false) {
-  finished = null;
-  const progress = { final, targetStep:0 };
+function inspect(state, final = false, options = {}) {
+  finished = null; pdfRequests = 0; pdfWarnings = 0;
+  const progress = { final, targetStep:0, ...options };
   const result = context.inspectApprovalProgress(progress, state);
-  return { progress, result, finished };
+  return { progress, result, finished, pdfRequests, pdfWarnings };
 }
 const routed = { currentStatus:'Approved', nextId:'42', nextStatus:'Pending', pendingCount:1, role:'CFO', address:'cfo@example.com', emailSent:true, sentDate:'2026-09-23' };
 assert.equal(inspect(routed).finished?.kind, 'success');
@@ -31,6 +33,12 @@ for (const override of [
 
 const complete = { currentStatus:'Approved', nextId:'', pendingCount:0, allApproved:true, parentStatus:'Approved', financialFinalized:true };
 assert.equal(inspect(complete, true).finished?.kind, 'success');
+assert.equal(inspect(complete, true, {approvedPdfRequested:true}).pdfRequests, 0);
+assert.equal(inspect(complete, true, {approvedPdfRequested:true}).finished?.kind, 'warning');
+assert.equal(inspect({...complete,approvedPdfReady:true}, true, {approvedPdfRequested:true}).pdfRequests, 1);
+assert.equal(inspect({...complete,approvedPdfReady:true}, true, {approvalWriteUncertain:true}).pdfWarnings, 1);
+assert.equal(inspect({...complete,approvedPdfReady:true,currentStatus:'Pending'}, true, {approvedPdfRequested:true}).pdfRequests, 0);
+assert.equal(inspect({...routed,approvedPdfReady:true}, false, {approvedPdfRequested:true}).pdfRequests, 0);
 for (const override of [
   { allApproved:false }, { parentStatus:'Pending' }, { financialFinalized:false }, { pendingCount:1 },
 ]) assert.equal(inspect({ ...complete, ...override }, true).finished, null, `must not claim finalization for ${JSON.stringify(override)}`);

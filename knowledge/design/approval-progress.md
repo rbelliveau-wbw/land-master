@@ -20,6 +20,15 @@ See [the supplemental PO handoff](../../docs/po-supplemental-2026-11-11.md).
 
 # Approval progress pattern
 
+## Approved Budget PDF
+
+Verify the saved final decision and both approval tracks before starting the
+approved PDF. Use the existing progress dialog while the batched export runs.
+An attachment issue leaves the saved approval visible. Keep the approval
+retry hidden for an attachment-only warning and direct the approver to
+Attachments after an uncertain response. Confirm attachment success through
+the existing upload verification.
+
 ## PO Rejection Review — November 10, 2026
 
 Review PO after a saved rejection reloads the exact saved PO through the
