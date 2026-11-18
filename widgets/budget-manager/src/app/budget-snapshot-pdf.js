@@ -23,6 +23,13 @@
   }
   function definition(snapshot){
     var bid=recordId(snapshot.budgetId),meta=root.BudgetFullExport.parseSnapshotMeta(snapshot.meta,bid);
+    var title=snapshot.approved===true?'Approved Budget':'Budget Export';
+    if(snapshot.approved===true){
+      var tracks=meta.approvals.filter(function(row){return row.track==='Construction'||row.track==='Development';});
+      if(tracks.some(function(row){return row.status!=='Approved';})||
+        !tracks.some(function(row){return row.track==='Construction';})||
+        !tracks.some(function(row){return row.track==='Development';}))throw new Error('Both budget approval tracks must be complete for an approved PDF.');
+    }
     var rows=snapshot.rows,elements=snapshot.elementRows,ids=snapshot.itemIds,structure=snapshot.structure;
     if(!Array.isArray(rows)||!Array.isArray(ids)||ids.length!==rows.length||!Array.isArray(elements)||elements.length!==rows.length*5||!structure||!Array.isArray(structure.categories)||!Array.isArray(structure.items))throw new Error('Incomplete PDF snapshot.');
     var categories=new Map(),items=new Map(),seen=new Set();
@@ -64,7 +71,7 @@
     function table(head,body,widths,numericStart,numericEnd,dense){
       return {margin:[0,2,0,8],table:{headerRows:1,keepWithHeaderRows:1,widths:widths,body:[head.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,true);})].concat(body.map(function(row){return row.map(function(value,i){return cell(value,i>=numericStart&&i<=numericEnd,false);});}))},layout:{hLineWidth:function(){return 0.35;},vLineWidth:function(){return 0;},hLineColor:function(){return line;},paddingLeft:function(){return 2.5;},paddingRight:function(){return 2.5;},paddingTop:function(){return dense?1.25:2.25;},paddingBottom:function(){return dense?1.25:2.25;}}};
     }
-    var summary=meta.summary,content=[{text:'Budget Export',fontSize:20,bold:true,color:ink,margin:[0,0,0,10]},
+    var summary=meta.summary,content=[{text:title,fontSize:20,bold:true,color:ink,margin:[0,0,0,10]},
       table(['Budget','Subdivision Code','Territory','Exported','Current Final Budget'],[[summary.budgetLabel,summary.subdivisionCode,summary.territory,summary.exportedDate,money(summary.grandFinal)]],[230,72,100,134,110],4,4)];
     ordered.forEach(function(category){
       // The heading is part of the repeated table header, so page breaks never
@@ -97,7 +104,7 @@
     content.push({text:'Approval History',pageBreak:'before',fontSize:16,bold:true,color:ink,margin:[0,0,0,10]});
     var approvals=meta.approvals.map(function(row){return ['track','role','approver','status','respondedDate','notes'].map(function(key){return text(row[key]);});});
     content.push(table(['Track','Role','Approver','Status','Responded','Approval Notes'],approvals.length?approvals:[['No Approval History','','','','','']],[88,70,170,90,80,140],-1,-1));
-    return {pageSize:'LETTER',pageOrientation:'landscape',pageMargins:[25,25,25,34],info:{title:'Budget Export - '+summary.budgetLabel,author:'Land Master'},defaultStyle:{font:'Roboto',fontSize:7.5},content:content,footer:function(page,count){return {text:'Page '+page+' of '+count,alignment:'right',fontSize:8,color:'#62758c',margin:[25,10,25,0]};}};
+    return {pageSize:'LETTER',pageOrientation:'landscape',pageMargins:[25,25,25,34],info:{title:title+' - '+summary.budgetLabel,author:'Land Master'},defaultStyle:{font:'Roboto',fontSize:7.5},content:content,footer:function(page,count){return {text:'Page '+page+' of '+count,alignment:'right',fontSize:8,color:'#62758c',margin:[25,10,25,0]};}};
   }
   function render(snapshot){
     return new Promise(function(resolve,reject){

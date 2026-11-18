@@ -73,6 +73,41 @@ r=fixture({actor:allGrants,status:'Approved',secondStatus:'Not Sent'});const bef
 // username supplied in a request cannot activate this internal Zoho identity.
 for(const name of names){r=fixture({login:'test-owner',users:[],profile:'Construction Budgeting',profileFailure:true,status:name==='startApprovalChain'?'Not Sent':'Pending'});assert.doesNotMatch(call(r,name),/ERROR:|"ok":false/);assert.ok(r.c.effects.length>0);}
 
+// A final decision must finish without calling the legacy inline PDF generator,
+// including for the 227-item shape that exceeded Creator's statement limit.
+for(const otherStatus of ['Approved','Pending',null]){
+  const final=fixture({actor:allGrants,status:'Approved',secondStatus:'Pending'});
+  final.c.otherStatus=otherStatus;
+  vm.runInContext(`
+    tables.Add_Budget[0].Const_Budget_Approval_Status='Pending';
+    tables.Add_Budget[0].Development_Budget_Approval_Status=otherStatus||'Not Sent';
+    if(otherStatus)tables.Budget_Approvals.push({ID:73,Budget:61,Type1:'Development',Title:'VP',Status:otherStatus,Sort_Order:1});
+    tables.Budget_Category=Array.from({length:20},(_,i)=>({ID:100+i,Budget:61,Deparment:'Construction',Budget_Total:0}));
+    tables.Budget_Item=Array.from({length:227},(_,i)=>({ID:200+i,Budget_Category:100+i%20,Unapproved_Final_Budget_Ttl:i%2?10:-1,Budget_Ttl:0}));
+    Number.prototype.toNumber=Number.prototype.toDecimal=function(){return Number(this);};
+    var Budget_Ttl='Budget_Ttl';
+    Array.prototype.sum=function(name){return this.reduce((total,row)=>total+row[name],0);};
+    thisapp.snapshotBudgetItemComponents=function(){return map({ok:true});};
+    thisapp.syncBudgetApprovalStatus=function(){tables.Add_Budget[0].Const_Budget_Approval_Status='Approved';return 'OK';};
+    thisapp.generateApprovedBudgetPDF=function(){throw Error('Inline export would exhaust the request');};
+  `,final.c);
+  const result=JSON.parse(call(final,'handleApprovalAction','Approved','72'));
+  assert.equal(result.contract,'budget-final-approval-v1');
+  assert.equal(result.ok,true);
+  assert.equal(result.budgetId,'61');
+  assert.equal(result.approvalId,'72');
+  assert.equal(result.approvedPdfRequested,otherStatus==='Approved');
+  assert.equal(final.tables().Budget_Approvals[1].Status,'Approved');
+  assert.ok(final.tables().Budget_Item.every((item,i)=>item.Budget_Ttl===(i%2?10:-1)&&item.Unapproved_Final_Budget_Ttl===0));
+  assert.equal(final.tables().Add_Budget[0].Budget_Grand_Total,1016);
+  const writes=final.c.writes;
+  const status=JSON.parse(call(final,'handleApprovalAction','Check','72'));
+  assert.equal(status.financialFinalized,true);
+  assert.equal(status.approvedPdfReady,otherStatus==='Approved');
+  assert.equal(final.c.writes,writes,'the post-decision check is read-only');
+  assert.doesNotMatch(call(final,'handleApprovalAction','Approved','72'),/budget-final-approval-v1/,'repeating a saved decision cannot issue another PDF receipt');
+}
+
 // The remaining exposed approval helpers must not be a direct Const bypass.
 const source=name=>fs.readFileSync(`creator/functions/${name}.dg`,'utf8');
 const prefixProgram=(name,marker)=>compileDelugePO(source(name).slice(0,source(name).indexOf(marker))+'\nreturn "ALLOW";\n}');

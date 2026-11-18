@@ -2995,3 +2995,36 @@ writes. The new optional PO_Number text field is installed in Creator
 Development for future custom numbering; the owner promotes Creator changes.
 No numbering/backfill, coding approval, GP-entry or closure workflow is added.
 See [implementation, checks and rollback](../../docs/po-register-2026-11-16.md).
+
+## Final Budget Approval and Approved PDF
+
+Creator commits the approval row, financial finalization and parent rollups
+before Budget Manager starts the approved PDF. The November 17 production
+stack trace for a 227-item budget showed the previous synchronous PDF generator
+exhausting Creator's Deluge statement limit and the approval stayed Pending.
+
+The existing `Handle_Approval_Action` API keeps its request arguments. A final
+decision returns a `budget-final-approval-v1` receipt with the exact Budget
+and approval row IDs. A read-only `Check` confirms the saved decision, track
+completion, financial finalization and readiness of both tracks. Budget Manager
+uses the same twenty-item snapshot reads, PDF worker and attachment upload as
+Export PDF. It rechecks the targeted approval before creating the attachment.
+The document title is **Approved Budget** and the filename starts with
+`Approved_Budget_`.
+
+The approval result stays saved if the PDF cannot be rendered or attached.
+Budget Manager identifies the attachment problem and directs the user to
+Attachments or Export PDF. A lost approval acknowledgement or attachment reply
+does not trigger a new automatic export. The approval-detail screen and Budget
+Editor both use this workflow. Automatic PDF generation requires the active
+widget session and its existing Budget attachment permission.
+
+The fix requires the paired Budget Manager 122.29.154 release and Creator
+`handleApprovalAction` publication. It changes no Creator forms, fields,
+Custom API arguments or permanent widget URLs. For a full rollback, pair
+Budget Manager 122.29.153 with the prior Creator function revision. Restoring
+that revision reintroduces the reported large-budget failure.
+
+An approval submitted directly to Creator without the widget can save and
+return the completion receipt. Use Budget Manager's Export PDF for the document
+in that case.

@@ -26,11 +26,11 @@ const records=Array.from({length:227},(_,i)=>({
 const metadata={contract:'budget-snapshot-meta-v1',ok:true,budgetId,summary:{budgetLabel:'Lakeside at Granger - Phase 01',subdivisionCode:'001',territory:'North Austin',exportedDate:'05-Nov-2026',grandFinal:22627.8884},approvals:[{track:'Construction',role:'Manager',approver:'Julie King',status:'Pending',respondedDate:'',notes:''}]};
 
 function harness(options={}){
-  const requests=[],uploads=[],refreshes=[],messages=[],toasts=[],autosave=[],audits=[];
+  const requests=[],uploads=[],refreshes=[],messages=[],toasts=[],autosave=[],audits=[],pdfTitles=[];
   const state={liveSDK:true,currentUser:'jking@wbdevelopment.com',view:'vEditor',edBudget:{ID:budgetId},exportBusy:false,attachmentBusy:false,attachmentUploadReview:null,attachmentModal:null};
   const runtime={environment:'production'},button={title:''};
   let generation=1,scope='original-session',permission=true,detailCalls=0;
-  const ports={requests,uploads,refreshes,messages,toasts,autosave,audits,state,runtime,
+  const ports={requests,uploads,refreshes,messages,toasts,autosave,audits,pdfTitles,state,runtime,
     navigate(){generation++;},switchBudget(){state.edBudget={ID:'4410926000001744999'};},
     changeScope(){scope='new-session';},deny(){permission=false;}};
   const context=vm.createContext({
@@ -86,7 +86,7 @@ function harness(options={}){
   vm.runInContext(moduleSource,context);vm.runInContext(xlsxSource,context);
   vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/budget-snapshot-pdf.js','utf8'),context);
   context.BudgetSnapshotPdf.render=async snapshot=>{
-    context.BudgetSnapshotPdf.definition(snapshot);
+    pdfTitles.push(context.BudgetSnapshotPdf.definition(snapshot).info.title);
     if(options.render)await options.render(ports);
     return new TextEncoder().encode('%PDF-fixture').buffer;
   };
@@ -179,6 +179,33 @@ assert.equal(pdf.uploads.length,1);assert.equal(pdf.uploads[0][0].type,'applicat
 assert.match(pdf.uploads[0][0].name,/^Budget_Export_.*\.pdf$/);
 assert.equal(pdf.requests.some(request=>request.exportType==='PDF'||request.exportType==='EXCEL'),false);
 assert.deepEqual(pdf.refreshes,[],'the shared confirmed upload does not require another acknowledgement');
+const completedTracks=meta=>{
+  meta.approvals[0].status='Approved';
+  meta.approvals.push({...meta.approvals[0],track:'Development'});
+};
+const approvedPdf=harness({metadata:completedTracks});
+const approvedBudget=approvedPdf.state.edBudget;
+approvedPdf.state.view='vApprDetail';
+approvedPdf.state.edBudget=null;
+let approvalChecks=0;
+await approvedPdf.context.runBudgetPdfSnapshot(budgetId,{budget:approvedBudget,current:()=>true,verify:async()=>{
+  approvalChecks++;
+  assert.equal(approvedPdf.uploads.length,0,'verify the approval state before creating the file record');
+}});
+assert.equal(approvalChecks,1);
+assert.equal(approvedPdf.detailCalls,12,'automatic approved PDFs use the same bounded reader');
+assert.equal(approvedPdf.uploads.length,1);
+assert.match(approvedPdf.uploads[0][0].name,/^Approved_Budget_.*\.pdf$/);
+assert.match(approvedPdf.pdfTitles[0],/^Approved Budget - /);
+const pendingTrack=harness({metadata:meta=>{
+  completedTracks(meta);
+  meta.approvals[1].status='Pending';
+}});
+await assert.rejects(()=>pendingTrack.context.runBudgetPdfSnapshot(budgetId,{budget:pendingTrack.state.edBudget,current:()=>true,verify:async()=>assert.fail('The export must stop before the final check')}),/Both budget approval tracks/);
+assert.equal(pendingTrack.uploads.length,0);
+const changedTrack=harness({metadata:completedTracks});
+await assert.rejects(()=>changedTrack.context.runBudgetPdfSnapshot(budgetId,{budget:changedTrack.state.edBudget,current:()=>true,verify:async()=>{throw new Error('Approval state changed');}}),/Approval state changed/);
+assert.equal(changedTrack.uploads.length,0);
 for(const change of [ports=>ports.navigate(),ports=>ports.switchBudget(),ports=>{ports.state.currentUser='other@example.com';},ports=>{ports.runtime.environment='development';},ports=>ports.changeScope(),ports=>ports.deny()]){
   const test=harness({render:change});
   await assert.rejects(()=>test.context.runBudgetPdfSnapshot(budgetId));

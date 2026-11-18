@@ -14,9 +14,8 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 	//                  then Unapproved -> 0.
 	//     Construction: Construction Unapproved -> Final,
 	//                   then Unapproved -> 0.
-	// - When both tracks are fully approved:
-	//     Generates an approved-budget PDF and attaches it to
-	//     Add_Budget.Attachments.
+	// - After both tracks finish, the widget attaches the approved PDF using
+	//   the bounded snapshot export in a separate request lifecycle.
 	//
 	// Rejected:
 	// - Sends the chain back to the previous approver.
@@ -419,6 +418,7 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 			parentStatus = ifnull(budgetRec.Const_Budget_Approval_Status,"").trim();
 		}
 		financialFinalized = false;
+		bothTracksFinanciallyFinalized = true;
 		if(nextId == "" && rowCount > 0 && approvedCount == rowCount)
 		{
 			financialFinalized = true;
@@ -427,15 +427,21 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 			for each  cat in budgetCategories
 			{
 				dept = ifnull(cat.Deparment,"").trim().toLowerCase();
-				inTrack = (vApprovalType == "Construction" && dept.contains("construction")) || (vApprovalType == "Development" && dept.contains("development") || dept.contains("engineering"));
+				constructionCategory = dept.contains("construction");
+				developmentCategory = dept.contains("development") || dept.contains("engineering");
+				inTrack = (vApprovalType == "Construction" && constructionCategory) || (vApprovalType == "Development" && developmentCategory);
 				itemFinal = 0.0;
 				catItems = Budget_Item[Budget_Category == cat.ID];
 				for each  item in catItems
 				{
 					itemFinal = itemFinal + ifnull(item.Budget_Ttl,0).toDecimal();
-					if(inTrack && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
+					if((constructionCategory || developmentCategory) && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
 					{
-						financialFinalized = false;
+						bothTracksFinanciallyFinalized = false;
+						if(inTrack)
+						{
+							financialFinalized = false;
+						}
 					}
 				}
 				catFinal = ifnull(cat.Budget_Total,0).toDecimal();
@@ -476,6 +482,19 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 		progress.put("allApproved",rowCount > 0 && approvedCount == rowCount);
 		progress.put("parentStatus",parentStatus);
 		progress.put("financialFinalized",financialFinalized);
+		approvedPdfReady = false;
+		if(financialFinalized && bothTracksFinanciallyFinalized && budgetRec.Development_Budget_Approval_Status == "Approved" && budgetRec.Const_Budget_Approval_Status == "Approved")
+		{
+			otherTrack = "Construction";
+			if(vApprovalType == "Construction")
+			{
+				otherTrack = "Development";
+			}
+			otherRows = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == otherTrack];
+			otherApproved = Budget_Approvals[Budget == vBudgetId.toLong() && Type1 == otherTrack && Status == "Approved"].count();
+			approvedPdfReady = otherApproved > 0 && otherApproved == otherRows.count();
+		}
+		progress.put("approvedPdfReady",approvedPdfReady);
 		progress.put("repairError",repairError);
 		return progress.toString();
 	}
@@ -696,17 +715,11 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 					}
 				}
 			}
-			pdfResp = "";
-			if(hasDevelopmentTrack == true && hasConstructionTrack == true && allDevelopmentApproved == true && allConstructionApproved == true)
-			{
-				// generateApprovedBudgetPDF expects a STRING.
-				pdfResp = thisapp.generateApprovedBudgetPDF(vBudgetId);
-			}
-			else
-			{
-				pdfResp = "Approved budget PDF will be generated after both approval tracks are fully approved.";
-			}
-			return vApprovalType + " approval chain fully approved. " + finalizeResp + " " + syncResp + " " + pdfResp;
+			// An inline Deluge PDF export can exhaust the request's execution limit
+			// and roll back the decision. Acknowledge the finalization on its own.
+			approvedPdfRequested = hasDevelopmentTrack && hasConstructionTrack && allDevelopmentApproved && allConstructionApproved;
+			result = {"ok":true,"contract":"budget-final-approval-v1","budgetId":vBudgetId,"approvalId":vApprovalId,"approvedPdfRequested":approvedPdfRequested,"message":vApprovalType + " approval chain fully approved. " + finalizeResp + " " + syncResp};
+			return result.toString();
 		}
 	}
 	/********* REJECTED — SEND BACK TO PREVIOUS APPROVER *********/
