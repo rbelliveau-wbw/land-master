@@ -576,20 +576,26 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 }
 .phase-month:not(.phase-month-zero){font-weight:700}
 .phase-month-zero{color:#537089}
-.phase-month[data-basis=actual]:not(.phase-month-zero){color:#155b9e}
-.phase-month[data-basis=forecast]:not(.phase-month-zero){color:#246c4d}
-.phase-month[data-basis=scheduled]:not(.phase-month-zero){color:#80550e}
+.phase-month[data-basis=actual]{--phase-heat-color:#155b9e;--phase-heat-ink:#103f70}
+.phase-month[data-basis=forecast]{--phase-heat-color:#246c4d;--phase-heat-ink:#124c37}
+.phase-month[data-basis=scheduled]{--phase-heat-color:#b97a11;--phase-heat-ink:#633a06}
+.forecast-phase-heading [data-phase-month]{box-shadow:inset -1px 0 #7799bb38}
+.forecast-phase-heading [data-phase-month]:not(.phase-month-zero){
+  color:var(--phase-heat-ink);
+  background:color-mix(in srgb,var(--phase-heat-color) calc(26% * var(--phase-heat-lots) / var(--phase-heat-max)),var(--phase-group-fill));
+}
 .forecast-phase-heading{
-  min-height:44px;cursor:pointer;list-style:none;background:#e3edf7;color:#183b60;
+  --phase-group-fill:#e3edf7;
+  min-height:44px;cursor:pointer;list-style:none;background:var(--phase-group-fill);color:#183b60;
 }
 .forecast-phase-heading::-webkit-details-marker{display:none}
-.forecast-phase-heading:hover{background:#d8e7f7}
+.forecast-phase-heading:hover{--phase-group-fill:#d8e7f7}
 .forecast-phase-name,.forecast-phase-value{font-size:14px;font-weight:750}
 .forecast-phase-code{font-size:14px;color:#3c5d7d}
 .forecast-phase-heading svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6}
 .forecast-phase-group[open] .forecast-phase-heading svg{transform:rotate(180deg)}
 .forecast-phase-group.selected-phase{outline-color:#507aa9}
-.forecast-phase-group.selected-phase .forecast-phase-heading{background:#ccdef1;color:#102f52}
+.forecast-phase-group.selected-phase .forecast-phase-heading{--phase-group-fill:#ccdef1;color:#102f52}
 .forecast-phase-group.selected-phase .phase-axis-start{box-shadow:inset 3px 0 #174679}
 .forecast-phase-group .matrix-scroll{overflow:visible;max-height:none;border-top:1px solid #b2c6dd}
 .forecast-phase-group .phase-load-error{position:sticky;left:0;max-width:100cqw}

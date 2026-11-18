@@ -362,6 +362,11 @@ try {
   await phaseFive.locator('summary').click();
   await page.locator('button[data-view="scheduled"]').click();
   assert.equal(await phaseFive.locator('[data-phase-month="2026-10-01"]').textContent(),'2','collapsed totals follow the selected measure');
+  const heatCell=phaseFive.locator('[data-phase-month="2026-10-01"]');
+  assert.equal(await page.locator('#forecastGroups').evaluate(host=>host.style.getPropertyValue('--phase-heat-max')),'2');
+  assert.equal(await heatCell.getAttribute('data-basis'),'scheduled');
+  assert.notEqual(await heatCell.evaluate(cell=>getComputedStyle(cell).backgroundColor),'rgba(0, 0, 0, 0)');
+  assert.equal(await phaseFive.locator('[data-phase-month="2026-02-01"]').evaluate(cell=>getComputedStyle(cell).backgroundColor),'rgba(0, 0, 0, 0)','zero months stay neutral');
   await phaseFive.locator('summary').press('Enter');
   await phaseFive.locator('tfoot [data-month-start]').first().waitFor({state:'attached'});
   const offsets=await page.locator('#phaseReportScroll').evaluate(scroll=>{
@@ -380,7 +385,9 @@ try {
   await page.getByRole('tab',{name:'Builder → Phase'}).click();
   const builderGroup=page.locator('[data-builder-group="90071992547409961"]');
   await builderGroup.locator('summary').press('Enter');
+  await builderGroup.locator('.forecast-builder-phase').first().waitFor({state:'attached'});
   assert.equal(await builderGroup.locator('.forecast-builder-phase').count(),2);
+  assert.notEqual(await builderGroup.locator('[data-phase-month="2026-10-01"]').evaluate(cell=>getComputedStyle(cell).backgroundColor),'rgba(0, 0, 0, 0)','builder aggregates use the same heatmap');
   await page.getByRole('tab',{name:'Phase → Builder'}).click();
   assert.equal(await phaseFive.evaluate(group=>group.open),true,'expanded phase is restored after switching grouping');
   assert.equal(await page.evaluate(()=>__calls.filter(call=>call.action==='snapshot').length),2,'switching summary tabs reuses the loaded phase data');

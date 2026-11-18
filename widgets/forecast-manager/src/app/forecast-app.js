@@ -243,6 +243,7 @@
     if(!S.projectId){host.replaceChildren();controls();return;}
     const axis=renderPhaseMonthHeader();
     const existing=new Map([...host.children].map(group=>[group.dataset.groupKey,group]));
+    let maxMonthlyLots=1;
     groups.forEach(model=>{
       const key=grouping+':'+model.id;
       mountedGroups.set(key,model);
@@ -271,7 +272,7 @@
       const error=group.querySelector('.phase-load-error');
       error.hidden=!!model.builder||S.snapshots.has(model.id);
       error.textContent=S.phaseErrors.get(model.id)||'Phase forecasts are unavailable.';
-      updateGroupTotals(group,model,axis);
+      maxMonthlyLots=Math.max(maxMonthlyLots,updateGroupTotals(group,model,axis));
       if(group.open)renderGroupTables(group,model);
       else group.querySelector('.matrix-scroll').replaceChildren();
     });
@@ -280,6 +281,7 @@
     if(!groups.length)host.innerHTML='<p class="empty-table forecast-no-groups">No builders have forecasts for the selected years.</p>';
     const ordered=[...mountedGroups.keys()].map(key=>[...host.children].find(group=>group.dataset.groupKey===key));
     ordered.forEach((group,index)=>{if(host.children[index]!==group)host.insertBefore(group,host.children[index]||null);});
+    host.style.setProperty('--phase-heat-max',maxMonthlyLots);
     syncPhaseHighlight(); refreshLegend(); controls();
   }
   function matrixRows(snapshot,builder) {
@@ -348,20 +350,25 @@
           '">'+ForecastNumbers.markup('—',scope+'|month|'+start)+'</span>';
       }).join('')+'<span class="phase-month phase-year-total" title="WFY '+esc(year)+' Total">'+ForecastNumbers.markup('—',scope+'|year|'+year)+'</span>').join('');
     }
-    let grandTotal=0;
+    let grandTotal=0, maxMonthlyLots=0;
     [...months.children].forEach((node,position)=>{
       const month=position%13, values=totals.get(axis[Math.floor(position/13)])||[];
       const value=month===12?values.reduce((sum,item)=>sum+item,0):values[month]??0;
       if(month===12)grandTotal+=value;
+      else {
+        maxMonthlyLots=Math.max(maxMonthlyLots,value);
+        node.style.setProperty('--phase-heat-lots',value);
+      }
       ForecastNumbers.update(node.firstElementChild,snapshot?count(value):'—');
       node.classList.toggle('phase-month-zero',value===0);
       const basis=node.dataset.phaseMonth?(S.view==='outlook'?(snapshot&&M.isPast({start:node.dataset.phaseMonth},snapshot.today)?'actual':'forecast'):S.view):'';
       node.dataset.basis=basis;
       node.setAttribute('aria-label',node.title+': '+(snapshot?count(value):'Unavailable'));
     });
-    if(!snapshot){totalNode.textContent='Unavailable';return;}
+    if(!snapshot){totalNode.textContent='Unavailable';return 0;}
     if(!totalNode.firstElementChild)totalNode.innerHTML=ForecastNumbers.markup(count(grandTotal),scope+'|total');
     else ForecastNumbers.update(totalNode.firstElementChild,count(grandTotal));
+    return maxMonthlyLots;
   }
   function renderMatrix(table,snapshot) {
     const builder=table.dataset.matrixBuilder, previous=ForecastNumbers.capture(table);
@@ -400,8 +407,13 @@
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
   function patch() {
     controls();
-    $('forecastGroups').querySelectorAll('[data-group-key]').forEach(group=>updateGroupTotals(group,mountedGroups.get(group.dataset.groupKey)));
-    $('forecastGroups').querySelectorAll('.phase-matrix').forEach(table=>{
+    const host=$('forecastGroups'), axis=phaseYearAxis();
+    let maxMonthlyLots=1;
+    for(const group of host.querySelectorAll('[data-group-key]')) {
+      maxMonthlyLots=Math.max(maxMonthlyLots,updateGroupTotals(group,mountedGroups.get(group.dataset.groupKey),axis));
+    }
+    host.style.setProperty('--phase-heat-max',maxMonthlyLots);
+    host.querySelectorAll('.phase-matrix').forEach(table=>{
       const snapshot=S.snapshots.get(phaseFor(table));
       if(snapshot&&table.hasChildNodes())patchMatrix(table,snapshot);
     });

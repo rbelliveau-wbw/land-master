@@ -1,3 +1,11 @@
+## Volume Heatmap — 1.11.1
+
+Monthly cells on both forecast group rows use the approved Volume Heatmap.
+The current view and filters determine the maximum monthly group count and
+the sold, forecast, or scheduled tint. The shared timeline and monthly editor
+geometry remain the same. No Creator publication is required. Rollback restores
+Forecast Manager 1.11.0 in the environment mapping.
+
 ## Shared Forecast Timeline and Builder Grouping — 1.11.0
 
 The report header, collapsed totals, and expanded monthly editors share one
