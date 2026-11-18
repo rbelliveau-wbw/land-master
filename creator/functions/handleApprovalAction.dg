@@ -429,13 +429,14 @@ string handleApprovalAction(string budgetId, string approvalId, string approvalA
 				dept = ifnull(cat.Deparment,"").trim().toLowerCase();
 				constructionCategory = dept.contains("construction");
 				developmentCategory = dept.contains("development") || dept.contains("engineering");
+				approvalCategory = constructionCategory || developmentCategory;
 				inTrack = (vApprovalType == "Construction" && constructionCategory) || (vApprovalType == "Development" && developmentCategory);
 				itemFinal = 0.0;
 				catItems = Budget_Item[Budget_Category == cat.ID];
 				for each  item in catItems
 				{
 					itemFinal = itemFinal + ifnull(item.Budget_Ttl,0).toDecimal();
-					if((constructionCategory || developmentCategory) && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
+					if(approvalCategory && ifnull(item.Unapproved_Final_Budget_Ttl,0).toDecimal() != 0)
 					{
 						bothTracksFinanciallyFinalized = false;
 						if(inTrack)
