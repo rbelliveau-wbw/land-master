@@ -82,11 +82,27 @@
     return {number,label:number+(/^[A-Za-z]$/.test(suffix)||!suffix?suffix:'–'+suffix)};
   }
   const phaseOrder = new Intl.Collator('en-US',{numeric:true,sensitivity:'base'});
-  function phases(selected=project(),catalog=S.catalog) {
+  const orderField='Forecast_Phase_Order';
+  const projectReport='All_Projects';
+  function numericPhases(selected=project(),catalog=S.catalog) {
     if(!selected || !catalog) return [];
     return catalog.subdivisions.filter(row=>selected.linkedPhases.has(row.id))
       .map(row=>({...row,...selected.linkedPhases.get(row.id)}))
       .sort((a,b)=>phaseOrder.compare(phaseNumber(a).label||a.name,phaseNumber(b).label||b.name)||phaseOrder.compare(a.name,b.name));
+  }
+  function phases(selected=project()) {
+    const all=numericPhases(selected);
+    const ranks=new Map(selected?.order?.ids.map((id,index)=>[id,index]));
+    return all.sort((a,b)=>(ranks.get(a.id)??Infinity)-(ranks.get(b.id)??Infinity));
+  }
+  async function readPhaseOrder(projectId) {
+    const [record]=await LMData.readAll({reportName:projectReport,criteria:'(ID == '+projectId+')',fields:['ID',orderField],parallelExact:true,fresh:true});
+    if(!record||!Object.hasOwn(record,orderField))throw new Error('The Project phase order field is unavailable.');
+    const raw=String(record[orderField]??'').trim();
+    let ids;
+    try {ids=raw?JSON.parse(raw):[];} catch {throw new Error('The saved phase order could not be read.');}
+    if(!Array.isArray(ids)||ids.some(id=>typeof id!=='string'||!/^\d+$/.test(id))||new Set(ids).size!==ids.length)throw new Error('The saved phase order could not be read.');
+    return {raw,ids};
   }
   function availableProjects() {
     return [...(S.projects?.values()||[])].filter(item=>phases(item).some(row=>!S.territories||S.territories.includes(territoryOf(row))))
@@ -162,6 +178,13 @@
     return snapshot?M.visibleMatrix(snapshot,builders(snapshot).sort((a,b)=>name(a).localeCompare(name(b))),years(snapshot)):[];
   }
   function controls() {
+    const groups=[...$('forecastGroups').querySelectorAll(':scope > details')];
+    $('expandForecastGroups').disabled=!groups.length||S.loading;
+    $('expandForecastGroups').textContent=groups.length&&groups.every(group=>group.open)?'Collapse All':'Expand All';
+    const selected=project(), orderButton=$('editPhaseOrder');
+    orderButton.hidden=!selected||selected.linkedPhases.size<2;
+    orderButton.disabled=busy()||!!creationReview()||!selected?.order||typeof window.ZOHO?.CREATOR?.DATA?.updateRecordById!=='function';
+    orderButton.title=selected?.orderError||'Reorder phases for this project';
     document.querySelectorAll('[data-forecast-page]').forEach(button=>{button.disabled=!S.ready||!S.catalog||busy()||!!creationReview();});
     ['territoryPicker','projectPicker','builderPicker','yearPicker','refresh','export','add'].forEach(id=>{$(id).disabled=!S.ready || !S.catalog || busy() || !!creationReview() || id==='projectPicker'&&!S.projects || id==='export' && (!S.snapshots.size || S.phaseErrors.size>0) || id==='add' && !S.snapshot;});
     document.querySelectorAll('[data-create-builder]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview();button.textContent=S.creating && S.creation && phaseFor(button)===S.creation.destination.subdivisionId && button.dataset.createBuilder===S.creation.destination.builderId && button.dataset.createYear===S.creation.destination.year?'Creating…':'Create Forecast';});
@@ -261,8 +284,9 @@
           if(group.open) {
             expanded[kind].add(model.id);
             if(!group.querySelector('.phase-matrix'))renderGroupTables(group,mountedGroups.get(key));
-            syncPhaseHighlight();controls();
+            syncPhaseHighlight();
           } else expanded[kind].delete(model.id);
+          controls();
         });
         host.append(group);
       }
@@ -309,14 +333,30 @@
   }
   function renderPhaseMonthHeader() {
     const years=phaseYearAxis(), header=$('phaseMonthHeader'), key=grouping+'|'+years.join('|');
-    if(header.dataset.years!==key) {
-      header.dataset.years=key;
+    const scope='visible|'+S.projectId;
+    if(header.dataset.years!==scope+'|'+key) {
+      header.dataset.years=scope+'|'+key;
       $('phaseReportContent').style.setProperty('--phase-year-count',years.length);
       $('phaseReportContent').style.setProperty('--phase-month-tracks',years.map(()=>'repeat(12,var(--phase-month-width)) var(--phase-year-total-width)').join(' '));
-      header.innerHTML='<span class="phase-axis-start">'+(grouping==='phase'?'Phase':'Builder')+'</span><span class="phase-axis-total">Total</span><span class="phase-year-headings">'+years.map(year=>
-        '<span class="phase-year-heading"><strong>WFY '+esc(year)+'</strong><span class="phase-year-months">'+
-        M.months.map(month=>'<span>'+month.slice(0,3)+'</span>').join('')+'<span>Total</span></span></span>').join('')+'</span>';
+      const cell=(label,id,classes='',title=label)=>'<span class="phase-header-cell '+classes+'" data-visible-period="'+esc(id)+'" title="'+esc(title)+'"><span>'+esc(label)+'</span>'+ForecastNumbers.markup('—',scope+'|'+id)+'</span>';
+      header.innerHTML='<span class="phase-axis-start phase-header-cell"><span>'+(grouping==='phase'?'Phase':'Builder')+'</span><strong>Visible Total</strong></span>'+
+        cell('Total','total','phase-axis-total')+'<span class="phase-months">'+years.map(year=>
+          M.months.map((month,index)=>cell(month.slice(0,3),M.start(year,index),'',month+' '+M.start(year,index).slice(0,4))).join('')+
+          cell('WFY '+year,year,'phase-year-total','WFY '+year+' Total')).join('')+'</span>';
     }
+    const totals=new Map();
+    for(const snapshot of S.snapshots.values())mergeMonthlyTotals(totals,phaseTotals(rows(snapshot),snapshot));
+    const available=S.snapshots.size>0;
+    const today=(S.snapshot||S.snapshots.values().next().value)?.today;
+    let total=0;
+    [...header.querySelector('.phase-months').children].forEach((node,position)=>{
+      const year=years[Math.floor(position/13)], month=position%13, values=totals.get(year)||[];
+      const value=month===12?values.reduce((sum,item)=>sum+item,0):values[month]??0;
+      if(month===12)total+=value;
+      node.classList.toggle('current-month',!!today&&month<12&&M.start(year,month).slice(0,7)===today.slice(0,7));
+      ForecastNumbers.update(node.lastElementChild,available?count(value):'—');
+    });
+    ForecastNumbers.update(header.querySelector('.phase-axis-total').lastElementChild,available?count(total):'—');
     return years;
   }
   function phaseTotals(matrix,snapshot) {
@@ -328,6 +368,13 @@
     }
     return totals;
   }
+  function mergeMonthlyTotals(target,source) {
+    for(const [year,values] of source) {
+      if(!target.has(year))target.set(year,Array(12).fill(0));
+      const months=target.get(year);
+      values.forEach((value,index)=>{months[index]+=value;});
+    }
+  }
   function updateGroupTotals(group,model,axis=phaseYearAxis()) {
     const totals=new Map();
     let snapshot;
@@ -335,10 +382,7 @@
       const source=S.snapshots.get(phase.id);
       if(!source)continue;
       snapshot||=source;
-      for(const [year,values] of phaseTotals(matrixRows(source,model.builder),source)) {
-        if(!totals.has(year))totals.set(year,Array(12).fill(0));
-        values.forEach((value,index)=>{totals.get(year)[index]+=value;});
-      }
+      mergeMonthlyTotals(totals,phaseTotals(matrixRows(source,model.builder),source));
     }
     const months=group.querySelector('.phase-months'), totalNode=group.querySelector('.forecast-phase-value');
     const scope=group.dataset.groupKey, key=axis.join('|');
@@ -377,9 +421,7 @@
     const numberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+S.view+'|'+key);
     const periodNumberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+key);
     table.dataset.view=S.view;
-    let html='<colgroup><col class="forecast-name-column"><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col class="forecast-year-total-column">').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">'+(builder?'Phase':'Builder')+'</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months">Total</th>';
-    html+=yearList.map(year=>'<th colspan="13"><div class="year-heading"><strong>WFY '+esc(year)+'</strong><small>Feb '+esc(year)+' — Jan '+esc(Number(year)+1)+'</small></div></th>').join('')+'</tr><tr>';
-    html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3)+'<small class="current-month-label">Current</small></th>').join('')+'<th class="year-total">Total</th>').join('')+'</tr></thead><tbody>';
+    let html='<colgroup><col class="forecast-name-column"><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col class="forecast-year-total-column">').join('')+'</colgroup><tbody>';
     for(const row of matrix) {
       const phaseName=builder?'<span class="builder-phase-name">'+esc(snapshot.subdivision.name)+'</span>':'';
       html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column">'+phaseName+'<div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId,snapshot)+'</div></div></th><td class="builder-period-total" data-builder-total="'+esc(row.builderId)+'">'+periodNumberMarkup(matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)),'builder-total:'+row.builderId)+'</td>';
@@ -407,7 +449,7 @@
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
   function patch() {
     controls();
-    const host=$('forecastGroups'), axis=phaseYearAxis();
+    const host=$('forecastGroups'), axis=renderPhaseMonthHeader();
     let maxMonthlyLots=1;
     for(const group of host.querySelectorAll('[data-group-key]')) {
       maxMonthlyLots=Math.max(maxMonthlyLots,updateGroupTotals(group,mountedGroups.get(group.dataset.groupKey),axis));
@@ -461,6 +503,11 @@
       if(refreshCatalog) {
         const [catalog,projects]=await Promise.all([readCatalog(),readProjectCatalog()]);
         S.catalog=catalog;S.projects=projects;
+      }
+      const selected=project();
+      if(selected) {
+        try {selected.order=await readPhaseOrder(selected.id);selected.orderError='';}
+        catch(error) {selected.orderError=error.message;}
       }
       const all=phases();
       if(!all.length){clearProject('');render();return;}
@@ -541,6 +588,130 @@
     $('modal').hidden=false;$('app').inert=true;$('dialogClose').focus();
   }
   function closeDialog() {if(S.creating||S.rowPending)return;closePicker();$('modal').hidden=true;$('app').inert=false;S.dialog=null;if(S.focus&&S.focus.isConnected)S.focus.focus();}
+  function phaseOrderDialog() {
+    const selected=project();
+    if(!selected?.order||busy()||creationReview())return;
+    const all=phases(), baseline=selected.order.raw;
+    const listIds=all.map(row=>row.id);
+    const same=(a,b)=>a.length===b.length&&a.every((id,index)=>id===b[index]);
+    let draft=listIds.slice(), dragged, saving=false, uncertain=false;
+    openDialog('Phase Order','','<ol id="phaseOrderList" aria-label="Project Phases"></ol><button type="button" id="resetPhaseOrder" class="btn">Use Phase Number Order</button>',commit,'Save Order');
+    const list=$('phaseOrderList'), reset=$('resetPhaseOrder'), action=$('dialogAction'), status=$('dialogStatus');
+    list.innerHTML=all.map(row=>'<li data-order-phase="'+esc(row.id)+'">'+
+      '<button type="button" draggable="true" class="phase-order-grab" title="Drag to reorder or use the arrow keys" aria-label="'+esc('Reorder '+row.name)+'" aria-keyshortcuts="ArrowUp ArrowDown">⠿</button>'+
+      '<span class="phase-order-number" draggable="true" aria-hidden="true"></span><span>'+esc(row.name)+'</span></li>').join('');
+    const rowsById=new Map([...list.children].map(row=>[row.dataset.orderPhase,row]));
+    function paint() {
+      draft.forEach((id,index)=>{
+        const row=rowsById.get(id);
+        row.querySelector('.phase-order-number').textContent=String(index+1);
+        const before=list.children[index];
+        if(before!==row)list.insertBefore(row,before||null);
+      });
+      action.disabled=saving||!uncertain&&same(draft,listIds);
+      reset.disabled=saving||uncertain;
+      list.querySelectorAll('button').forEach(button=>{button.disabled=saving||uncertain;});
+    }
+    function move(id,index) {
+      if(saving||uncertain||index<0||index>=draft.length||index===draft.indexOf(id))return;
+      draft.splice(draft.indexOf(id),1);
+      draft.splice(index,0,id);
+      paint();
+      const row=rowsById.get(id);
+      row.querySelector('button').focus({preventScroll:true});
+      window.LMMotion?.flash(row);
+      status.textContent='Moved to position '+(index+1)+' of '+draft.length+'.';
+    }
+    function clearDrag() {
+      list.querySelectorAll('.phase-order-dragging,.phase-order-before,.phase-order-after').forEach(row=>row.classList.remove('phase-order-dragging','phase-order-before','phase-order-after'));
+    }
+    function after(event,row) {
+      const rect=row.getBoundingClientRect();
+      return event.clientY>rect.top+rect.height/2;
+    }
+    list.addEventListener('dragstart',event=>{
+      const row=event.target.closest('[data-order-phase]');
+      if(!row||saving||uncertain){event.preventDefault();return;}
+      dragged=row.dataset.orderPhase;
+      row.classList.add('phase-order-dragging');
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('text/plain',dragged);
+    });
+    list.addEventListener('dragover',event=>{
+      const row=event.target.closest('[data-order-phase]');
+      if(!dragged||!row)return;
+      event.preventDefault();
+      clearDrag();
+      rowsById.get(dragged).classList.add('phase-order-dragging');
+      if(row.dataset.orderPhase!==dragged)row.classList.add(after(event,row)?'phase-order-after':'phase-order-before');
+    });
+    list.addEventListener('drop',event=>{
+      const row=event.target.closest('[data-order-phase]');
+      if(!dragged||!row)return;
+      event.preventDefault();
+      const from=draft.indexOf(dragged), to=draft.indexOf(row.dataset.orderPhase);
+      if(from!==to)move(dragged,to+(after(event,row)?1:0)-(from<to?1:0));
+      clearDrag();dragged=null;
+    });
+    list.addEventListener('dragend',()=>{clearDrag();dragged=null;});
+    list.addEventListener('keydown',event=>{
+      const handle=event.target.closest('.phase-order-grab');
+      if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
+      event.preventDefault();
+      const id=handle.closest('[data-order-phase]').dataset.orderPhase;
+      move(id,draft.indexOf(id)+(event.key==='ArrowUp'?-1:1));
+    });
+    reset.addEventListener('click',()=>{draft=numericPhases(selected).map(row=>row.id);paint();status.textContent='Phase number order selected.';});
+    function applied(order) {
+      selected.order=order;
+      renderPhaseTabs();renderOverview();render();closeDialog();
+      notice('Phase order saved.');
+    }
+    async function commit() {
+      if(saving||S.projectId!==selected.id)return;
+      const raw=JSON.stringify(draft);
+      const scope=LMRuntime.current();
+      saving=true;S.rowPending=true;paint();
+      $('dialogClose').disabled=$('dialogCancel').disabled=true;
+      status.textContent=uncertain?'Checking saved order…':'Saving phase order…';
+      let dispatch=false, rejected=false, timer;
+      try {
+        const current=await readPhaseOrder(selected.id);
+        if(uncertain){
+          if(same(current.ids,draft)){S.rowPending=false;applied(current);return;}
+          if(current.raw===baseline){uncertain=false;action.textContent='Save Order';status.textContent='The order has not been confirmed. Reopen this Forecast Manager before making further changes.';selected.order=null;selected.orderError=status.textContent;closeOrder();return;}
+          throw new Error('Creator has a different order. Refresh before making another change.');
+        }
+        if(current.raw!==baseline||!same(numericPhases(selected).map(row=>row.id).sort(),draft.slice().sort())){
+          selected.order=current;renderPhaseTabs();renderOverview();render();
+          closeOrder();
+          notice('The project’s phase list or saved order changed. Reopen Phase Order to edit it.',true);return;
+        }
+        const response=await LMData.request(projectReport+':phase-order',()=>{
+          const actor=LMRuntime.current();
+          if(actor.user!==scope.user||actor.environment!==scope.environment||S.projectId!==selected.id)throw new Error('Your Creator session changed. Reopen Phase Order.');
+          dispatch=true;
+          return Promise.race([
+            ZOHO.CREATOR.DATA.updateRecordById({report_name:projectReport,id:selected.id,payload:{data:{[orderField]:raw}}}),
+            new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('The Creator reply timed out.')),30000);})
+          ]);
+        });
+        if(LMData.responseFailed(response)){rejected=!!LMData.failureCode(response)&&LMData.failureCode(response)!=='3000';throw new Error(LMData.failureMessage(response)||'Creator rejected the phase order.');}
+        S.rowPending=false;applied({raw,ids:draft.slice()});
+      } catch(error) {
+        const code=LMData.failureCode(error);
+        uncertain||=dispatch&&!rejected&&(!code||code==='3000');
+        status.textContent=uncertain?'Save could not be confirmed. Check Status before saving again.':error.message;
+        action.textContent=uncertain?'Check Status':'Save Order';
+      } finally {
+        clearTimeout(timer);saving=false;S.rowPending=false;
+        $('dialogClose').disabled=$('dialogCancel').disabled=false;
+        paint();controls();
+      }
+    }
+    function closeOrder(){S.rowPending=false;closeDialog();}
+    paint();
+  }
   function discardDialog(next) {
     const changes=[...S.entries.values()].filter(entry=>['failed','unknown'].includes(entry.phase));
     openDialog('Discard local changes?','FORECAST CHANGES','<ul class="review-list">'+changes.map(entry=>'<li>'+esc(name(entry.builderId)+' · '+entry.month+' '+entry.year)+' · '+esc(entry.attempted==null?'Blank':entry.attempted)+'</li>').join('')+'</ul><p class="dialog-note">Saved Creator values stay unchanged.</p>',()=>{S.entries.clear();closeDialog();render();notice('');if(next)next();},'Discard local changes');
@@ -680,6 +851,13 @@
   $('forecastGroups').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('forecastGroups').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...$('forecastGroups').querySelectorAll('details[open] [data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
   $('phaseTabs').addEventListener('click',event=>{const tab=event.target.closest('[data-phase-tab]');if(tab)choosePhase(tab.dataset.phaseTab);});
+  $('editPhaseOrder').addEventListener('click',phaseOrderDialog);
+  $('expandForecastGroups').addEventListener('click',()=>{
+    const groups=[...$('forecastGroups').querySelectorAll(':scope > details')];
+    const open=groups.some(group=>!group.open);
+    groups.forEach(group=>{group.open=open;});
+    controls();
+  });
   function changeGrouping(button) {
     const next=button.dataset.forecastGrouping;
     if(button.disabled||next===grouping)return;
@@ -741,5 +919,6 @@
   ForecastBuilderActions.connect({S,esc,name,busy,changed,creationReview,openDialog,closeDialog,openPicker,request,applySnapshot,render,controls,patch,notice,phaseFor});
   ForecastContractReview.connect({ready:()=>S.ready,catalog:()=>S.catalog,controls,readCatalog});
   if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("forecast-manager",{state:()=>S,ready:()=>S.ready,actor:()=>({sub:S.sub,user:LMRuntime.current().user})});
+  if(window.LMMotion)LMMotion.start({module:'forecast-phase-order',lists:[{selector:'#phaseOrderList',rows:'[data-order-phase]',key:row=>row.dataset.orderPhase,scope:()=>S.projectId}]});
   boot();
 })();

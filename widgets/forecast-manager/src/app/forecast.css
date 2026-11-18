@@ -524,7 +524,7 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
   width:fit-content;margin:8px 10px;font-size:14px;font-weight:700;cursor:default;
 }
 .fs-title-head>.forecast-header-controls{
-  grid-column:2/-1;justify-self:center;min-width:0;margin:0;color:#fff;
+  grid-column:1/-1;justify-self:start;min-width:0;margin:0;color:#fff;
 }
 .forecast-phase-switch{display:flex;align-items:center;gap:7px;min-width:0}
 .forecast-phase-tabs,.forecast-grouping{
@@ -539,13 +539,26 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .forecast-header-controls button:hover{background:#dae8f7}
 .forecast-header-controls button[aria-selected=true]{background:#102f52;color:#fff}
 .forecast-header-controls button:focus-visible,.forecast-phase-heading:focus-visible{outline:2px solid #5787be;outline-offset:-2px}
-@media(max-width:1100px){.fs-title-head>.forecast-header-controls{grid-column:1/-1;justify-self:start}}
+#editPhaseOrder{order:1;font-size:14px;min-height:31px}
+#phaseOrderList{list-style:none;margin:0 0 12px;padding:0}
+#phaseOrderList li{display:flex;align-items:center;gap:9px;min-height:44px;position:relative;border-bottom:1px solid #b2c6dd;font-size:14px}
+.phase-order-grab,.phase-order-number{cursor:grab;touch-action:none}
+.phase-order-grab{display:grid;place-items:center;width:32px;height:34px;padding:0;color:#416384;background:transparent;border:1px solid transparent;border-radius:6px;font-size:20px;line-height:1}
+.phase-order-grab:hover,.phase-order-grab:focus-visible{border-color:#88a9cf;background:#dce8f5}
+.phase-order-number{min-width:2ch;color:#416384;font-variant-numeric:tabular-nums}
+.phase-order-grab:active,.phase-order-dragging{cursor:grabbing}
+.phase-order-dragging{opacity:.45}
+.phase-order-before::before,.phase-order-after::after{position:absolute;inset-inline:0;height:2px;background:#2864a7;content:""}
+.phase-order-before::before{top:0}
+.phase-order-after::after{bottom:0}
+#resetPhaseOrder{font-size:14px}
+#expandForecastGroups{font-size:14px}
 .phase-load-error{padding:10px 14px;font-size:14px;color:#8b2925}
 #phaseReportScroll{margin:8px 10px 10px;overflow-x:auto;container-type:inline-size}
 #phaseReportContent{
   --phase-name-width:252px;
   --phase-total-width:88px;
-  --phase-year-total-width:70px;
+  --phase-year-total-width:88px;
   --phase-month-width:max(54px,calc((100cqw - var(--phase-name-width) - var(--phase-total-width) - var(--phase-year-count,0)*var(--phase-year-total-width))/max(1,var(--phase-year-count,0)*12)));
   --phase-year-width:calc(12*var(--phase-month-width) + var(--phase-year-total-width));
   width:max(100%,calc(var(--phase-name-width) + var(--phase-total-width) + var(--phase-year-count,0)*var(--phase-year-width)));
@@ -565,11 +578,12 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
   margin:0 0 6px;background:#dce8f5;color:#254967;font-size:14px;font-weight:650;
   border-block:1px solid #b2c6dd;
 }
-.phase-year-headings{display:grid;grid-auto-flow:column;grid-auto-columns:var(--phase-year-width)}
 .phase-months{display:grid;grid-template-columns:var(--phase-month-tracks)}
-.phase-year-heading>strong{position:sticky;left:calc(var(--phase-name-width) + var(--phase-total-width));display:block;width:fit-content;padding:3px 8px}
-.phase-year-months{display:grid;grid-template-columns:repeat(12,var(--phase-month-width)) var(--phase-year-total-width);text-align:center;padding:3px 0;border-top:1px solid #b2c6dd}
-.phase-year-total,.phase-year-months>span:last-child{background:#d5e4f4;border-right:1px solid #b2c6dd}
+.phase-year-total{background:#d5e4f4;border-right:1px solid #b2c6dd}
+#phaseMonthHeader .phase-header-cell{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:5px 2px;text-align:center;white-space:nowrap}
+#phaseMonthHeader .phase-axis-start{align-items:flex-start;padding-inline:11px}
+#phaseMonthHeader .phase-header-cell .number-push{font-weight:750;font-variant-numeric:tabular-nums}
+#phaseMonthHeader .current-month{background:#eee5fb;color:#624381;box-shadow:inset 0 3px #c3a8e4}
 .phase-month{
   display:grid;place-items:center;min-width:0;padding:3px 1px;
   font-size:14px;font-variant-numeric:tabular-nums;
@@ -608,7 +622,7 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .forecast-phase-group .phase-matrix .builder-period-total{left:var(--phase-name-width)}
 .forecast-phase-group .phase-matrix .year-total{width:auto;min-width:0}
 .forecast-phase-group .missing-content{left:calc(var(--phase-name-width) + var(--phase-total-width) + 12px)}
-.forecast-builder-phase thead,.forecast-builder-phase tfoot{display:none}
+.forecast-builder-phase tfoot{display:none}
 .builder-phase-name{font-size:14px}
 .forecast-builder-phase .builder-name:not(button){display:none}
 .forecast-builder-phase.selected-phase .builder-column{background:#ccdef1}

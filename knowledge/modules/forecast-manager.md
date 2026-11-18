@@ -1,3 +1,26 @@
+## Year on Total and Phase Order — 1.12.0
+
+Builder Forecasts shows a single timeline in both grouping views. Each month
+shows the total across the filtered project rows, including collapsed groups.
+Fiscal year labels sit over their fiscal subtotals, and the pinned Total shows
+the on-screen periods' combined count. The shared scrollbar aligns the totals,
+Volume Heatmap rows, and expanded editors. Expand All and Collapse All apply
+to the current grouping.
+
+Phase Order uses the Contract Actions drag grip and supports Up and Down on
+the focused grip. Creator stores the ordered string subdivision IDs as a JSON
+array in the non-required Project multiline field `Forecast_Phase_Order`.
+The widget reads and updates it through `All_Projects` under the connected
+user's permissions. No custom API or Deluge changes are required. Projects
+without a value use phase-number order. Newly linked phases follow saved
+ones and Phase 01 remains the initial overview when present. Phase order is
+shared across users and applies to the tabs and both forecast groupings.
+
+Creator must publish the Project field from Development to Stage and
+Production. The widget keeps the forecast view available if the field cannot
+be read, while disabling order edits. Rollback restores Forecast Manager
+1.11.1 in the environment mapping. Keep the optional field and saved orders.
+
 ## Volume Heatmap — 1.11.1
 
 Monthly cells on both forecast group rows use the approved Volume Heatmap.

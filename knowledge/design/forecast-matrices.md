@@ -1,5 +1,20 @@
 # Forecast matrices
 
+## Year on Total — November 18, 2026
+
+Builder Forecasts uses one shared date header for Phase → Builder and Builder
+→ Phase. Month labels sit directly above the sums for the selected filters and
+measure, regardless of which groups are open. Put the fiscal year label in its
+subtotal column. The header, group totals and expanded editors share the same
+column tracks and horizontal scrollbar. Preserve pinned names and period
+totals, the Volume Heatmap, and Sliding push on changed visible totals.
+
+Put the phase tabs and grouping switch on the left of the navy project
+overview. Expand All and Collapse All act on the current view. Phase Order
+adopts the Contract Actions dots and grab cursor, insertion indicator, and
+record-keyed motion. Save the sequence on the Project so it applies to all
+users with access. The grip also supports Up and Down for keyboard reordering.
+
 ## Contract Review — November 6, 2026
 
 Forecast Manager has Builder Forecasts and Contract Review page tabs. Contract

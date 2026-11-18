@@ -648,6 +648,7 @@
         "ZOHO.CREATOR.UTIL.getInitParams",
         "ZOHO.CREATOR.DATA.getRecords",
         "ZOHO.CREATOR.DATA.getRecordCount",
+        "ZOHO.CREATOR.DATA.updateRecordById",
         "ZOHO.CREATOR.DATA.invokeCustomApi"
       ],
       "external_domains": [
