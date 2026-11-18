@@ -1,3 +1,15 @@
+## Inline Phase Reordering — 1.12.2
+
+Drag the six-dot handle on a phase to move it. The insertion line shows the
+destination, and the order saves on drop. The handles also work on the phase
+rows within each expanded builder group. Reordering applies to the whole
+project, including the phase tabs. The header and group rows carry the totals.
+Stronger borders separate phases when the detail rows are open.
+
+The widget reuses the Project field and All Projects report configuration
+published in Creator 9.201. Rollback restores Forecast Manager 1.12.1 in the
+environment mapping.
+
 ## Year on Total and Phase Order — 1.12.1
 
 Builder Forecasts shows a single timeline in both grouping views. Each month

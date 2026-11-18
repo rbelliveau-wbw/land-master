@@ -10,10 +10,13 @@ column tracks and horizontal scrollbar. Preserve pinned names and period
 totals, the Volume Heatmap, and Sliding push on changed visible totals.
 
 Put the phase tabs and grouping switch on the left of the navy project
-overview. Expand All and Collapse All act on the current view. Phase Order
-adopts the Contract Actions dots and grab cursor, insertion indicator, and
-record-keyed motion. Save the sequence on the Project so it applies to all
-users with access. The grip also supports Up and Down for keyboard reordering.
+overview. Expand All and Collapse All act on the current view. Put the
+Contract Actions six-dot grip directly on each phase row. Use the grab
+cursor, dim the dragged phase, and show a blue insertion line at the target
+group boundary above or below it. Animate the reordered rows by phase ID and
+save the project sequence on drop. Up and Down on the grip also move and save
+the phase. Use a visibly stronger border between distinct phase groups.
+The shared header and group rows carry the totals.
 
 ## Contract Review — November 6, 2026
 

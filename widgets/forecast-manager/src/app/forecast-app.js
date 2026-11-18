@@ -10,7 +10,7 @@
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
   const changed = () => [...S.entries.values()].some(entry=>entry.phase === 'failed' || entry.phase === 'unknown');
-  const busy = () => S.pending > 0 || S.loading || S.creating || S.rowPending;
+  const busy = () => S.pending > 0 || S.loading || S.creating || S.rowPending || S.orderPending;
   const creationReview = () => S.creation && S.creation.phase === 'unknown' || S.rowOperation && S.rowOperation.phase === 'unknown';
   function notice(message, error = false) {const host = $('notice'); host.textContent = message || ''; host.classList.toggle('error',error); host.hidden = !message; if(error && window.LMSuccess) LMSuccess.clear();}
   function decode(raw) {
@@ -181,20 +181,27 @@
     const groups=[...$('forecastGroups').querySelectorAll(':scope > details')];
     $('expandForecastGroups').disabled=!groups.length||S.loading;
     $('expandForecastGroups').textContent=groups.length&&groups.every(group=>group.open)?'Collapse All':'Expand All';
-    const selected=project(), orderButton=$('editPhaseOrder');
-    orderButton.hidden=!selected||selected.linkedPhases.size<2;
-    orderButton.disabled=busy()||!!creationReview()||!selected?.order||typeof window.ZOHO?.CREATOR?.DATA?.updateRecordById!=='function';
-    orderButton.title=selected?.orderError||'Reorder phases for this project';
+    const selected=project(), canReorder=canReorderPhases(selected), groupSizes=new Map();
+    $('forecastGroups').querySelectorAll('.phase-order-grab').forEach(handle=>{
+      const row=orderRow(handle), scope=orderScope(row);
+      if(!groupSizes.has(scope))groupSizes.set(scope,phaseOrderRows(row).length);
+      const enabled=canReorder&&groupSizes.get(scope)>1;
+      handle.draggable=enabled;
+      handle.tabIndex=enabled?0:-1;
+      handle.setAttribute('aria-disabled',String(!enabled));
+      handle.title=selected?.orderError||'Drag to reorder or use the arrow keys';
+    });
     document.querySelectorAll('[data-forecast-page]').forEach(button=>{button.disabled=!S.ready||!S.catalog||busy()||!!creationReview();});
     ['territoryPicker','projectPicker','builderPicker','yearPicker','refresh','export','add'].forEach(id=>{$(id).disabled=!S.ready || !S.catalog || busy() || !!creationReview() || id==='projectPicker'&&!S.projects || id==='export' && (!S.snapshots.size || S.phaseErrors.size>0) || id==='add' && !S.snapshot;});
     document.querySelectorAll('[data-create-builder]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview();button.textContent=S.creating && S.creation && phaseFor(button)===S.creation.destination.subdivisionId && button.dataset.createBuilder===S.creation.destination.builderId && button.dataset.createYear===S.creation.destination.year?'Creating…':'Create Forecast';});
-    $('check').hidden=!changed()&&!creationReview(); $('check').disabled=busy(); $('discard').hidden=!changed(); $('discard').disabled=busy();
+    $('check').hidden=!changed()&&!creationReview()&&!selected?.orderReview; $('check').disabled=busy(); $('discard').hidden=!changed(); $('discard').disabled=busy();
     $('creationStatus').hidden=!S.creation;
     $('creationStatus').textContent=S.creation?S.creation.message:'';
     $('creationStatus').classList.toggle('error',!!S.creation&&S.creation.phase!=='pending');
     $('saveStatus').textContent=S.creating?'Creating forecast year…':S.loading?'Loading…':S.pending?S.pending+' change'+(S.pending===1?'':'s')+' saving…':changed()||creationReview()?'Changes need review':S.snapshot?'All changes saved':'Ready';
     $('saveStatus').dataset.state=busy()?'busy':changed()||creationReview()?'review':'ready';
     if(S.rowPending)$('saveStatus').textContent='Saving builder changes…';
+    if(S.orderPending)$('saveStatus').textContent='Saving phase order…';
     $('forecastGrouping').querySelectorAll('button').forEach(button=>{button.disabled=busy()||!!creationReview();});
     document.querySelectorAll('[data-assign-name],[data-builder-notes]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview()||S.snapshots.get(phaseFor(button))?.builderActionsVersion!==1;});
     $('projectText').textContent=project()?.label || 'Choose a Project';
@@ -277,6 +284,11 @@
         if(model.builder)group.dataset.builderGroup=model.builder;
         else group.dataset.forecastPhase=model.id;
         group.innerHTML='<summary class="forecast-phase-heading forecast-phase-axis"><span class="phase-axis-start"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg><strong class="forecast-phase-name"></strong><small class="forecast-phase-code"></small></span><span class="phase-axis-total forecast-phase-value"></span><span class="phase-months" role="group" aria-label="Monthly Totals"></span></summary><div class="matrix-scroll"></div><p class="phase-load-error" hidden></p>';
+        if(!model.builder){
+          const heading=group.querySelector('summary');
+          group.dataset.orderPhase=model.id;
+          heading.querySelector('.phase-axis-start').insertAdjacentHTML('afterbegin',phaseOrderGrip(model.label));
+        }
         const kind=model.builder?'builder':'phase';
         group.open=expanded[kind].has(model.id);
         group.addEventListener('toggle',()=>{
@@ -321,7 +333,10 @@
       const table=existing.get(phase.id)||document.createElement('table');
       table.className='phase-matrix'+(model.builder?' forecast-builder-phase':'');
       table.dataset.forecastPhase=phase.id;
-      if(model.builder)table.dataset.matrixBuilder=model.builder;
+      if(model.builder){
+        table.dataset.matrixBuilder=model.builder;
+        table.dataset.orderPhase=phase.id;
+      }
       table.setAttribute('aria-label',model.builder?model.label+' · '+phase.name:phase.name+' Builder Forecasts');
       renderMatrix(table,snapshot);
       tables.push(table);
@@ -339,7 +354,7 @@
       $('phaseReportContent').style.setProperty('--phase-year-count',years.length);
       $('phaseReportContent').style.setProperty('--phase-month-tracks',years.map(()=>'repeat(12,var(--phase-month-width)) var(--phase-year-total-width)').join(' '));
       const cell=(label,id,classes='',title=label)=>'<span class="phase-header-cell '+classes+'" data-visible-period="'+esc(id)+'" title="'+esc(title)+'"><span>'+esc(label)+'</span>'+ForecastNumbers.markup('—',scope+'|'+id)+'</span>';
-      header.innerHTML='<span class="phase-axis-start phase-header-cell"><span>'+(grouping==='phase'?'Phase':'Builder')+'</span><strong>Visible Total</strong></span>'+
+      header.innerHTML='<span class="phase-axis-start phase-header-cell"><span>'+(grouping==='phase'?'Phase':'Builder')+'</span></span>'+
         cell('Total','total','phase-axis-total')+'<span class="phase-months">'+years.map(year=>
           M.months.map((month,index)=>cell(month.slice(0,3),M.start(year,index),'',month+' '+M.start(year,index).slice(0,4))).join('')+
           cell('WFY '+year,year,'phase-year-total','WFY '+year+' Total')).join('')+'</span>';
@@ -416,14 +431,14 @@
   }
   function renderMatrix(table,snapshot) {
     const builder=table.dataset.matrixBuilder, previous=ForecastNumbers.capture(table);
-    const matrix=matrixRows(snapshot,builder), totals=phaseTotals(matrix,snapshot), yearList=years();
+    const matrix=matrixRows(snapshot,builder), yearList=years();
     if(!yearList.length){table.innerHTML='<tbody><tr><td class="empty-table">No forecast available.</td></tr></tbody>';return;}
     const numberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+S.view+'|'+key);
     const periodNumberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+key);
     table.dataset.view=S.view;
     let html='<colgroup><col class="forecast-name-column"><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col class="forecast-year-total-column">').join('')+'</colgroup><tbody>';
     for(const row of matrix) {
-      const phaseName=builder?'<span class="builder-phase-name">'+esc(snapshot.subdivision.name)+'</span>':'';
+      const phaseName=builder?'<div class="builder-phase-identity">'+phaseOrderGrip(snapshot.subdivision.name)+'<span class="builder-phase-name">'+esc(snapshot.subdivision.name)+'</span></div>':'';
       html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column">'+phaseName+'<div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId,snapshot)+'</div></div></th><td class="builder-period-total" data-builder-total="'+esc(row.builderId)+'">'+periodNumberMarkup(matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)),'builder-total:'+row.builderId)+'</td>';
       for(const year of row.years) {
         if(year.issue) {html+='<td colspan="13" class="missing-year issue">'+esc(year.issue)+' · Review in Creator</td>';continue;}
@@ -431,18 +446,14 @@
         html+=year.months.map((month,index)=>{
           const past=M.isPast(month,snapshot.today), editable=S.view==='forecast'||S.view==='outlook'&&!past;
           const reason=M.lock(month,snapshot), entry=month.id?S.entries.get(month.id):null, value=entry?entry.attempted:month.forecast, phase=entry?entry.phase:'', title=comparison(month)+(reason?' · '+reason:'');
-          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+valueColor(editable?value:displayed(month,snapshot))+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(editable?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(forecastInputValue(value))+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong tabindex="0" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' · '+title)+'">'+numberMarkup(matrixCount(displayed(month,snapshot)),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
+          return '<td class="month-cell '+(M.start(year.year,index).slice(0,7)===snapshot.today.slice(0,7)?'current-month ':'')+(index%3===0?'q-start ':'')+(reason?'locked ':'')+esc(phase)+'" data-month-start="'+M.start(year.year,index)+'"'+valueColor(editable?value:displayed(month,snapshot))+(month.id?' data-cell="'+esc(month.id)+'"':'')+' title="'+esc(title)+'">'+(editable?'<input type="text" inputmode="numeric" autocomplete="off" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' forecasted lots')+'"'+(month.id?' data-forecast="'+esc(month.id)+'"':'')+' value="'+esc(forecastInputValue(value))+'"'+(reason||phase==='pending'||phase==='failed'||phase==='unknown'||S.creating||S.orderPending||creationReview()?' disabled':'')+(month.id?' aria-describedby="state-'+esc(month.id)+'"':'')+'><span class="cell-state"'+(month.id?' id="state-'+esc(month.id)+'"':'')+'>'+stateText(phase,reason)+'</span>':'<strong tabindex="0" aria-label="'+esc(name(row.builderId)+' WFY '+year.year+' '+M.months[index]+' · '+title)+'">'+numberMarkup(matrixCount(displayed(month,snapshot)),'month:'+(month.id||row.builderId+':'+year.year+':'+index))+'</strong><span class="cell-state">'+(month.issue?'Review':'')+'</span>')+'</td>';
         }).join('');
         html+='<td class="year-total" data-total="'+esc(M.key(row.builderId,year.year))+'">'+numberMarkup(matrixCount(metric(year)),'total:'+M.key(row.builderId,year.year))+'<small>WFY '+esc(year.year)+'</small></td>';
       }
       html+='</tr>';
     }
     if(!matrix.length) html+='<tr><td colspan="'+(2+13*yearList.length)+'" class="empty-table">No forecast available.</td></tr>';
-    html+='</tbody><tfoot><tr><th class="builder-column">Selected Total</th><td class="builder-period-total" data-foot-builder-total>'+periodNumberMarkup(matrixCount(matrix.reduce((sum,row)=>sum+row.years.reduce((total,year)=>total+metric(year),0),0)),'foot-builder-total')+'</td>'+yearList.map(year=>{
-      const values=totals.get(year)||[];
-      return M.months.map((month,index)=>{const value=values[index]??0;return '<td data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month"':'')+valueColor(value)+' data-foot="'+esc(year)+'-'+index+'">'+numberMarkup(matrixCount(value),'foot:'+year+'-'+index)+'</td>';}).join('')+'<td class="year-total" data-foot-total="'+esc(year)+'">'+numberMarkup(matrixCount(values.reduce((sum,value)=>sum+value,0)),'foot-total:'+year)+'</td>';
-    }).join('')+'</tr></tfoot>';
-    table.innerHTML=html;
+    table.innerHTML=html+'</tbody>';
     refreshMonthColors(table,snapshot);
     ForecastNumbers.apply(table,previous);
   }
@@ -469,7 +480,7 @@
       const cell=input.closest('td'); cell.classList.toggle('locked',!!reason);
       cell.toggleAttribute('data-has-value',hasValue(entry?entry.attempted:month?.forecast));
       ['pending','saved','failed','unknown'].forEach(status=>cell.classList.toggle(status,phase===status));
-        input.disabled=!!reason || ['pending','failed','unknown'].includes(phase) || S.creating || S.loading || S.rowPending || !!creationReview();
+        input.disabled=!!reason || ['pending','failed','unknown'].includes(phase) || S.creating || S.loading || S.rowPending || S.orderPending || !!creationReview();
       if(document.activeElement!==input && (!entry||entry.phase==='saved')) input.value=forecastInputValue(month && month.forecast);
       $('state-'+input.dataset.forecast).innerHTML=stateText(phase,reason);
       cell.title=entry && entry.error || comparison(month)+(reason?' · '+reason:'');
@@ -482,15 +493,9 @@
       cell.toggleAttribute('data-has-value',hasValue(displayed(month,snapshot)));
       cell.title=title;output.setAttribute('aria-label',name(month.builderId)+' WFY '+month.year+' '+month.month+' · '+title);
     }
-    const matrix=matrixRows(snapshot,table.dataset.matrixBuilder), totals=phaseTotals(matrix,snapshot);
+    const matrix=matrixRows(snapshot,table.dataset.matrixBuilder);
     for(const row of matrix){const cell=table.querySelector('[data-builder-total="'+row.builderId+'"]');if(cell)ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)));}
-    const builderTotal=table.querySelector('[data-foot-builder-total]');if(builderTotal)ForecastNumbers.update(builderTotal.querySelector('[data-number-key]'),matrixCount(matrix.reduce((sum,row)=>sum+row.years.reduce((total,year)=>total+metric(year),0),0)));
     for(const row of matrix) for(const year of row.years) {const cell=table.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(metric(year)));}
-    for(const year of years(snapshot).map(String)) {
-      const values=totals.get(year)||[];
-      M.months.forEach((month,index)=>{const cell=table.querySelector('[data-foot="'+year+'-'+index+'"]'); if(cell) {const value=values[index]??0;ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(value));cell.toggleAttribute('data-has-value',hasValue(value));}});
-      const total=table.querySelector('[data-foot-total="'+year+'"]'); if(total) ForecastNumbers.update(total.querySelector('[data-number-key]'),matrixCount(values.reduce((sum,value)=>sum+value,0)));
-    }
     refreshMonthColors(table,snapshot);
   }
 
@@ -502,11 +507,18 @@
     try {
       if(refreshCatalog) {
         const [catalog,projects]=await Promise.all([readCatalog(),readProjectCatalog()]);
+        for(const [id,record] of S.projects||[]) {
+          if(record.orderReview&&projects.has(id))projects.get(id).orderReview=record.orderReview;
+        }
         S.catalog=catalog;S.projects=projects;
       }
       const selected=project();
       if(selected) {
-        try {selected.order=await readPhaseOrder(selected.id);selected.orderError='';}
+        try {
+          selected.order=await readPhaseOrder(selected.id);
+          if(selected.orderReview&&selected.order.raw!==selected.orderReview.previous)selected.orderReview=null;
+          selected.orderError=selected.orderReview?'Use Check Status to verify the saved phase order.':'';
+        }
         catch(error) {selected.orderError=error.message;}
       }
       const all=phases();
@@ -539,7 +551,7 @@
   }
   function save(input) {
     const phaseId=phaseFor(input), snapshot=S.snapshots.get(phaseId);
-    if(!snapshot || input.disabled || S.loading || S.creating || creationReview()) return;
+    if(!snapshot || input.disabled || S.loading || S.creating || S.orderPending || creationReview()) return;
     const id=input.dataset.forecast, month=snapshot.months.find(row=>row.id===id);
     let attempted;
     try {attempted=M.value(input.value);const reason=M.lock(month,snapshot);if(reason) throw new Error(reason);}
@@ -559,6 +571,7 @@
     });
   }
   async function checkStatus() {
+    if(!busy()&&project()?.orderReview){await checkPhaseOrder(project());return;}
     if(S.rowOperation && S.rowOperation.phase==='unknown') {await ForecastBuilderActions.recheck();return;}
     if(creationReview()) {await checkCreation(S.creation.destination);return;}
     if(busy() || !S.snapshots.size) return;
@@ -588,134 +601,146 @@
     $('modal').hidden=false;$('app').inert=true;$('dialogClose').focus();
   }
   function closeDialog() {if(S.creating||S.rowPending)return;closePicker();$('modal').hidden=true;$('app').inert=false;S.dialog=null;if(S.focus&&S.focus.isConnected)S.focus.focus();}
-  function phaseOrderDialog() {
+  function phaseOrderGrip(label) {
+    return '<span class="phase-order-grab" role="button" tabindex="-1" draggable="false" aria-label="'+esc('Reorder '+label)+'" aria-keyshortcuts="ArrowUp ArrowDown">⠿</span>';
+  }
+  function canReorderPhases(selected=project()) {
+    return !!selected?.order&&!selected.orderError&&!selected.orderReview&&!busy()&&!creationReview()&&typeof window.ZOHO?.CREATOR?.DATA?.updateRecordById==='function';
+  }
+  const orderRow=node=>node?.closest('[data-order-phase]');
+  const orderScope=row=>row?.closest('.matrix-scroll')||$('forecastGroups');
+  const phaseOrderRows=row=>[...orderScope(row).querySelectorAll(grouping==='phase'?':scope > details[data-order-phase]':':scope > table[data-order-phase]')];
+  const sameOrder=(a,b)=>a.length===b.length&&a.every((id,index)=>id===b[index]);
+  let phaseDrag, phaseDropTarget;
+  function clearPhaseDropTarget() {
+    phaseDropTarget?.classList.remove('phase-order-before','phase-order-after');
+    phaseDropTarget=null;
+  }
+  function endPhaseDrag() {
+    clearPhaseDropTarget();
+    phaseDrag?.classList.remove('phase-order-dragging');
+    phaseDrag=null;
+  }
+  function lowerHalf(event,row) {
+    const rect=row.getBoundingClientRect();
+    return event.clientY-rect.top>rect.height/2;
+  }
+  function renderSavedOrder(id,groupKey) {
+    renderPhaseTabs();renderOverview();render();
+    const group=[...$('forecastGroups').children].find(node=>node.dataset.groupKey===groupKey);
+    const row=group?.dataset.orderPhase===id?group:[...group?.querySelectorAll('[data-order-phase]')||[]].find(node=>node.dataset.orderPhase===id);
+    const grip=row?.querySelector('.phase-order-grab');
+    grip?.focus({preventScroll:true});
+    if(grip)window.LMMotion?.flash(grip);
+  }
+  async function movePhaseOrder(source,target,after) {
     const selected=project();
-    if(!selected?.order||busy()||creationReview())return;
-    const all=phases(), baseline=selected.order.raw;
-    const listIds=all.map(row=>row.id);
-    const same=(a,b)=>a.length===b.length&&a.every((id,index)=>id===b[index]);
-    let draft=listIds.slice(), dragged, saving=false, uncertain=false;
-    openDialog('Phase Order','','<ol id="phaseOrderList" aria-label="Project Phases"></ol><button type="button" id="resetPhaseOrder" class="btn">Use Phase Number Order</button>',commit,'Save Order');
-    const list=$('phaseOrderList'), reset=$('resetPhaseOrder'), action=$('dialogAction'), status=$('dialogStatus');
-    list.innerHTML=all.map(row=>'<li data-order-phase="'+esc(row.id)+'">'+
-      '<span role="button" tabindex="0" draggable="true" class="phase-order-grab" title="Drag to reorder or use the arrow keys" aria-label="'+esc('Reorder '+row.name)+'" aria-keyshortcuts="ArrowUp ArrowDown">⠿</span>'+
-      '<span class="phase-order-number" draggable="true" aria-hidden="true"></span><span>'+esc(row.name)+'</span></li>').join('');
-    const rowsById=new Map([...list.children].map(row=>[row.dataset.orderPhase,row]));
-    function paint() {
-      draft.forEach((id,index)=>{
-        const row=rowsById.get(id);
-        row.querySelector('.phase-order-number').textContent=String(index+1);
-        const before=list.children[index];
-        if(before!==row)list.insertBefore(row,before||null);
-      });
-      action.disabled=saving||!uncertain&&same(draft,listIds);
-      reset.disabled=saving||uncertain;
-      list.querySelectorAll('.phase-order-grab').forEach(handle=>{
-        handle.setAttribute('aria-disabled',String(saving||uncertain));
-        handle.tabIndex=saving||uncertain?-1:0;
-      });
-    }
-    function move(id,index) {
-      if(saving||uncertain||index<0||index>=draft.length||index===draft.indexOf(id))return;
-      draft.splice(draft.indexOf(id),1);
-      draft.splice(index,0,id);
-      paint();
-      const row=rowsById.get(id);
-      row.querySelector('.phase-order-grab').focus({preventScroll:true});
-      window.LMMotion?.flash(row);
-      status.textContent='Moved to position '+(index+1)+' of '+draft.length+'.';
-    }
-    function clearDrag() {
-      list.querySelectorAll('.phase-order-dragging,.phase-order-before,.phase-order-after').forEach(row=>row.classList.remove('phase-order-dragging','phase-order-before','phase-order-after'));
-    }
-    function after(event,row) {
-      const rect=row.getBoundingClientRect();
-      return event.clientY>rect.top+rect.height/2;
-    }
-    list.addEventListener('dragstart',event=>{
-      const row=event.target.closest('[data-order-phase]');
-      if(!row||saving||uncertain){event.preventDefault();return;}
-      dragged=row.dataset.orderPhase;
-      row.classList.add('phase-order-dragging');
-      event.dataTransfer.effectAllowed='move';
-      event.dataTransfer.setData('text/plain',dragged);
-    });
-    list.addEventListener('dragover',event=>{
-      const row=event.target.closest('[data-order-phase]');
-      if(!dragged||!row)return;
-      event.preventDefault();
-      clearDrag();
-      rowsById.get(dragged).classList.add('phase-order-dragging');
-      if(row.dataset.orderPhase!==dragged)row.classList.add(after(event,row)?'phase-order-after':'phase-order-before');
-    });
-    list.addEventListener('drop',event=>{
-      const row=event.target.closest('[data-order-phase]');
-      if(!dragged||!row)return;
-      event.preventDefault();
-      const from=draft.indexOf(dragged), to=draft.indexOf(row.dataset.orderPhase);
-      if(from!==to)move(dragged,to+(after(event,row)?1:0)-(from<to?1:0));
-      clearDrag();dragged=null;
-    });
-    list.addEventListener('dragend',()=>{clearDrag();dragged=null;});
-    list.addEventListener('keydown',event=>{
-      const handle=event.target.closest('.phase-order-grab');
-      if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
-      event.preventDefault();
-      const id=handle.closest('[data-order-phase]').dataset.orderPhase;
-      move(id,draft.indexOf(id)+(event.key==='ArrowUp'?-1:1));
-    });
-    reset.addEventListener('click',()=>{draft=numericPhases(selected).map(row=>row.id);paint();status.textContent='Phase number order selected.';});
-    function applied(order) {
-      selected.order=order;
-      selected.orderError='';
-      renderPhaseTabs();renderOverview();render();closeDialog();
-      notice('Phase order saved.');
-    }
-    async function commit() {
-      if(saving||S.projectId!==selected.id)return;
-      const raw=JSON.stringify(draft);
-      const scope=LMRuntime.current();
-      saving=true;S.rowPending=true;paint();
-      $('dialogClose').disabled=$('dialogCancel').disabled=true;
-      status.textContent=uncertain?'Checking saved order…':'Saving phase order…';
-      let dispatch=false, rejected=false, timer;
-      try {
-        const current=await readPhaseOrder(selected.id);
-        if(uncertain){
-          if(same(current.ids,draft)){S.rowPending=false;applied(current);return;}
-          if(current.raw===baseline)throw new Error('Creator has not confirmed the new order. Check Status again later.');
-          throw new Error('Creator has a different order. Refresh before making another change.');
-        }
-        if(current.raw!==baseline||!same(numericPhases(selected).map(row=>row.id).sort(),draft.slice().sort())){
-          selected.order=current;renderPhaseTabs();renderOverview();render();
-          closeOrder();
-          notice('The project’s phase list or saved order changed. Reopen Phase Order to edit it.',true);return;
-        }
-        const response=await LMData.request(projectReport+':phase-order',()=>{
-          const actor=LMRuntime.current();
-          if(actor.user!==scope.user||actor.environment!==scope.environment||S.projectId!==selected.id)throw new Error('Your Creator session changed. Reopen Phase Order.');
-          dispatch=true;
-          return Promise.race([
-            ZOHO.CREATOR.DATA.updateRecordById({report_name:projectReport,id:selected.id,payload:{data:{[orderField]:raw}}}),
-            new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('The Creator reply timed out.')),30000);})
-          ]);
-        });
-        if(LMData.responseFailed(response)){rejected=!!LMData.failureCode(response)&&LMData.failureCode(response)!=='3000';throw new Error(LMData.failureMessage(response)||'Creator rejected the phase order.');}
-        S.rowPending=false;applied({raw,ids:draft.slice()});
-      } catch(error) {
-        const code=LMData.failureCode(error);
-        uncertain||=dispatch&&!rejected&&(!code||code==='3000');
-        if(uncertain){selected.order=null;selected.orderError='Refresh to check the saved phase order.';}
-        status.textContent=uncertain&&dispatch?'Save could not be confirmed. Check Status before saving again.':error.message;
-        action.textContent=uncertain?'Check Status':'Save Order';
-      } finally {
-        clearTimeout(timer);saving=false;S.rowPending=false;
-        $('dialogClose').disabled=$('dialogCancel').disabled=false;
-        paint();controls();
+    if(!canReorderPhases(selected)||source===target||orderScope(source)!==orderScope(target))return;
+    const id=source.dataset.orderPhase,targetId=target.dataset.orderPhase;
+    const groupKey=source.closest('[data-group-key]').dataset.groupKey;
+    const previous=selected.order, ids=phases(selected).map(row=>row.id);
+    if(!ids.includes(id)||!ids.includes(targetId))return;
+    const next=ids.filter(value=>value!==id);
+    next.splice(next.indexOf(targetId)+Number(after),0,id);
+    if(sameOrder(ids,next))return;
+    const raw=JSON.stringify(next), scope=LMRuntime.current();
+    let dispatch=false,timer;
+    let rollback=previous;
+    S.orderPending=true;
+    selected.order={raw,ids:next};
+    notice('');
+    renderSavedOrder(id,groupKey);
+    try {
+      const current=await readPhaseOrder(selected.id);
+      if(current.raw!==previous.raw){
+        rollback=current;
+        throw new Error('The saved phase order changed. The latest order is shown. Drag again to reorder.');
       }
+      const response=await LMData.request(projectReport+':phase-order',()=>{
+        const actor=LMRuntime.current();
+        if(actor.user!==scope.user||actor.environment!==scope.environment||S.projectId!==selected.id)throw new Error('Your Creator session changed.');
+        dispatch=true;
+        return Promise.race([
+          ZOHO.CREATOR.DATA.updateRecordById({report_name:projectReport,id:selected.id,payload:{data:{[orderField]:raw}}}),
+          new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('The Creator reply timed out.')),30000);})
+        ]);
+      });
+      if(LMData.responseFailed(response)) {
+        const error=new Error(LMData.failureMessage(response)||'Creator rejected the phase order.');
+        error.acknowledged=!!response&&typeof response==='object';
+        throw error;
+      }
+      selected.orderError='';
+      if(window.LMSuccess)LMSuccess.show('Phase order saved.');
+      else notice('Phase order saved.');
+    } catch(error) {
+      selected.order=rollback;
+      const code=LMData.failureCode(error);
+      if(dispatch&&!error.acknowledged&&(!code||code==='3000')) {
+        selected.orderReview={raw,previous:previous.raw};
+        selected.orderError='Use Check Status to verify the saved phase order.';
+      }
+      renderSavedOrder(id,groupKey);
+      notice(selected.orderError||error.message,true);
+    } finally {
+      clearTimeout(timer);S.orderPending=false;patch();
     }
-    function closeOrder(){S.rowPending=false;closeDialog();}
-    paint();
+  }
+  async function checkPhaseOrder(selected) {
+    S.orderPending=true;controls();
+    try {
+      const current=await readPhaseOrder(selected.id), review=selected.orderReview;
+      if(current.raw===review.previous)throw new Error('Creator has not confirmed the new order. Check Status again later.');
+      selected.order=current;selected.orderReview=null;selected.orderError='';
+      renderPhaseTabs();renderOverview();render();
+      notice(current.raw===review.raw?'Phase order saved.':'The latest Creator phase order is shown.');
+    } catch(error) {notice(error.message,true);}
+    finally {S.orderPending=false;controls();}
+  }
+  function wirePhaseOrder() {
+    const host=$('forecastGroups');
+    host.addEventListener('click',event=>{
+      if(event.target.closest('.phase-order-grab'))event.preventDefault();
+    });
+    host.addEventListener('dragstart',event=>{
+      const grip=event.target.closest('.phase-order-grab');
+      if(!grip)return;
+      if(!grip.draggable||!event.dataTransfer){event.preventDefault();return;}
+      phaseDrag=orderRow(grip);
+      phaseDrag.classList.add('phase-order-dragging');
+      event.dataTransfer.effectAllowed='move';
+      event.dataTransfer.setData('text/plain',phaseDrag.dataset.orderPhase);
+    });
+    host.addEventListener('dragover',event=>{
+      const row=orderRow(event.target);
+      clearPhaseDropTarget();
+      if(!phaseDrag||!row||!event.dataTransfer||row===phaseDrag||orderScope(row)!==orderScope(phaseDrag))return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect='move';
+      phaseDropTarget=row;
+      row.classList.add(lowerHalf(event,row)?'phase-order-after':'phase-order-before');
+    });
+    host.addEventListener('dragleave',event=>{
+      if(phaseDropTarget&&!phaseDropTarget.contains(event.relatedTarget))clearPhaseDropTarget();
+    });
+    host.addEventListener('drop',event=>{
+      if(!phaseDrag)return;
+      event.preventDefault();
+      const row=orderRow(event.target),source=phaseDrag;
+      const after=row&&lowerHalf(event,row);
+      endPhaseDrag();
+      if(row)movePhaseOrder(source,row,after);
+    });
+    host.addEventListener('dragend',endPhaseDrag);
+    host.addEventListener('keydown',event=>{
+      const grip=event.target.closest('.phase-order-grab');
+      if(!grip||!['ArrowUp','ArrowDown','Enter',' '].includes(event.key))return;
+      event.preventDefault();
+      if(!grip.draggable||!['ArrowUp','ArrowDown'].includes(event.key))return;
+      const row=orderRow(grip), rows=phaseOrderRows(row), down=event.key==='ArrowDown';
+      const target=rows[rows.indexOf(row)+(down?1:-1)];
+      if(target)movePhaseOrder(row,target,down);
+    });
   }
   function discardDialog(next) {
     const changes=[...S.entries.values()].filter(entry=>['failed','unknown'].includes(entry.phase));
@@ -856,7 +881,7 @@
   $('forecastGroups').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('forecastGroups').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...$('forecastGroups').querySelectorAll('details[open] [data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
   $('phaseTabs').addEventListener('click',event=>{const tab=event.target.closest('[data-phase-tab]');if(tab)choosePhase(tab.dataset.phaseTab);});
-  $('editPhaseOrder').addEventListener('click',phaseOrderDialog);
+  wirePhaseOrder();
   $('expandForecastGroups').addEventListener('click',()=>{
     const groups=[...$('forecastGroups').querySelectorAll(':scope > details')];
     const open=groups.some(group=>!group.open);
@@ -924,6 +949,9 @@
   ForecastBuilderActions.connect({S,esc,name,busy,changed,creationReview,openDialog,closeDialog,openPicker,request,applySnapshot,render,controls,patch,notice,phaseFor});
   ForecastContractReview.connect({ready:()=>S.ready,catalog:()=>S.catalog,controls,readCatalog});
   if(window.LMInteractionSurfaces)window.__interactionMotion=LMInteractionSurfaces.install("forecast-manager",{state:()=>S,ready:()=>S.ready,actor:()=>({sub:S.sub,user:LMRuntime.current().user})});
-  if(window.LMMotion)LMMotion.start({module:'forecast-phase-order',lists:[{selector:'#phaseOrderList',rows:'[data-order-phase]',key:row=>row.dataset.orderPhase,scope:()=>S.projectId}]});
+  if(window.LMMotion)LMMotion.start({module:'forecast-phase-order',lists:[
+    {selector:'#forecastGroups',rows:':scope > details[data-forecast-phase]',key:row=>row.dataset.forecastPhase,scope:()=>S.projectId},
+    {selector:'#forecastGroups [data-builder-group] .matrix-scroll',rows:':scope > table[data-order-phase]',key:row=>row.dataset.orderPhase,scope:()=>S.projectId,hostKey:host=>host.closest('[data-builder-group]').dataset.builderGroup}
+  ]});
   boot();
 })();
