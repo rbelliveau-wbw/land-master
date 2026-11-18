@@ -550,7 +550,7 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 .phase-load-error{padding:10px 14px;font-size:14px;color:#8b2925}
 #phaseReportScroll{margin:8px 10px 10px;overflow-x:auto;container-type:inline-size}
 #phaseReportContent{
-  --phase-name-width:280px;
+  --phase-name-width:304px;
   --phase-total-width:88px;
   --phase-year-total-width:88px;
   --phase-month-width:max(54px,calc((100cqw - var(--phase-name-width) - var(--phase-total-width) - var(--phase-year-count,0)*var(--phase-year-total-width))/max(1,var(--phase-year-count,0)*12)));
@@ -598,7 +598,7 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 }
 .forecast-phase-group[data-order-phase]>.forecast-phase-heading{box-shadow:inset 0 1px #7795b4,inset 0 -1px #7795b4}
 .forecast-phase-group[data-order-phase]>.forecast-phase-heading>.phase-axis-start{flex-wrap:nowrap;min-width:0}
-.forecast-phase-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.forecast-phase-name{min-width:0;overflow-wrap:anywhere}
 .forecast-phase-heading::-webkit-details-marker{display:none}
 .forecast-phase-heading:hover{--phase-group-fill:#d8e7f7}
 .forecast-phase-name,.forecast-phase-value{font-size:14px;font-weight:750}
