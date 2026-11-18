@@ -1,3 +1,17 @@
+## Shared Forecast Timeline and Builder Grouping — 1.11.0
+
+The report header, collapsed totals, and expanded monthly editors share one
+horizontal scroller and one fiscal-year axis. The compact header controls
+include the phase overview tabs and the Phase → Builder / Builder → Phase
+switch. Builder-first grouping shows phases with that builder's forecast
+records or explicit assignment, using existing record IDs and write guards.
+The project export keeps the existing phase-based record scope.
+
+Regression scope includes month alignment before and after scrolling, opening
+groups in either order, phase-specific editing, and preservation of open
+groups when switching order. This release requires no Creator publication.
+Rollback restores Forecast Manager 1.10.1 in the environment mapping.
+
 ## Phase Monthly Totals — 1.10.1
 
 Builder Forecasts opens with WFY 2026, 2027 and 2028 selected. The phase

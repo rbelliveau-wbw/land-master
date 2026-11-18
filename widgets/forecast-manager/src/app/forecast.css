@@ -519,47 +519,57 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 @media(max-width:1350px){.matrix-tools{grid-template-columns:minmax(0,1fr) auto}.matrix-view-controls{grid-column:1/-1;grid-row:2;max-width:100%}.matrix-tools .matrix-actions{grid-column:2;grid-row:1}}
 @media(max-width:700px){.matrix-view-controls{flex-direction:column;gap:8px}.matrix-view-controls .matrix-legend{position:static;transform:none;order:2}}
 
-.forecast-phase-switch{
-  display:flex;align-items:center;gap:9px;width:fit-content;max-width:calc(100% - 20px);
-  margin:8px 10px 0;color:#183b60;font-size:14px;font-weight:700;
+.forecast-header-controls{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;
+  width:fit-content;margin:8px 10px;font-size:14px;font-weight:700;cursor:default;
 }
-.forecast-phase-tabs{
+.fs-title-head>.forecast-header-controls{
+  grid-column:2/-1;justify-self:center;min-width:0;margin:0;color:#fff;
+}
+.forecast-phase-switch{display:flex;align-items:center;gap:7px;min-width:0}
+.forecast-phase-tabs,.forecast-grouping{
   display:flex;align-items:center;gap:4px;min-width:0;overflow-x:auto;padding:3px;
-  border:1px solid #afc4db;border-radius:24px;background:#edf3f9;
+  border:1px solid #afc4db;border-radius:20px;background:#edf3f9;
 }
-.forecast-phase-tabs button{
-  flex:none;min-width:38px;height:38px;padding:0 6px;border:0;border-radius:999px;
+.forecast-phase-tabs button,.forecast-grouping button{
+  flex:none;min-width:29px;height:29px;padding:0 4px;border:0;border-radius:999px;
   background:transparent;color:#264766;font:inherit;font-size:14px;font-weight:650;cursor:pointer;
 }
-.forecast-phase-tabs button:hover{background:#dae8f7}
-.forecast-phase-tabs button[aria-selected=true]{background:#102f52;color:#fff}
-.forecast-phase-tabs button:focus-visible,.forecast-phase-heading:focus-visible{outline:2px solid #215593;outline-offset:-2px}
+.forecast-grouping button{padding-inline:9px}
+.forecast-header-controls button:hover{background:#dae8f7}
+.forecast-header-controls button[aria-selected=true]{background:#102f52;color:#fff}
+.forecast-header-controls button:focus-visible,.forecast-phase-heading:focus-visible{outline:2px solid #5787be;outline-offset:-2px}
+@media(max-width:1100px){.fs-title-head>.forecast-header-controls{grid-column:1/-1;justify-self:start}}
 .phase-load-error{padding:10px 14px;font-size:14px;color:#8b2925}
 #phaseReportScroll{margin:8px 10px 10px;overflow-x:auto;container-type:inline-size}
 #phaseReportContent{
-  --phase-name-width:300px;--phase-total-width:116px;--phase-month-width:44px;
-  min-width:calc(var(--phase-name-width) + var(--phase-total-width) + var(--phase-month-count,0)*var(--phase-month-width));
+  --phase-name-width:252px;
+  --phase-total-width:88px;
+  --phase-year-total-width:70px;
+  --phase-month-width:max(54px,calc((100cqw - var(--phase-name-width) - var(--phase-total-width) - var(--phase-year-count,0)*var(--phase-year-total-width))/max(1,var(--phase-year-count,0)*12)));
+  --phase-year-width:calc(12*var(--phase-month-width) + var(--phase-year-total-width));
+  width:max(100%,calc(var(--phase-name-width) + var(--phase-total-width) + var(--phase-year-count,0)*var(--phase-year-width)));
 }
 #forecastGroups{display:grid;gap:6px}
-.forecast-phase-group{min-width:0;border:1px solid #b2c6dd;border-radius:8px;background:#edf3f9;overflow:clip}
+.forecast-phase-group{min-width:0;border-radius:8px;background:#edf3f9;overflow:clip;outline:1px solid #b2c6dd;outline-offset:-1px}
 .forecast-phase-axis{
-  display:grid;grid-template-columns:var(--phase-name-width) minmax(0,1fr) var(--phase-total-width);
+  display:grid;grid-template-columns:var(--phase-name-width) var(--phase-total-width) minmax(0,1fr);
   align-items:stretch;
 }
-.forecast-phase-axis .phase-axis-start,.forecast-phase-axis .phase-axis-end{
+.forecast-phase-axis .phase-axis-start,.forecast-phase-axis .phase-axis-total{
   position:sticky;z-index:2;display:flex;align-items:center;gap:8px;background:inherit;padding:8px 11px;
 }
-.forecast-phase-axis .phase-axis-start{left:0;flex-wrap:wrap}
-.forecast-phase-axis .phase-axis-end{right:0;justify-content:flex-end;white-space:nowrap}
+.forecast-phase-axis .phase-axis-start{left:0;gap:5px;flex-wrap:wrap}
+.forecast-phase-axis .phase-axis-total{left:var(--phase-name-width);justify-content:center;white-space:nowrap;border-right:2px solid #a9bfd9}
 #phaseMonthHeader{
-  margin:0 1px 6px;background:#dce8f5;color:#254967;font-size:14px;font-weight:650;
+  margin:0 0 6px;background:#dce8f5;color:#254967;font-size:14px;font-weight:650;
   border-block:1px solid #b2c6dd;
 }
-#phaseMonthHeader .phase-axis-end{padding-right:39px}
-.phase-year-headings,.phase-months{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
-.phase-year-heading+.phase-year-heading,.phase-year-start:not(:first-child){border-left:1px solid #b2c6dd}
-.phase-year-heading>strong{position:sticky;left:var(--phase-name-width);display:block;width:fit-content;padding:3px 8px}
-.phase-year-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));text-align:center;padding:3px 0;border-top:1px solid #b2c6dd}
+.phase-year-headings{display:grid;grid-auto-flow:column;grid-auto-columns:var(--phase-year-width)}
+.phase-months{display:grid;grid-template-columns:var(--phase-month-tracks)}
+.phase-year-heading>strong{position:sticky;left:calc(var(--phase-name-width) + var(--phase-total-width));display:block;width:fit-content;padding:3px 8px}
+.phase-year-months{display:grid;grid-template-columns:repeat(12,var(--phase-month-width)) var(--phase-year-total-width);text-align:center;padding:3px 0;border-top:1px solid #b2c6dd}
+.phase-year-total,.phase-year-months>span:last-child{background:#d5e4f4;border-right:1px solid #b2c6dd}
 .phase-month{
   display:grid;place-items:center;min-width:0;padding:3px 1px;
   font-size:14px;font-variant-numeric:tabular-nums;
@@ -576,14 +586,27 @@ tfoot .builder-column{z-index:5;background:#e8eff8;padding:8px 13px;font-size:10
 .forecast-phase-heading:hover{background:#d8e7f7}
 .forecast-phase-name,.forecast-phase-value{font-size:14px;font-weight:750}
 .forecast-phase-code{font-size:14px;color:#3c5d7d}
-.forecast-phase-heading svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6}
+.forecast-phase-heading svg{flex:none;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6}
 .forecast-phase-group[open] .forecast-phase-heading svg{transform:rotate(180deg)}
-.forecast-phase-group.selected-phase{border-color:#507aa9}
+.forecast-phase-group.selected-phase{outline-color:#507aa9}
 .forecast-phase-group.selected-phase .forecast-phase-heading{background:#ccdef1;color:#102f52}
 .forecast-phase-group.selected-phase .phase-axis-start{box-shadow:inset 3px 0 #174679}
-.forecast-phase-group .matrix-scroll,.forecast-phase-group .phase-load-error{
-  position:sticky;left:0;max-width:100cqw;border-top:1px solid #b2c6dd;
-}
+.forecast-phase-group .matrix-scroll{overflow:visible;max-height:none;border-top:1px solid #b2c6dd}
+.forecast-phase-group .phase-load-error{position:sticky;left:0;max-width:100cqw}
+.forecast-phase-group .phase-matrix{width:100%;table-layout:fixed}
+.phase-matrix .forecast-name-column{width:var(--phase-name-width)}
+.phase-matrix .builder-total-column{width:var(--phase-total-width)}
+.phase-matrix col[data-month-start]{width:var(--phase-month-width)}
+.phase-matrix .forecast-year-total-column{width:var(--phase-year-total-width)}
+.forecast-phase-group .phase-matrix .builder-column{width:var(--phase-name-width);min-width:var(--phase-name-width);max-width:var(--phase-name-width)}
+.forecast-phase-group .phase-matrix .builder-period-total{left:var(--phase-name-width)}
+.forecast-phase-group .phase-matrix .year-total{width:auto;min-width:0}
+.forecast-phase-group .missing-content{left:calc(var(--phase-name-width) + var(--phase-total-width) + 12px)}
+.forecast-builder-phase thead,.forecast-builder-phase tfoot{display:none}
+.builder-phase-name{font-size:14px}
+.forecast-builder-phase .builder-name:not(button){display:none}
+.forecast-builder-phase.selected-phase .builder-column{background:#ccdef1}
+.forecast-no-groups{position:sticky;left:0;max-width:100cqw}
 #forecastsPanel .toolbar .filter>label{font-size:14px;letter-spacing:0;text-transform:none;color:#365472}
 #forecastsPanel .toolbar .picker,#phaseFallback summary{font-size:14px}
-@media(pointer:coarse){.forecast-phase-tabs button{min-width:44px;height:44px}}
+@media(pointer:coarse){.forecast-header-controls button{min-width:44px;height:44px}}

@@ -3,6 +3,9 @@
   const M = ForecastModel, $ = id => document.getElementById(id);
   const icons = {check:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 10.5 3 3 7-7"/></svg>',close:'<svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg>'};
   const S = {ready:false,catalog:null,projectId:'',sub:'',snapshots:new Map(),phaseErrors:new Map(),get snapshot(){return this.snapshots.get(this.sub);},territories:null,builders:null,years:['2026','2027','2028'],view:'outlook',page:'forecasts',pending:0,loading:false,creating:false,creation:null,entries:new Map(),queue:Promise.resolve(),picker:null,dialog:null,focus:null};
+  let grouping='phase';
+  const expanded={phase:new Set(),builder:new Set()};
+  let mountedGroups=new Map();
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const count = value => Number(value || 0).toLocaleString('en-US');
   const name = builderId => (S.catalog.builders.find(row=>row.id === builderId) || {}).name || 'Builder';
@@ -111,17 +114,12 @@
     const error=$('phaseOverviewError');
     host.hidden=!compact;fallback.hidden=!!compact;
     const panel=compact?host.querySelector('.fs-overview'):fallback;
-    if(compact) {
-      const card=host.querySelector('.fs-disclosure');
-      const placeTabs=()=>{if(card.open)panel.before(tabs);else card.after(tabs);};
-      placeTabs();
-      card.addEventListener('toggle',()=>{if(card.isConnected)placeTabs();});
-    }
+    if(compact)host.querySelector('.fs-title-head').append(tabs);
     panel.id=compact?'phaseDetails':'phaseFallback';
     panel.setAttribute('role','tabpanel');
     panel.dataset.lmMotion='panel';
     if(S.sub)panel.setAttribute('aria-labelledby','forecast-phase-tab-'+S.sub);
-    tabs.querySelectorAll('button').forEach(button=>{
+    $('phaseTabs').querySelectorAll('button').forEach(button=>{
       button.setAttribute('aria-controls',panel.id);
       const selected=button.dataset.phaseTab===S.sub;
       button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;
@@ -145,7 +143,7 @@
     $('forecastGroups').querySelectorAll('[data-forecast-phase]').forEach(group=>{
       const selected=group.dataset.forecastPhase===S.sub;
       group.classList.toggle('selected-phase',selected);
-      group.querySelector('summary').setAttribute('aria-current',String(selected));
+      (group.querySelector('summary')||group).setAttribute('aria-current',String(selected));
     });
   }
   function choosePhase(phaseId) {
@@ -159,7 +157,7 @@
     return [...new Set([...(snapshot.subdivision.builderIds || []),...snapshot.years.map(row=>row.builderId)])].filter(id=>id && S.catalog.builders.some(row=>row.id===id));
   }
   const forecastYears=(snapshots=S.snapshots.values())=>[...new Set([...snapshots].flatMap(snapshot=>snapshot.years.map(row=>String(row.year))))].sort((a,b)=>Number(a)-Number(b));
-  function years(snapshot) {return S.years.length ? S.years : forecastYears([snapshot]);}
+  function years() {return phaseYearAxis();}
   function rows(snapshot) {
     return snapshot?M.visibleMatrix(snapshot,builders(snapshot).sort((a,b)=>name(a).localeCompare(name(b))),years(snapshot)):[];
   }
@@ -174,6 +172,7 @@
     $('saveStatus').textContent=S.creating?'Creating forecast year…':S.loading?'Loading…':S.pending?S.pending+' change'+(S.pending===1?'':'s')+' saving…':changed()||creationReview()?'Changes need review':S.snapshot?'All changes saved':'Ready';
     $('saveStatus').dataset.state=busy()?'busy':changed()||creationReview()?'review':'ready';
     if(S.rowPending)$('saveStatus').textContent='Saving builder changes…';
+    $('forecastGrouping').querySelectorAll('button').forEach(button=>{button.disabled=busy()||!!creationReview();});
     document.querySelectorAll('[data-assign-name],[data-builder-notes]').forEach(button=>{button.disabled=busy()||changed()||!!creationReview()||S.snapshots.get(phaseFor(button))?.builderActionsVersion!==1;});
     $('projectText').textContent=project()?.label || 'Choose a Project';
     const addLabel=S.snapshot?'Add Forecast · '+S.snapshot.subdivision.name:'Add Forecast';
@@ -220,56 +219,101 @@
     });
   }
 
+  function forecastGroups() {
+    const all=phases();
+    if(grouping==='phase')return all.map(phase=>({id:phase.id,label:phase.name,code:phase.code,phases:[phase]}));
+    const byBuilder=new Map();
+    for(const phase of all)for(const row of rows(S.snapshots.get(phase.id))) {
+      if(!byBuilder.has(row.builderId))byBuilder.set(row.builderId,{id:row.builderId,label:name(row.builderId),builder:row.builderId,phases:[]});
+    }
+    for(const phase of all) {
+      const snapshot=S.snapshots.get(phase.id);
+      for(const id of builders(snapshot)) {
+        if(snapshot&&byBuilder.has(id)&&((snapshot.subdivision.builderIds||[]).includes(id)||snapshot.years.some(year=>year.builderId===id))) {
+          byBuilder.get(id).phases.push(phase);
+        }
+      }
+    }
+    return [...byBuilder.values()].sort((a,b)=>a.label.localeCompare(b.label)||a.id.localeCompare(b.id));
+  }
   function render() {
-    const host=$('forecastGroups'), all=phases();
+    const host=$('forecastGroups'), groups=forecastGroups();
     $('workspace').hidden=!S.projectId; $('empty').hidden=!!S.projectId;
+    mountedGroups=new Map();
     if(!S.projectId){host.replaceChildren();controls();return;}
     const axis=renderPhaseMonthHeader();
-    const existing=new Map([...host.children].map(group=>[group.dataset.forecastPhase,group]));
-    all.forEach(phase=>{
-      let group=existing.get(phase.id);
+    const existing=new Map([...host.children].map(group=>[group.dataset.groupKey,group]));
+    groups.forEach(model=>{
+      const key=grouping+':'+model.id;
+      mountedGroups.set(key,model);
+      let group=existing.get(key);
       if(!group){
         group=document.createElement('details');
-        group.className='forecast-phase-group';group.dataset.forecastPhase=phase.id;
-        group.innerHTML='<summary class="forecast-phase-heading forecast-phase-axis"><span class="phase-axis-start"><strong class="forecast-phase-name"></strong><small class="forecast-phase-code"></small></span><span class="phase-months" role="group" aria-label="Monthly Totals"></span><span class="phase-axis-end"><span class="forecast-phase-value"></span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></span></summary><div class="matrix-scroll" tabindex="0"><table class="phase-matrix"></table></div><p class="phase-load-error" hidden></p>';
+        group.className='forecast-phase-group';group.dataset.groupKey=key;
+        if(model.builder)group.dataset.builderGroup=model.builder;
+        else group.dataset.forecastPhase=model.id;
+        group.innerHTML='<summary class="forecast-phase-heading forecast-phase-axis"><span class="phase-axis-start"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg><strong class="forecast-phase-name"></strong><small class="forecast-phase-code"></small></span><span class="phase-axis-total forecast-phase-value"></span><span class="phase-months" role="group" aria-label="Monthly Totals"></span></summary><div class="matrix-scroll"></div><p class="phase-load-error" hidden></p>';
+        const kind=model.builder?'builder':'phase';
+        group.open=expanded[kind].has(model.id);
         group.addEventListener('toggle',()=>{
-          if(!group.open||!group.isConnected)return;
-          const table=group.querySelector('table'), snapshot=S.snapshots.get(phase.id);
-          if(snapshot&&!table.hasChildNodes()){renderMatrix(table,snapshot);controls();}
+          if(!group.isConnected)return;
+          if(group.open) {
+            expanded[kind].add(model.id);
+            if(!group.querySelector('.phase-matrix'))renderGroupTables(group,mountedGroups.get(key));
+            syncPhaseHighlight();controls();
+          } else expanded[kind].delete(model.id);
         });
         host.append(group);
       }
-      existing.delete(phase.id);
-      const heading=group.querySelector('.forecast-phase-name');
-      heading.textContent=phase.name;
-      group.querySelector('.forecast-phase-code').textContent=phase.code||'';
-      const scroll=group.querySelector('.matrix-scroll'),table=scroll.querySelector('table'),error=group.querySelector('.phase-load-error');
-      const snapshot=S.snapshots.get(phase.id);
-      scroll.setAttribute('aria-label',phase.name+' Builder Forecasts');
-      table.setAttribute('aria-label',phase.name+' Builder Forecasts');
-      scroll.hidden=!snapshot;error.hidden=!!snapshot;
-      error.textContent=S.phaseErrors.get(phase.id)||'Phase forecasts are unavailable.';
-      updatePhaseTotals(group,snapshot,axis);
-      if(snapshot&&group.open)renderMatrix(table,snapshot);
-      else table.replaceChildren();
+      existing.delete(key);
+      group.querySelector('.forecast-phase-name').textContent=model.label;
+      group.querySelector('.forecast-phase-code').textContent=model.code||'';
+      const error=group.querySelector('.phase-load-error');
+      error.hidden=!!model.builder||S.snapshots.has(model.id);
+      error.textContent=S.phaseErrors.get(model.id)||'Phase forecasts are unavailable.';
+      updateGroupTotals(group,model,axis);
+      if(group.open)renderGroupTables(group,model);
+      else group.querySelector('.matrix-scroll').replaceChildren();
     });
     existing.forEach(group=>group.remove());
-    const ordered=all.map(phase=>[...host.children].find(group=>group.dataset.forecastPhase===phase.id));
+    host.querySelector('.forecast-no-groups')?.remove();
+    if(!groups.length)host.innerHTML='<p class="empty-table forecast-no-groups">No builders have forecasts for the selected years.</p>';
+    const ordered=[...mountedGroups.keys()].map(key=>[...host.children].find(group=>group.dataset.groupKey===key));
     ordered.forEach((group,index)=>{if(host.children[index]!==group)host.insertBefore(group,host.children[index]||null);});
     syncPhaseHighlight(); refreshLegend(); controls();
+  }
+  function matrixRows(snapshot,builder) {
+    return builder?M.matrix(snapshot,[builder],years()):rows(snapshot);
+  }
+  function renderGroupTables(group,model) {
+    const host=group.querySelector('.matrix-scroll');
+    const existing=new Map([...host.children].map(table=>[phaseFor(table),table]));
+    const tables=[];
+    for(const phase of model.phases) {
+      const snapshot=S.snapshots.get(phase.id);
+      if(!snapshot)continue;
+      const table=existing.get(phase.id)||document.createElement('table');
+      table.className='phase-matrix'+(model.builder?' forecast-builder-phase':'');
+      table.dataset.forecastPhase=phase.id;
+      if(model.builder)table.dataset.matrixBuilder=model.builder;
+      table.setAttribute('aria-label',model.builder?model.label+' · '+phase.name:phase.name+' Builder Forecasts');
+      renderMatrix(table,snapshot);
+      tables.push(table);
+    }
+    host.replaceChildren(...tables);
   }
   function phaseYearAxis() {
     return S.years.length?[...S.years].sort((a,b)=>Number(a)-Number(b)):forecastYears();
   }
   function renderPhaseMonthHeader() {
-    const years=phaseYearAxis(), header=$('phaseMonthHeader'), key=years.join('|');
+    const years=phaseYearAxis(), header=$('phaseMonthHeader'), key=grouping+'|'+years.join('|');
     if(header.dataset.years!==key) {
       header.dataset.years=key;
-      $('phaseReportContent').style.setProperty('--phase-month-count',years.length*12);
-      header.innerHTML='<span class="phase-axis-start">Phase</span><span class="phase-year-headings">'+years.map(year=>
+      $('phaseReportContent').style.setProperty('--phase-year-count',years.length);
+      $('phaseReportContent').style.setProperty('--phase-month-tracks',years.map(()=>'repeat(12,var(--phase-month-width)) var(--phase-year-total-width)').join(' '));
+      header.innerHTML='<span class="phase-axis-start">'+(grouping==='phase'?'Phase':'Builder')+'</span><span class="phase-axis-total">Total</span><span class="phase-year-headings">'+years.map(year=>
         '<span class="phase-year-heading"><strong>WFY '+esc(year)+'</strong><span class="phase-year-months">'+
-        M.months.map(month=>'<span>'+month.slice(0,3)+'</span>').join('')+'</span></span>').join('')+
-        '</span><span class="phase-axis-end">Total</span>';
+        M.months.map(month=>'<span>'+month.slice(0,3)+'</span>').join('')+'<span>Total</span></span></span>').join('')+'</span>';
     }
     return years;
   }
@@ -282,43 +326,56 @@
     }
     return totals;
   }
-  function updatePhaseTotals(group,snapshot,axis=phaseYearAxis(),totals=phaseTotals(rows(snapshot),snapshot)) {
+  function updateGroupTotals(group,model,axis=phaseYearAxis()) {
+    const totals=new Map();
+    let snapshot;
+    for(const phase of model.phases) {
+      const source=S.snapshots.get(phase.id);
+      if(!source)continue;
+      snapshot||=source;
+      for(const [year,values] of phaseTotals(matrixRows(source,model.builder),source)) {
+        if(!totals.has(year))totals.set(year,Array(12).fill(0));
+        values.forEach((value,index)=>{totals.get(year)[index]+=value;});
+      }
+    }
     const months=group.querySelector('.phase-months'), totalNode=group.querySelector('.forecast-phase-value');
-    const phaseId=group.dataset.forecastPhase, key=axis.join('|');
+    const scope=group.dataset.groupKey, key=axis.join('|');
     if(months.dataset.years!==key) {
       months.dataset.years=key;
       months.innerHTML=axis.map(year=>M.months.map((month,index)=>{
         const start=M.start(year,index), label=month+' '+start.slice(0,4);
         return '<span class="phase-month'+(index===0?' phase-year-start':'')+'" data-phase-month="'+start+'" title="'+label+
-          '">'+ForecastNumbers.markup('—',phaseId+'|phase-month|'+start)+'</span>';
-      }).join('')).join('');
+          '">'+ForecastNumbers.markup('—',scope+'|month|'+start)+'</span>';
+      }).join('')+'<span class="phase-month phase-year-total" title="WFY '+esc(year)+' Total">'+ForecastNumbers.markup('—',scope+'|year|'+year)+'</span>').join('');
     }
     let grandTotal=0;
     [...months.children].forEach((node,position)=>{
-      const month=position%12, value=totals.get(axis[Math.floor(position/12)])?.[month]??0;
-      grandTotal+=value;
+      const month=position%13, values=totals.get(axis[Math.floor(position/13)])||[];
+      const value=month===12?values.reduce((sum,item)=>sum+item,0):values[month]??0;
+      if(month===12)grandTotal+=value;
       ForecastNumbers.update(node.firstElementChild,snapshot?count(value):'—');
       node.classList.toggle('phase-month-zero',value===0);
-      const basis=S.view==='outlook'?(snapshot&&M.isPast({start:node.dataset.phaseMonth},snapshot.today)?'actual':'forecast'):S.view;
+      const basis=node.dataset.phaseMonth?(S.view==='outlook'?(snapshot&&M.isPast({start:node.dataset.phaseMonth},snapshot.today)?'actual':'forecast'):S.view):'';
       node.dataset.basis=basis;
       node.setAttribute('aria-label',node.title+': '+(snapshot?count(value):'Unavailable'));
     });
     if(!snapshot){totalNode.textContent='Unavailable';return;}
-    if(!totalNode.firstElementChild)totalNode.innerHTML='Total '+ForecastNumbers.markup(count(grandTotal),phaseId+'|phase-total');
+    if(!totalNode.firstElementChild)totalNode.innerHTML=ForecastNumbers.markup(count(grandTotal),scope+'|total');
     else ForecastNumbers.update(totalNode.firstElementChild,count(grandTotal));
   }
   function renderMatrix(table,snapshot) {
-    const previous=ForecastNumbers.capture(table), matrix=rows(snapshot), totals=phaseTotals(matrix,snapshot);
-    const yearList=years(snapshot).map(String).sort((a,b)=>Number(a)-Number(b));
+    const builder=table.dataset.matrixBuilder, previous=ForecastNumbers.capture(table);
+    const matrix=matrixRows(snapshot,builder), totals=phaseTotals(matrix,snapshot), yearList=years();
     if(!yearList.length){table.innerHTML='<tbody><tr><td class="empty-table">No forecast available.</td></tr></tbody>';return;}
     const numberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+S.view+'|'+key);
     const periodNumberMarkup=(value,key)=>ForecastNumbers.markup(value,snapshot.subdivision.id+'|'+key);
     table.dataset.view=S.view;
-    let html='<colgroup><col><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col>').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">Builder</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months for this builder">Total</th>';
+    let html='<colgroup><col class="forecast-name-column"><col class="builder-total-column">'+yearList.map(year=>M.months.map((month,index)=>'<col data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month-column"':'')+'>').join('')+'<col class="forecast-year-total-column">').join('')+'</colgroup><thead><tr><th class="builder-column" rowspan="2">'+(builder?'Phase':'Builder')+'</th><th class="builder-period-total" rowspan="2" scope="col" title="Sum of all displayed months">Total</th>';
     html+=yearList.map(year=>'<th colspan="13"><div class="year-heading"><strong>WFY '+esc(year)+'</strong><small>Feb '+esc(year)+' — Jan '+esc(Number(year)+1)+'</small></div></th>').join('')+'</tr><tr>';
     html+=yearList.map(year=>M.months.map((month,index)=>'<th data-month-start="'+M.start(year,index)+'"'+(M.start(year,index).slice(0,7)===snapshot.today.slice(0,7)?' class="current-month"':'')+' title="'+esc(month)+' '+(index===11?Number(year)+1:year)+'">'+month.slice(0,3)+'<small class="current-month-label">Current</small></th>').join('')+'<th class="year-total">Total</th>').join('')+'</tr></thead><tbody>';
     for(const row of matrix) {
-      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column"><div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId,snapshot)+'</div></div></th><td class="builder-period-total" data-builder-total="'+esc(row.builderId)+'">'+periodNumberMarkup(matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)),'builder-total:'+row.builderId)+'</td>';
+      const phaseName=builder?'<span class="builder-phase-name">'+esc(snapshot.subdivision.name)+'</span>':'';
+      html+='<tr data-builder="'+esc(row.builderId)+'"><th scope="row" class="builder-column">'+phaseName+'<div class="builder-identity"><div class="builder-label">'+ForecastBuilderActions.label(row.builderId,snapshot)+'</div></div></th><td class="builder-period-total" data-builder-total="'+esc(row.builderId)+'">'+periodNumberMarkup(matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)),'builder-total:'+row.builderId)+'</td>';
       for(const year of row.years) {
         if(year.issue) {html+='<td colspan="13" class="missing-year issue">'+esc(year.issue)+' · Review in Creator</td>';continue;}
         if(!year.parent) {html+='<td colspan="13" class="missing-year"><div class="missing-content"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 2v4m10-4v4M3 9h18m-9 3v5m-2.5-2.5h5"/></svg><span><b>No forecast available.</b></span><button class="btn" data-create-builder="'+esc(row.builderId)+'" data-create-year="'+esc(year.year)+'"'+(busy()?' disabled':'')+'>Create Forecast</button></div></td>';continue;}
@@ -343,16 +400,15 @@
   function stateText(phase,reason) {return phase==='pending'?'Saving…':phase==='saved'?icons.check:phase==='failed'?'Not saved':phase==='unknown'?'Check status':reason?'Locked':'';}
   function patch() {
     controls();
+    $('forecastGroups').querySelectorAll('[data-group-key]').forEach(group=>updateGroupTotals(group,mountedGroups.get(group.dataset.groupKey)));
     $('forecastGroups').querySelectorAll('.phase-matrix').forEach(table=>{
       const snapshot=S.snapshots.get(phaseFor(table));
-      if(!snapshot)return;
-      if(table.hasChildNodes())patchMatrix(table,snapshot);
-      else updatePhaseTotals(table.closest('[data-forecast-phase]'),snapshot);
+      if(snapshot&&table.hasChildNodes())patchMatrix(table,snapshot);
     });
   }
   function patchMatrix(table,snapshot) {
     // A new server month can turn a mounted forecast input into an actual cell.
-    if(S.view==='outlook' && [...table.querySelectorAll('[data-forecast]')].some(input=>{const month=snapshot.months.find(row=>row.id===input.dataset.forecast);return month&&M.isPast(month,snapshot.today);})){renderMatrix(table,snapshot);updatePhaseTotals(table.closest('[data-forecast-phase]'),snapshot);return;}
+    if(S.view==='outlook' && [...table.querySelectorAll('[data-forecast]')].some(input=>{const month=snapshot.months.find(row=>row.id===input.dataset.forecast);return month&&M.isPast(month,snapshot.today);})){renderMatrix(table,snapshot);return;}
     table.querySelectorAll('[data-month-start]').forEach(node=>node.classList.toggle(node.tagName==='COL'?'current-month-column':'current-month',node.dataset.monthStart.slice(0,7)===snapshot.today.slice(0,7)));
     for(const input of table.querySelectorAll('[data-forecast]')) {
       const month=snapshot.months.find(row=>row.id===input.dataset.forecast), entry=S.entries.get(input.dataset.forecast), reason=M.lock(month,snapshot), phase=entry?entry.phase:'';
@@ -372,7 +428,7 @@
       cell.toggleAttribute('data-has-value',hasValue(displayed(month,snapshot)));
       cell.title=title;output.setAttribute('aria-label',name(month.builderId)+' WFY '+month.year+' '+month.month+' · '+title);
     }
-    const matrix=rows(snapshot), totals=phaseTotals(matrix,snapshot);
+    const matrix=matrixRows(snapshot,table.dataset.matrixBuilder), totals=phaseTotals(matrix,snapshot);
     for(const row of matrix){const cell=table.querySelector('[data-builder-total="'+row.builderId+'"]');if(cell)ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(row.years.reduce((sum,year)=>sum+metric(year),0)));}
     const builderTotal=table.querySelector('[data-foot-builder-total]');if(builderTotal)ForecastNumbers.update(builderTotal.querySelector('[data-number-key]'),matrixCount(matrix.reduce((sum,row)=>sum+row.years.reduce((total,year)=>total+metric(year),0),0)));
     for(const row of matrix) for(const year of row.years) {const cell=table.querySelector('[data-total="'+M.key(row.builderId,year.year)+'"]'); if(cell) ForecastNumbers.update(cell.querySelector('[data-number-key]'),matrixCount(metric(year)));}
@@ -382,7 +438,6 @@
       const total=table.querySelector('[data-foot-total="'+year+'"]'); if(total) ForecastNumbers.update(total.querySelector('[data-number-key]'),matrixCount(values.reduce((sum,value)=>sum+value,0)));
     }
     refreshMonthColors(table,snapshot);
-    updatePhaseTotals(table.closest('[data-forecast-phase]'),snapshot,phaseYearAxis(),totals);
   }
 
   async function load(refreshCatalog=false) {
@@ -418,6 +473,8 @@
     S.projectId=projectId;S.sub='';S.snapshots.clear();S.phaseErrors.clear();S.creation=null;S.entries.clear();
     $('workspace').prepend($('phaseSwitch'));
     $('phaseReportScroll').scrollLeft=0;
+    expanded.phase.clear();expanded.builder.clear();
+    mountedGroups.clear();
     $('forecastGroups').replaceChildren();$('phaseTabs').replaceChildren();
     $('compactSummary').replaceChildren();$('summaryFrame').srcdoc='';
   }
@@ -611,6 +668,31 @@
   $('forecastGroups').addEventListener('change',event=>{if(event.target.dataset.forecast)save(event.target);});
   $('forecastGroups').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.dataset.forecast){event.preventDefault();const inputs=[...$('forecastGroups').querySelectorAll('details[open] [data-forecast]:not(:disabled)')],next=inputs[inputs.indexOf(event.target)+(event.shiftKey?-1:1)];event.target.blur();if(next)next.focus();}});
   $('phaseTabs').addEventListener('click',event=>{const tab=event.target.closest('[data-phase-tab]');if(tab)choosePhase(tab.dataset.phaseTab);});
+  function changeGrouping(button) {
+    const next=button.dataset.forecastGrouping;
+    if(button.disabled||next===grouping)return;
+    for(const group of $('forecastGroups').querySelectorAll('[data-group-key]')) {
+      const id=mountedGroups.get(group.dataset.groupKey).id;
+      if(group.open)expanded[grouping].add(id);else expanded[grouping].delete(id);
+    }
+    grouping=next;
+    $('forecastGrouping').querySelectorAll('button').forEach(tab=>{
+      tab.setAttribute('aria-selected',String(tab===button));tab.tabIndex=tab===button?0:-1;
+    });
+    $('forecastGroups').setAttribute('aria-labelledby',button.id);
+    render();
+  }
+  $('forecastGrouping').addEventListener('click',event=>{
+    const button=event.target.closest('[data-forecast-grouping]');
+    if(button)changeGrouping(button);
+  });
+  $('forecastGrouping').addEventListener('keydown',event=>{
+    if(!event.target.matches('[data-forecast-grouping]')||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?'phase':event.key==='End'?'builder':grouping==='phase'?'builder':'phase';
+    const button=$('forecastGrouping').querySelector('[data-forecast-grouping="'+next+'"]');
+    changeGrouping(button);button.focus();
+  });
   $('phaseTabs').addEventListener('keydown',event=>{
     if(!event.target.matches('[data-phase-tab]')||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     event.preventDefault();
