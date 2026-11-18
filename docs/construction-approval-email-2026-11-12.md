@@ -3,13 +3,17 @@
 Construction and Development approval emails show an Unapproved summary by
 budget category, followed by cost-code totals and element details. Elements
 appear in numeric order: (1) Labor, (2) Materials, (3) Equipment,
-(4) Subcontractor, (5) Other. Detail columns remain Preliminary, Unapproved,
-HCSS Actuals, and GP Actuals. Open Approval Page remains above the tables.
+(4) Subcontractor, (5) Other. Construction detail shows Preliminary,
+Unapproved, Final, HCSS Actuals, and GP Actuals. Development detail shows
+Preliminary, Unapproved, HCSS Actuals, and GP Actuals. Open Approval Page
+remains above the tables.
 
-Show a numeric row only when at least one displayed amount is nonzero.
+Construction item and element rows qualify when Preliminary, Unapproved,
+or Final contains a nonzero amount. Actuals remain visible on qualifying
+rows. Development uses all its displayed detail columns for this check.
 Null values do not qualify a row for display, but remain unavailable (—) in
 retained rows. Negative credits and small nonzero values remain visible.
-Hide zero/null-only items, summary categories, totals, and empty tables.
+Hide zero/null-only summary categories and totals, and omit empty tables.
 An item heading is retained to identify any nonzero child allocation even
 when its parent totals net to zero. Native parent totals remain authoritative;
 unknown allocations are never inferred or converted into displayed zeroes.
