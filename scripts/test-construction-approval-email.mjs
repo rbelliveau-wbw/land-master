@@ -38,6 +38,7 @@ function render(){vm.runInContext('tables=JSON.parse(JSON.stringify(tables));',r
 runtime.tables.Budget_Category.push({ID:16,Budget:1,Category_Code:'2100',Budget_Category_Name:'Engineering Category',Deparment:'Engineering'});
 runtime.tables.Budget_Item.push(item(32,16,'2101','Engineering Only',[1,0,0,0,0],[2,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]));
 let html=render();
+const topTotal=/<strong>Unapproved Total<\/strong> &nbsp; ([^<]+)<\/div><\/div>/;
 assert.ok(html.indexOf('Open Approval Page')<html.indexOf('Unapproved Summary'));
 assert.equal((html.match(/Open Approval Page/g)||[]).length,1);
 assert.match(html,/3101 Clearing &amp; &lt;Brush&gt;/);
@@ -45,10 +46,13 @@ assert.doesNotMatch(html,/Development Only|Engineering Only|Other Budget/);
 assert.doesNotMatch(html,/\(2\) Materials<\/th><td/,'zero-only detail hidden');
 assert.doesNotMatch(html,/\(4\) Subcontractor<\/th><td/);
 assert.match(html,/\$-50/,'signed credit retained');
-assert.match(html,/\$1,950/,'grand total from saved Unapproved');
+assert.equal(html.match(topTotal)?.[1],'$1,950','saved Unapproved grand total appears inside the top Budget box');
+assert.ok(html.indexOf('Test Budget')<html.indexOf('Unapproved Total'));
+assert.ok(html.indexOf('Unapproved Total')<html.indexOf('Unapproved Summary'));
+assert.match(html.split('Unapproved Summary')[1],/\$1,950/,'the summary repeats the same grand total');
 assert.match(html,/\$450/,'element column total includes credit');
 assert.equal((html.match(/>Code\/Element</g)||[]).length,1);
-assert.match(html,/>Preliminary<.*>Unapproved<.*>HCSS Actuals<.*>GP Actuals</);
+assert.match(html,/>Preliminary<.*>Unapproved<.*>Final<.*>HCSS Actuals<.*>GP Actuals</);
 assert.match(html,/background:#fff3cd/);
 assert.equal(runtime.tables.Budget_Approvals[0].Sent_Date,'2026-11-12');
 const original=html;
@@ -59,9 +63,9 @@ for(const recipient of ['doug@example.test','other@example.test']){
 runtime.tables.Budget_Item[0].Prelim_Materials_Budget=null;
 html=render();assert.doesNotMatch(html,/\(2\) Materials<\/th><td/,'null plus zero does not qualify as a nonzero line');
 runtime.tables.Budget_Import_Item[0].Cost=2001;
-html=render();assert.match(html,/—/);assert.match(html,/\$1,950/,'missing allocation does not erase parent total');
+html=render();assert.match(html,/—/);assert.equal(html.match(topTotal)?.[1],'$1,950','missing allocation does not erase parent total');
 runtime.tables.Budget_Approvals[0].Type1='Development';
-html=render();assert.doesNotMatch(html,/3101 Clearing|Other Budget|Approved Mods/);assert.match(html,/Development Only/);assert.match(html,/Engineering Only/);assert.match(html,/Unapproved Summary/,'Development shares filtered email layout');
+html=render();assert.doesNotMatch(html,/3101 Clearing|Other Budget|Approved Mods|>Final<|Unapproved Total/);assert.match(html,/Development Only/);assert.match(html,/Engineering Only/);assert.match(html,/Unapproved Summary/,'Development shares filtered email layout');
 
 // Exercise the real Deluge renderer with empty/null lines, signed allocations,
 // and each numeric element column, without sending a live email.
@@ -79,12 +83,27 @@ runtime.tables.Budget_Import_Item=[];
 html=render();const details=html.split('Budget Element Details')[1];
 assert.deepEqual([...details.matchAll(/\(([1-5])\)/g)].map(m=>Number(m[1])),[1,2,3,4,5]);
 runtime.tables.Budget_Item=[item(29,11,'3105','Actual Credit',[0,0,0,0,0],[0,0,0,0,0],[0,0,-0.0001,0,0],[0,0,0,0,0])];
-html=render();assert.match(html,/Actual Credit/);assert.match(html,/\$-0.0001/);assert.match(html,/\(3\) Equipment<\/th><td/);
+html=render();assert.doesNotMatch(html,/Actual Credit|Budget Element Details/,'Construction ignores actuals when all three budget columns are empty or zero');
+assert.equal(html.match(topTotal)?.[1],'$0','known zero is shown in the top box');
+
+const finalOnly=item(31,11,'3106','Final Allocations',[0,0,0,0,0],[0,0,0,0,0],[0,105,23,0,0],[0,0,17,0,0]);
+Object.assign(finalOnly,{Prelim_Budget_Ttl:null,Prelim_Materials_Budget:null,Unapproved_Final_Budget_Ttl:null,Budget_Ttl:0,Equipment_Budget:-45,Other_Budget:45});
+const parentOnly={ID:33,Budget_Category:11,Cost_Code:'3107',Item_Name:'Saved Final Total',Budget_Ttl:275};
+runtime.tables.Budget_Item=[finalOnly,parentOnly];
+html=render();
+assert.equal(html.match(topTotal)?.[1],'—','missing saved Unapproved amounts display as unavailable');
+assert.match(html,/Final Allocations/,'a zero-net item heading identifies its qualifying elements');
+assert.match(html,/\(3\) Equipment<\/th>(?:<td[^>]*>[^<]*<\/td>){2}<td[^>]*>\$-45<\/td><td[^>]*>\$23<\/td><td[^>]*>\$17<\/td>/,'final credit qualifies and actuals remain visible on that line');
+assert.match(html,/\(5\) Other<\/th>(?:<td[^>]*>[^<]*<\/td>){2}<td[^>]*>\$45<\/td>/);
+assert.doesNotMatch(html,/\(2\) Materials<\/th><td|\$105/,'actuals alone do not qualify an element inside a visible item');
+assert.match(html,/Saved Final Total<\/th>(?:<td[^>]*>[^<]*<\/td>){2}<td[^>]*>\$275<\/td>/,'a saved final item total can qualify without an element allocation');
 runtime.tables.Budget_Item=[zeros,blanks];
 html=render();assert.doesNotMatch(html,/<table|Unapproved Summary|Budget Element Details|Zero Item|Blank Item/);assert.match(html,/Open Approval Page/);
 runtime.tables.Budget_Approvals[0].Type1='Development';
 runtime.tables.Budget_Item=[item(30,13,'1102','Development Zero',[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0])];
 html=render();assert.doesNotMatch(html,/Development Zero|<table/);
+runtime.tables.Budget_Item=[item(34,13,'1103','Development Actuals',[0,0,0,0,0],[0,0,0,0,0],[0,0,-0.0001,0,0],[0,0,0,0,0])];
+html=render();assert.match(html,/Development Actuals/);assert.match(html,/\$-0.0001/);
 
 runtime.tables.Budget_Approvals[0].Type1='Purchase Order';
 const count=runtime.mails.length;assert.match(runtime.sendApprovalEmail(1,2),/combined PO email/);assert.equal(runtime.mails.length,count);

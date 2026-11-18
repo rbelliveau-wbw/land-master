@@ -220,13 +220,12 @@ string sendApprovalEmail(int budgetId, int approvalId)
 		}
 		emailBody = emailBody + "</div>";
 	}
-	emailBody = emailBody + "</div>";
 	// Approval or rejection notes card.
-	emailBody = emailBody + "<div style='background:#fffdf5;border:1px solid #e7d9a8;border-left:4px solid #c79a22;border-radius:10px;padding:14px 16px;margin:0 0 18px 0;'>";
-	emailBody = emailBody + "<div style='font-size:13px;font-weight:700;color:#785b12;margin-bottom:2px;'>" + notesHeadingSafe + "</div>";
-	emailBody = emailBody + "<div style='font-size:12px;color:#8a6d22;margin-bottom:8px;'>" + notesContextSafe + "</div>";
-	emailBody = emailBody + "<div style='font-size:14px;color:#334155;white-space:normal;'>" + approvalNotesSafe + "</div>";
-	emailBody = emailBody + "</div>";
+	emailSections = "<div style='background:#fffdf5;border:1px solid #e7d9a8;border-left:4px solid #c79a22;border-radius:10px;padding:14px 16px;margin:0 0 18px 0;'>";
+	emailSections = emailSections + "<div style='font-size:13px;font-weight:700;color:#785b12;margin-bottom:2px;'>" + notesHeadingSafe + "</div>";
+	emailSections = emailSections + "<div style='font-size:12px;color:#8a6d22;margin-bottom:8px;'>" + notesContextSafe + "</div>";
+	emailSections = emailSections + "<div style='font-size:14px;color:#334155;white-space:normal;'>" + approvalNotesSafe + "</div>";
+	emailSections = emailSections + "</div>";
 	if(approvalType == "Construction" || approvalType == "Development")
 	{
 		// Email-specific layout; keep the shared download/attachment HTML unchanged.
@@ -236,6 +235,14 @@ string sendApprovalEmail(int budgetId, int approvalId)
 		tableStyle = "width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;color:#0f172a;";
 		summaryColumns = {"1","2","3","4","5"};
 		detailColumns = {1,2,6,7};
+		filterColumns = detailColumns;
+		finalHeader = "";
+		if(approvalType == "Construction")
+		{
+			detailColumns = {1,2,3,6,7};
+			filterColumns = {1,2,3};
+			finalHeader = "<th scope='col' style='" + cellStyle + "'>Final</th>";
+		}
 		summaryTotals = {"1":0.0,"2":0.0,"3":0.0,"4":0.0,"5":0.0};
 		summaryKnown = {"1":true,"2":true,"3":true,"4":true,"5":true};
 		grandTotal = 0.0;
@@ -257,22 +264,24 @@ string sendApprovalEmail(int budgetId, int approvalId)
 
 				for each constructionItem in Budget_Item[Budget_Category == constructionCategory.ID] sort by Cost_Code
 				{
-					parentNonzero = false;
 					elementBody = "";
 					itemLabel = (ifnull(constructionItem.Cost_Code,"").toString() + " " + ifnull(constructionItem.Item_Name,"Budget Item")).trim().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-					// Parent values are native totals, independent of allocation completeness.
-					parentValues = {constructionItem.Prelim_Budget_Ttl,constructionItem.Unapproved_Final_Budget_Ttl,constructionItem.HCSS_Actuals,constructionItem.PROJ_Actual};
-					parentHtml = "<tr style='background:#eef4ff;font-weight:700'><th scope='row' style='" + labelStyle + "'>" + itemLabel + "</th>";
-					parentIndex = 0;
-					for each parentValue in parentValues
+					// Match the shared element column indexes. Parent totals come from the budget item.
+					parentValues = {itemLabel,constructionItem.Prelim_Budget_Ttl,constructionItem.Unapproved_Final_Budget_Ttl,constructionItem.Budget_Ttl,null,null,constructionItem.HCSS_Actuals,constructionItem.PROJ_Actual};
+					parentNonzero = false;
+					for each column in filterColumns
 					{
-						if(ifnull(parentValue,0) != 0) { parentNonzero = true; }
+						if(ifnull(parentValues.get(column),0) != 0) { parentNonzero = true; }
+					}
+					parentHtml = "<tr style='background:#eef4ff;font-weight:700'><th scope='row' style='" + labelStyle + "'>" + itemLabel + "</th>";
+					for each column in detailColumns
+					{
+						parentValue = parentValues.get(column);
 						display = "—";
 						if(parentValue != null) { display = parentValue.text("$#,##0.####"); }
 						style = cellStyle;
-						if(parentIndex == 1) { style = pendingStyle; }
+						if(column == 2) { style = pendingStyle; }
 						parentHtml = parentHtml + "<td style='" + style + "'>" + display + "</td>";
-						parentIndex = parentIndex + 1;
 					}
 					parentHtml = parentHtml + "</tr>";
 					if(constructionItem.Unapproved_Final_Budget_Ttl == null) { categoryTotalKnown = false; grandKnown = false; }
@@ -293,7 +302,7 @@ string sendApprovalEmail(int budgetId, int approvalId)
 							summaryTotals.put(elementCode,summaryTotals.get(elementCode) + unapproved);
 						}
 						allZero = true;
-						for each column in detailColumns
+						for each column in filterColumns
 						{
 							if(ifnull(values.get(column),0) != 0) { allZero = false; }
 						}
@@ -349,20 +358,25 @@ string sendApprovalEmail(int budgetId, int approvalId)
 			if(summaryKnown.get(elementCode)) { display = summaryTotals.get(elementCode).text("$#,##0.####"); }
 			totalRow = totalRow + "<td style='" + cellStyle + "'>" + display + "</td>";
 		}
-		display = "—";
-		if(grandKnown) { display = grandTotal.text("$#,##0.####"); }
-		totalRow = totalRow + "<td style='" + cellStyle + "'>" + display + "</td></tr>";
+		grandDisplay = "—";
+		if(grandKnown) { grandDisplay = grandTotal.text("$#,##0.####"); }
+		if(approvalType == "Construction")
+		{
+			emailBody = emailBody + "<div style='margin-top:10px;font-size:14px;color:#0f2744;'><strong>Unapproved Total</strong> &nbsp; " + grandDisplay + "</div>";
+		}
+		totalRow = totalRow + "<td style='" + cellStyle + "'>" + grandDisplay + "</td></tr>";
 		if(totalNonzero == false) { totalRow = ""; }
 		if(summaryBody != "" || totalRow != "")
 		{
-		emailBody = emailBody + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Unapproved Summary</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead>" + summaryHeader + "</tr></thead><tbody>" + totalRow + summaryBody + "</tbody></table>";
+			emailSections = emailSections + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Unapproved Summary</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead>" + summaryHeader + "</tr></thead><tbody>" + totalRow + summaryBody + "</tbody></table>";
 		}
 		if(detailBody != "")
 		{
-		emailBody = emailBody + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Budget Element Details</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead><tr style='background:#eef4ff'><th scope='col' style='" + labelStyle + "'>Code/Element</th><th scope='col' style='" + cellStyle + "'>Preliminary</th><th scope='col' style='" + pendingStyle + "'>Unapproved</th><th scope='col' style='" + cellStyle + "'>HCSS Actuals</th><th scope='col' style='" + cellStyle + "'>GP Actuals</th></tr></thead><tbody>" + detailBody + "</tbody></table>";
-	}
+			emailSections = emailSections + "<h3 style='font-size:16px;color:#0f2744;margin:18px 0 8px'>Budget Element Details</h3><table cellpadding='0' cellspacing='0' style='" + tableStyle + "'><thead><tr style='background:#eef4ff'><th scope='col' style='" + labelStyle + "'>Code/Element</th><th scope='col' style='" + cellStyle + "'>Preliminary</th><th scope='col' style='" + pendingStyle + "'>Unapproved</th>" + finalHeader + "<th scope='col' style='" + cellStyle + "'>HCSS Actuals</th><th scope='col' style='" + cellStyle + "'>GP Actuals</th></tr></thead><tbody>" + detailBody + "</tbody></table>";
+		}
 	}
 
+	emailBody = emailBody + "</div>" + emailSections;
 	emailBody = emailBody + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	emailBody = emailBody + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
 	emailBody = emailBody + "</div>";
