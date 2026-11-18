@@ -493,3 +493,13 @@ visible when collapsed. Expand independently to show the existing builder
 matrix, with its own horizontal scroll, pinned columns and scoped row actions.
 Start every group collapsed on project selection and retain open groups during
 filters, phase switching, refreshes and saves.
+
+Default the Builder Forecasts year filter to WFY 2026, 2027 and 2028. Give
+phase rows a shared February-to-January timeline with a heading for each
+fiscal year. Keep the monthly totals mounted inside the disclosure heading
+in both states. All phase summaries scroll horizontally together, with the
+phase name and period total pinned. Summary totals use the same selected
+builders and basis as the matrix footer and adopt Sliding push by phase and
+calendar month. Show a single Phase label beside the shared moving-pill
+control. Use round buttons for phase numbers and compact numbers with a
+subphase suffix when supplied.
