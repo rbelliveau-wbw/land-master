@@ -16,10 +16,13 @@ without a value use phase-number order. Newly linked phases follow saved
 ones and Phase 01 remains the initial overview when present. Phase order is
 shared across users and applies to the tabs and both forecast groupings.
 
-Creator must publish the Project field from Development to Stage and
-Production. The widget keeps the forecast view available if the field cannot
-be read, while disabling order edits. Rollback restores Forecast Manager
-1.11.1 in the environment mapping. Keep the optional field and saved orders.
+Creator needs both the Project field and the `All_Projects` Detail View field
+in the Overview block. Creator's custom report field selection can read fields
+from the Detail View. The report's list columns stay as before. Publish both
+pieces from Development through Stage to Production. The widget keeps the
+forecast view available if the field cannot be read, while disabling order
+edits. Rollback restores Forecast Manager 1.11.1 in the environment mapping.
+Keep the optional field, its report configuration, and saved orders.
 
 ## Volume Heatmap — 1.11.1
 
