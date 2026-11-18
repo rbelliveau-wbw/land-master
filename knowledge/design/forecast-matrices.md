@@ -483,23 +483,29 @@ Project/Territory/Builder headings from subdivision bands and record rows.
 ## Project Forecast Workspace
 
 Replace the Builder Forecasts subdivision picker with a searchable Project
-picker. Keep the native phase overview and put the phase pill tabs between its
-navy heading and the lot totals and takedown cards. Default to Phase 1 when
+picker. Put the compact phase pills and grouping switch together in the navy
+overview heading, keeping the lot totals and takedown cards beneath. Default to Phase 1 when
 present and highlight the matching forecast group below. Changing tabs updates
 the overview and highlight without expanding groups or changing their order.
 
 Stack a disclosure for each phase. Keep its name, code and selected-view total
 visible when collapsed. Expand independently to show the existing builder
-matrix, with its own horizontal scroll, pinned columns and scoped row actions.
+matrix using the report's one horizontal scroll, pinned columns and scoped row actions.
 Start every group collapsed on project selection and retain open groups during
 filters, phase switching, refreshes and saves.
 
 Default the Builder Forecasts year filter to WFY 2026, 2027 and 2028. Give
 phase rows a shared February-to-January timeline with a heading for each
 fiscal year. Keep the monthly totals mounted inside the disclosure heading
-in both states. All phase summaries scroll horizontally together, with the
-phase name and period total pinned. Summary totals use the same selected
+in both states. The summary and expanded matrices share one ordered fiscal axis
+and the same month, annual total and pinned identity/period total column widths.
+Summary totals use the same selected
 builders and basis as the matrix footer and adopt Sliding push by phase and
 calendar month. Show a single Phase label beside the shared moving-pill
 control. Use round buttons for phase numbers and compact numbers with a
 subphase suffix when supplied.
+
+Builder → Phase keeps the project filters and chronological axis. A builder
+disclosure expands to its associated phase rows and keeps each row action tied
+to the underlying subdivision and builder IDs. Preserve each grouping's open
+rows while switching. Scope Add Forecast in the toolbar to the active phase.

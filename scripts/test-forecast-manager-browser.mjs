@@ -120,7 +120,7 @@ try {
   assert.equal(await page.locator('[data-overview-field="projectsLots"] .fs-header-value').textContent(),'250');assert.match(await page.locator('[data-overview-difference="projectsLots"]').textContent(),/143/);
   assert.equal(await page.locator('[data-overview-field="lmLots"] .fs-header-value').textContent(),'239');assert.match(await page.locator('[data-overview-difference="lmLots"]').textContent(),/132/);
   assert.match(await page.locator('.phase-matrix thead tr:first-child th').nth(1).textContent(),/^Total/,'builder total appears directly after Builder');
-  const periodPinned=await page.evaluate(()=>{const scroll=document.querySelector('.matrix-scroll'),body=document.querySelector('.phase-matrix tbody .builder-period-total'),head=document.querySelector('.phase-matrix thead .builder-period-total'),foot=document.querySelector('.phase-matrix tfoot .builder-period-total');scroll.scrollLeft=500;const r={body:body.getBoundingClientRect().left,head:head.getBoundingClientRect().left,foot:foot.getBoundingClientRect().left,nameRight:document.querySelector('.phase-matrix tbody .builder-column').getBoundingClientRect().right,fill:getComputedStyle(body).backgroundColor};scroll.scrollLeft=0;return r;});assert.ok(Math.abs(periodPinned.body-periodPinned.head)<1&&Math.abs(periodPinned.body-periodPinned.foot)<1,'builder total header/body/footer remain aligned while scrolling');assert.ok(Math.abs(periodPinned.body-periodPinned.nameRight)<1,'builder total pins beside builder identity');assert.equal(periodPinned.fill,'rgb(225, 235, 245)','selected-period totals retain their neutral fill');
+  const periodPinned=await page.evaluate(()=>{const scroll=document.querySelector('#phaseReportScroll'),body=document.querySelector('.phase-matrix tbody .builder-period-total'),head=document.querySelector('.phase-matrix thead .builder-period-total'),foot=document.querySelector('.phase-matrix tfoot .builder-period-total');scroll.scrollLeft=500;const r={body:body.getBoundingClientRect().left,head:head.getBoundingClientRect().left,foot:foot.getBoundingClientRect().left,nameRight:document.querySelector('.phase-matrix tbody .builder-column').getBoundingClientRect().right,fill:getComputedStyle(body).backgroundColor};scroll.scrollLeft=0;return r;});assert.ok(Math.abs(periodPinned.body-periodPinned.head)<1&&Math.abs(periodPinned.body-periodPinned.foot)<1,'builder total header/body/footer remain aligned while scrolling');assert.ok(Math.abs(periodPinned.body-periodPinned.nameRight)<1,'builder total pins beside builder identity');assert.equal(periodPinned.fill,'rgb(225, 235, 245)','selected-period totals retain their neutral fill');
 
   assert.equal(await page.locator('.phase-matrix').getAttribute('data-view'),'outlook','new sessions default to Sold + Forecast, including after refresh');
   assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'false');
@@ -341,7 +341,7 @@ try {
   assert.equal(await phaseGroups.first().locator('[data-phase-month]').count(),36);
   assert.equal(await phaseGroups.first().locator('[data-phase-month="2026-02-01"]').textContent(),'4');
   assert.equal(await page.locator('.forecast-phase-group[open]').count(),0);
-  assert.equal(await page.locator('.forecast-phase-value').filter({hasText:/^Total /}).count(),2);
+  assert.equal(await page.locator('.forecast-phase-value').filter({hasText:/^\d+$/}).count(),2);
   assert.equal(await page.locator('.fs-heading h2').textContent(),'Wildwood Estates — Phase 01');
   const firstTotal=await phaseGroups.first().locator('.forecast-phase-value').textContent();
   const phaseFive=phaseGroups.nth(1);
@@ -354,7 +354,7 @@ try {
   await page.waitForFunction(()=>__sends.length===1&&document.getElementById('saveStatus').textContent==='All changes saved');
   assert.deepEqual(await page.evaluate(()=>__sends.map(({subdivisionId,forecastId})=>({subdivisionId,forecastId}))),[{subdivisionId:'90071992547409931',forecastId:targetId}]);
   assert.equal(await phaseGroups.first().locator('.forecast-phase-value').textContent(),firstTotal);
-  assert.equal(await phaseFive.locator('.forecast-phase-value').textContent(),'Total 122');
+  assert.equal(await phaseFive.locator('.forecast-phase-value').textContent(),'122');
   assert.equal(await phaseFive.locator('[data-phase-month="2026-10-01"]').textContent(),await phaseFive.locator('[data-foot="2026-8"]').textContent());
   await page.getByRole('tab',{name:'Phase 05B'}).click();
   assert.equal(await phaseFive.evaluate(group=>group.classList.contains('selected-phase')&&group.open),true);
@@ -362,6 +362,27 @@ try {
   await phaseFive.locator('summary').click();
   await page.locator('button[data-view="scheduled"]').click();
   assert.equal(await phaseFive.locator('[data-phase-month="2026-10-01"]').textContent(),'2','collapsed totals follow the selected measure');
+  await phaseFive.locator('summary').press('Enter');
+  await phaseFive.locator('tfoot [data-month-start]').first().waitFor({state:'attached'});
+  const offsets=await page.locator('#phaseReportScroll').evaluate(scroll=>{
+    const group=scroll.querySelector('details[open]');
+    const compare=()=>[...group.querySelectorAll('[data-phase-month]')].map(total=>{
+      const detail=group.querySelector('tfoot [data-month-start="'+total.dataset.phaseMonth+'"]');
+      return Math.abs(total.getBoundingClientRect().x-detail.getBoundingClientRect().x);
+    });
+    const initial=compare();
+    scroll.scrollLeft=600;
+    return {initial,scrolled:compare(),left:scroll.scrollLeft,nested:getComputedStyle(group.querySelector('.matrix-scroll')).overflowX};
+  });
+  assert.ok(offsets.left>0&&offsets.nested==='visible');
+  assert.ok([...offsets.initial,...offsets.scrolled].every(distance=>distance<1),'phase and builder month columns align throughout the shared scroll');
+  assert.equal(await page.locator('.fs-title-head #phaseSwitch').count(),1);
+  await page.getByRole('tab',{name:'Builder → Phase'}).click();
+  const builderGroup=page.locator('[data-builder-group="90071992547409961"]');
+  await builderGroup.locator('summary').press('Enter');
+  assert.equal(await builderGroup.locator('.forecast-builder-phase').count(),2);
+  await page.getByRole('tab',{name:'Phase → Builder'}).click();
+  assert.equal(await phaseFive.evaluate(group=>group.open),true,'expanded phase is restored after switching grouping');
   assert.equal(await page.evaluate(()=>__calls.filter(call=>call.action==='snapshot').length),2,'switching summary tabs reuses the loaded phase data');
   assert.deepEqual(errors,[]);console.log('PASS: desktop forecasts, Territory/forecast-year filters, blue-header dates/counts, cross-tab combined totals, pinned builder/footer totals, assignment/notes and recovery; Sliding push on changed matrix/summary values, equal/initial suppression, immediate real values, unchanged input/date text, rapid signed updates and reduced motion. Screenshots: '+output);
 } catch(error) {
