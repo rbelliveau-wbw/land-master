@@ -479,3 +479,17 @@ rows, counts, groups and CSV; retain the existing Builder Forecasts rules.
 The Takedown Schedule column shows Found / Not Found. Group bands use the
 stronger blue section gradient, heavier labels and a left rail to distinguish
 Project/Territory/Builder headings from subdivision bands and record rows.
+
+## Project Forecast Workspace
+
+Replace the Builder Forecasts subdivision picker with a searchable Project
+picker. Keep the native phase overview and put the phase pill tabs between its
+navy heading and the lot totals and takedown cards. Default to Phase 1 when
+present and highlight the matching forecast group below. Changing tabs updates
+the overview and highlight without expanding groups or changing their order.
+
+Stack a disclosure for each phase. Keep its name, code and selected-view total
+visible when collapsed. Expand independently to show the existing builder
+matrix, with its own horizontal scroll, pinned columns and scoped row actions.
+Start every group collapsed on project selection and retain open groups during
+filters, phase switching, refreshes and saves.
