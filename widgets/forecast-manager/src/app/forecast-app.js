@@ -598,7 +598,7 @@
     openDialog('Phase Order','','<ol id="phaseOrderList" aria-label="Project Phases"></ol><button type="button" id="resetPhaseOrder" class="btn">Use Phase Number Order</button>',commit,'Save Order');
     const list=$('phaseOrderList'), reset=$('resetPhaseOrder'), action=$('dialogAction'), status=$('dialogStatus');
     list.innerHTML=all.map(row=>'<li data-order-phase="'+esc(row.id)+'">'+
-      '<button type="button" draggable="true" class="phase-order-grab" title="Drag to reorder or use the arrow keys" aria-label="'+esc('Reorder '+row.name)+'" aria-keyshortcuts="ArrowUp ArrowDown">⠿</button>'+
+      '<span role="button" tabindex="0" draggable="true" class="phase-order-grab" title="Drag to reorder or use the arrow keys" aria-label="'+esc('Reorder '+row.name)+'" aria-keyshortcuts="ArrowUp ArrowDown">⠿</span>'+
       '<span class="phase-order-number" draggable="true" aria-hidden="true"></span><span>'+esc(row.name)+'</span></li>').join('');
     const rowsById=new Map([...list.children].map(row=>[row.dataset.orderPhase,row]));
     function paint() {
@@ -610,7 +610,10 @@
       });
       action.disabled=saving||!uncertain&&same(draft,listIds);
       reset.disabled=saving||uncertain;
-      list.querySelectorAll('button').forEach(button=>{button.disabled=saving||uncertain;});
+      list.querySelectorAll('.phase-order-grab').forEach(handle=>{
+        handle.setAttribute('aria-disabled',String(saving||uncertain));
+        handle.tabIndex=saving||uncertain?-1:0;
+      });
     }
     function move(id,index) {
       if(saving||uncertain||index<0||index>=draft.length||index===draft.indexOf(id))return;
@@ -618,7 +621,7 @@
       draft.splice(index,0,id);
       paint();
       const row=rowsById.get(id);
-      row.querySelector('button').focus({preventScroll:true});
+      row.querySelector('.phase-order-grab').focus({preventScroll:true});
       window.LMMotion?.flash(row);
       status.textContent='Moved to position '+(index+1)+' of '+draft.length+'.';
     }
@@ -664,6 +667,7 @@
     reset.addEventListener('click',()=>{draft=numericPhases(selected).map(row=>row.id);paint();status.textContent='Phase number order selected.';});
     function applied(order) {
       selected.order=order;
+      selected.orderError='';
       renderPhaseTabs();renderOverview();render();closeDialog();
       notice('Phase order saved.');
     }
@@ -679,7 +683,7 @@
         const current=await readPhaseOrder(selected.id);
         if(uncertain){
           if(same(current.ids,draft)){S.rowPending=false;applied(current);return;}
-          if(current.raw===baseline){uncertain=false;action.textContent='Save Order';status.textContent='The order has not been confirmed. Reopen this Forecast Manager before making further changes.';selected.order=null;selected.orderError=status.textContent;closeOrder();return;}
+          if(current.raw===baseline)throw new Error('Creator has not confirmed the new order. Check Status again later.');
           throw new Error('Creator has a different order. Refresh before making another change.');
         }
         if(current.raw!==baseline||!same(numericPhases(selected).map(row=>row.id).sort(),draft.slice().sort())){
@@ -701,7 +705,8 @@
       } catch(error) {
         const code=LMData.failureCode(error);
         uncertain||=dispatch&&!rejected&&(!code||code==='3000');
-        status.textContent=uncertain?'Save could not be confirmed. Check Status before saving again.':error.message;
+        if(uncertain){selected.order=null;selected.orderError='Refresh to check the saved phase order.';}
+        status.textContent=uncertain&&dispatch?'Save could not be confirmed. Check Status before saving again.':error.message;
         action.textContent=uncertain?'Check Status':'Save Order';
       } finally {
         clearTimeout(timer);saving=false;S.rowPending=false;

@@ -135,7 +135,7 @@ try {
   assert.equal(await page.locator('button[data-view="forecast"]').getAttribute('aria-pressed'),'false');
   assert.equal(await page.locator('button[data-view="outlook"]').getAttribute('aria-pressed'),'true');
   assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Sold','Forecast'],'default mixed view shows both basis keys');
-  assert.ok(await page.locator('.year-heading').evaluateAll(headings=>headings.every(node=>{const a=node.firstElementChild.getBoundingClientRect(),b=node.lastElementChild.getBoundingClientRect(),r=node.getBoundingClientRect();return Math.abs((a.left+b.right)/2-(r.left+r.right)/2)<1;})),'WFY chip and dates center together over each year');
+  assert.deepEqual(await page.locator('#phaseMonthHeader .phase-year-total > span:first-child').allTextContents(),['WFY 2026','WFY 2027'],'fiscal years are labeled in their subtotal columns');
   await page.locator('button[data-view="outlook"]').click();
   assert.equal(await page.locator('button[data-view="outlook"]').textContent(),'Sold + Forecast');
   assert.equal(await page.locator('#matrixLegend').isVisible(),true);assert.deepEqual(await page.locator('#matrixLegend>span:visible').allTextContents(),['Sold','Forecast']);

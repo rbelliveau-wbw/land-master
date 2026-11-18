@@ -1,4 +1,4 @@
-## Year on Total and Phase Order — 1.12.0
+## Year on Total and Phase Order — 1.12.1
 
 Builder Forecasts shows a single timeline in both grouping views. Each month
 shows the total across the filtered project rows, including collapsed groups.
