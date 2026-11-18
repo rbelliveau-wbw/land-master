@@ -509,3 +509,9 @@ Builder → Phase keeps the project filters and chronological axis. A builder
 disclosure expands to its associated phase rows and keeps each row action tied
 to the underlying subdivision and builder IDs. Preserve each grouping's open
 rows while switching. Scope Add Forecast in the toolbar to the active phase.
+
+Apply Volume Heatmap to the group rows in both orders. Keep the exact monthly
+count visible and use the existing sold, forecast and scheduled colors. Scale
+the tint linearly against the largest monthly count across the groups in the
+current filters and view. Keep zeros, unavailable months and total columns
+neutral. Use an inset divider so the heatmap shares the existing column geometry.
