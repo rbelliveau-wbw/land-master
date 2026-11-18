@@ -1,12 +1,13 @@
-## Inline Phase Reordering — 1.12.3
+## Inline Phase Reordering — 1.12.4
 
 Drag the six-dot handle on a phase to move it. The insertion line shows the
 destination, and the order saves on drop. The handles also work on the phase
 rows within each expanded builder group. Reordering applies to the whole
 project, including the phase tabs. The header and group rows carry the totals.
 Stronger borders separate phases when the detail rows are open. The pinned
-name column fits the grip and wraps long phase names so their suffixes stay
-readable.
+name column fits the grip and wraps long names in Phase → Builder so their
+suffixes stay readable. In Builder → Phase, the grip, name, contract icon, and
+builder actions share one line.
 
 The widget reuses the Project field and All Projects report configuration
 published in Creator 9.201. Rollback restores Forecast Manager 1.12.1 in the

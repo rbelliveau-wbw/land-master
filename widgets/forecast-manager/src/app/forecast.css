@@ -620,8 +620,8 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 .forecast-phase-group .phase-matrix .year-total{width:auto;min-width:0}
 .forecast-phase-group .missing-content{left:calc(var(--phase-name-width) + var(--phase-total-width) + 12px)}
 .forecast-builder-phase+.forecast-builder-phase{border-top:2px solid #7795b4}
-.builder-phase-identity{display:flex;align-items:center;gap:5px;min-width:0}
-.builder-phase-name{font-size:14px}
+.builder-phase-name{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.forecast-builder-phase .assign-name{flex:none}
 .forecast-builder-phase .builder-name:not(button){display:none}
 .forecast-builder-phase.selected-phase .builder-column{background:#ccdef1}
 .forecast-no-groups{position:sticky;left:0;max-width:100cqw}

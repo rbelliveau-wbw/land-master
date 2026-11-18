@@ -402,6 +402,11 @@ try {
   await builderGroup.locator('summary').press('Enter');
   await builderGroup.locator('.forecast-builder-phase').first().waitFor({state:'attached'});
   assert.equal(await builderGroup.locator('.forecast-builder-phase').count(),2);
+  assert.ok(await builderGroup.locator('.forecast-builder-phase .builder-label').evaluateAll(labels=>labels.every(label=>{
+    const center=node=>{const box=node.getBoundingClientRect();return box.top+box.height/2;};
+    return Math.abs(center(label.querySelector('.phase-order-grab'))-center(label.querySelector('.contract-icon')))<1
+      && Math.abs(center(label.querySelector('.builder-phase-name'))-center(label.querySelector('.contract-icon')))<1;
+  })),'phase name, drag grip and contract icon share one line');
   assert.notEqual(await builderGroup.locator('[data-phase-month="2026-10-01"]').evaluate(cell=>getComputedStyle(cell).backgroundColor),'rgba(0, 0, 0, 0)','builder aggregates use the same heatmap');
   await page.getByRole('tab',{name:'Phase → Builder'}).click();
   assert.equal(await phaseFive.evaluate(group=>group.open),true,'expanded phase is restored after switching grouping');
