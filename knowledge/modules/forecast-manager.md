@@ -1,3 +1,15 @@
+## Phase Monthly Totals — 1.10.1
+
+Builder Forecasts opens with WFY 2026, 2027 and 2028 selected. The phase
+disclosure headings show February-to-January monthly totals and the period
+total for the current filters and view. The monthly totals share the matrix
+footer aggregation and stay visible when a phase is collapsed. All Years
+with Forecasts aligns the summary timeline across the project's saved years.
+The phase slider reads the existing Phase and Subphase fields on
+`All_Subdivisions`, with subdivision names and codes available when metadata
+is missing or ambiguous. No Creator publication is required. Rollback
+restores Forecast Manager 1.10.0 in the environment mapping.
+
 ## Project Forecast Workspace — 1.10.0
 
 Builder Forecasts joins the same Creator Project and Subdivision reports used
