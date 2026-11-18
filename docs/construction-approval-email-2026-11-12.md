@@ -6,7 +6,9 @@ appear in numeric order: (1) Labor, (2) Materials, (3) Equipment,
 (4) Subcontractor, (5) Other. Construction detail shows Preliminary,
 Unapproved, Final, HCSS Actuals, and GP Actuals. Development detail shows
 Preliminary, Unapproved, HCSS Actuals, and GP Actuals. Open Approval Page
-remains above the tables.
+remains above the tables. The Construction Budget box shows the same saved
+Unapproved Total as the summary, including a known $0. If an item total is
+unavailable, the box shows a dash in place of a partial total.
 
 Construction item and element rows qualify when Preliminary, Unapproved,
 or Final contains a nonzero amount. Actuals remain visible on qualifying
