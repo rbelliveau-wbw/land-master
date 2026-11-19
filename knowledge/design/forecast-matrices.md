@@ -528,6 +528,10 @@ disclosure expands to its associated phase rows and keeps each row action tied
 to the underlying subdivision and builder IDs. Preserve each grouping's open
 rows while switching. Scope Add Forecast in the toolbar to the active phase.
 
+Extend the lavender current-month column from the shared heading through group
+totals and expanded detail rows in both grouping orders. Keep basis colors on
+detail values and blend the group heatmap into the lavender for that month.
+
 Apply Volume Heatmap to the group rows in both orders. Keep the exact monthly
 count visible and use the existing sold, forecast and scheduled colors. Scale
 the tint linearly against the largest monthly count across the groups in the

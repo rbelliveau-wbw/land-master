@@ -409,6 +409,7 @@
           '">'+ForecastNumbers.markup('—',scope+'|month|'+start)+'</span>';
       }).join('')+'<span class="phase-month phase-year-total" title="WFY '+esc(year)+' Total">'+ForecastNumbers.markup('—',scope+'|year|'+year)+'</span>').join('');
     }
+    const currentMonth=(S.snapshot||S.snapshots.values().next().value)?.today.slice(0,7);
     let grandTotal=0, maxMonthlyLots=0;
     [...months.children].forEach((node,position)=>{
       const month=position%13, values=totals.get(axis[Math.floor(position/13)])||[];
@@ -420,6 +421,7 @@
       }
       ForecastNumbers.update(node.firstElementChild,snapshot?count(value):'—');
       node.classList.toggle('phase-month-zero',value===0);
+      node.classList.toggle('current-month',!!currentMonth&&node.dataset.phaseMonth?.slice(0,7)===currentMonth);
       const basis=node.dataset.phaseMonth?(S.view==='outlook'?(snapshot&&M.isPast({start:node.dataset.phaseMonth},snapshot.today)?'actual':'forecast'):S.view):'';
       node.dataset.basis=basis;
       node.setAttribute('aria-label',node.title+': '+(snapshot?count(value):'Unavailable'));

@@ -500,7 +500,10 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 .phase-matrix tbody td.year-total{background:#edf3f9}
 .phase-matrix tbody .year-total>[data-number-key]:not([data-number-value=""]){box-sizing:border-box;width:43px;height:30px;line-height:28px;border:1px solid #c2d3e5;border-radius:5px;background:#e1ebf5;color:#173c61}
 
-/* Current month uses a lavender heading and rails, leaving body cells neutral. */
+/* Lavender marks the current month beneath the basis-colored values. */
+.current-month-column{background:#eee5fb}
+.phase-matrix tbody td.month-cell.current-month{background:#eee5fb}
+.phase-matrix tbody tr:hover td.current-month{background:#e5d8f5}
 .phase-matrix td.current-month,.phase-matrix thead th.current-month{border-left:2px solid #c3a8e4;border-right:2px solid #c3a8e4}
 .phase-matrix thead th.current-month{background:#eee5fb!important;color:#76509f!important;box-shadow:inset 0 3px #c3a8e4}
 .current-month-label{display:none;font-size:9px;line-height:1.3;font-weight:500;letter-spacing:0}
@@ -590,7 +593,14 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 .forecast-phase-heading [data-phase-month]{box-shadow:inset -1px 0 #7799bb38}
 .forecast-phase-heading [data-phase-month]:not(.phase-month-zero){
   color:var(--phase-heat-ink);
-  background:color-mix(in srgb,var(--phase-heat-color) calc(26% * var(--phase-heat-lots) / var(--phase-heat-max)),var(--phase-group-fill));
+  background:color-mix(in srgb,var(--phase-heat-color) calc(26% * var(--phase-heat-lots) / var(--phase-heat-max)),var(--phase-month-fill,var(--phase-group-fill)));
+}
+.forecast-phase-heading [data-phase-month].current-month{
+  --phase-month-fill:color-mix(in srgb,#eee5fb 80%,var(--phase-group-fill));
+  background:var(--phase-month-fill);
+}
+.forecast-phase-heading [data-phase-month].current-month:not(.phase-month-zero){
+  background:color-mix(in srgb,var(--phase-heat-color) calc(15% * var(--phase-heat-lots) / var(--phase-heat-max)),var(--phase-month-fill));
 }
 .forecast-phase-heading{
   --phase-group-fill:#e3edf7;
