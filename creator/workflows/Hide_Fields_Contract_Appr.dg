@@ -1,0 +1,14 @@
+// Existing Hide Fields - Contract Approval / On load
+input.Approval_Action = "Approve";
+hide Approver;
+hide Approval_Sequence;
+hide Status;
+hide Contract1;
+hide Last_Reminder_Date;
+hide Reminder_Interval_Days;
+hide Next_Reminder_Date;
+hide Contract_Template;
+hide Approval_Date;
+hide Approval_Email;
+hide Type1;
+hide Contract_Action;

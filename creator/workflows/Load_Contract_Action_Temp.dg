@@ -10,6 +10,7 @@ if(ifnull(input.Work_Module,"") != "Construction")
 			actionRow.Work_Module="Legal";
 			actionRow.Contract_Action=action.Contract_Action;
 			actionRow.Sort_Order=action.Sort_Order;
+			actionRow.Requires_Approval=action.Requires_Approval;
 			input.Contract_Actions.insert(actionRow);
 		}
 	}

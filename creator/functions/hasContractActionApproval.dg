@@ -1,0 +1,28 @@
+bool hasContractActionApproval(int contractId, int actionId)
+{
+    // Match the latest request for each approver and role. A replacement must
+    // itself be sent and approved before it can supersede a rejected response.
+    latest = Map();
+    for each row in Contract_Approvals[Contract1 == contractId && Contract_Action == actionId] sort by ID asc
+    {
+        email = ifnull(row.Approver,"").toString().trim().toLowerCase();
+        if(email == "")
+        {
+            return false;
+        }
+        key = email + "|" + ifnull(row.Type1,"").toString();
+        latest.put(key,row.Status == "Approved" && row.Last_Reminder_Date != null && row.Approval_Date != null);
+    }
+    if(latest.size() == 0)
+    {
+        return false;
+    }
+    for each key in latest.keys()
+    {
+        if(latest.get(key) != true)
+        {
+            return false;
+        }
+    }
+    return true;
+}
