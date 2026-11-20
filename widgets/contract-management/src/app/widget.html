@@ -1531,8 +1531,10 @@ select.apr-in{cursor:pointer}
 .msel-opt.on .msel-box{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-dot{width:8px;height:8px;border-radius:50%;flex:none}
 .msel-foot{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);background:#f8fafc}
-.msel-foot button{flex:1;height:27px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:11px;font-weight:750;cursor:pointer;transition:all .12s}
+.msel-foot button{flex:1;min-width:0;min-height:32px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:14px;font-weight:750;cursor:pointer;transition:all .12s}
 .msel-foot button:hover{border-color:var(--primary-2);color:var(--primary)}
+.msel-foot [data-msel-done]{background:var(--primary);border-color:var(--primary);color:#fff}
+.msel-foot [data-msel-done]:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-empty{padding:16px;text-align:center;color:var(--faint);font-size:11.5px}
 
 /* ── ACTION INLINE FORM (grid) ── */
@@ -1994,16 +1996,16 @@ select.apr-in{cursor:pointer}
 .msel-pop[data-kind="parentedit"] .msel-opt,.msel-pop[data-kind="ncparent"] .msel-opt,.msel-pop[data-kind="constructionparent"] .msel-opt{width:100%;border:0;text-align:left;font-family:inherit;font-size:12.5px;font-weight:650;color:var(--text);background:#fff;cursor:pointer}.msel-pop[data-kind="parentedit"] .msel-opt:hover,.msel-pop[data-kind="parentedit"] .msel-opt.on,.msel-pop[data-kind="ncparent"] .msel-opt:hover,.msel-pop[data-kind="ncparent"] .msel-opt.on,.msel-pop[data-kind="constructionparent"] .msel-opt:hover,.msel-pop[data-kind="constructionparent"] .msel-opt.on{background:var(--ptint)}.msel-pick{display:grid;place-items:center}.msel-opt:focus-visible{outline:2px solid #285b97;outline-offset:-2px}
 .contract-parent-modal{width:min(640px,calc(100vw - 24px))}.msel-pop[data-kind="parentedit"],.msel-pop[data-kind="ncparent"],.msel-pop[data-kind="constructionparent"]{width:min(620px,calc(100vw - 16px));max-width:none}.msel-pop[data-kind="parentedit"] #mselList,.msel-pop[data-kind="ncparent"] #mselList,.msel-pop[data-kind="constructionparent"] #mselList{max-height:min(360px,calc(100dvh - 160px))}.msel-parent-heading{display:flex;align-items:center;gap:8px;padding:9px 13px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.msel-parent-heading i{width:3px;height:12px;border-radius:2px}.msel-parent-heading>span{margin-left:auto;font-size:10px}.msel-parent-option{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1;padding:2px 0}.msel-parent-option>strong{white-space:normal;overflow-wrap:anywhere;line-height:1.4;font-weight:750}.msel-parent-meta{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--muted)}.msel-parent-meta .bldr-pill{max-width:100%;white-space:normal;overflow-wrap:anywhere}.msel-parent-option .msel-parent-meta:empty{display:none}
 </style>
-<script src="success-feedback.js?v=1.62.66"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.66">
-<script src="interaction-motion.js?v=1.62.66"></script>
-<script src="interaction-surfaces.js?v=1.62.66"></script>
-<script src="number-edit-commit.js?v=1.62.66"></script>
-<script src="number-transitions.js?v=1.62.66"></script>
-<script src="number-surfaces.js?v=1.62.66"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.66">
-<link rel="stylesheet" href="report-layout.css?v=1.62.66">
-<link rel="stylesheet" href="construction-board.css?v=1.62.66">
+<script src="success-feedback.js?v=1.62.67"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.67">
+<script src="interaction-motion.js?v=1.62.67"></script>
+<script src="interaction-surfaces.js?v=1.62.67"></script>
+<script src="number-edit-commit.js?v=1.62.67"></script>
+<script src="number-transitions.js?v=1.62.67"></script>
+<script src="number-surfaces.js?v=1.62.67"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.67">
+<link rel="stylesheet" href="report-layout.css?v=1.62.67">
+<link rel="stylesheet" href="construction-board.css?v=1.62.67">
 </head>
 <body>
 
@@ -2052,7 +2054,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.66", pageSize: 200, maxPages: 25,
+  version: "1.62.67", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -4612,8 +4614,15 @@ function mselOpen(ev,kind){
   pop.innerHTML='<div class="msel-search"><input id="mselSearch" placeholder="Search '+esc(mselCfg(kind).noun)+'\u2026" autocomplete="off"/></div>'
     +'<div class="msel-list" id="mselList">'+mselRows(kind)+'</div>'
     +'<div class="msel-foot">'
-      +(mselCfg(kind).single?'':'<button onclick="mselAll(\'' + kind + '\')">Select all</button>')
-      +'<button onclick="mselClear(\'' + kind + '\')">Clear</button></div>';
+      +(mselCfg(kind).single?'':'<button type="button" onclick="mselAll(\'' + kind + '\')">Select All</button>')
+      +'<button type="button" onclick="mselClear(\'' + kind + '\')">Clear</button>'
+      +(mselCfg(kind).single?'':'<button type="button" data-msel-done>Done</button>')+'</div>';
+  var done=pop.querySelector('[data-msel-done]');
+  if(done)done.addEventListener('click',function(){
+    mselClosePop();
+    var trigger=$('mselb_'+kind);
+    if(trigger)trigger.focus();
+  });
   document.body.appendChild(pop);
   var r=ev.currentTarget.getBoundingClientRect();
   var top=r.bottom+6, left=r.left;

@@ -42,3 +42,6 @@ html{height:100%}body{height:100dvh;display:flex;flex-direction:column;overflow:
 .ll-inventory-table .ll-inline-cell{max-width:100%}
 .ll-summary .ll-layout button:focus-visible{outline:2px solid #6b9de2;outline-offset:2px}
 .ll-summary .ll-layout button:disabled{cursor:default;opacity:.55}
+
+.ll-column-footer{display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--line)}
+.ll-column-footer .btn{min-height:32px;font-size:14px}

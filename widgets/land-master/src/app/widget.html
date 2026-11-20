@@ -4,24 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Land Master</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.32"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=8.17.33"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script>LMData.configure({maxRequestsPerMinute:45,readRetryOnThrottle:true});</script>
 <script src="land-data.js"></script>
-<script src="mass-update.js?v=8.17.32"></script>
-<script src="mass-update-ui.js?v=8.17.32"></script>
-<script src="property-workspace.js?v=8.17.32"></script>
-<link rel="stylesheet" href="property-workspace.css?v=8.17.32">
-<link rel="stylesheet" href="searchable-pickers.css?v=8.17.32">
-<script src="searchable-pickers.js?v=8.17.32" defer></script>
-<script src="property-subtypes.js?v=8.17.32"></script>
-<script src="property-lots.js?v=8.17.32"></script>
-<link rel="stylesheet" href="lot-import.css?v=8.17.32">
-<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.32">
-<script src="spreadsheet-import.js?v=8.17.32"></script>
-<script src="lot-import-batch.js?v=8.17.32"></script>
-<script src="lot-import.js?v=8.17.32"></script>
+<script src="mass-update.js?v=8.17.33"></script>
+<script src="mass-update-ui.js?v=8.17.33"></script>
+<script src="property-workspace.js?v=8.17.33"></script>
+<link rel="stylesheet" href="property-workspace.css?v=8.17.33">
+<link rel="stylesheet" href="searchable-pickers.css?v=8.17.33">
+<script src="searchable-pickers.js?v=8.17.33" defer></script>
+<script src="property-subtypes.js?v=8.17.33"></script>
+<script src="property-lots.js?v=8.17.33"></script>
+<link rel="stylesheet" href="lot-import.css?v=8.17.33">
+<link rel="stylesheet" href="spreadsheet-import.css?v=8.17.33">
+<script src="spreadsheet-import.js?v=8.17.33"></script>
+<script src="lot-import-batch.js?v=8.17.33"></script>
+<script src="lot-import.js?v=8.17.33"></script>
 <style>
 /* ── TOKENS ── aligned with Pro Forma Manager ── */
 :root{
@@ -135,6 +135,7 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 .filter-option input{width:15px;height:15px;accent-color:var(--primary-2);flex:none}
 .filter-popup-empty{padding:24px 12px;text-align:center;color:var(--muted);font-size:11px;font-weight:700}
 .filter-popup-foot{display:flex;align-items:center;gap:8px;padding:9px 10px;border-top:1px solid var(--line);background:#f8fafc}
+.filter-popup-foot .btn{min-height:32px;font-size:14px}
 .filter-popup-count{flex:1;color:var(--muted);font-size:10.5px;font-weight:750}
 
 /* ── LAYOUT / CARDS ── */
@@ -451,15 +452,15 @@ tr.ghead:hover td{background:#edf2f9}
 #bulkResults [data-state="unknown"]>span{color:var(--amber)}
 #bulkModal .bulk-actions{flex-shrink:0;flex-wrap:wrap}
 </style>
-<script src="success-feedback.js?v=8.17.32"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=8.17.32">
-<script src="interaction-motion.js?v=8.17.32"></script>
-<script src="interaction-surfaces.js?v=8.17.32"></script>
-<script src="number-edit-commit.js?v=8.17.32"></script>
-<script src="number-transitions.js?v=8.17.32"></script>
-<script src="number-surfaces.js?v=8.17.32"></script>
-<link rel="stylesheet" href="number-transitions.css?v=8.17.32">
-<link rel="stylesheet" href="modal-layout.css?v=8.17.32">
+<script src="success-feedback.js?v=8.17.33"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=8.17.33">
+<script src="interaction-motion.js?v=8.17.33"></script>
+<script src="interaction-surfaces.js?v=8.17.33"></script>
+<script src="number-edit-commit.js?v=8.17.33"></script>
+<script src="number-transitions.js?v=8.17.33"></script>
+<script src="number-surfaces.js?v=8.17.33"></script>
+<link rel="stylesheet" href="number-transitions.css?v=8.17.33">
+<link rel="stylesheet" href="modal-layout.css?v=8.17.33">
 </head>
 <body>
 
@@ -591,7 +592,7 @@ tr.ghead:hover td{background:#edf2f9}
 <div class="filter-popup" id="filterPopup" aria-hidden="true">
   <div class="filter-popup-head"><input class="filter-popup-search" id="filterPopupSearch" type="search" placeholder="Search values…" autocomplete="off"><button class="lookup-popup-close lm-picker-close" id="filterPopupClose" type="button" aria-label="Clear filter and close" title="Clear filter and close"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
   <div class="filter-popup-list" id="filterPopupList"></div>
-  <div class="filter-popup-foot"><span class="filter-popup-count" id="filterPopupCount">0 selected</span><button class="btn sm" id="filterPopupClear" type="button">Clear</button><button class="btn primary sm" id="filterPopupApply" type="button">Apply</button></div>
+  <div class="filter-popup-foot"><span class="filter-popup-count" id="filterPopupCount">0 selected</span><button class="btn sm" id="filterPopupClear" type="button">Clear</button><button class="btn primary sm" id="filterPopupApply" type="button">Done</button></div>
 </div>
 
 <div class="audit-modal" id="auditModal" aria-hidden="true">
@@ -631,7 +632,7 @@ tr.ghead:hover td{background:#edf2f9}
    ============================================================ */
 
 var CFG = {
-  version: "8.17.32-LAZY-CORE",
+  version: "8.17.33-LAZY-CORE",
   pageSize: 200,
   tablePageSize: 100,
   maxPages: 50,
@@ -1091,7 +1092,7 @@ function renderFilterPopupList(query){var key=S.filterPopupKey,def=FILTER_DEFS[k
 function syncFilterDraftFromList(){var visibleChecked={};document.querySelectorAll('#filterPopupList input[type="checkbox"]').forEach(function(cb){visibleChecked[String(cb.value)]=cb.checked;});var next=S.filterDraft.filter(function(v){return!(String(v) in visibleChecked);});Object.keys(visibleChecked).forEach(function(v){if(visibleChecked[v])next.push(v);});S.filterDraft=Array.from(new Set(next));$("filterPopupCount").textContent=S.filterDraft.length+" selected";}
 function openFilterPopup(btn){var key=btn.getAttribute("data-filter-key");if(!FILTER_DEFS[key])return;S.filterPopupKey=key;S.filterDraft=filterSelections(key);S.filterPopupButton=btn;$("filterPopupSearch").value="";$("filterPopupSearch").placeholder="Search "+FILTER_DEFS[key].label+"…";renderFilterPopupList("");var rect=btn.getBoundingClientRect(),width=330,left=Math.min(window.innerWidth-width-12,Math.max(12,rect.left)),top=rect.bottom+6;if(top+430>window.innerHeight-10)top=Math.max(10,rect.top-436);var popup=$("filterPopup");popup.style.left=left+"px";popup.style.top=top+"px";popup.classList.add("show");popup.setAttribute("aria-hidden","false");setTimeout(function(){$("filterPopupSearch").focus();},0);}
 function closeFilterPopup(){var p=$("filterPopup");p.classList.remove("show");p.setAttribute("aria-hidden","true");S.filterPopupKey=null;S.filterDraft=[];S.filterPopupButton=null;}
-function applyFilterPopup(){if(!S.filterPopupKey)return closeFilterPopup();syncFilterDraftFromList();S.filters[S.filterPopupKey]=S.filterDraft.slice();S.page[S.scope]=1;closeFilterPopup();renderFilterButtons();renderTable();}
+function applyFilterPopup(){if(!S.filterPopupKey)return closeFilterPopup();var trigger=S.filterPopupButton;syncFilterDraftFromList();S.filters[S.filterPopupKey]=S.filterDraft.slice();S.page[S.scope]=1;closeFilterPopup();renderFilterButtons();renderTable();if(trigger)trigger.focus();}
 function clearFilterPopup(){var key=S.filterPopupKey;if(!key)return;S.filterDraft=[];S.filters[key]=[];S.page[S.scope]=1;renderFilterPopupList($("filterPopupSearch").value);renderFilterButtons();renderTable();}
 
 /* list/table */

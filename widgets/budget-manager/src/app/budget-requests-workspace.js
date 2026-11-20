@@ -50,7 +50,8 @@
     function picker(kind,label,rows){
       const multi=kind==='types'||kind==='statuses',selected=multi?ui[kind]:[ui[kind]],items=choices(kind,rows);
       const title=multi?(selected.length?selected.length+' Selected':'All '+label):items.find(pair=>pair[0]===ui[kind])?.[1]||label;
-      return '<div class="landing-combo requests-picker '+(menu===kind?'open':'')+'" data-requests-picker="'+kind+'"><button class="landing-combo-toggle '+(kind==='phase'?'requests-new':'')+'" type="button" data-requests-toggle="'+kind+'" aria-haspopup="listbox" aria-expanded="'+(menu===kind)+'"><span>'+esc(title)+'</span>'+icon+'</button><div class="landing-combo-menu" data-lm-motion="popover"><div class="landing-combo-search"><input type="search" data-requests-picker-search="'+kind+'" aria-label="Search '+esc(label)+'" placeholder="Search '+esc(label.toLowerCase())+'…" value="'+esc(menu===kind?query:'')+'" autocomplete="off"></div><div class="landing-combo-options" role="listbox" aria-label="'+esc(label)+'"'+(multi?' aria-multiselectable="true"':'')+'>'+pickerOptions(kind,rows)+'</div></div></div>';
+      return '<div class="landing-combo requests-picker '+(menu===kind?'open':'')+'" data-requests-picker="'+kind+'"><button class="landing-combo-toggle '+(kind==='phase'?'requests-new':'')+'" type="button" data-requests-toggle="'+kind+'" aria-haspopup="listbox" aria-expanded="'+(menu===kind)+'"><span>'+esc(title)+'</span>'+icon+'</button><div class="landing-combo-menu" data-lm-motion="popover"><div class="landing-combo-search"><input type="search" data-requests-picker-search="'+kind+'" aria-label="Search '+esc(label)+'" placeholder="Search '+esc(label.toLowerCase())+'…" value="'+esc(menu===kind?query:'')+'" autocomplete="off"></div><div class="landing-combo-options" role="listbox" aria-label="'+esc(label)+'"'+(multi?' aria-multiselectable="true"':'')+'>'+pickerOptions(kind,rows)+'</div>'+
+        (multi?'<div class="landing-combo-footer requests-picker-footer"><button type="button" data-requests-done>Done</button></div>':'')+'</div></div>';
     }
     function pickerOptions(kind,rows){
       const multi=kind==='types'||kind==='statuses',selected=multi?ui[kind]:[ui[kind]],items=choices(kind,rows).filter(pair=>!query||pair[1].toLowerCase().includes(query.toLowerCase()));
@@ -110,8 +111,12 @@
       if(event.target.matches('[data-requests-picker-search]')){query=event.target.value;event.target.closest('.requests-picker').querySelector('.landing-combo-options').innerHTML=pickerOptions(event.target.dataset.requestsPickerSearch,entries());}
     });
     host.addEventListener('toggle',event=>{const node=event.target;if(node.isConnected&&node.dataset.requestSection){if(node.open)closed.delete(node.dataset.requestSection);else closed.add(node.dataset.requestSection);}},true);
+    function closeMenuAndFocus(){
+      const selector=menu==='new-request'?'[data-requests-new-toggle]':'[data-requests-toggle="'+menu+'"]';
+      menu='';query='';render();host.querySelector(selector)?.focus();
+    }
     host.addEventListener('keydown',event=>{
-      if(event.key==='Escape'&&menu){const selector=menu==='new-request'?'[data-requests-new-toggle]':'[data-requests-toggle="'+menu+'"]';menu='';query='';render();host.querySelector(selector)?.focus();event.preventDefault();event.stopPropagation();return;}
+      if(event.key==='Escape'&&menu){closeMenuAndFocus();event.preventDefault();event.stopPropagation();return;}
       if(['ArrowDown','ArrowUp','Home','End'].includes(event.key)&&event.target.closest('.requests-global-add')){
         if(menu!=='new-request'){menu='new-request';query='';render();}
         const items=[...host.querySelectorAll('.requests-global-add [role="menuitem"]:not(:disabled)')];if(!items.length)return;
@@ -130,6 +135,7 @@
       if(event.target.closest('[data-requests-new-toggle]')){menu=menu==='new-request'?'':'new-request';query='';render();if(menu)host.querySelector('.requests-global-add [role="menuitem"]:not(:disabled)')?.focus();return;}
       const newKind=event.target.closest('[data-requests-new-kind]');
       if(newKind){const kind=newKind.dataset.requestsNewKind;if(newKind.disabled||!options.newRequestKinds().some(row=>row[0]===kind&&row[2]))return;menu='';render();options.openNewRequest(kind,host.querySelector('[data-requests-new-toggle]'));return;}
+      if(event.target.closest('[data-requests-done]')){closeMenuAndFocus();return;}
       const toggle=event.target.closest('[data-requests-toggle]'),option=event.target.closest('[data-requests-option]');
       if(toggle){const kind=toggle.dataset.requestsToggle;menu=menu===kind?'':kind;query='';render();if(menu)host.querySelector('[data-requests-picker-search="'+kind+'"]')?.focus();return;}
       if(option){const kind=option.dataset.requestsKind,value=option.dataset.requestsOption;
