@@ -228,6 +228,19 @@ for(const workflow of currentWorkflows.values()){
     assert.ok(historicalSource.trimEnd().endsWith(city),'deployed shared City suffix remains intact');
     historicalSource=historicalSource.slice(guard.length).trimEnd().slice(0,-city.length).trimEnd();
   }
+  // The older captures predate the Legal action approval scope. Compare
+  // the original Construction body after removing only those exact additions.
+  if(workflow.link==='Set_Contract_Approved_Con'){
+    historicalSource=historicalSource.replace('&& Contract_Action == null && Status','&& Status')
+      .replace('if(input.Contract_Action == null && contract.ID','if(contract.ID');
+  }
+  if(workflow.link==='Load_Contract_Action_Temp'){
+    historicalSource=historicalSource.replace('actionRow.Requires_Approval=action.Requires_Approval;','');
+  }
+  if(['Send_for_Approvals','Send_for_Approvals_Contra1'].includes(workflow.link)){
+    historicalSource=historicalSource.replace('&& Contract_Action == null && Status','&& Status')
+      .replace('if(contractApproval.Contract_Action != null)\n\t\t{\n\t\t\tcontinue;\n\t\t}','');
+  }
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(historicalSource),`${workflow.link}: historical native body remains unchanged outside separately tested additions`);
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.evidence)),`${workflow.link}: authoritative after source`);
 }

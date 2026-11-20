@@ -36,7 +36,7 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 			return response;
 		}
 		toAddress = ifnull(approvalRow.Approver,"").toString().trim();
-		if(modeText == "Send" && toAddress.toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(approvalRow.Status,"") == "" || approvalRow.Status == "Not Sent") && ifnull(approvalRow.Approval_Action,"") == "" && approvalRow.Approval_Date == null)
+		if(approvalRow.Contract_Action == null && modeText == "Send" && toAddress.toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(approvalRow.Status,"") == "" || approvalRow.Status == "Not Sent") && ifnull(approvalRow.Approval_Action,"") == "" && approvalRow.Approval_Date == null)
 		{
 			response.put("success",false);
 			response.put("message","The Development approval still has its legacy default. Apply the Contract VP rule before sending approvals.");
@@ -169,6 +169,17 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 		}
 		initiatedByText = ifnull(contract.Modified_User,ifnull(contract.Added_User,"—")).toString();
 		currentStepText = ifnull(approvalRow.Type1,"Approval").toString();
+		if(approvalRow.Contract_Action != null)
+		{
+			approvalAction = Contract_Actions[ID == approvalRow.Contract_Action && Contract1 == contractIdLong];
+			if(approvalAction.ID == null)
+			{
+			response.put("success",false);
+			response.put("message","The approval action could not be verified.");
+			return response;
+			}
+			currentStepText = ifnull(approvalAction.Contract_Action,"Action Approval").toString();
+		}
 		stepNumberText = ifnull(approvalRow.Approval_Sequence,"").toString();
 		// ---------- links (same public permalinks the report action uses) ----------
 		approveUrl = "https://creatorapp.zohopublic.com/wbdevelopment/land-master/view-perma/Approvals_HTML_Page/4rmNhzWYQvp62uhC832KNqhvBkdfuCdHaTRuAkPzRZVemp6h2k4OGUgyyJrsAwM4DS53SHuuJpdy3Bk5DuKFbFqey0y4VyMMdZs3?recordID=" + approvalRow.ID.toString() + "&status=Approved";
@@ -202,7 +213,7 @@ map Send_Contract_Approval_Email(string contractId, string approvalId, string mo
 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;border-bottom:1px solid #e5ebf3;'>Total Price</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:800;color:#047857;border-bottom:1px solid #e5ebf3;'>" + totalPriceText + "</td></tr>";
 		overviewRows = overviewRows + "<tr><td style='padding:8px 0;color:#64748b;'>Initiated By</td><td style='padding:8px 0 8px 12px;text-align:right;font-weight:700;color:#172033;'>" + safeInitiatedByText + "</td></tr>";
 		chainRows = "";
-		chain = Contract_Approvals[Contract1 == contractIdLong] sort by Approval_Sequence;
+		chain = Contract_Approvals[Contract1 == contractIdLong && Contract_Action == approvalRow.Contract_Action] sort by Approval_Sequence;
 		for each  step in chain
 		{
 			stepStatus = ifnull(step.Status,"Not Sent").toString();

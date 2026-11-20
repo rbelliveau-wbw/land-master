@@ -5,10 +5,10 @@ import vm from 'node:vm';
 // Execute the saved candidate through a narrow Deluge syntax adapter. This is
 // not a Creator compiler and makes no claim about native transaction isolation.
 const source=fs.readFileSync(new URL('../creator/functions/Complete_Lot_Contract.dg',import.meta.url),'utf8');
-const fields=['ID','Lots1','Contract1','Parent_Contract','Lot_Size','Builder_Name','Builder1','Status','Close_Date','Purchase_Date','Contract_Schedule','Base_Price','Escalator','Takedown_Schedule_Code','Subdivisions'];
-const forms='Contract_Pricing|Takedown_Schedule|Subdivision|Contract|Builder|Lots';
+const fields=['ID','Lots1','Contract1','Parent_Contract','Lot_Size','Builder_Name','Builder1','Status','Close_Date','Purchase_Date','Contract_Schedule','Base_Price','Escalator','Takedown_Schedule_Code','Subdivisions','Requires_Approval'];
+const forms='Contract_Actions|Contract_Pricing|Takedown_Schedule|Subdivision|Contract|Builder|Lots';
 function criterion(expression){
- expression=expression.replace(/\b(Lots1|Subdivisions)\s*==\s*(\w+)/g,'$1.includes($2)');
+ expression=expression.replace(/\bComplete(?=\s*!=)/g,'row.Complete').replace(/\b(Lots1|Subdivisions)\s*==\s*(\w+)/g,'$1.includes($2)');
  return expression.replace(new RegExp('(?<![\\w.])('+fields.join('|')+')\\b','g'),'row.$1');
 }
 let adapted=source.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]*/g,'').replace(/^string Complete_Lot_Contract\(string contractId\)/,'function execute(contractId)');
@@ -27,8 +27,8 @@ class DMap extends Map {put(key,value){this.set(key,value);}get(key){return supe
 const ID='4410926000005039484',OTHER='4410926000005039485',LOT='4410926000005039486',BUYER='4410926000005039487',PLACEHOLDER='4410926000005039488',REAL='4410926000005039489',SCHEDULE='4410926000005039490';
 const list=values=>Object.assign(new DList(),values||[]);
 function row(extra={}){return {ID:LOT,Lot_Code:'TEST-B01-L01',Lot_Size:40,Base_Price:null,Escalator:null,Status:'Open',Builder1:null,Contract1:null,Contract_Schedule:null,Close_Date:null,Purchase_Date:null,Notes:'retain',...extra};}
-function fixture({lot=row(),pricing=[{ID:'price',Contract1:ID,Lot_Size:40,Base_Price:5000,Escalator:3}],contracts=[],beforeUpdate,dropField,subdivisions=true}={}){
- const db={Builder:[{ID:BUYER,Builder_Name:'Buyer'},{ID:PLACEHOLDER,Builder_Name:'Placeholder'},{ID:REAL,Builder_Name:'Other buyer'}],Contract:[{ID,Contract_Type:'Lot (Master)',Builder:BUYER,Lots1:list(lot?[LOT]:[]),Subdivision1:list(subdivisions?['sub']:[]),Parent_Contract:null,Number_of_Lots:1,Initial_Takedown:1,Initial_Takedown_Days:1,Subsequent_Takedown_Lots:1,Subsequent_Takedown_Days:1,Completion_Date:null},...contracts],Lots:lot?[lot]:[],Contract_Pricing:pricing,Subdivision:[{ID:'sub',Subdivision_Code:'TEST'}],Takedown_Schedule:[{ID:SCHEDULE,Takedown_Schedule_Code:'TEST - Buyer',Builder1:BUYER,Subdivisions:list(['sub']),Add_Contract_Contract_Name:OTHER}]};
+function fixture({lot=row(),pricing=[{ID:'price',Contract1:ID,Lot_Size:40,Base_Price:5000,Escalator:3}],contracts=[],actions=[],beforeUpdate,dropField,subdivisions=true}={}){
+ const db={Contract_Actions:actions,Builder:[{ID:BUYER,Builder_Name:'Buyer'},{ID:PLACEHOLDER,Builder_Name:'Placeholder'},{ID:REAL,Builder_Name:'Other buyer'}],Contract:[{ID,Contract_Type:'Lot (Master)',Builder:BUYER,Lots1:list(lot?[LOT]:[]),Subdivision1:list(subdivisions?['sub']:[]),Parent_Contract:null,Number_of_Lots:1,Initial_Takedown:1,Initial_Takedown_Days:1,Subsequent_Takedown_Lots:1,Subsequent_Takedown_Days:1,Completion_Date:null},...contracts],Lots:lot?[lot]:[],Contract_Pricing:pricing,Subdivision:[{ID:'sub',Subdivision_Code:'TEST'}],Takedown_Schedule:[{ID:SCHEDULE,Takedown_Schedule_Code:'TEST - Buyer',Builder1:BUYER,Subdivisions:list(['sub']),Add_Contract_Contract_Name:OTHER}]};
  const events=[];
  function lookup(form,id){return id==null?null:String(id);}
  function wrap(record){return new Proxy(record,{get(target,key){if(key==='Builder'||key==='Builder1')return lookup('Builder',target[key]);if(key==='Parent_Contract')return lookup('Contract',target[key]);if(key==='toString'||key==='valueOf')return ()=>target.ID;return target[key]??null;},set(target,key,value){target[key]=value;events.push({form:'Contract',field:key});return true;}});}
@@ -115,6 +115,15 @@ for(const mode of ['Complete','LinkOnly']){
  const h=fixture();h.db.Contract[0].Status='Complete';const before=structuredClone(h.db),out=h.run(mode);
  assert.match(out.error,/read-only/);assert.equal(h.events.length,0);assert.deepEqual(JSON.parse(JSON.stringify(h.db)),before,'completed parent blocks every server transfer write');
  assert.equal(h.run('Check').lotTransferPolicy,'open-blank-placeholder-v1','completed read-only capability checks remain available');
+}
+{
+ const h=fixture({actions:[{Contract1:ID,Requires_Approval:true,Complete:false,Status:'New'}]});
+ assert.match(h.run().error,/required approval actions/);
+ assert.equal(h.events.length,0,'an incomplete required action blocks all Lot transfer writes');
+ assert.equal(h.run('Check').contractId,ID,'read-only Lot checks remain available');
+ h.db.Contract_Actions[0].Complete=true;
+ h.db.Contract_Actions[0].Status='Complete';
+ assert.equal(h.run().outcomes[0].verified,true);
 }
 assert.doesNotMatch(productionBaseline,/Second_Closing/,'Captured Production rollback baseline remains unchanged');
 assert.doesNotMatch(source,/\bLot_Size\s*=(?!=)/m,'candidate never writes Lot Size');

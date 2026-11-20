@@ -16,7 +16,7 @@ map applyContractDevelopmentDefaults(string contractId)
 			result.put("success",true); result.put("retainedExistingRoute",true); return result;
 		}
 		legacyIds = List();
-		for each candidate in Contract_Approvals[Contract1 == parent.ID] sort by Approval_Sequence
+		for each candidate in Contract_Approvals[Contract1 == parent.ID && Contract_Action == null] sort by Approval_Sequence
 		{
 			if(candidate.Status == "Awaiting Approval" || candidate.Status == "Approved" || candidate.Status == "Rejected" || ifnull(candidate.Approval_Action,"") != "" || candidate.Approval_Date != null || ifnull(candidate.Reject_Reason,"").trim() != "" || candidate.Last_Reminder_Date != null)
 			{
@@ -46,14 +46,14 @@ map applyContractDevelopmentDefaults(string contractId)
 		for each preflightId in legacyIds
 		{
 			preflight = Contract_Approvals[ID == preflightId && Contract1 == parent.ID];
-			duplicateLegacy = Contract_Approvals[Contract1 == parent.ID && ID != preflight.ID && Approver == preflight.Approver && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+			duplicateLegacy = Contract_Approvals[Contract1 == parent.ID && Contract_Action == null && ID != preflight.ID && Approver == preflight.Approver && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
 			if(duplicateLegacy.count() > 0) { result.put("message","Duplicate Development defaults have the same type and sequence. Review them before applying the Contract VP rule."); return result; }
 			firstEmail = emails.get(0);
-			firstExisting = Contract_Approvals[Contract1 == parent.ID && ID != preflight.ID && Approver == firstEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+			firstExisting = Contract_Approvals[Contract1 == parent.ID && Contract_Action == null && ID != preflight.ID && Approver == firstEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
 			if(firstExisting.count() > 0) { result.put("message","A duplicate Development VP approval already exists. Review the untouched default before applying it."); return result; }
 			for each preflightEmail in emails
 			{
-				existingExtra = Contract_Approvals[Contract1 == parent.ID && Approver == preflightEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
+				existingExtra = Contract_Approvals[Contract1 == parent.ID && Contract_Action == null && Approver == preflightEmail && Type1 == preflight.Type1 && Approval_Sequence == preflight.Approval_Sequence];
 				if(existingExtra.count() > 1) { result.put("message","Duplicate Development VP approvals already exist. Review the untouched defaults before applying the Contract VP rule."); return result; }
 			}
 		}
@@ -68,7 +68,7 @@ map applyContractDevelopmentDefaults(string contractId)
 			{
 				if(position > 0)
 				{
-					existing = Contract_Approvals[Contract1 == parent.ID && Approver == recipientEmail && Type1 == legacy.Type1 && Approval_Sequence == legacy.Approval_Sequence];
+					existing = Contract_Approvals[Contract1 == parent.ID && Contract_Action == null && Approver == recipientEmail && Type1 == legacy.Type1 && Approval_Sequence == legacy.Approval_Sequence];
 					if(existing.count() == 0)
 					{
 						createdId = insert into Contract_Approvals

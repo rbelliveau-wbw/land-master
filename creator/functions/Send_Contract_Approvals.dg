@@ -37,6 +37,7 @@ string Send_Contract_Approvals(string contractId)
 	requester = "";
 	mode = "Send";
 	targetIds = List();
+	actionId = null;
 	if(raw.startsWith("{"))
 	{
 		pm = raw.toMap();
@@ -51,6 +52,10 @@ string Send_Contract_Approvals(string contractId)
 		if(pm.get("mode") != null)
 		{
 			mode = pm.get("mode").toString().trim();
+		}
+		if(ifnull(pm.get("actionId"),"").toString() != "")
+		{
+			actionId = pm.get("actionId").toString().toLong();
 		}
 		if(pm.get("targetIds") != null)
 		{
@@ -114,6 +119,16 @@ string Send_Contract_Approvals(string contractId)
 		resp.put("message","This contract is complete and locked.");
 		return resp.toString();
 	}
+	if(actionId != null)
+	{
+		action = Contract_Actions[ID == actionId && Contract1 == cid && Requires_Approval == true];
+		if(action.ID == null || action.Complete == true || action.Status == "Complete")
+		{
+			resp.put("ok",false);
+			resp.put("message","The open action requiring approval was not found.");
+			return resp.toString();
+		}
+	}
 	// Reconcile only the approvers selected when the widget opened progress.
 	// A repair emails an unsent target at most once and never replays a sent row.
 	if(mode == "Check" || mode == "Repair")
@@ -131,7 +146,7 @@ string Send_Contract_Approvals(string contractId)
 		roles = List();
 		for each  targetId in targetIds
 		{
-			targetRow = Contract_Approvals[ID == targetId.toString().toLong() && Contract1 == cid];
+			targetRow = Contract_Approvals[ID == targetId.toString().toLong() && Contract1 == cid && Contract_Action == actionId];
 			if(targetRow.ID == null || targetRow.Approval_Email != true)
 			{
 				resp.put("ok",false);
@@ -139,6 +154,11 @@ string Send_Contract_Approvals(string contractId)
 				return resp.toString();
 			}
 			rowStatus = ifnull(targetRow.Status,"").toString().trim();
+			if(mode == "Repair" && actionId != null && (rowStatus == "Not Sent" || rowStatus == "") && targetRow.Last_Reminder_Date != null)
+			{
+				targetRow.Status="Awaiting Approval";
+				rowStatus="Awaiting Approval";
+			}
 			if(mode == "Repair" && (rowStatus == "Not Sent" || rowStatus == "") && targetRow.Last_Reminder_Date == null)
 			{
 				repairResult = thisapp.Send_Contract_Approval_Email(cid.toString(),targetRow.ID.toString(),"Send");
@@ -146,7 +166,7 @@ string Send_Contract_Approvals(string contractId)
 				{
 					targetRow.Status="Awaiting Approval";
 					targetRow.Reject_Reason=null;
-					if(ifnull(contract.Status,"").toString() != "Awaiting Approvals")
+					if(actionId == null && ifnull(contract.Status,"").toString() != "Awaiting Approvals")
 					{
 						contract.Status="Awaiting Approvals";
 						contract.Current_Approver=ifnull(targetRow.Approver,"").toString();
@@ -154,7 +174,7 @@ string Send_Contract_Approvals(string contractId)
 				}
 				rowStatus = ifnull(targetRow.Status,"").toString().trim();
 			}
-			if(rowStatus == "Awaiting Approval")
+			if(rowStatus == "Awaiting Approval" || (actionId != null && (rowStatus == "Approved" || rowStatus == "Rejected")))
 			{
 				activeCount = activeCount + 1;
 				if(targetRow.Last_Reminder_Date != null)
@@ -176,6 +196,10 @@ string Send_Contract_Approvals(string contractId)
 		contract = Contract[ID == cid];
 		resp.put("ok",true);
 		resp.put("contractId",cid.toString());
+		if(actionId != null)
+		{
+			resp.put("actionId",actionId.toString());
+		}
 		resp.put("parentStatus",ifnull(contract.Status,"").toString());
 		resp.put("targetCount",targetIds.size());
 		resp.put("activeCount",activeCount);
@@ -188,9 +212,9 @@ string Send_Contract_Approvals(string contractId)
 	// The creation hook must resolve the reserved legacy Development default
 	// before any new dispatch. Never silently fall back to the old recipient
 	// when a Territory VP/routing email is missing or the hook was not promoted.
-	for each defaultRow in Contract_Approvals[Contract1 == cid]
+	for each defaultRow in Contract_Approvals[Contract1 == cid && Contract_Action == null]
 	{
-		if(ifnull(defaultRow.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(defaultRow.Status,"") == "" || defaultRow.Status == "Not Sent") && ifnull(defaultRow.Approval_Action,"") == "" && defaultRow.Approval_Date == null)
+		if(actionId == null && ifnull(defaultRow.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(defaultRow.Status,"") == "" || defaultRow.Status == "Not Sent") && ifnull(defaultRow.Approval_Action,"") == "" && defaultRow.Approval_Date == null)
 		{
 			resp.put("success",false);
 			resp.put("message","The Development approval still has its legacy default. Apply the Contract VP rule before sending approvals.");
@@ -207,7 +231,7 @@ string Send_Contract_Approvals(string contractId)
 	/* A blank Status counts as Not Sent: rows inserted through the Data API
 	   (the widget's add-approver row before 1.60.4) never received the form's
 	   initial value, so an exact match silently skipped them. */
-	pending = Contract_Approvals[Contract1 == cid && Approval_Email == true && (Status == "Not Sent" || Status == null || Status == "")] sort by Approval_Sequence;
+	pending = Contract_Approvals[Contract1 == cid && Contract_Action == actionId && Approval_Email == true && (Status == "Not Sent" || Status == null || Status == "")] sort by Approval_Sequence;
 	if(pending.count() == 0)
 	{
 		resp.put("success",false);
@@ -217,6 +241,10 @@ string Send_Contract_Approvals(string contractId)
 	firstApprover = "";
 	for each  row in pending
 	{
+		if(actionId != null && (!targetIds.contains(row.ID.toString()) || row.Last_Reminder_Date != null))
+		{
+			continue;
+		}
 		// A prior draft/restart may retain an old reminder stamp. The helper
 		// creates fresh delivery evidence after sendmail succeeds.
 		row.Last_Reminder_Date=null;
@@ -237,7 +265,7 @@ string Send_Contract_Approvals(string contractId)
 			skippedList.add(ifnull(row.Approver,"(no email)").toString() + ": " + ifnull(emailResp.get("message"),"send failed").toString());
 		}
 	}
-	if(sentList.size() > 0)
+	if(actionId == null && sentList.size() > 0)
 	{
 		contract.Status="Awaiting Approvals";
 		contract.Current_Approver=firstApprover;

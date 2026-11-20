@@ -1,3 +1,29 @@
+## Required Action Approvals
+
+Legal task templates and the new-contract checklist have a **Requires Approval**
+checkbox. New actions inherit the template value. An action with the field
+checked displays an **Approval Required** badge and opens the existing Internal
+Approvals window for that action. Add approvers there, attach the contract files
+and choose **Send for Approvals**. For each approver and role, the latest request
+must carry both a sent stamp and an Approved decision with its approval date.
+Clone a rejected request to send a replacement to that recipient and role. A
+required step must be completed before a later step or the contract can complete.
+Action-specific requests leave the contract-wide approval route and status
+independent.
+
+Creator uses `Contract_Actions.Requires_Approval` and the optional
+`Contract_Approvals.Contract_Action` lookup. The existing
+`Send_Contract_Approvals` Custom API accepts the optional action ID and verifies
+it in Check and Repair. The action-specific send succeeds when every captured
+recipient belongs to the selected action and has a persisted sent stamp and
+active or decided status. The browser blocks dispatch if Creator does not
+return the selected action ID. See the
+[Creator publication handoff](../../creator/schema-changes/contract-action-approvals/README.md).
+
+Hosted rollback is Contract Management 1.62.66. Coordinate rollback with the
+Creator owner if any action already uses the field, since its native requirement
+continues to apply.
+
 ## Optional Request Actions — November 10, 2026
 
 Legal requests may be submitted with zero actions for the time being. Contract

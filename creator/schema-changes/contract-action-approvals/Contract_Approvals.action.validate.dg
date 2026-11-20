@@ -1,0 +1,37 @@
+// Contract Approvals / Created or Edited / Validation on submission
+before = Contract_Approvals[ID == input.ID];
+if(input.Contract_Action != null || (before.ID != null && before.Contract_Action != null))
+{
+    action = Contract_Actions[ID == input.Contract_Action && Contract1 == input.Contract1 && Requires_Approval == true];
+    if(action.ID == null || action.Complete == true || action.Status == "Complete")
+    {
+        alert "The open contract action requiring approval could not be found.";
+        cancel submit;
+    }
+    if(before.ID == null)
+    {
+        if((input.Status != null && input.Status != "" && input.Status != "Not Sent") || input.Approval_Date != null || input.Last_Reminder_Date != null || ifnull(input.Approval_Action,"") != "")
+        {
+            alert "Create a new unsent approval request.";
+            cancel submit;
+        }
+    }
+    else
+    {
+        if(before.Contract_Action != input.Contract_Action || before.Contract1 != input.Contract1 || before.Status != input.Status || before.Approval_Date != input.Approval_Date || before.Last_Reminder_Date != input.Last_Reminder_Date)
+        {
+            alert "Approval status, dates and the action link are set by the approval workflow.";
+            cancel submit;
+        }
+        if(before.Status != "Not Sent" && (before.Approver != input.Approver || before.Type1 != input.Type1))
+        {
+            alert "Add a new approver to change a request that has been sent.";
+            cancel submit;
+        }
+        if(ifnull(before.Approval_Action,"") != ifnull(input.Approval_Action,"") && (before.Status != "Awaiting Approval" || before.Last_Reminder_Date == null))
+        {
+            alert "Only a sent request awaiting approval can receive a decision.";
+            cancel submit;
+        }
+    }
+}

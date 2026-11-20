@@ -1,0 +1,15 @@
+// Existing Contract to Rejected Status - Contract Approval / On success
+contract = Contract[ID == input.Contract1];
+if(input.Approval_Action == "Reject")
+{
+    input.Status = "Rejected";
+    if(input.Contract_Action == null && contract.ID != null)
+    {
+        contract.Status="Approval Rejected";
+    }
+}
+if(input.Approval_Action == "Approve")
+{
+    input.Status = "Approved";
+    input.Approval_Date = zoho.currentdate;
+}

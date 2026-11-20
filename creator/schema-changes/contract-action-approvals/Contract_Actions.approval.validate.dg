@@ -1,0 +1,25 @@
+// Contract Actions / Created or Edited / Validation on submission
+if(input.Contract1 != null && ifnull(input.Work_Module,"") != "Construction")
+{
+    before = Contract_Actions[ID == input.ID];
+    if(before.ID != null && before.Requires_Approval == true && input.Requires_Approval != true)
+    {
+        alert "Requires Approval cannot be cleared on an existing required action.";
+        cancel submit;
+    }
+    completing = input.Complete == true || input.Status == "Complete";
+    advancing = completing || input.Current_Action == true;
+    if(advancing && input.Sort_Order != null)
+    {
+        if(Contract_Actions[Contract1 == input.Contract1 && ID != input.ID && Requires_Approval == true && Sort_Order < input.Sort_Order && (Complete != true || Status != "Complete")].count() > 0)
+        {
+            alert "Finish the earlier action that requires approval before proceeding.";
+            cancel submit;
+        }
+    }
+    if(completing && input.Requires_Approval == true && !thisapp.hasContractActionApproval(input.Contract1,input.ID))
+    {
+        alert "Create and send the requests in Internal Approvals, then wait for approval.";
+        cancel submit;
+    }
+}

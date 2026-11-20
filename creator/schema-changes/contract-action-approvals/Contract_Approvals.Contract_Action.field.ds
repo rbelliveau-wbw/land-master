@@ -1,0 +1,8 @@
+Contract_Action
+(
+    type = picklist
+    displayname = "Contract Action"
+    values = Contract_Actions.ID
+    displayformat = [ID]
+    sortorder = ascending
+)

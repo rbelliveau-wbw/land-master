@@ -1,0 +1,6 @@
+Requires_Approval
+(
+    type = checkbox
+    displayname = "Requires Approval"
+    initial value = false
+)

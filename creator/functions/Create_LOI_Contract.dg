@@ -196,6 +196,7 @@ string Create_LOI_Contract(string proformaId)
 						Contract1=contractId
 						Work_Module="Legal"
 						Contract_Action=actionTitle
+						Requires_Approval=ifnull(templateAction.Requires_Approval,false)
 						Sort_Order=actionSort
 						Status="Proposed"
 						Complete=false
