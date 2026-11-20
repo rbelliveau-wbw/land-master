@@ -299,6 +299,11 @@
             // Keep owners first in the completed email, directly below the mail client's attachment area.
             completionOwnersHtml = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='width:100%;background:#eef3fa;margin:0;padding:0;'>" + "<tr><td align='center' style='padding:24px 12px 0;'>" + "<table role='presentation' width='760' cellpadding='0' cellspacing='0' border='0' style='width:100%;max-width:760px;border-collapse:collapse;'>" + "<tr><td bgcolor='#edf5fc' style='background:#edf5fc;border-left:3px solid #0078d4;padding:13px 15px;font-family:Arial,sans-serif;font-size:14px;color:#172033;'>" + "<div style='font-weight:700;margin-bottom:4px;'>Pro Forma Owners</div>" + "<div style='line-height:1.5;word-break:break-word;'>" + safeOwnerNames + "</div>" + "</td></tr></table></td></tr></table>";
             messageHtml = completionOwnersHtml + messageHtml;
+            legalEmail = "legal@wbdevelopment.com";
+            if(completionRecipients.contains(legalEmail) == false)
+            {
+                completionRecipients.add(legalEmail);
+            }
             sendmail
             [
                 from :"Notifications@wbdevelopment.com"

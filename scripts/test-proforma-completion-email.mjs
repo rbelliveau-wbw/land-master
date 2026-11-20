@@ -58,7 +58,7 @@ assert.equal(result.success, true);
 assert.equal(result.completionEmailSent, true, JSON.stringify(result));
 assert.equal(rt.context.parent.Status, 'Approved');
 assert.equal(rt.context.mails.length, 1);
-assert.deepEqual(Array.from(rt.context.mails[0].to), ['same@example.com','person3@example.com']);
+assert.deepEqual(Array.from(rt.context.mails[0].to), ['same@example.com','person3@example.com','legal@wbdevelopment.com']);
 const mail = rt.context.mails[0];
 assert.match(mail.subject, /fully approved.*Ready for Legal Module/);
 assert.match(mail.message, /ready to be submitted to the <b>Legal Module/);
@@ -102,7 +102,7 @@ const ownerBanner = rt.context.mails[0].message.split('</table></td></tr></table
 assert.match(ownerBanner, /Pro Forma Owners<\/div><div[^>]*>Avery &lt;Owner&gt; &amp; Co, morgan, jordan<\/div>/);
 assert.equal(ownerBanner.split('Avery &lt;Owner&gt; &amp; Co').length, 2, 'Duplicate display names appear once');
 assert.doesNotMatch(ownerBanner, /<Owner>|person\d@example.com|duplicate@example.com/);
-assert.deepEqual(Array.from(rt.context.mails[0].to), ['person1@example.com','person3@example.com'], 'Displaying owners must not change completion recipients');
+assert.deepEqual(Array.from(rt.context.mails[0].to), ['person1@example.com','person3@example.com','legal@wbdevelopment.com'], 'Displaying owners must not change completion recipients');
 
 rt = runtime([row(1,1,'Approved'),row(3,2,'Pending')], 'Pending Approval', false, { owners: [] });
 assert.equal(invoke(rt).completionEmailSent, true);

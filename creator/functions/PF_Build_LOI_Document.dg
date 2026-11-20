@@ -454,10 +454,10 @@
         mergeRow.put("Property_City",mPropCity);
         mergeRow.put("Total_Acres",if(vTotalAcres != null,vTotalAcres.toString(),"[MISSING: Total Acres]"));
         mergeRow.put("Land_Cost",if(vLandCost != null,vLandCost.toString(),""));
-        mergeRow.put("Land_Cost_Written",if(vLandCost != null,vLandCost.round(0).toWords("en-us"),""));
+        mergeRow.put("Land_Cost_Written",if(vLandCost != null,vLandCost.round(0).toWords("en-us").toUpperCase(),""));
         mergeRow.put("Amount_per_Acre",if(vAmtAcre != null,vAmtAcre.toString(),"[MISSING: Land Cost per Acre]"));
         mergeRow.put("Earnest_Money",if(vEarnest != null,vEarnest.toString(),"[MISSING: Earnest Money]"));
-        mergeRow.put("Earnest_Money_Written",if(vEarnest != null,vEarnest.round(0).toWords("en-us"),""));
+        mergeRow.put("Earnest_Money_Written",if(vEarnest != null,vEarnest.round(0).toWords("en-us").toUpperCase(),""));
         mergeRow.put("Special_Provisions",if(vSpecial == null || vSpecial.trim() == "","None.",vSpecial));
         mergeRow.put("Initial_Feasibility_Days",if(vFeas != null,vFeas.toString(),"[MISSING: Initial Feasibility Days]"));
         mergeRow.put("Initial_Feasibility_Days_Written",if(vFeas != null,vFeas.toWords("en-us"),""));
@@ -466,7 +466,7 @@
         mergeRow.put("Days_per_Extension",if(vDaysExt != null,vDaysExt.toString(),"[MISSING: Days per Extension]"));
         mergeRow.put("Days_per_Extension_Written",if(vDaysExt != null,vDaysExt.toWords("en-us"),""));
         mergeRow.put("Amount_per_Extension",if(vAmtExt != null,vAmtExt.toString(),"[MISSING: Amount per Extension]"));
-        mergeRow.put("Amount_per_Extension_Written",if(vAmtExt != null,vAmtExt.round(0).toWords("en-us"),""));
+        mergeRow.put("Amount_per_Extension_Written",if(vAmtExt != null,vAmtExt.round(0).toWords("en-us").toUpperCase(),""));
         mergeRow.put("Closing_Days_Feas",if(vClosing != null,vClosing.toString(),"[MISSING: Closing Days after Feasibility]"));
         mergeRow.put("Closing_Days_Feas_Written",if(vClosing != null,vClosing.toWords("en-us"),""));
         mergeRow.put("Broker_Buyer",if(vBrokerBuyer == null || vBrokerBuyer.trim() == "","None",vBrokerBuyer));
@@ -567,7 +567,7 @@
                     }
                     psaMoneyWritten = psaMoneySign + psaMoneyDollars.toWords("en-us") + " and " + psaMoneyCentsText + "/100";
                 }
-                mergeRow.put(psaMoneyField,psaMoneyWritten);
+                mergeRow.put(psaMoneyField,psaMoneyWritten.toUpperCase());
             }
         }
         fileBaseName = ifnull(pf.Name,"Proforma").replaceAll("[^A-Za-z0-9 _-]","").trim().replaceAll(" +","_") + "_" + agreementType + "_" + zoho.currentdate.toString("yyyyMMdd");

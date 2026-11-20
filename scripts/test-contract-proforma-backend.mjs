@@ -64,14 +64,15 @@ block=block.replace(/contractId = insert into Contract\s*\[([\s\S]*?)\];/,(_,bod
   return 'insertFields = Map();\n'+puts.join('\n')+'\ncontractId = insertRow(insertFields);';
 });
 const program=translate('string submitFixture() {\n'+block+'\nresult.put("success",true); result.put("contractId",contractId); return result.toString();\n}').js;
-function submit({rows=[],type='PSA',pfName='Source',worksheetContract=null,pfContract=null,sources=[],worksheets=[]}={}){
-  const context=vm.createContext({fixture:JSON.stringify({rows,type,pfName,worksheetContract,pfContract,sources,worksheets})});
+function submit({rows=[],type='PSA',pfName='Source',worksheetContract=null,pfContract=null,sources=[],worksheets=[],owners=[]}={}){
+  const context=vm.createContext({fixture:JSON.stringify({rows,type,pfName,worksheetContract,pfContract,sources,worksheets,owners})});
   vm.runInContext(`
     const f=JSON.parse(fixture); var rows=f.rows, added=[];
     function ifnull(v,d){return v==null?d:v;}
     function Map(){return {put(k,v){this[k]=v;},get(k){return this[k]??null;},toString(){return JSON.stringify(this);}};}
     function List(){return [];}
-    Array.prototype.count=function(){return this.length;};
+    Array.prototype.count=Array.prototype.size=function(){return this.length;};
+    Array.prototype.contains=function(value){return this.includes(value);};
     Array.prototype.add=function(value){this.push(value);};
     function record(row){return new Proxy(row,{get(o,k){return o[k]??null;}});}
     function query(form,predicate){
@@ -82,9 +83,10 @@ function submit({rows=[],type='PSA',pfName='Source',worksheetContract=null,pfCon
         set(a,k,v){if(!a.length)throw Error('Cannot update missing Contract.');a[0][k]=v;return true;}
       });
     }
-    var pf={ID:'100',Name:f.pfName,LOI_Contract:f.pfContract};
+    var pf={ID:'100',Name:f.pfName,LOI_Contract:f.pfContract,Owner:f.owners};
     var loiRec={Agreement_Type:f.type,Contract:f.worksheetContract};
     var zoho={loginuser:'fixture_user'},result=Map(),trace=List();
+    var thisapp={notifyLegalRecordAdded(){}};
     var contractTerritory='North',wbwPointPerson='fixture_person';
     function insertRow(fields){const row={...fields,ID:'900'};delete row.put;delete row.get;delete row.toString;rows.push(row);added.push(row);return row.ID;}
   `,context);
@@ -94,15 +96,17 @@ function submit({rows=[],type='PSA',pfName='Source',worksheetContract=null,pfCon
 }
 const contract=(id,overrides={})=>({ID:id,Contract_Name:'Other Name',Contract_Type:'ACQ (PSA)',Work_Module:'Legal',Proforma:null,WBW_Point_Person:null,...overrides});
 for(const type of ['PSA','LOI']){
-  const created=submit({type});
+  const created=submit({type,owners:[{ID:'11'},{ID:'12'}]});
   assert.equal(created.out.success,true);
   assert.equal(created.added.length,1);
   assert.equal(created.added[0].Proforma,'100');
+  assert.deepEqual(created.added[0].Owner,['11','12']);
   assert.equal(created.added[0].Contract_Type,'ACQ ('+type+')');
-  const renamed=submit({type,pfName:'Renamed Source',rows:[contract('201',{Contract_Type:'ACQ ('+type+')',Proforma:'100'})]});
+  const renamed=submit({type,pfName:'Renamed Source',owners:[{ID:'11'},{ID:'12'}],rows:[contract('201',{Contract_Type:'ACQ ('+type+')',Proforma:'100',Owner:[{ID:'10'},{ID:'11'}]})]});
   assert.equal(renamed.out.contractId,'201','Renaming the source or Contract does not create another Contract.');
   assert.equal(renamed.added.length,0);
   assert.equal(renamed.rows[0].Proforma,'100');
+  assert.deepEqual(renamed.rows[0].Owner,['10','11','12']);
 }
 for(const pointer of ['worksheetContract','pfContract']){
   const linked=submit({[pointer]:'202',rows:[contract('202')]});

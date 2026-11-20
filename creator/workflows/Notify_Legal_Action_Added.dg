@@ -1,0 +1,5 @@
+// Contract Actions form. Created only. Successful form submission.
+if(input.Contract1 != null)
+{
+	thisapp.notifyLegalRecordAdded(input.Contract1.toString(),input.ID.toString());
+}
