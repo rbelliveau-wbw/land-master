@@ -1,9 +1,12 @@
 // Add Contract / Edited / Validation on submission
 if(input.Status == "Complete" && ifnull(input.Work_Module,"") != "Construction")
 {
-    if(Contract_Actions[Contract1 == input.ID && Requires_Approval == true && (Complete != true || Status != "Complete")].count() > 0)
+    for each requiredAction in Contract_Actions[Contract1 == input.ID && Requires_Approval == true]
     {
-        alert "Finish the required approval actions before completing the contract.";
-        cancel submit;
+        if(requiredAction.Complete != true || requiredAction.Status != "Complete")
+        {
+            alert "Finish the required approval actions before completing the contract.";
+            cancel submit;
+        }
     }
 }

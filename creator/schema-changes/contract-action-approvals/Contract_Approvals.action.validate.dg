@@ -1,6 +1,7 @@
 // Contract Approvals / Created or Edited / Validation on submission
 before = Contract_Approvals[ID == input.ID];
-if(input.Contract_Action != null || (before.ID != null && before.Contract_Action != null))
+alreadyLinked = before.ID != null && before.Contract_Action != null;
+if(input.Contract_Action != null || alreadyLinked)
 {
     action = Contract_Actions[ID == input.Contract_Action && Contract1 == input.Contract1 && Requires_Approval == true];
     if(action.ID == null || action.Complete == true || action.Status == "Complete")
@@ -10,7 +11,9 @@ if(input.Contract_Action != null || (before.ID != null && before.Contract_Action
     }
     if(before.ID == null)
     {
-        if((input.Status != null && input.Status != "" && input.Status != "Not Sent") || input.Approval_Date != null || input.Last_Reminder_Date != null || ifnull(input.Approval_Action,"") != "")
+        status = ifnull(input.Status,"");
+        sentStatus = status != "" && status != "Not Sent";
+        if(sentStatus || input.Approval_Date != null || input.Last_Reminder_Date != null || ifnull(input.Approval_Action,"") != "")
         {
             alert "Create a new unsent approval request.";
             cancel submit;
@@ -23,12 +26,14 @@ if(input.Contract_Action != null || (before.ID != null && before.Contract_Action
             alert "Approval status, dates and the action link are set by the approval workflow.";
             cancel submit;
         }
-        if(before.Status != "Not Sent" && (before.Approver != input.Approver || before.Type1 != input.Type1))
+        changedRecipient = before.Approver != input.Approver || before.Type1 != input.Type1;
+        if(before.Status != "Not Sent" && changedRecipient)
         {
             alert "Add a new approver to change a request that has been sent.";
             cancel submit;
         }
-        if(ifnull(before.Approval_Action,"") != ifnull(input.Approval_Action,"") && (before.Status != "Awaiting Approval" || before.Last_Reminder_Date == null))
+        decisionNotAllowed = before.Status != "Awaiting Approval" || before.Last_Reminder_Date == null;
+        if(ifnull(before.Approval_Action,"") != ifnull(input.Approval_Action,"") && decisionNotAllowed)
         {
             alert "Only a sent request awaiting approval can receive a decision.";
             cancel submit;

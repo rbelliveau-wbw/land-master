@@ -107,10 +107,16 @@ string Complete_Lot_Contract(string contractId)
 		resp.put("error","This contract is complete and read-only.");
 		return resp.toString();
 	}
-	if(mode == "Complete" && Contract_Actions[Contract1 == cid && Requires_Approval == true && (Complete != true || Status != "Complete")].count() > 0)
+	if(mode == "Complete")
 	{
-		resp.put("error","Finish the required approval actions before completing the contract.");
-		return resp.toString();
+		for each requiredAction in Contract_Actions[Contract1 == cid && Requires_Approval == true]
+		{
+			if(requiredAction.Complete != true || requiredAction.Status != "Complete")
+			{
+				resp.put("error","Finish the required approval actions before completing the contract.");
+				return resp.toString();
+			}
+		}
 	}
 	if(pm.get("lotIds") != null)
 	{

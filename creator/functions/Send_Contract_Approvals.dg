@@ -154,12 +154,14 @@ string Send_Contract_Approvals(string contractId)
 				return resp.toString();
 			}
 			rowStatus = ifnull(targetRow.Status,"").toString().trim();
-			if(mode == "Repair" && actionId != null && (rowStatus == "Not Sent" || rowStatus == "") && targetRow.Last_Reminder_Date != null)
+			unsent = rowStatus == "Not Sent" || rowStatus == "";
+			if(mode == "Repair" && actionId != null && unsent && targetRow.Last_Reminder_Date != null)
 			{
 				targetRow.Status="Awaiting Approval";
 				rowStatus="Awaiting Approval";
+				unsent=false;
 			}
-			if(mode == "Repair" && (rowStatus == "Not Sent" || rowStatus == "") && targetRow.Last_Reminder_Date == null)
+			if(mode == "Repair" && unsent && targetRow.Last_Reminder_Date == null)
 			{
 				repairResult = thisapp.Send_Contract_Approval_Email(cid.toString(),targetRow.ID.toString(),"Send");
 				if(ifnull(repairResult.get("success"),false) == true)
@@ -174,7 +176,12 @@ string Send_Contract_Approvals(string contractId)
 				}
 				rowStatus = ifnull(targetRow.Status,"").toString().trim();
 			}
-			if(rowStatus == "Awaiting Approval" || (actionId != null && (rowStatus == "Approved" || rowStatus == "Rejected")))
+			decided = false;
+			if(actionId != null)
+			{
+				decided = rowStatus == "Approved" || rowStatus == "Rejected";
+			}
+			if(rowStatus == "Awaiting Approval" || decided)
 			{
 				activeCount = activeCount + 1;
 				if(targetRow.Last_Reminder_Date != null)
@@ -214,7 +221,9 @@ string Send_Contract_Approvals(string contractId)
 	// when a Territory VP/routing email is missing or the hook was not promoted.
 	for each defaultRow in Contract_Approvals[Contract1 == cid && Contract_Action == null]
 	{
-		if(actionId == null && ifnull(defaultRow.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com" && (ifnull(defaultRow.Status,"") == "" || defaultRow.Status == "Not Sent") && ifnull(defaultRow.Approval_Action,"") == "" && defaultRow.Approval_Date == null)
+		defaultStatus = ifnull(defaultRow.Status,"");
+		defaultUnsent = defaultStatus == "" || defaultStatus == "Not Sent";
+		if(actionId == null && defaultUnsent && ifnull(defaultRow.Approver,"").trim().toLowerCase() == "pshepherd@wbdevelopment.com" && ifnull(defaultRow.Approval_Action,"") == "" && defaultRow.Approval_Date == null)
 		{
 			resp.put("success",false);
 			resp.put("message","The Development approval still has its legacy default. Apply the Contract VP rule before sending approvals.");
@@ -231,7 +240,7 @@ string Send_Contract_Approvals(string contractId)
 	/* A blank Status counts as Not Sent: rows inserted through the Data API
 	   (the widget's add-approver row before 1.60.4) never received the form's
 	   initial value, so an exact match silently skipped them. */
-	pending = Contract_Approvals[Contract1 == cid && Contract_Action == actionId && Approval_Email == true && (Status == "Not Sent" || Status == null || Status == "")] sort by Approval_Sequence;
+	pending = Contract_Approvals[Contract1 == cid && Contract_Action == actionId && Approval_Email == true] sort by Approval_Sequence;
 	if(pending.count() == 0)
 	{
 		resp.put("success",false);
@@ -239,12 +248,20 @@ string Send_Contract_Approvals(string contractId)
 		return resp.toString();
 	}
 	firstApprover = "";
+	dispatchCount = 0;
 	for each  row in pending
 	{
-		if(actionId != null && (!targetIds.contains(row.ID.toString()) || row.Last_Reminder_Date != null))
+		status = ifnull(row.Status,"");
+		if(status != "Not Sent" && status != "")
 		{
 			continue;
 		}
+		skipScopedRow = !targetIds.contains(row.ID.toString()) || row.Last_Reminder_Date != null;
+		if(actionId != null && skipScopedRow)
+		{
+			continue;
+		}
+		dispatchCount = dispatchCount + 1;
 		// A prior draft/restart may retain an old reminder stamp. The helper
 		// creates fresh delivery evidence after sendmail succeeds.
 		row.Last_Reminder_Date=null;
@@ -264,6 +281,12 @@ string Send_Contract_Approvals(string contractId)
 		{
 			skippedList.add(ifnull(row.Approver,"(no email)").toString() + ": " + ifnull(emailResp.get("message"),"send failed").toString());
 		}
+	}
+	if(dispatchCount == 0)
+	{
+		resp.put("success",false);
+		resp.put("message","No approver is switched on for the email, or every switched-on approver has already been sent.");
+		return resp.toString();
 	}
 	if(actionId == null && sentList.size() > 0)
 	{
