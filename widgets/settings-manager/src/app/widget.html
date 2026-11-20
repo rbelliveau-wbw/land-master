@@ -10,9 +10,9 @@
 <script src="settings-controller.js"></script>
 <script src="workflow-log.js"></script>
 <link rel="stylesheet" href="workflow-log.css">
-<script src="approval-policy-domain.js?v=1.6.16"></script>
-<script src="approval-admin.js?v=1.6.16"></script>
-<link rel="stylesheet" href="approval-admin.css?v=1.6.16">
+<script src="approval-policy-domain.js?v=1.6.17"></script>
+<script src="approval-admin.js?v=1.6.17"></script>
+<link rel="stylesheet" href="approval-admin.css?v=1.6.17">
 <script src="critical-error-reporter.js"></script>
 <style>
 /* ── TOKENS ── aligned with Contract Management / Pro Forma Manager ── */
@@ -159,6 +159,8 @@ textarea.tall{min-height:320px;line-height:1.55;overflow:hidden;resize:none}
 .msel .pop .search{padding:8px 9px;border-bottom:1px solid var(--line);background:#fbfcfe}
 .msel .pop .search input{padding:6px 9px}
 .msel .opts{max-height:240px;overflow-y:auto}
+.msel-footer{display:flex;justify-content:flex-end;padding:8px 9px;border-top:1px solid var(--line)}
+.msel-footer .btn{min-height:32px;font-size:14px}
 .msel .opt{display:flex;gap:9px;align-items:flex-start;padding:8px 11px;cursor:pointer;
   border-bottom:1px solid #f1f5f9;font-size:12.5px}
 .msel .opt:last-child{border-bottom:0}
@@ -250,18 +252,18 @@ td input,td select{padding:5px 8px}
 .settings-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.settings-dialog h2{font-size:16px;margin:0}.settings-dialog footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
 .settings-dialog .iconbtn{color:var(--muted)}
 </style>
-<script src="success-feedback.js?v=1.6.16"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.6.16">
-<script src="interaction-motion.js?v=1.6.16"></script>
-<script src="interaction-surfaces.js?v=1.6.16"></script>
-<script src="number-edit-commit.js?v=1.6.16"></script>
-<script src="number-transitions.js?v=1.6.16"></script>
-<script src="number-surfaces.js?v=1.6.16"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.6.16">
-<link rel="stylesheet" href="settings-workspace.css?v=1.6.16">
-<link rel="stylesheet" href="settings-pickers.css?v=1.6.16">
-<script src="settings-pickers.js?v=1.6.16"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.6.16">
+<script src="success-feedback.js?v=1.6.17"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.6.17">
+<script src="interaction-motion.js?v=1.6.17"></script>
+<script src="interaction-surfaces.js?v=1.6.17"></script>
+<script src="number-edit-commit.js?v=1.6.17"></script>
+<script src="number-transitions.js?v=1.6.17"></script>
+<script src="number-surfaces.js?v=1.6.17"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.6.17">
+<link rel="stylesheet" href="settings-workspace.css?v=1.6.17">
+<link rel="stylesheet" href="settings-pickers.css?v=1.6.17">
+<script src="settings-pickers.js?v=1.6.17"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.6.17">
 </head>
 <body>
 
@@ -301,7 +303,7 @@ td input,td select{padding:5px 8px}
 (function(){
 "use strict";
 
-var SMW_VERSION = "1.6.16";
+var SMW_VERSION = "1.6.17";
 
 function approvalScope(){var r=LMRuntime.current();return JSON.stringify([r.environment,r.environmentFragment,r.appLinkName,r.user,S.recId]);}
 function unwrapApprovalApi(response){
@@ -939,6 +941,7 @@ function multiSelect(f,v){
     + '<div class="pop">'
     + '<div class="search"><input type="text" data-msearch="1" placeholder="Search '+esc(opts.length)+' options…"/></div>'
     + '<div class="opts" role="listbox" aria-label="'+esc(f.l||f.n)+' options" aria-multiselectable="true" data-opts="1">'+msOptions(opts,sel,"")+'</div>'
+    + '<div class="msel-footer"><button type="button" class="btn primary" data-msel-done>Done</button></div>'
     + '</div></div>';
 }
 function msOptions(opts,sel,q){
@@ -1194,6 +1197,13 @@ function wire(){
       e.stopPropagation();
       var ms=un.closest("[data-msel]");
       togglePick(ms.getAttribute("data-msel"),un.getAttribute("data-unpick"));
+      return;
+    }
+    var done=e.target.closest('[data-msel-done]');
+    if(done){
+      var trigger=done.closest('[data-msel]').querySelector('[data-toggle]');
+      closeMsels();
+      trigger.focus();
       return;
     }
     var tg=e.target.closest("[data-toggle]");

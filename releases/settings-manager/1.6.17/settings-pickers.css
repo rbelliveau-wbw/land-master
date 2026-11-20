@@ -1,0 +1,23 @@
+.settings-picker{display:block;min-width:0;width:100%}
+.settings-picker>select[hidden]{display:none!important}
+.settings-picker-trigger{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0;min-height:35px;margin:0;padding:7px 10px;border:1px solid #c9d5df;border-radius:6px;background:#fff;color:#173c58;font:inherit;font-weight:400;line-height:1.4;text-align:left;cursor:pointer;transition:border-color 150ms,box-shadow 150ms,background 150ms}
+.settings-picker-label{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.settings-picker-trigger>svg{display:block;flex:0 0 14px;color:#6d8599}
+.settings-picker-trigger:hover:not(:disabled){border-color:#98b2c7;background:#f8fbfd}
+.settings-picker-trigger[aria-expanded=true]{border-color:#5c8fb9;box-shadow:0 0 0 3px #19518513}
+.settings-picker-trigger.is-empty{color:#7c8f9f}
+.settings-picker-trigger:disabled{background:#f0f4f7;color:#8b9ba8;cursor:default}
+.settings-picker-trigger.save-error{border-color:#c45454}
+.settings-picker-popup{position:fixed;z-index:2450;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;min-height:0;padding:8px;overflow:hidden;border:1px solid #b9ccd9;border-radius:8px;background:#fff;color:#173c58;box-shadow:0 12px 35px #173c5833;font:13px/1.4 system-ui,sans-serif}
+.settings-picker-popup>.settings-picker-search{box-sizing:border-box;flex:0 0 auto;width:100%;min-height:35px;margin:0;padding:8px 10px;border:1px solid #c9d5df;border-radius:5px;background:#fff;color:#173c58;font:inherit;line-height:1.4}
+.settings-picker-results{min-height:0;overflow:auto;overscroll-behavior:contain;padding:2px;scrollbar-gutter:stable}
+.settings-picker-option{box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:35px;margin:0;padding:8px 10px;border:0;border-radius:4px;background:#fff;color:#173c58;font:inherit;line-height:1.4;text-align:left;cursor:pointer}
+.settings-picker-option-label{min-width:0;overflow-wrap:anywhere}
+.settings-picker-option[aria-selected=true],.settings-picker-option.is-active,.settings-picker-option:hover:not(:disabled){background:#e4f0f7}
+.settings-picker-option[aria-selected=true]{font-weight:600}
+.settings-picker-option:disabled{color:#98a6b2;cursor:default}
+.settings-picker-check{display:grid;place-items:center;box-sizing:border-box;flex:0 0 18px;width:18px;height:18px;color:#195185}
+.settings-picker-check>svg{display:block}
+.settings-picker-empty{padding:14px 10px;color:#617487}
+.settings-picker-trigger:focus-visible,.settings-picker-popup input:focus-visible,.settings-picker-option:focus-visible{outline:2px solid #218ab6;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.settings-picker-trigger{transition:none}}

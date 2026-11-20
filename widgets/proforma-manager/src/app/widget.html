@@ -8,27 +8,27 @@
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="pf-controller.js"></script>
-<script src="pf-save-verification.js?v=1.80.160"></script>
-<script src="pf-save-audit.js?v=1.80.160"></script>
-<script src="pf-input-rules.js?v=1.80.160"></script>
-<script src="pf-input-validation.js?v=1.80.160"></script>
-<script src="pf-progress.js?v=1.80.160"></script>
+<script src="pf-save-verification.js?v=1.80.161"></script>
+<script src="pf-save-audit.js?v=1.80.161"></script>
+<script src="pf-input-rules.js?v=1.80.161"></script>
+<script src="pf-input-validation.js?v=1.80.161"></script>
+<script src="pf-progress.js?v=1.80.161"></script>
 <script src="phase-sales-engine.js"></script>
 <script src="phase-month-picker.js"></script>
-<script src="location-pickers.js?v=1.80.160" defer></script>
-<link rel="stylesheet" href="location-pickers.css?v=1.80.160">
-<link rel="stylesheet" href="interaction-motion.css?v=1.80.160">
-<script src="interaction-motion.js?v=1.80.160"></script>
-<script src="interaction-surfaces.js?v=1.80.160"></script>
-<script src="number-edit-commit.js?v=1.80.160"></script>
-<script src="number-transitions.js?v=1.80.160"></script>
-<script src="number-views.js?v=1.80.160"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.80.160">
+<script src="location-pickers.js?v=1.80.161" defer></script>
+<link rel="stylesheet" href="location-pickers.css?v=1.80.161">
+<link rel="stylesheet" href="interaction-motion.css?v=1.80.161">
+<script src="interaction-motion.js?v=1.80.161"></script>
+<script src="interaction-surfaces.js?v=1.80.161"></script>
+<script src="number-edit-commit.js?v=1.80.161"></script>
+<script src="number-transitions.js?v=1.80.161"></script>
+<script src="number-views.js?v=1.80.161"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.80.161">
 <script src="budget-transfer-model.js?v=1.80.61"></script>
-<script src="budget-transfer-ui.js?v=1.80.160"></script>
-<link rel="stylesheet" href="budget-transfer.css?v=1.80.160">
-<script src="comments.js?v=1.80.160"></script>
-<link rel="stylesheet" href="comments.css?v=1.80.160">
+<script src="budget-transfer-ui.js?v=1.80.161"></script>
+<link rel="stylesheet" href="budget-transfer.css?v=1.80.161">
+<script src="comments.js?v=1.80.161"></script>
+<link rel="stylesheet" href="comments.css?v=1.80.161">
 <link rel="stylesheet" href="phase-month-picker.css">
 <style>
 /* ── TOKENS ── matches Budget Manager chrome ── */
@@ -354,8 +354,10 @@ select.filter:focus{background:#fff;border-color:var(--primary-2);outline:0;box-
 .msel-box{width:16px;height:16px;border:1.6px solid #cbd5e1;border-radius:5px;display:inline-grid;place-items:center;flex:none;transition:all .13s;color:transparent;font-size:10px;font-weight:900}
 .msel-opt.on .msel-box{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-foot{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);background:#f8fafc}
-.msel-foot button{flex:1;height:27px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:11px;font-weight:750;cursor:pointer;transition:all .12s}
+.msel-foot button{flex:1;min-width:0;min-height:32px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:14px;font-weight:750;cursor:pointer;transition:all .12s}
 .msel-foot button:hover{border-color:var(--primary-2);color:var(--primary)}
+.msel-foot [data-msel-done]{background:var(--primary);border-color:var(--primary);color:#fff}
+.msel-foot [data-msel-done]:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-empty{padding:16px;text-align:center;color:var(--faint);font-size:11.5px}
 .assigned-me-toggle{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:#34506f;font-size:12px;font-weight:800;cursor:pointer}.assigned-me-toggle input{position:absolute;opacity:0;pointer-events:none}.assigned-me-toggle .assigned-me-track{width:34px;height:20px;border-radius:999px;background:#cbd5e1;box-shadow:inset 0 1px 2px rgba(15,23,42,.18);position:relative;transition:background .16s}.assigned-me-toggle .assigned-me-track:after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.25);transition:transform .16s}.assigned-me-toggle input:checked+.assigned-me-track{background:#2563eb}.assigned-me-toggle input:checked+.assigned-me-track:after{transform:translateX(14px)}.assigned-me-toggle input:focus-visible+.assigned-me-track{outline:2px solid #2563eb;outline-offset:2px}
 @media (max-width:1240px){
@@ -1855,8 +1857,8 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 .pf-attachment-modal[hidden]{display:none}.pf-attachment-modal{position:fixed;inset:0;z-index:9400;display:grid;place-items:center;background:rgba(11,25,46,.45);backdrop-filter:blur(2px);padding:18px}.pf-attachment-modal-dialog{position:relative;width:min(940px,100%);max-height:90vh;display:flex;flex-direction:column;background:#fff;border-radius:14px;border-top:4px solid #285b97;box-shadow:0 24px 70px rgba(9,29,57,.3);overflow:hidden}.pf-attachment-modal-panel{min-height:0;overflow:auto}.pf-attachment-modal .sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.pf-attachment-modal .pf-attachment-card-head{position:sticky;top:0;z-index:1;padding-right:66px}.pf-attachment-modal .pf-attachment-record-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-attachment-modal-close{position:absolute;right:18px;top:15px;z-index:2;width:32px;height:32px;box-sizing:border-box;padding:0;display:grid;place-items:center;background:#f8fafc;border:1px solid #cbd9eb;border-radius:9px;color:#94a3b8;cursor:pointer}.pf-attachment-modal-close svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}.pf-attachment-modal-close:hover{background:#eef2f8}.pf-attachment-modal-close:focus-visible{outline:2px solid #2563eb;outline-offset:2px}.pf-attachment-modal-close:disabled{opacity:.45;cursor:wait}
 </style>
 <link rel="stylesheet" href="report-layout.css?v=1.77.1">
-<script src="success-feedback.js?v=1.80.160"></script>
-<link rel="stylesheet" href="modal-layout.css?v=1.80.160">
+<script src="success-feedback.js?v=1.80.161"></script>
+<link rel="stylesheet" href="modal-layout.css?v=1.80.161">
 </head>
 <body>
 
@@ -2271,7 +2273,7 @@ table.mp tr.nonmaster td{color:var(--faint);font-style:italic}
 <script>
 (function(){
 "use strict";
-var PFW_VERSION="1.80.160";
+var PFW_VERSION="1.80.161";
 /* ════════════════════════════════════════════════════════════
    CONFIG — report/form link names (edit here if yours differ)
    ════════════════════════════════════════════════════════════ */
@@ -7430,8 +7432,9 @@ function mselOpen(ev,kind,anchor){
   pop.className="msel-pop"; pop.setAttribute("data-kind",kind);
   pop.innerHTML='<div class="msel-search"><input id="mselSearch" placeholder="Search '+esc(cfg.noun)+'…" autocomplete="off"/></div>'
     +'<div class="msel-list" id="mselList">'+mselRows(kind)+'</div>'
-    +'<div class="msel-foot"><button type="button" data-mselall="'+kind+'">Select all</button>'
-    +'<button type="button" data-mselclear="'+kind+'">Clear</button></div>';
+    +'<div class="msel-foot"><button type="button" data-mselall="'+kind+'">Select All</button>'
+    +'<button type="button" data-mselclear="'+kind+'">Clear</button>'
+    +'<button type="button" data-msel-done>Done</button></div>';
   document.body.appendChild(pop);
   var b=anchor.getBoundingClientRect();
   var top=Math.min(b.bottom+6, window.innerHeight-pop.offsetHeight-10);
@@ -12768,6 +12771,12 @@ document.addEventListener("click",function(e){
   var pop=e.target.closest?e.target.closest(".msel-pop"):null;
   if(pop){
     var kind=pop.getAttribute("data-kind");
+    if(e.target.closest('[data-msel-done]')){
+      mselClosePop();
+      var trigger=document.querySelector('.msel-btn[data-msel="'+kind+'"]');
+      if(trigger)trigger.focus();
+      return;
+    }
     var opt=e.target.closest(".msel-opt");
     if(opt){ mselToggle(kind,opt.getAttribute("data-val")); return; }
     var all=e.target.closest("[data-mselall]"); if(all){ mselAll(all.getAttribute("data-mselall")); return; }

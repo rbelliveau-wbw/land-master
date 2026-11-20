@@ -606,7 +606,9 @@ select.fi{appearance:none;-webkit-appearance:none;padding-right:34px;background-
 .cdrop-item .cname{flex:1;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cdrop-item .ccnt{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
 .cdrop-empty{padding:12px 14px;font-size:12px;color:var(--muted);font-style:italic}
-.cdrop-footer{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);background:var(--surface);position:sticky;bottom:0}
+.cdrop-footer{display:flex;gap:6px;align-items:center;padding:6px 8px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);background:var(--surface);position:sticky;bottom:0}
+.cdrop-footer span{margin-right:auto}
+.cdrop-footer .btn{min-height:32px;padding:0 8px;font-size:14px}
 
 /* Audit button + modal */
 .audit-open-btn{
@@ -831,15 +833,15 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
 .ss-location .ss-item.selected::after{content:none}
 .ss-location-check{display:block;margin-left:auto;width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<script src="success-feedback.js?v=19.17.38"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=19.17.38">
-<script src="interaction-motion.js?v=19.17.38"></script>
-<script src="interaction-surfaces.js?v=19.17.38"></script>
-<script src="number-edit-commit.js?v=19.17.38"></script>
-<script src="number-transitions.js?v=19.17.38"></script>
-<script src="number-surfaces.js?v=19.17.38"></script>
-<link rel="stylesheet" href="number-transitions.css?v=19.17.38">
-<link rel="stylesheet" href="modal-layout.css?v=19.17.38">
+<script src="success-feedback.js?v=19.17.39"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=19.17.39">
+<script src="interaction-motion.js?v=19.17.39"></script>
+<script src="interaction-surfaces.js?v=19.17.39"></script>
+<script src="number-edit-commit.js?v=19.17.39"></script>
+<script src="number-transitions.js?v=19.17.39"></script>
+<script src="number-surfaces.js?v=19.17.39"></script>
+<link rel="stylesheet" href="number-transitions.css?v=19.17.39">
+<link rel="stylesheet" href="modal-layout.css?v=19.17.39">
 </head>
 <body>
 
@@ -925,7 +927,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
                 style="width:100%;height:24px;border:1px solid var(--line);border-radius:4px;padding:0 8px;font-size:11.5px;outline:none;font-family:inherit"/>
             </div>
             <div id="countyFacetList"></div>
-            <div class="cdrop-footer"><span id="countyFacetCount"></span><button class="btn sm" onclick="clearCountyFilters()" style="height:20px;padding:0 7px;font-size:10px">Clear</button></div>
+            <div class="cdrop-footer"><span id="countyFacetCount"></span><button type="button" class="btn sm" onclick="clearCountyFilters()">Clear</button><button type="button" class="btn sm primary" onclick="closeFacetDropdown('county',true)">Done</button></div>
           </div>
         </div>
         <!-- Facet pill: Company -->
@@ -939,7 +941,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
                 style="width:100%;height:24px;border:1px solid var(--line);border-radius:4px;padding:0 8px;font-size:11.5px;outline:none;font-family:inherit"/>
             </div>
             <div id="companyFacetList"></div>
-            <div class="cdrop-footer"><span id="companyFacetCount"></span><button class="btn sm" onclick="clearCompanyFilters()" style="height:20px;padding:0 7px;font-size:10px">Clear</button></div>
+            <div class="cdrop-footer"><span id="companyFacetCount"></span><button type="button" class="btn sm" onclick="clearCompanyFilters()">Clear</button><button type="button" class="btn sm primary" onclick="closeFacetDropdown('company',true)">Done</button></div>
           </div>
         </div>
         <!-- Facet pill: Subdivision (options narrow to chosen County/Company) -->
@@ -953,7 +955,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
                 style="width:100%;height:24px;border:1px solid var(--line);border-radius:4px;padding:0 8px;font-size:11.5px;outline:none;font-family:inherit"/>
             </div>
             <div id="subdivFacetList"></div>
-            <div class="cdrop-footer"><span id="subdivFacetCount"></span><button class="btn sm" onclick="clearSubdivisionFilters()" style="height:20px;padding:0 7px;font-size:10px">Clear</button></div>
+            <div class="cdrop-footer"><span id="subdivFacetCount"></span><button type="button" class="btn sm" onclick="clearSubdivisionFilters()">Clear</button><button type="button" class="btn sm primary" onclick="closeFacetDropdown('subdiv',true)">Done</button></div>
           </div>
         </div>
         <!-- Facet pill: Status (was a row of toggle pills) -->
@@ -967,7 +969,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
                 style="width:100%;height:24px;border:1px solid var(--line);border-radius:4px;padding:0 8px;font-size:11.5px;outline:none;font-family:inherit"/>
             </div>
             <div id="statusFacetList"></div>
-            <div class="cdrop-footer"><span id="statusFacetCount"></span><button class="btn sm" onclick="clearStatusFilters()" style="height:20px;padding:0 7px;font-size:10px">Clear</button></div>
+            <div class="cdrop-footer"><span id="statusFacetCount"></span><button type="button" class="btn sm" onclick="clearStatusFilters()">Clear</button><button type="button" class="btn sm primary" onclick="closeFacetDropdown('status',true)">Done</button></div>
           </div>
         </div>
         <!-- Facet pill: Arbitrate1 (blank / No / Yes) -->
@@ -977,7 +979,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
           </button>
           <div class="facet-dropdown hidden" id="arbFacetDrop">
             <div id="arbFacetList"></div>
-            <div class="cdrop-footer"><span id="arbFacetCount"></span><button class="btn sm" onclick="clearArbFilters()" style="height:20px;padding:0 7px;font-size:10px">Clear</button></div>
+            <div class="cdrop-footer"><span id="arbFacetCount"></span><button type="button" class="btn sm" onclick="clearArbFilters()">Clear</button><button type="button" class="btn sm primary" onclick="closeFacetDropdown('arb',true)">Done</button></div>
           </div>
         </div>
         </div><!-- /facet-group -->
@@ -1402,7 +1404,7 @@ select.location-select,.ss-pop.ss-location .ss-search,.ss-pop.ss-location .ss-it
 <script>
 // ─── Config ───────────────────────────────────────────────────────────────
 const CONFIG = {
-  version: '19.17.38',
+  version: '19.17.39',
   customApis: { errorReport:'Report_Proforma_Widget_Error' },
   reports: { rawLand:'All_Property', parcelYears:'All_Tax_Parcel_Years', jurisdictions:'All_Taxing_Jurisdictions', subdivisions:'All_Subdivisions', companies:'All_Companies', projects:'All_Projects' },
   forms:   { parcelYear:'Tax_Parcel_Year', property:'Property', subdivision:'Subdivision', company:'Company' },
@@ -2970,11 +2972,12 @@ function _facetOutsideClick(e) {
   if (_facetOpen) { closeFacetDropdown(_facetOpen); }
 }
 
-function closeFacetDropdown(type) {
+function closeFacetDropdown(type, restoreFocus) {
   var ids = { year:'yearFacetDrop', county:'countyFacetDrop', company:'companyFacetDrop', subdiv:'subdivFacetDrop', status:'statusFacetDrop', arb:'arbFacetDrop' };
   var dd = $(ids[type]);
   if (dd) dd.classList.add('hidden');
   if (_facetOpen === type) _facetOpen = null;
+  if (restoreFocus) $(type+'FacetPill')?.focus();
 }
 
 

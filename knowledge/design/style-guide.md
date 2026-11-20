@@ -321,6 +321,16 @@ Contract detail headers align Back, record identity, view tabs and summary field
 
 Lot contract reports use compact branch rows: pale blue on a Master with visible Amendments, a lighter tint on its children, and a shared blue rail and branch connector. Make connectors visibly bold with rounded elbows and a stronger blue rail. Keep status colors independent. Keep matching child records visible beneath their parent, without a family-collapse button (user direction October 21, 2026). Retain counted child-type badges, branch connectors and the separate action/details expansion. Omit repeated parent names on nested children and retain them when filters leave a child on its own.
 
+## Multi-Select Dropdowns
+
+Place **Done** at the end of the dropdown footer, alongside existing actions such
+as **Select All** and **Clear**. Keep the footer outside the scrolling choices
+where the picker layout allows it. Done closes the picker and returns keyboard
+focus to its trigger. Retain existing selections and filtering behavior. For a
+picker that stages filter changes, Done applies that draft through the existing
+apply handler. Single-select pickers close on selection. Record editors keep
+their existing Save and Cancel actions.
+
 ## Legal and Construction workspaces
 
 Delete confirmations use the affected record's module wording. Construction
