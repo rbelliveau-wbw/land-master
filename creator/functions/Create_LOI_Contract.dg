@@ -72,6 +72,17 @@ string Create_LOI_Contract(string proformaId)
 		contractTerritory = document.get("contractTerritory");
 		wbwPointPerson = document.get("wbwPointPerson");
 		stage = "create_or_reuse_contract";
+		proformaOwnerIds = List();
+		if(pf.Owner != null)
+		{
+			for each proformaOwner in pf.Owner
+			{
+				if(proformaOwner.ID != null)
+				{
+					proformaOwnerIds.add(proformaOwner.ID);
+				}
+			}
+		}
 		agreementType = ifnull(loiRec.Agreement_Type,"PSA");
         if(agreementType != "LOI") { agreementType = "PSA"; }
         contractType = "ACQ (" + agreementType + ")";
@@ -127,6 +138,28 @@ string Create_LOI_Contract(string proformaId)
 			existingContract.Contract_Name=contractName;
 			existingContract.Proforma=pf.ID;
 			existingContract.Work_Module="Legal";
+			if(proformaOwnerIds.size() > 0)
+			{
+				contractOwnerIds = List();
+				if(existingContract.Owner != null)
+				{
+					for each contractOwner in existingContract.Owner
+					{
+						if(contractOwner.ID != null)
+						{
+							contractOwnerIds.add(contractOwner.ID);
+						}
+					}
+				}
+				for each proformaOwnerId in proformaOwnerIds
+				{
+					if(contractOwnerIds.contains(proformaOwnerId) == false)
+					{
+						contractOwnerIds.add(proformaOwnerId);
+					}
+				}
+				existingContract.Owner=contractOwnerIds;
+			}
 			existingContract.Territory=contractTerritory;
 			if(existingContract.WBW_Point_Person == null || existingContract.WBW_Point_Person.trim() == "")
 			{
@@ -144,6 +177,7 @@ string Create_LOI_Contract(string proformaId)
 			contractId = insert into Contract
 			[
 				Added_User=zoho.loginuser
+				Owner=proformaOwnerIds
 				Contract_Name=contractName
 				Contract_Type=contractType
 				Proforma=pf.ID
@@ -152,6 +186,7 @@ string Create_LOI_Contract(string proformaId)
 				WBW_Point_Person=wbwPointPerson
 				Status="Proposed"
 			];
+			thisapp.notifyLegalRecordAdded(contractId.toString(),"");
 			createEntry = Map();
 			createEntry.put("level","success");
 			createEntry.put("stage",stage);
@@ -191,7 +226,7 @@ string Create_LOI_Contract(string proformaId)
 					{
 						isFirstAction = true;
 					}
-					insert into Contract_Actions
+					newActionId = insert into Contract_Actions
 					[
 						Contract1=contractId
 						Work_Module="Legal"
@@ -202,7 +237,8 @@ string Create_LOI_Contract(string proformaId)
 						Complete=false
 						Current_Action=isFirstAction
 						Added_User=zoho.loginuser
-					]
+					];
+					thisapp.notifyLegalRecordAdded(contractId.toString(),newActionId.toString());
 					seededTitles.add(actionTitle);
 				}
 			}

@@ -1,0 +1,27 @@
+.po-register-scroll{overflow:auto;max-width:100%;background:var(--card);border-radius:8px}
+.po-register{width:100%;min-width:1600px;border-collapse:collapse;font-size:14px;color:var(--text)}
+.po-register th,.po-register td{padding:14px 16px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line);font-weight:400}
+.po-register thead th{background:#dce7f3;color:#15355e;font-weight:650;white-space:nowrap}
+.po-register tbody th{font-weight:650;min-width:240px}
+.po-register-reference{display:block;overflow-wrap:anywhere}
+.po-register-supplement th{padding-left:44px;background:#f4f8ff}
+.po-register-supplement td{background:#f4f8ff}
+.po-register-meta,.po-register-person span{display:block;margin-top:5px;color:#526581;font-size:14px}
+.po-register-person+.po-register-person{margin-top:12px}
+.po-register .po-register-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.po-register td:nth-child(5){min-width:240px;white-space:pre-wrap;overflow-wrap:anywhere}
+.po-register td:nth-child(2){min-width:120px;white-space:nowrap}
+.po-register td:nth-child(3){min-width:220px}
+.po-register td:nth-child(6),.po-register td:nth-child(7){min-width:185px}
+.requests-register-heading{display:flex;align-items:center;gap:12px;margin:18px 0}
+.requests-register-heading h2{margin:0;font-size:22px}
+.requests-register-heading span{font-size:14px;color:#526581}
+.requests-view-switch{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.requests-view-switch .btn{font-size:14px;min-height:38px}
+.requests-view-switch .btn[aria-pressed=true]{background:#174780;color:#fff;border-color:#174780}
+.requests-workspace .requests-control[hidden]{display:none}
+.requests-workspace.is-po-register .requests-caption{display:none}
+.requests-workspace.is-po-register .requests-eyebrow{display:none}
+.requests-workspace.is-po-register .requests-control>span,.requests-workspace.is-po-register .landing-combo-toggle,.requests-workspace.is-po-register .requests-heading-actions>.btn,.requests-workspace.is-po-register .budget-search input,.requests-workspace.is-po-register .requests-new,.requests-workspace.is-po-register .requests-warning{font-size:14px}
+.requests-workspace:has(.po-register) .requests-eyebrow{display:none}
+.requests-workspace:has(.po-register) .requests-control>span,.requests-workspace:has(.po-register) .landing-combo-toggle,.requests-workspace:has(.po-register) .requests-heading-actions>.btn,.requests-workspace:has(.po-register) .budget-search input{font-size:14px}

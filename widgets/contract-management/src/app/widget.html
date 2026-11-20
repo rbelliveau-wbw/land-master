@@ -1531,8 +1531,10 @@ select.apr-in{cursor:pointer}
 .msel-opt.on .msel-box{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-dot{width:8px;height:8px;border-radius:50%;flex:none}
 .msel-foot{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--line);background:#f8fafc}
-.msel-foot button{flex:1;height:27px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:11px;font-weight:750;cursor:pointer;transition:all .12s}
+.msel-foot button{flex:1;min-width:0;min-height:32px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--muted);font-size:14px;font-weight:750;cursor:pointer;transition:all .12s}
 .msel-foot button:hover{border-color:var(--primary-2);color:var(--primary)}
+.msel-foot [data-msel-done]{background:var(--primary);border-color:var(--primary);color:#fff}
+.msel-foot [data-msel-done]:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
 .msel-empty{padding:16px;text-align:center;color:var(--faint);font-size:11.5px}
 
 /* ── ACTION INLINE FORM (grid) ── */
@@ -2000,16 +2002,16 @@ select.apr-in{cursor:pointer}
 .arow-title .action-approval-badge,.d-title .action-approval-badge{margin-inline-start:8px}
 .d-title:has(.action-approval-badge){white-space:normal}
 </style>
-<script src="success-feedback.js?v=1.62.67"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=1.62.67">
-<script src="interaction-motion.js?v=1.62.67"></script>
-<script src="interaction-surfaces.js?v=1.62.67"></script>
-<script src="number-edit-commit.js?v=1.62.67"></script>
-<script src="number-transitions.js?v=1.62.67"></script>
-<script src="number-surfaces.js?v=1.62.67"></script>
-<link rel="stylesheet" href="number-transitions.css?v=1.62.67">
-<link rel="stylesheet" href="report-layout.css?v=1.62.67">
-<link rel="stylesheet" href="construction-board.css?v=1.62.67">
+<script src="success-feedback.js?v=1.62.68"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=1.62.68">
+<script src="interaction-motion.js?v=1.62.68"></script>
+<script src="interaction-surfaces.js?v=1.62.68"></script>
+<script src="number-edit-commit.js?v=1.62.68"></script>
+<script src="number-transitions.js?v=1.62.68"></script>
+<script src="number-surfaces.js?v=1.62.68"></script>
+<link rel="stylesheet" href="number-transitions.css?v=1.62.68">
+<link rel="stylesheet" href="report-layout.css?v=1.62.68">
+<link rel="stylesheet" href="construction-board.css?v=1.62.68">
 </head>
 <body>
 
@@ -2058,7 +2060,7 @@ select.apr-in{cursor:pointer}
    ============================================================ */
 
 var CFG = {
-  version: "1.62.67", pageSize: 200, maxPages: 25,
+  version: "1.62.68", pageSize: 200, maxPages: 25,
   creatorHost: "https://creatorapp.zoho.com",
   creatorOwner: "wbdevelopment",
   creatorApp: "land-master",
@@ -4676,8 +4678,15 @@ function mselOpen(ev,kind){
   pop.innerHTML='<div class="msel-search"><input id="mselSearch" placeholder="Search '+esc(mselCfg(kind).noun)+'\u2026" autocomplete="off"/></div>'
     +'<div class="msel-list" id="mselList">'+mselRows(kind)+'</div>'
     +'<div class="msel-foot">'
-      +(mselCfg(kind).single?'':'<button onclick="mselAll(\'' + kind + '\')">Select all</button>')
-      +'<button onclick="mselClear(\'' + kind + '\')">Clear</button></div>';
+      +(mselCfg(kind).single?'':'<button type="button" onclick="mselAll(\'' + kind + '\')">Select All</button>')
+      +'<button type="button" onclick="mselClear(\'' + kind + '\')">Clear</button>'
+      +(mselCfg(kind).single?'':'<button type="button" data-msel-done>Done</button>')+'</div>';
+  var done=pop.querySelector('[data-msel-done]');
+  if(done)done.addEventListener('click',function(){
+    mselClosePop();
+    var trigger=$('mselb_'+kind);
+    if(trigger)trigger.focus();
+  });
   document.body.appendChild(pop);
   var r=ev.currentTarget.getBoundingClientRect();
   var top=r.bottom+6, left=r.left;

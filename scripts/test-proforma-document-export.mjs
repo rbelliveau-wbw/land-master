@@ -97,15 +97,15 @@ assert.equal(writerContext.missingFields(nativeFields(psaFields),'PSA').length,0
 assert.deepEqual(Array.from(writerContext.missingFields(nativeFields(psaFields.filter(field=>field!=='Seller_Phone')),'PSA')),['Seller_Phone'],'omitted PSA field is rejected');
 assert.deepEqual(Array.from(writerContext.missingFields(nativeFields(psaFields.filter(field=>field!=='Amount_per_Acre_Written').concat('Price_Per_Acre_Alpha')),'PSA')),['Amount_per_Acre_Written'],'old alias cannot silently leave purchase-price words unmerged');
 const writtenMoneyFields=['Amount_per_Acre_Written','Land_Cost_Written','Earnest_Money_Written','Amount_per_Extension_Written'];
-for(const [value,words] of [[null,''],[0,'[words:0] and 00/100'],[12345.67,'[words:12345] and 67/100'],[12345.05,'[words:12345] and 05/100'],[12345.999,'[words:12346] and 00/100'],[-12345.67,'negative [words:12345] and 67/100']]){
- const row=writerContext.moneyWords('PSA',value);for(const field of writtenMoneyFields)assert.equal(row.get(field),words,field+' preserves cents: '+value);
+for(const [value,words] of [[null,''],[0,'[WORDS:0] AND 00/100'],[12345.67,'[WORDS:12345] AND 67/100'],[12345.05,'[WORDS:12345] AND 05/100'],[12345.999,'[WORDS:12346] AND 00/100'],[-12345.67,'NEGATIVE [WORDS:12345] AND 67/100']]){
+ const row=writerContext.moneyWords('PSA',value);for(const field of writtenMoneyFields)assert.equal(row.get(field),words,field+' uses uppercase and preserves cents: '+value);
 }
 const originalLOI=writerContext.moneyWords('LOI',12345.67);
 assert.equal(originalLOI.get('Amount_per_Acre_Written'),null);
 assert.equal(originalLOI.get('Land_Cost_Written'),'existing LOI price');
 assert.equal(originalLOI.get('Earnest_Money_Written'),'existing LOI earnest');
 assert.equal(originalLOI.get('Amount_per_Extension_Written'),'existing LOI extension');
-for(const [field,value] of [['Land_Cost_Written','vLandCost'],['Earnest_Money_Written','vEarnest'],['Amount_per_Extension_Written','vAmtExt']])assert.ok(helper.includes('mergeRow.put("'+field+'",if('+value+' != null,'+value+'.round(0).toWords("en-us"),""));'),'original LOI words expression retained');
+for(const [field,value] of [['Land_Cost_Written','vLandCost'],['Earnest_Money_Written','vEarnest'],['Amount_per_Extension_Written','vAmtExt']])assert.ok(helper.includes('mergeRow.put("'+field+'",if('+value+' != null,'+value+'.round(0).toWords("en-us").toUpperCase(),""));'),'LOI words are uppercase and retain existing rounding');
 for(const type of ['PSA','LOI'])assert.equal(writerContext.mergeFilename({Name:'Example / Acreage'},type),'Example_Acreage_'+type+'_20261105');
 const confirmations=[],legalContext=vm.createContext({S:{loiSubmitting:{},ed:null},canSubmitPfToLegal:()=>true,loiMergeContext:()=>({autoMerge:true,sellerCount:1,propertyCount:1}),auditLog(){},uiConfirm:value=>{confirmations.push(value);return Promise.resolve(false);}});
 vm.runInContext(fn('loiAgreementType')+'\n'+fn('confirmAndSubmitLOI'),legalContext);

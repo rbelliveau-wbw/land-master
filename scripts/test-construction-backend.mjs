@@ -124,19 +124,37 @@ for(const name of ['Send_Contract_Approvals','Send_Contract_Approval_Email']){
   }
 }
 const digestSource=read('creator/workflows/Contracts_Previous_Day_Ac.dg');
-const digestPrefix=digestSource.slice(0,digestSource.indexOf('if(vCreatedCount > 0 || vModifiedCount > 0)')).replace(/sort by (\w+) asc/g,'sort by $1');
-// Complete the existing recipient guard before returning the actual row counts.
-const digestRun=digestPrefix+'\ninput.createdCount = vCreatedCount;input.modifiedCount = vModifiedCount;\n}';
+const digestMailBlock=digestSource.indexOf('if(activity.size() > 0)');
+assert.ok(digestMailBlock>0,'The digest must collect activity before rendering email.');
+// The fixture translator handles Map.put but treats inline Deluge braces as list literals.
+const digestPrefix=digestSource.slice(0,digestMailBlock)
+  .replace(/sort by (\w+) asc/g,'sort by $1')
+  .replace(/activity\.add\(\{([^\n]+)\}\);/g,(_,fields)=>{
+    const puts=fields.split(',').map(field=>{
+      const [key,value]=field.split(':');
+      return `digestRow.put(${key},${value});`;
+    });
+    return ['digestRow = Map();',...puts,'activity.add(digestRow);'].join('\n');
+  });
+const digestRun=digestPrefix+'\ninput.activity = activity;\n}';
+const contracts=[
+  {ID:20,Work_Module:null,Contract_Name:'Legacy Legal',Added_User:'legal@example.test',Added_Time:99,Modified_User:'reviewer@example.test',Modified_Time:99.5},
+  {ID:21,Work_Module:'Construction',Contract_Name:'Construction',Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99}
+];
 const actions=[
-  {ID:1,Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99,Work_Module:null,Contract1:{ID:20,Work_Module:null,Contract_Name:'Legacy Legal'},Dev_Notes:'Legal created'},
-  {ID:2,Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99,Work_Module:'Construction',Contract1:{ID:21,Work_Module:'Construction',Contract_Name:'Construction'},Dev_Notes:'Construction created'},
-  {ID:3,Added_User:'Public',Added_Time:98,Modified_User:'Public',Modified_Time:99,Work_Module:null,Contract1:{ID:21,Work_Module:'Construction',Contract_Name:'Construction'},Dev_Notes:'Legacy blank action on Construction parent'},
-  {ID:4,Added_User:'Public',Added_Time:98,Modified_User:'Public',Modified_Time:99,Work_Module:'Legal',Contract1:{ID:20,Work_Module:'Legal',Contract_Name:'Legal'},Dev_Notes:'Legal modified'},
+  {ID:1,Contract_Action:'Legacy action',Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99,Work_Module:null,Contract1:contracts[0],Dev_Notes:'Legal created'},
+  {ID:2,Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99,Work_Module:'Construction',Contract1:contracts[1],Dev_Notes:'Construction created'},
+  {ID:3,Added_User:'Public',Added_Time:98,Modified_User:'Public',Modified_Time:99,Work_Module:null,Contract1:contracts[1],Dev_Notes:'Legacy blank action on Construction parent'},
+  {ID:4,Contract_Action:'Legal action',Added_User:'Public',Added_Time:98,Modified_User:'editor@example.test',Modified_Time:99,Work_Module:'Legal',Contract1:contracts[0],Dev_Notes:'Legal modified'},
   {ID:5,Added_User:'Public',Added_Time:99,Modified_User:'Public',Modified_Time:99,Work_Module:'Construction',Contract1:null,Dev_Notes:'Construction template'}
 ];
-const digestResult=runValidation(null,{}, {Settings:[{ID:1,Receive_Legal_Notifications:'legal@example.test'}],Contract_Actions:actions},digestRun).input;
-assert.equal(digestResult.createdCount,1,'Legal digest excludes Construction rows/templates and includes blank legacy Legal');
-assert.equal(digestResult.modifiedCount,1,'Legal digest excludes blank child mode when its parent is Construction and avoids duplicate created rows');
+const digestResult=runValidation(null,{}, {Settings:[{ID:1,Receive_Legal_Notifications:'legal@example.test'}],Contract:contracts,Contract_Actions:actions},digestRun).input;
+assert.deepEqual(Array.from(digestResult.activity,row=>[row.change,row.contract,row.action,row.actor]),[
+  ['Contract Added','Legacy Legal','','legal@example.test'],
+  ['Contract Updated','Legacy Legal','','reviewer@example.test'],
+  ['Action Added','Legacy Legal','Legacy action','Public'],
+  ['Action Updated','Legacy Legal','Legal action','editor@example.test']
+],'Legal digest attributes adds and edits while excluding Construction, templates and unchanged creates.');
 
 for(const profile of ['Dev/Land Acq - Proforma & Budgets','CFO','Construction Budgeting']){
  const tables={...scope,__profile:profile,Contract:[parent]},editor=profile==='Construction Budgeting';
@@ -228,7 +246,10 @@ for(const workflow of currentWorkflows.values()){
     assert.ok(historicalSource.trimEnd().endsWith(city),'deployed shared City suffix remains intact');
     historicalSource=historicalSource.slice(guard.length).trimEnd().slice(0,-city.length).trimEnd();
   }
-  // The older captures predate the Legal action approval scope. Compare
+  // The current Legal digest intentionally replaces the historical body.
+  // Its Construction exclusion and actor attribution are exercised above.
+  if(workflow.link!=='Contracts_Previous_Day_Ac'){
+    // The older captures predate the Legal action approval scope. Compare
   // the original Construction body after removing only those exact additions.
   if(workflow.link==='Set_Contract_Approved_Con'){
     historicalSource=historicalSource.replace('&& Contract_Action == null && Status','&& Status')
@@ -242,6 +263,7 @@ for(const workflow of currentWorkflows.values()){
       .replace('if(contractApproval.Contract_Action != null)\n\t\t{\n\t\t\tcontinue;\n\t\t}','');
   }
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(historicalSource),`${workflow.link}: historical native body remains unchanged outside separately tested additions`);
+  }
   assert.equal(canonicalDeluge(capture.scripts[0]),canonicalDeluge(read(workflow.evidence)),`${workflow.link}: authoritative after source`);
 }
 for(const f of pageDeployment.functions){

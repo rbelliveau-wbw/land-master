@@ -20,7 +20,7 @@ active or decided status. The browser blocks dispatch if Creator does not
 return the selected action ID. See the
 [Creator publication handoff](../../creator/schema-changes/contract-action-approvals/README.md).
 
-Hosted rollback is Contract Management 1.62.66. Coordinate rollback with the
+Hosted rollback is Contract Management 1.62.67. Coordinate rollback with the
 Creator owner if any action already uses the field, since its native requirement
 continues to apply.
 
@@ -1711,3 +1711,11 @@ acceptance requires opening the uploaded QA PDF through the widget after reload.
 Rollback: Development frontend to 1.62.63 and restore the backed-up Development
 getContractAttachmentPreview body; upload remains functional. Production stays at
 its independently promoted version.
+
+### Legal Workflow Changes
+
+- The existing ACQ (PSA) task template uses seven ordered actions. The Contract Actions Type field must accept the already-defined ACQ (PSA) value for the template editor to save. After promoting the field change, save the template in Production because template records are environment data. Existing contracts are not backfilled.
+- The Pro Forma handoff copies User Access lookup IDs into the new Contract Owner field. On reuse it adds missing Pro Forma owners and preserves existing owners. The final Pro Forma approval email includes Legal alongside the approvers, deduplicated by normalized address.
+- Created-only successful submission workflows on Contract and Contract Actions invoke the Legal addition email function. The Pro Forma handoff invokes it for its direct inserts. Template rows, Construction and edits should not send this immediate email. A failed send is logged without rolling back records. Verify the widget and direct-insert paths against safe test recipients before live delivery.
+- The existing Legal digest schedule and configured recipients stay the same. Previous-day Legal contracts and linked actions are reported under their recorded creator or last editor, including Public when Creator supplies it. Creator's record timestamps expose the latest edit only. Intermediate edits and deleted records would require an event history.
+- Both active Writer templates use Centra Land Title Co. through Samantha Marrs. The merge function uppercases only the monetary word fields and preserves the numeric fields and PSA cents wording.

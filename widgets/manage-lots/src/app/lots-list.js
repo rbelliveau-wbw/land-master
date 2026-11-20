@@ -95,7 +95,7 @@
       if($('llInventoryCounts')._markup!==counts){$('llInventoryCounts').innerHTML=counts;$('llInventoryCounts')._markup=counts;}
       const nav=Array.from(groups,([sid,blocks])=>Array.from(blocks,([block,lots])=>'<button type="button" class="ll-block-pill" data-jump-block="'+esc(sid+':'+block)+'" aria-label="Jump to Block '+esc(block)+' in '+esc(options.subName(sid))+'">'+(groups.size>1?esc(options.subName(sid))+' · ':'')+'Block '+esc(block)+' <span>'+lots.length+'</span></button>').join('')).join('');
       if($('llBlockNav')._markup!==nav){$('llBlockNav').innerHTML=nav;$('llBlockNav')._markup=nav;}
-      const columnKey=Array.from(columns).join('|');if($('llColumnMenu')._columns!==columnKey){$('llColumnMenu').innerHTML=LMLotEdit.fields.filter(field=>!['Builder1','Address','Notes'].includes(field.key)).map(field=>'<label><input type="checkbox" data-lot-column="'+field.key+'" '+(columns.has(field.key)?'checked':'')+'> '+esc(field.label)+'</label>').join('');$('llColumnMenu')._columns=columnKey;}
+      const columnKey=Array.from(columns).join('|');if($('llColumnMenu')._columns!==columnKey){$('llColumnMenu').innerHTML=LMLotEdit.fields.filter(field=>!['Builder1','Address','Notes'].includes(field.key)).map(field=>'<label><input type="checkbox" data-lot-column="'+field.key+'" '+(columns.has(field.key)?'checked':'')+'> '+esc(field.label)+'</label>').join('')+'<div class="ll-column-footer"><button type="button" class="btn primary" data-columns-done>Done</button></div>';$('llColumnMenu')._columns=columnKey;}
       syncModes();
     }
     function rowHTML(row,fields){
@@ -288,6 +288,7 @@
       if(edit&&editMode)openEditor([options.byId(edit.dataset.lotEdit)].filter(Boolean),edit.dataset.field);
       if(all)choose(visible.filter(row=>options.sid(row)===all.dataset.sub&&options.block(row)===all.dataset.all&&options.eligible(row)),true);
       if(disclosure){const key=disclosure.dataset.collapse;if(collapsed.has(key))collapsed.delete(key);else collapsed.add(key);const shut=collapsed.has(key);disclosure.setAttribute('aria-expanded',String(!shut));const scroller=disclosure.closest('.ll-block').querySelector('.ll-scroll');scroller.hidden=shut;if(!shut)scroller.scrollLeft=horizontalOffset;}
+      if(event.target.closest('[data-columns-done]')){closeColumns(true);return;}
       if(event.target.closest('#llColumns')){const menu=$('llColumnMenu');menu.hidden=!menu.hidden;$('llColumns').setAttribute('aria-expanded',String(!menu.hidden));}
     }
     host.addEventListener('click',listClick,true);bar.addEventListener('click',listClick,true);
@@ -310,7 +311,13 @@
       layout=nextLayout;editMode=nextEdit;if(layout==='grid')host.classList.remove('ll-host');syncModes();options.render();
     }));
     $('lotsLayout').addEventListener('keydown',event=>{const index=modes.indexOf(event.target.id);if(index<0||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const target=event.key==='Home'?0:event.key==='End'?modes.length-1:(index+(event.key==='ArrowLeft'?-1:1)+modes.length)%modes.length,button=$(modes[target]);if(!button.disabled){button.click();button.focus({preventScroll:true});}});
-    document.addEventListener('click',event=>{if(!event.target.closest('.ll-tools')){const menu=$('llColumnMenu');if(menu)menu.hidden=true;$('llColumns')?.setAttribute('aria-expanded','false');}});
+    function closeColumns(restoreFocus){
+      const menu=$('llColumnMenu'),trigger=$('llColumns');
+      if(menu)menu.hidden=true;
+      trigger?.setAttribute('aria-expanded','false');
+      if(restoreFocus)trigger?.focus();
+    }
+    document.addEventListener('click',event=>{if(!event.target.closest('.ll-tools'))closeColumns(false);});
     return Object.freeze({render,renderSummary,syncFooter,selectedRows,layout:()=>layout,active:()=>editing||editor.blocked()||inlineRunning||inlineQueue.length>0||drafts.size>0||!!noteRow,hasDraft:()=>drafts.size>0||inlineRunning||inlineQueue.length>0||!!noteRow,editMode:()=>editMode,editor,display,clear,remove(id){selected.delete(id);syncChecks();syncFooter();}});
   }
   root.LMLotsList=Object.freeze({create});
