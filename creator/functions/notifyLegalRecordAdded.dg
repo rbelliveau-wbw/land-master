@@ -1,0 +1,45 @@
+bool notifyLegalRecordAdded(string contractId,string actionId)
+{
+	try
+	{
+		if(contractId == null || contractId.trim() == "")
+		{
+			return false;
+		}
+		parent = Contract[ID == contractId.toLong()];
+		if(parent.ID == null || (ifnull(parent.Work_Module,"") != "" && parent.Work_Module != "Legal"))
+		{
+			return false;
+		}
+		contractName = ifnull(parent.Contract_Name,"Unnamed Contract").toString();
+		actor = ifnull(parent.Added_User,"Unknown").toString();
+		eventTitle = "Contract Added";
+		detailHtml = "";
+		if(ifnull(actionId,"").trim() != "")
+		{
+			actionRow = Contract_Actions[ID == actionId.toLong() && Contract1 == parent.ID];
+			if(actionRow.ID == null || ifnull(actionRow.Work_Module,"") == "Construction" || actionRow.Template_Action == true)
+			{
+				return false;
+			}
+			eventTitle = "Action Added";
+			actor = ifnull(actionRow.Added_User,"Unknown").toString();
+			detailHtml = "<p><strong>Action</strong><br>" + thisapp.PF_Packet_Escape(ifnull(actionRow.Contract_Action,"").toString()) + "</p>";
+		}
+		viewUrl = "https://creatorapp.zoho.com/wbdevelopment/land-master/#Form:Contract?recLinkID=" + parent.ID.toString() + "&amp;viewLinkName=All_Contracts";
+		body = "<div style='font:16px Arial,sans-serif;color:#172033;max-width:600px'><h2 style='color:#142d55'>" + eventTitle + "</h2><p><strong>Contract</strong><br>" + thisapp.PF_Packet_Escape(contractName) + "</p>" + detailHtml + "<p><strong>Added By</strong><br>" + thisapp.PF_Packet_Escape(actor) + "</p><p><a href='" + viewUrl + "' style='background:#1d4d91;color:#fff;font-weight:bold;padding:10px 16px;text-decoration:none'>Open Contract</a></p></div>";
+		sendmail
+		[
+			from :"Notifications@wbdevelopment.com"
+			to :"legal@wbdevelopment.com"
+			subject :eventTitle + " | " + contractName.replaceAll("[\r\n]+"," ")
+			message :body
+		]
+		return true;
+	}
+	catch (mailError)
+	{
+		info "Legal record notification failed for contract " + ifnull(contractId,"") + ", action " + ifnull(actionId,"") + ": " + mailError.message;
+	}
+	return false;
+}

@@ -1,141 +1,56 @@
-/********* DAILY PUBLIC CREATED / MODIFIED CONTRACT ACTION EMAIL *********/
+// Previous-day additions and last persisted updates to Legal contracts and actions.
 settings = Settings[ID != 0];
-// Change this field name if your Settings field is different
-vRecipients = ifnull(settings.Receive_Legal_Notifications,"");
-if(vRecipients != "")
+recipients = ifnull(settings.Receive_Legal_Notifications,"");
+if(recipients != "")
 {
-	vYesterday = zoho.currentdate.addDay(-1);
-	vToday = zoho.currentdate;
-	/********* CREATED BY PUBLIC YESTERDAY *********/
-	publicCreatedActions = Contract_Actions[Added_User == "Public" && Added_Time >= vYesterday && Added_Time < vToday] sort by Added_Time asc;
-	/********* MODIFIED BY PUBLIC YESTERDAY *********/
-	publicModifiedActions = Contract_Actions[Modified_User == "Public" && Modified_Time >= vYesterday && Modified_Time < vToday] sort by Modified_Time asc;
-	vCreatedRows = "";
-	vModifiedRows = "";
-	vCreatedCount = 0;
-	vModifiedCount = 0;
-	/********* BUILD CREATED ROWS *********/
-	for each  actionRow in publicCreatedActions
+	yesterday = zoho.currentdate.addDay(-1);
+	today = zoho.currentdate;
+	activity = List();
+	for each contractRow in Contract[(Work_Module == null || Work_Module == "" || Work_Module == "Legal") && Added_Time >= yesterday && Added_Time < today] sort by Added_Time asc
 	{
-		constructionDigestAction = ifnull(actionRow.Work_Module,"") == "Construction";
-		if(actionRow.Contract1 != null)
+		activity.add({"change":"Contract Added","contract":contractRow.Contract_Name,"action":"","status":contractRow.Status,"notes":"","actor":contractRow.Added_User,"time":contractRow.Added_Time});
+	}
+	for each contractRow in Contract[(Work_Module == null || Work_Module == "" || Work_Module == "Legal") && Modified_Time >= yesterday && Modified_Time < today] sort by Modified_Time asc
+	{
+		if(contractRow.Modified_Time > contractRow.Added_Time || contractRow.Modified_User != contractRow.Added_User)
 		{
-			if(ifnull(actionRow.Contract1.Work_Module,"") == "Construction")
-			{
-				constructionDigestAction = true;
-			}
-		}
-		if(constructionDigestAction != true)
-		{
-			vContractName = "";
-			if(actionRow.Contract1 != null)
-			{
-				vContractName = ifnull(actionRow.Contract1.Contract_Name,"");
-			}
-			vDevNotes = ifnull(actionRow.Dev_Notes,"");
-			vDevNotes = vDevNotes.replaceAll("\n","<br>");
-			vCreatedRows = vCreatedRows + "<tr>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vContractName + "</td>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Contract_Action,"") + "</td>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vDevNotes + "</td>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Status,"") + "</td>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Dev_Mgr,"") + "</td>";
-			vCreatedRows = vCreatedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Added_Time,"") + "</td>";
-			vCreatedRows = vCreatedRows + "</tr>";
-			vCreatedCount = vCreatedCount + 1;
+			activity.add({"change":"Contract Updated","contract":contractRow.Contract_Name,"action":"","status":contractRow.Status,"notes":"","actor":contractRow.Modified_User,"time":contractRow.Modified_Time});
 		}
 	}
-	/********* BUILD MODIFIED ROWS *********/
-	for each  actionRow in publicModifiedActions
+	for each actionRow in Contract_Actions[Contract1 != null && (Work_Module == null || Work_Module == "" || Work_Module == "Legal") && Added_Time >= yesterday && Added_Time < today] sort by Added_Time asc
 	{
-		constructionDigestAction = ifnull(actionRow.Work_Module,"") == "Construction";
-		if(actionRow.Contract1 != null)
+		if(ifnull(actionRow.Contract1.Work_Module,"") != "Construction")
 		{
-			if(ifnull(actionRow.Contract1.Work_Module,"") == "Construction")
-			{
-				constructionDigestAction = true;
-			}
-		}
-		if(constructionDigestAction != true)
-		{
-			// Avoid showing a newly-created Public action twice in the same email
-			vCreatedByPublicYesterday = false;
-			if(actionRow.Added_User == "Public" && actionRow.Added_Time >= vYesterday && actionRow.Added_Time < vToday)
-			{
-				vCreatedByPublicYesterday = true;
-			}
-			if(vCreatedByPublicYesterday == false)
-			{
-				vContractName = "";
-				if(actionRow.Contract1 != null)
-				{
-					vContractName = ifnull(actionRow.Contract1.Contract_Name,"");
-				}
-				vDevNotes = ifnull(actionRow.Dev_Notes,"");
-				vDevNotes = vDevNotes.replaceAll("\n","<br>");
-				vModifiedRows = vModifiedRows + "<tr>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vContractName + "</td>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Contract_Action,"") + "</td>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + vDevNotes + "</td>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Status,"") + "</td>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Dev_Mgr,"") + "</td>";
-				vModifiedRows = vModifiedRows + "<td style='border:1px solid #d1d5db;padding:8px;'>" + ifnull(actionRow.Modified_Time,"") + "</td>";
-				vModifiedRows = vModifiedRows + "</tr>";
-				vModifiedCount = vModifiedCount + 1;
-			}
+			activity.add({"change":"Action Added","contract":actionRow.Contract1.Contract_Name,"action":actionRow.Contract_Action,"status":actionRow.Status,"notes":actionRow.Dev_Notes,"actor":actionRow.Added_User,"time":actionRow.Added_Time});
 		}
 	}
-	if(vCreatedCount > 0 || vModifiedCount > 0)
+	for each actionRow in Contract_Actions[Contract1 != null && (Work_Module == null || Work_Module == "" || Work_Module == "Legal") && Modified_Time >= yesterday && Modified_Time < today] sort by Modified_Time asc
 	{
-		vBody = "";
-		vBody = vBody + "<div style='font-family:Arial,sans-serif;color:#111827;'>";
-		vBody = vBody + "<h2 style='margin:0 0 6px 0;color:#0f172a;'>Contract Actions Created / Modified</h2>";
-		vBody = vBody + "<div style='margin-bottom:16px;color:#6b7280;font-size:13px;'>Activity from " + vYesterday.toString("MM/dd/yyyy") + "</div>";
-		if(vCreatedCount > 0)
+		if(ifnull(actionRow.Contract1.Work_Module,"") != "Construction" && (actionRow.Modified_Time > actionRow.Added_Time || actionRow.Modified_User != actionRow.Added_User))
 		{
-			vBody = vBody + "<h3 style='margin:18px 0 8px 0;color:#166534;font-size:16px;'>Created</h3>";
-			vBody = vBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;margin-bottom:18px;'>";
-			vBody = vBody + "<thead>";
-			vBody = vBody + "<tr style='background:#f3f4f6;'>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Contract</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Action</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Notes</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Status</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Manager</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Created Time</th>";
-			vBody = vBody + "</tr>";
-			vBody = vBody + "</thead>";
-			vBody = vBody + "<tbody>";
-			vBody = vBody + vCreatedRows;
-			vBody = vBody + "</tbody>";
-			vBody = vBody + "</table>";
+			activity.add({"change":"Action Updated","contract":actionRow.Contract1.Contract_Name,"action":actionRow.Contract_Action,"status":actionRow.Status,"notes":actionRow.Dev_Notes,"actor":actionRow.Modified_User,"time":actionRow.Modified_Time});
 		}
-		if(vModifiedCount > 0)
+	}
+	if(activity.size() > 0)
+	{
+		body = "<div style='font:14px Arial,sans-serif;color:#172033'><h2>Legal Activity Digest</h2><p>" + yesterday.toString("MM/dd/yyyy") + "</p><table cellpadding='8' cellspacing='0' border='1' style='border-collapse:collapse;border-color:#d1d5db'>";
+		body = body + "<tr style='background:#eef3fa'><th align='left'>Change</th><th align='left'>Contract</th><th align='left'>Action</th><th align='left'>Status</th><th align='left'>Dev Notes</th><th align='left'>Performed By</th><th align='left'>Time</th></tr>";
+		for each changeRow in activity
 		{
-			vBody = vBody + "<h3 style='margin:18px 0 8px 0;color:#1d4ed8;font-size:16px;'>Modified</h3>";
-			vBody = vBody + "<table style='border-collapse:collapse;width:100%;font-size:13px;margin-bottom:18px;'>";
-			vBody = vBody + "<thead>";
-			vBody = vBody + "<tr style='background:#f3f4f6;'>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Contract</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Action</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Notes</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Status</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Dev Manager</th>";
-			vBody = vBody + "<th style='border:1px solid #d1d5db;padding:8px;text-align:left;'>Modified Time</th>";
-			vBody = vBody + "</tr>";
-			vBody = vBody + "</thead>";
-			vBody = vBody + "<tbody>";
-			vBody = vBody + vModifiedRows;
-			vBody = vBody + "</tbody>";
-			vBody = vBody + "</table>";
+			actor = ifnull(changeRow.get("actor"),"").toString().trim();
+			if(actor == "")
+			{
+				actor = "Unknown";
+			}
+			body = body + "<tr><td>" + changeRow.get("change") + "</td><td>" + thisapp.PF_Packet_Escape(ifnull(changeRow.get("contract"),"").toString()) + "</td><td>" + thisapp.PF_Packet_Escape(ifnull(changeRow.get("action"),"").toString()) + "</td><td>" + thisapp.PF_Packet_Escape(ifnull(changeRow.get("status"),"").toString()) + "</td><td>" + thisapp.PF_Packet_Escape(ifnull(changeRow.get("notes"),"").toString()).replaceAll("\n","<br>") + "</td><td>" + thisapp.PF_Packet_Escape(actor) + "</td><td>" + changeRow.get("time").toString("MM/dd/yyyy h:mm a") + "</td></tr>";
 		}
-		vBody = vBody + "</div>";
+		body = body + "</table></div>";
 		sendmail
 		[
 			from :"Notifications@wbdevelopment.com"
-			to :vRecipients
-			subject :"Contract Actions Updated - " + vYesterday.toString("MM/dd/yyyy")
-			message :vBody
+			to :recipients
+			subject :"Legal Activity Digest - " + yesterday.toString("MM/dd/yyyy")
+			message :body
 		]
 	}
 }

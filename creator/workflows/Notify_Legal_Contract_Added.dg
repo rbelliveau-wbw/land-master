@@ -1,0 +1,2 @@
+// Contract form. Created only. Successful form submission.
+thisapp.notifyLegalRecordAdded(input.ID.toString(),"");
