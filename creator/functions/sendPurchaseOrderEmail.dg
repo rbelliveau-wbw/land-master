@@ -79,7 +79,7 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		modSummary = "None required";
 		if(bundle.get("modifications").size() > 0)
 		{
-			modSummary = bundle.get("modifications").size() + " modifications · Net $" + modTotal;
+			modSummary = bundle.get("modifications").size() + " modifications · Net " + modTotal.text("$#,##0.00");
 		}
 		// appuri is a relative path; email actions need an absolute Creator URL.
 		urlEnvironment = environmentType.toString().trim().toLowerCase();
@@ -97,8 +97,9 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		// Assemble shared markup directly: regex replacements with dollar amounts return null in Deluge.
 		mailTitle = "Purchase Order Approval";
 		mailReference = purchaseOrderId;
-		lineTitle = "PO Lines";
+		lineTitle = "Purchase Order Lines";
 		mailDetails = "Full line details are in the attached Excel file.";
+		mailAmount = po.PO_Amount_Exact.toDecimal().text("$#,##0.00");
 		if(po.PO_Original != null)
 		{
 			mailTitle = "Supplemental Purchase Order Approval";
@@ -108,21 +109,41 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			approvedBefore = 0.00;
 			for each mailSource in mailBaseline.get("sources") { approvedBefore = approvedBefore + mailSource.get("amount").toDecimal(); }
 			proposedTotal = approvedBefore + po.PO_Amount_Exact.toDecimal();
-			mailDetails = "This request approves only the new lines. Previously approved: " + approvedBefore.text("$#,##0.00") + ". Proposed total: " + proposedTotal.text("$#,##0.00") + ". The All PO Lines worksheet includes every approved line and marks the additions NEW.";
+			mailDetails = "This request approves only the new lines. Previously approved: " + approvedBefore.text("$#,##0.00") + ". Proposed total: " + proposedTotal.text("$#,##0.00") + ". The All PO Lines worksheet in the attachment shows the previously approved lines and marks the additions NEW.";
 		}
 		requestDescription = ifnull(po.PO_Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 		descriptionBody = "";
 		if(requestDescription.trim() != "") { descriptionBody = "<h3 style='font-size:16px;margin:18px 0 8px'>Request Description</h3><div style='font-size:14px;white-space:pre-wrap'>" + requestDescription + "</div>"; }
-		lineBody = "<h3 style='font-size:16px;margin:18px 0 8px'>" + lineTitle + "</h3><table style='width:100%;font-size:14px;border-collapse:collapse'><thead><tr><th style='padding:6px;text-align:left'>Cost Code</th><th style='padding:6px;text-align:left'>Description</th><th style='padding:6px;text-align:right'>Amount</th></tr></thead><tbody>";
+		lineBody = "<h3 style='font-size:16px;margin:18px 0 8px'>" + lineTitle + "</h3><table cellpadding='0' cellspacing='0' style='width:100%;font-size:14px;border-collapse:collapse'><thead><tr bgcolor='#d9e5f1'>";
+		for each heading in {"Cost Code","Vendor","Description","Qty","UOM","Unit Price","Total"}
+		{
+			alignment = if(heading == "Qty" || heading == "Unit Price" || heading == "Total","right","left");
+			lineBody = lineBody + "<th scope='col' align='" + alignment + "' style='padding:6px 4px'>" + heading + "</th>";
+		}
+		lineBody = lineBody + "</tr></thead><tbody>";
+		lineCount = 0;
 		for each mailLine in PO_Item[Purchase_Order == po.ID && Revision == po.PO_Revision] sort by Line_Order
 		{
+			lineCount = lineCount + 1;
+			if(lineCount > 10) { break; }
 			lineCode = ifnull(mailLine.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 			lineDescription = ifnull(mailLine.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			lineUom = ifnull(mailLine.UOM,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			lineQty = ifnull(mailLine.Quantity_Exact,"").toString();
+			if(lineQty.matches("[0-9]+[.][0-9]+")) { lineQty = lineQty.replaceAll("0+$","").replaceAll("[.]$",""); }
+			linePrice = "";
+			if(ifnull(mailLine.Unit_Price_Exact,"") != "") { linePrice = mailLine.Unit_Price_Exact.toDecimal().text("$#,##0.00######"); }
 			lineAmount = mailLine.Final_Amount_Exact.toDecimal().text("$#,##0.00");
-			lineBody = lineBody + "<tr><td style='padding:6px;border-top:1px solid #e2e8f0'>" + lineCode + "</td><td style='padding:6px;border-top:1px solid #e2e8f0;white-space:pre-wrap'>" + lineDescription + "</td><td style='padding:6px;border-top:1px solid #e2e8f0;text-align:right'>" + lineAmount + "</td></tr>";
+			textCell = "<td valign='top' style='padding:6px 4px;border-top:1px solid #bdcfe1;overflow-wrap:anywhere;white-space:pre-wrap'>";
+			numberCell = "<td align='right' valign='top' style='padding:6px 4px;border-top:1px solid #bdcfe1'>";
+			lineBody = lineBody + "<tr bgcolor='#f4f7fb'>" + textCell + lineCode + "</td>" + textCell + vendor + "</td>" + textCell + lineDescription + "</td>" + numberCell + lineQty + "</td>" + textCell + lineUom + "</td>" + numberCell + linePrice + "</td>" + numberCell + lineAmount + "</td></tr>";
 		}
 		lineBody = lineBody + "</tbody></table>";
-		body = "<div style='background:#eef3fa;padding:20px;font-family:Arial,sans-serif;color:#17385f'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:640px;margin:auto;background:white;border:1px solid #d5e1ee'><tr><td style='background:#17385f;color:white;padding:18px 22px'><div style='font-size:14px'>" + mailTitle + "</div><h2 style='font-size:21px;margin:6px 0'>" + phase + "</h2><div>" + vendor + "</div></td></tr><tr><td style='padding:20px 22px'><div style='font-size:28px;font-weight:bold;color:#08745a'>" + po.PO_Amount_Exact.toDecimal().text("$#,##0.00") + "</div><p style='margin:8px 0 16px'>Your " + role + " approval is requested.</p><table style='width:100%;font-size:14px;line-height:1.7'><tr><td>PO</td><td align='right'>" + mailReference + "</td></tr><tr><td>Request Date / Needed</td><td align='right'>" + requestDate + " / " + neededDate + "</td></tr><tr><td>Line Items</td><td align='right'>" + po.PO_Line_Count + "</td></tr><tr><td>Budget Modifications</td><td align='right'>" + modSummary + "</td></tr></table><p style='margin:20px 0 4px'><a href='" + url + "' style='display:inline-block;padding:12px 18px;background:#2256a6;color:white;text-decoration:none;font-weight:bold'>Review Purchase Order</a></p>" + descriptionBody + lineBody + "<p style='font-size:14px;color:#526982'>" + mailDetails + "</p></td></tr></table></div>";
+		if(po.PO_Line_Count > 10)
+		{
+			lineBody = lineBody + "<p style='font-size:14px;color:#526982'>Showing 10 of " + po.PO_Line_Count + " line items. The attachment includes all lines.</p>";
+		}
+		body = "<div style='background:#eef3fa;padding:20px;font-family:Arial,sans-serif;color:#17385f'><table role='presentation' cellpadding='0' cellspacing='0' style='width:100%;max-width:640px;margin:auto;background:white;border:1px solid #d5e1ee'><tr><td style='background:#17385f;color:white;padding:18px 22px'><div style='font-size:14px'>" + mailTitle + "</div><h2 style='font-size:21px;margin:6px 0'>" + phase + "</h2><div>" + vendor + "</div></td></tr><tr><td style='padding:20px 22px'><div style='font-size:28px;font-weight:bold;color:#08745a'>" + mailAmount + "</div><p style='margin:8px 0 16px'>Your " + role + " approval is requested.</p><table style='width:100%;font-size:14px;line-height:1.7'><tr><td>PO</td><td align='right'>" + mailReference + "</td></tr><tr><td>Request Date / Needed</td><td align='right'>" + requestDate + " / " + neededDate + "</td></tr><tr><td>Line Items</td><td align='right'>" + po.PO_Line_Count + "</td></tr><tr><td>Budget Modifications</td><td align='right'>" + modSummary + "</td></tr></table><p style='margin:20px 0 4px'><a href='" + url + "' style='display:inline-block;padding:12px 18px;background:#2256a6;color:white;text-decoration:none;font-weight:bold'>Review Purchase Order</a></p>" + descriptionBody + lineBody + "<p style='font-size:14px;color:#526982'>" + mailDetails + "</p></td></tr></table></div>";
 		elementBody = "";
 		if(bundle.get("modifications").size() > 0)
 		{
@@ -184,8 +205,8 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		}
 		elementBody = elementBody + "</tbody></table><p style='font-size:14px;color:#64748b'>Final + Approved Mods = Modified Budget; Modified Budget − Existing POs = Available; Available + Current Bud Mod − This PO = Remaining. Unavailable allocations remain —.</p>";
 		body = body + "<div style='max-width:1440px;margin:16px auto;padding:16px;background:#fff;font-family:Arial,sans-serif;color:#17385f'>" + elementBody + "</div>";
-		subjectLine = "Purchase Order Approval · " + ifnull(po.Budget.Budget_Name,"") + " · $" + po.PO_Amount_Exact;
-		if(po.PO_Original != null) { subjectLine = "Supplemental PO " + po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number + " Approval · " + ifnull(po.Budget.Budget_Name,"") + " · $" + po.PO_Amount_Exact; }
+		subjectLine = "Purchase Order Approval · " + ifnull(po.Budget.Budget_Name,"") + " · " + mailAmount;
+		if(po.PO_Original != null) { subjectLine = "Supplemental PO " + po.PO_Original.toString() + " · Supplement " + po.PO_Supplement_Number + " Approval · " + ifnull(po.Budget.Budget_Name,"") + " · " + mailAmount; }
 		if(environmentType == "Development")
 		{
 			subjectLine = "[DEV TEST] " + subjectLine;
@@ -193,15 +214,19 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 		if(bundle.get("poTestCFO") != null)
 		{
 			subjectLine = "[PO TEST] " + subjectLine;
-			body = "<div style='padding:12px;background:#fff3cd;color:#654d00;font-family:Arial,sans-serif'><b>PO TEST</b> · Temporary CFO approval for this budget only, up to $" + bundle.get("poTestCFO").get("maxAmount") + ". Submitter self-approval is enabled for this captured test route.</div>" + body;
+			body = "<div style='padding:12px;background:#fff3cd;color:#654d00;font-family:Arial,sans-serif'><b>PO TEST</b> · Temporary CFO approval for this budget only, up to " + bundle.get("poTestCFO").get("maxAmount").toDecimal().text("$#,##0.00") + ". Submitter self-approval is enabled for this captured test route.</div>" + body;
 		}
 		workbook = thisapp.poExcelWorkbook(purchaseOrderId);
-		if(workbook.get("success") != true)
+		if(workbook.get("success") != true || ifnull(workbook.get("emailSheet"),"") == "")
 		{
 			activity.Status="Failed"; activity.Error_Detail="The PO Excel attachment could not be generated. No email was sent.";
 			return "ERROR: PO Excel attachment could not be generated.";
 		}
-		excelFile = workbook.get("content").toFile(workbook.get("filename"));
+		// Excel SpreadsheetML uses the .xml extension. Preserve the widget's download contract.
+		attachmentContent = workbook.get("content");
+		firstSheet = attachmentContent.indexOf("<Worksheet");
+		attachmentContent = attachmentContent.subString(0,firstSheet) + workbook.get("emailSheet") + attachmentContent.subString(firstSheet,attachmentContent.length()).replaceAll("<Selected/>","");
+		excelFile = attachmentContent.toFile(workbook.get("filename").replaceAll("[.]xls$",".xml"));
 		activity.Subject=subjectLine;
 		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { activity.Status="Failed"; activity.Error_Detail="The approval changed before notification. No email was sent."; return "ERROR: PO approval state changed before notification."; }
 		activity.Status="Sending"; mailStarted = true;
