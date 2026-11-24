@@ -14,6 +14,7 @@
   function message(text,state='ready'){$('connection').textContent=text;$('connection').dataset.state=state;}
   function decode(raw){let data=raw;for(let i=0;i<7;i++){if(typeof data==='string'){try{data=JSON.parse(data);}catch{throw new Error('Creator returned an unreadable response');}continue;}if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Creator returned an invalid response');if(data.ok!==undefined)return data;if(data.code!=null&&String(data.code)!=='3000')throw new Error(data.message||data.description||'Creator rejected the request');data=data.result??data.details?.output??data.output??data.data;}throw new Error('Creator returned an unsupported response');}
   async function api(body,write=false){
+    if(S.sample)throw new Error('The sample schedule is read-only');
     const c=LMRuntime.current();if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(c.environment)||!c.user||c.user==='(unknown)')throw new Error('Scheduling requires an authenticated Creator session');
     let timer;try{
       const raw=await Promise.race([LMData.request('crew:'+body.action,()=>ZOHO.CREATOR.DATA.invokeCustomApi({api_name:LMRuntime.apiName('Crew_Locations_Widget'),http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify(body)}}),{readOnly:!write}),new Promise((_,reject)=>{timer=setTimeout(()=>{const e=new Error(write?'The save response is unknown. Check Status before continuing.':'The request timed out');e.unknown=write;reject(e);},write?90000:30000);})]);
@@ -118,6 +119,7 @@
     try{return await Promise.race([check,timeout]);}finally{clearTimeout(timer);S.managementBusy=false;controls();}
   }
   async function managementApi(body){
+    if(S.sample)throw new Error('The sample schedule is read-only');
     // The manager releases an unknown-save lock only after matching the exact
     // request, kind and destination returned by an explicit read-only recheck.
     if(body.action==='employee-status'||body.action==='management-status'&&body.statusFor==='crew')return nativeManagementStatus(body);
@@ -147,10 +149,11 @@
     if(view==='editor')requestAnimationFrame(()=>{$('tableTopScroll').firstElementChild.style.width=$('scheduleTable').scrollWidth+'px';});
   }
   function preferenceKey(){const c=LMRuntime.current();return 'crew-locations:view:'+c.environment+':'+c.user;}
-  function storeView(){try{localStorage.setItem(preferenceKey(),JSON.stringify({layoutVersion:2,filters:S.filters,hidden:[...S.hidden]}));}catch{}}
-  function defaultFilters(){const filters=M.defaults();if(S.model&&S.capabilities?.sources?.crews===false)filters.phases=M.upcoming(S.model,filters,S.day).map(p=>p.id);return filters;}
+  function storeView(){if(S.sample)return;try{localStorage.setItem(preferenceKey(),JSON.stringify({layoutVersion:2,filters:S.filters,hidden:[...S.hidden]}));}catch{}}
+  function defaultFilters(){const filters=M.defaults();if(S.sample)filters.horizons=[6];if(S.model&&S.capabilities?.sources?.crews===false)filters.phases=M.upcoming(S.model,filters,S.day).map(p=>p.id);return filters;}
   function restoreView(){try{const x=JSON.parse(localStorage.getItem(preferenceKey()));if(!x)return;const f=M.defaults();for(const key of ['crews','phases','territories','sections','horizons'])if(Array.isArray(x.filters?.[key]))f[key]=x.filters[key].filter(v=>typeof v==='string'||typeof v==='number');for(const key of Object.keys(f.table))if(Array.isArray(x.filters?.table?.[key]))f.table[key]=x.filters.table[key].filter(v=>typeof v==='string');f.sections=f.sections.filter(v=>M.SECTIONS.some(s=>s.key===v));f.horizons=f.horizons.filter(v=>[6,12,24,'all'].includes(v));f.showAll=x.filters.showAll===true;if(!x.layoutVersion&&f.horizons.length===1&&f.horizons[0]===12)f.horizons=[24];S.preferencesLoaded=true;S.filters=f;S.hidden=new Set((x.hidden||[]).filter(v=>M.STAGES.some(s=>['start','days','end'].includes(v.slice(s.length+1))&&v.startsWith(s+':'))));}catch{}}
   async function load(){
+    if(S.sample)return;
     closeLocationCard();
     if(S.busy||S.managementBusy||S.managementUnknown||S.operation?.unknown||S.drag||drafts?.saving||activeScheduleInput())return;
     const generation=++S.generation;S.loading=true;controls();message('Loading schedule…','busy');
@@ -265,9 +268,11 @@
     for(const p of phases)for(const type of ['M','T']){const unavailable=type==='T'&&S.capabilities.sources.tasks===false;html+='<tr class="'+(type==='M'?'phase-start':'')+(unavailable?' task-unavailable':'')+'" data-phase="'+p.id+'" data-row-type="'+type+'"><th class="phase-column">'+(type==='M'?'<strong>'+esc(phaseName(p))+'</strong><small>'+esc(p.code+' · '+p.territory+' · '+M.displayStatus(p))+'</small><small>Local lots: '+(p.lots==null||p.lots===''?'Unavailable':numeric(p.lots,p.id+':local-lots'))+'</small>':'')+'<span class="row-type">'+(type==='M'?'M · Milestones':'T · Tasks')+'</span>'+(type==='T'?badges(p):'')+(unavailable&&!visibleCells?'<span class="source-unavailable">Task source unavailable</span>':'')+'</th>';
       if(unavailable){if(visibleCells)html+='<td colspan="'+visibleCells+'"><span class="source-unavailable">Task source unavailable</span></td>';html+='</tr>';continue;}
       for(const key of stages){const r=p.records[type][key],fields=['start','days','end'].filter(f=>M.visible(S.hidden,key,f));for(const [i,field] of fields.entries()){
-        const reason=r?M.editable(p,r,field==='days'?(r.start!=null?'end':'start'):field,S.permissions,S.day):'No verified source record',disabled=!!reason||S.busy||S.loading||!!S.operation?.unknown,val=r?(field==='days'?M.duration(r):M.us(r[field])):null;
-        const input='<input class="stage-input '+(field==='days'?'days-input':'')+'" type="text" inputmode="'+(field==='days'?'numeric':'text')+'" data-record="'+(r?esc(recordKey(r)):'')+'" data-field="'+field+'" data-source-locked="'+!!reason+'" aria-label="'+esc(phaseName(p)+' '+type+' '+key+' '+field)+'" value="'+(val==null?'':esc(val))+'" placeholder="'+(field==='days'?'—':'MM/DD/YYYY')+'" '+(disabled?'disabled':'')+' title="'+esc(reason||key+' '+field)+'">';
+        const val=r?(field==='days'?M.duration(r):M.us(r[field])):null;
         html+='<td class="'+(field==='days'?'days-cell':'date-cell')+(i===fields.length-1?' stage-end':'')+'">';
+        if(S.sample){html+=esc(val??'')+'</td>';continue;}
+        const reason=r?M.editable(p,r,field==='days'?(r.start!=null?'end':'start'):field,S.permissions,S.day):'No verified source record',disabled=!!reason||S.busy||S.loading||!!S.operation?.unknown;
+        const input='<input class="stage-input '+(field==='days'?'days-input':'')+'" type="text" inputmode="'+(field==='days'?'numeric':'text')+'" data-record="'+(r?esc(recordKey(r)):'')+'" data-field="'+field+'" data-source-locked="'+!!reason+'" aria-label="'+esc(phaseName(p)+' '+type+' '+key+' '+field)+'" value="'+(val==null?'':esc(val))+'" placeholder="'+(field==='days'?'—':'MM/DD/YYYY')+'" '+(disabled?'disabled':'')+' title="'+esc(reason||key+' '+field)+'">';
         if(field==='days'){const delta=r&&S.deltas.get(recordKey(r)),amount=delta?Math.abs(delta.delta):0,arrow=(dir,all)=>'<button class="arrow" data-arrow="'+dir+'" data-all="'+all+'" data-record="'+(r?esc(recordKey(r)):'')+'" data-source-locked="'+(!!reason||!amount)+'" aria-label="'+esc((all?'All ':'')+(dir<0?'earlier':'later')+' stages · '+key)+'" title="'+(dir<0?'Move earlier ':'Move later ')+amount+' days'+(all?' · all stages':' · adjacent stage')+'" '+(disabled||!amount?'disabled':'')+'>'+(dir<0?(all?'«':'‹'):(all?'»':'›'))+'</button>';html+='<div class="days-wrap"><span class="arrows">'+arrow(-1,false)+arrow(-1,true)+'</span>'+input+'<span class="arrows">'+arrow(1,false)+arrow(1,true)+'</span></div>';}else html+=input;html+='</td>';
       }}html+='</tr>';
     }
@@ -350,12 +355,30 @@
     $('picker').addEventListener('input',e=>{if(!S.picker)return;S.picker.query=e.target.value;paintOptions();positionPicker();});$('picker').addEventListener('keydown',e=>{if(!S.picker)return;if(e.key==='Escape'){const button=S.picker.button;closePicker();button.focus();return;}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();const opts=[...$('picker').querySelectorAll('[role=option]')],i=opts.indexOf(document.activeElement),next=i<0?(e.key==='ArrowDown'?0:opts.length-1):(i+(e.key==='ArrowDown'?1:-1)+opts.length)%opts.length;focusOption(opts[next]);}});
     window.addEventListener('resize',positionPicker);document.addEventListener('scroll',event=>{if(S.picker&&!$('picker').contains(event.target))positionPicker();},true);
     $('showAll').addEventListener('change',e=>{S.filters.showAll=e.target.checked;storeView();render();});$('refresh').onmousedown=e=>e.preventDefault();$('refresh').onclick=requestRefresh;$('scheduleSave').onmousedown=e=>e.preventDefault();$('scheduleSave').onclick=saveSchedule;$('scheduleKeepEditing').onclick=()=>{$('scheduleRefreshDialog').close();$('refresh').focus();};$('scheduleRefreshDialog').addEventListener('cancel',e=>{e.preventDefault();$('scheduleRefreshDialog').close();$('refresh').focus();});$('scheduleDiscardRefresh').onclick=()=>{try{drafts.discard();S.deltas.clear();$('scheduleRefreshDialog').close();refreshSchedule();}catch(error){message(error.message,'error');}};$('history').onclick=()=>history();$('closeHistory').onclick=()=>$('historyDialog').close();$('closeEndpoint').onclick=()=>{$('endpointDialog').close();$('endpointContent').replaceChildren();};
-    root.CrewDrag.install({state:S,staged:true,scope:managementScope,allowed:()=>S.ready&&$('app').dataset.workspace==='schedule'&&$('app').dataset.scheduleView==='timeline',commit,controls});
+    if(!S.sample)root.CrewDrag.install({state:S,staged:true,scope:managementScope,allowed:()=>S.ready&&$('app').dataset.workspace==='schedule'&&$('app').dataset.scheduleView==='timeline',commit,controls});
     $('tableTopScroll').onscroll=()=>$('tableScroll').scrollLeft=$('tableTopScroll').scrollLeft;$('tableScroll').onscroll=()=>$('tableTopScroll').scrollLeft=$('tableScroll').scrollLeft;
     $('reviewSave').onclick=()=>{$('app').inert=true;$('operationDialog').showModal();};$('closeOperation').onclick=closeOperation;$('doneOperation').onclick=closeOperation;$('operationDialog').addEventListener('cancel',e=>{e.preventDefault();if(!S.busy)closeOperation();});
     $('checkOperation').onclick=async()=>{if(S.busy)return;S.busy=true;$('checkOperation').disabled=true;try{const result=await api({action:'status',operationId:S.operation.operationId,subdivisionId:S.operation.subdivisionId});if(result.operationId!==S.operation.operationId)throw new Error('Creator returned status for a different operation');if(result.state==='saved'){requireDestinations(result,S.operation.operationId,S.operation.changes);applyConfirmedValues(result,S.operation.changes);finishOperation(result);render();}else{const error=new Error(result.message||'The operation still needs review');error.unknown=result.unknown;error.data=result;finishOperation(null,error);}}catch(e){e.unknown=true;finishOperation(null,e);}finally{$('checkOperation').disabled=false;}};
   }
-  async function start(){bind();windowLabel();try{const params=await ZOHO.CREATOR.UTIL.getInitParams();const ctx=LMRuntime.apply(params);if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(ctx.environment))throw new Error('Creator did not identify a supported environment');LMCriticalErrors.markReady();restoreView();await load();}catch(e){message(e.message,'error');$('gantt').innerHTML='<p class="empty">Development setup required</p>';controls();}
+  function showSample(){
+    const app=$('app');
+    app.dataset.workspace='schedule';
+    app.dataset.sampleSchedule='true';
+    document.title=app.querySelector('h1').textContent='Sample Schedule';
+    const mode=app.querySelector('.mode');
+    mode.textContent='Read-Only Sample Data';
+    mode.removeAttribute('title');
+    $('editorView').textContent='Schedule Dates';
+    for(const id of ['workspaceTabs','crewWorkspace','assignmentWindow','sampleScheduleLink','scheduleSave','history','refresh','issues'])$(id).hidden=true;
+    S.model=root.CrewSampleSchedule.create(S.day);
+    S.capabilities={sources:{crews:true,tasks:true}};
+    S.filters=defaultFilters();
+    S.ready=true;
+    scheduleView('timeline');
+    message('');
+    render();
+  }
+  async function start(sample=false){S.sample=sample;bind();if(sample){showSample();return;}windowLabel();try{const params=await ZOHO.CREATOR.UTIL.getInitParams();const ctx=LMRuntime.apply(params);if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(ctx.environment))throw new Error('Creator did not identify a supported environment');LMCriticalErrors.markReady();restoreView();await load();}catch(e){message(e.message,'error');$('gantt').innerHTML='<p class="empty">Development setup required</p>';controls();}
     setInterval(()=>{const day=M.today();if(day!==S.day&&!S.busy&&!S.operation?.unknown&&!S.drag&&!drafts?.saving&&!activeScheduleInput()){S.day=day;if(S.model){M.assignments(S.model,day);render();}load();}},30000);
   }
   root.CrewApp=Object.freeze({start,state:S,scheduleView,badgeInk,management:Object.freeze({api:managementApi,reload:load,context:()=>({...LMRuntime.current(),epoch:S.epoch,ready:S.ready,loading:S.loading,busy:S.busy||S.managementBusy||!!drafts?.saving,unknown:S.managementUnknown}),model:()=>S.model,permissions:()=>S.permissions,capabilities:()=>S.capabilities,setPending:value=>{S.managementUnknown=value===true;controls();}})});

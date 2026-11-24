@@ -603,3 +603,21 @@ space. Their existing live announcements, disabled/busy controls, native save
 paths, success feedback and anchored drag card remain. Actual errors and unknown
 review actions remain visible. Required dialogs stay outside page flow.
 See [verification and rollback](../../docs/crew-stable-save-layout-2026-10-30.md).
+
+## Personal Roster Visibility and Sample Schedule — 1.10.4
+
+**Crews → Employees → Hide People** filters the grouped Employees list and
+the selected crew's employee list. Select people by name or employee code.
+Uncheck a person or use **Show Everyone** to restore the list. The browser stores
+employee IDs per signed-in Creator user and environment. Employee status,
+assignments, foreman timecards, group write membership and permissions use
+their existing Creator records and rules.
+
+**Milestones & Tasks → View Sample Schedule** opens two fictional phases with
+milestone and task dates relative to today. The preview reuses the phase, crew,
+territory, section and date filters, timeline overlap inspection and dates table.
+It never initializes the Creator session, calls a Creator data endpoint or writes
+live view preferences. It is independent of live task mirror readiness. The live
+**Edit Schedule** and its existing permissions stay available. No Creator form,
+field, function, Custom API or publication change is needed. Roll back by mapping
+the affected environment to crew-locations **1.10.3**.

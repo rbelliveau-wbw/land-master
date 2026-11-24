@@ -175,6 +175,22 @@ body{padding:12px 16px 20px}
 
 /* Routine save/refresh announcements must never insert a row into the page. */
 #app:not([data-workspace=schedule]) #scheduleSave{display:none}
+
+.employee-visibility>summary{font-size:14px;white-space:nowrap;cursor:pointer}
+.employee-visibility>div{width:min(290px,calc(100vw - 48px));padding:10px}
+.employee-visibility input[type=search]{font-size:14px}
+#employeeVisibilityList{max-height:min(260px,42vh);overflow:auto;margin-top:6px}
+#employeeVisibilityList label{display:flex;align-items:center;gap:8px;min-height:34px;padding:4px 6px;font-size:14px;cursor:pointer;overflow-wrap:anywhere}
+#employeeVisibilityList label:hover{background:#edf3fc}
+#employeeVisibilityList input{flex:none;margin:0}
+#employeeVisibilityList p{margin:8px 6px;font-size:14px}
+.employee-visibility-code{color:#47617e}
+.employee-visibility-actions{display:flex;justify-content:space-between;gap:6px;margin-top:8px}
+.employee-visibility-actions button{font-size:14px;padding:5px 9px}
+#sampleScheduleLink{font-size:14px;color:#1e40af;text-underline-offset:3px;white-space:nowrap}
+#sampleScheduleLink:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+#app[data-sample-schedule] .page-head .mode{font-size:14px}
+@media(max-width:430px){.employee-toolbar{flex-wrap:wrap}.employee-visibility>div{width:225px}}
 #scheduleSave{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:110px;min-height:32px;white-space:nowrap}
 #refresh{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 #refresh>svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}

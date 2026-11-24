@@ -3,13 +3,20 @@
   const $=id=>document.getElementById(id),M=root.CrewModel,E=root.CrewEmployeesModel;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const bridge=()=>root.CrewApp.management;
-  const S={rows:[],crews:[],timecards:[],groupsEnabled:false,view:'foremen',ready:false,canAssign:false,loading:false,saving:false,status:'active',query:'',draft:null,pending:null,picker:null,scope:'',generation:0,opened:false};
+  const S={rows:[],crews:[],timecards:[],hiddenEmployees:new Set(),visibilityKey:'',groupsEnabled:false,view:'foremen',ready:false,canAssign:false,loading:false,saving:false,status:'active',query:'',draft:null,pending:null,picker:null,scope:'',generation:0,opened:false};
   const identity=()=>{const c=bridge().context();return c.user+':'+c.environment+':'+c.epoch;};
   const storageKey=()=>{const c=bridge().context();return 'crew-employees:pending:'+c.user+':'+c.environment;};
   const canWrite=()=>S.ready&&S.canAssign&&bridge().permissions().assignments===true;
   const locked=()=>S.groupBusy||S.loading||S.saving||!!S.pending||bridge().context().busy||bridge().context().unknown;
   function preserveFocus(){const b=document.activeElement;if(b?.dataset.employeeInline)S.focusCell={id:b.dataset.employeeInline,field:b.dataset.field,crew:b.closest('[data-crew-detail]')?.dataset.crewDetail};}
-  function staffing(crewId){const context=bridge().context();if(!S.ready||S.scope!==identity()||context.ready===false)return {ready:false,members:[],foremen:[],jobs:[]};const model=bridge().model();return {ready:true,...E.crewStaffing(S.rows,model?.foremanTimecards?model.timecards:[],crewId,M.today())};}
+  const visibleEmployee=row=>!S.hiddenEmployees.has(row.ID);
+  function staffing(crewId){
+    const context=bridge().context();
+    if(!S.ready||S.scope!==identity()||context.ready===false)return {ready:false,members:[],foremen:[],jobs:[]};
+    const model=bridge().model(),staff=E.crewStaffing(S.rows,model?.foremanTimecards?model.timecards:[],crewId,M.today());
+    const members=staff.members.filter(visibleEmployee),foremen=staff.foremen.filter(visibleEmployee);
+    return {...staff,ready:true,members,foremen,hasHiddenMembers:members.length<staff.members.length,hasHiddenForemen:foremen.length<staff.foremen.length};
+  }
   function assignmentCell(id,key){if(!Object.hasOwn(fieldLabels,key)||!S.ready||S.scope!==identity())return '';const row=S.rows.find(r=>r.ID===id);return row?cell(row,key):'';}
   function feedbackForCrew(id){return S.ready&&S.scope===identity()&&S.crewSurface===id?S.staffingFeedback||{text:'',state:'ready'}:{text:'',state:'ready'};}
   const fieldLabels={territory:'Territory',laborType:'Labor Type',crewId:'Crew Assignment'};
@@ -32,7 +39,61 @@
     const crews=new Map(S.crews.map(c=>[M.id(c.ID),c])),active=S.rows.filter(r=>E.truth(r.IsActive)).length;
     $('employeeSummary').innerHTML='<span data-crew-number="employees:active">'+active+'</span> Active · <span data-crew-number="employees:inactive">'+(S.rows.length-active)+'</span> Inactive';
     document.querySelectorAll('[data-employee-status]').forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.employeeStatus===S.status)));
-    $('employeeFilterLabel').textContent={active:'Active',inactive:'Inactive',all:'All'}[S.status];renderGroups(crews);controls();
+    $('employeeFilterLabel').textContent={active:'Active',inactive:'Inactive',all:'All'}[S.status];
+    $('employeeVisibility').hidden=!S.ready;
+    if(!S.ready)closeVisibility();
+    updateVisibilityLabel();renderGroups(crews);controls();
+  }
+  function restoreVisibility(){
+    const {user,environment}=bridge().context(),key='crew-employees:hidden:'+environment+':'+user;
+    if(S.visibilityKey===key)return;
+    S.visibilityKey=key;S.hiddenEmployees.clear();
+    try{
+      const stored=JSON.parse(localStorage.getItem(key));
+      if(Array.isArray(stored))S.hiddenEmployees=new Set(stored.filter(id=>typeof id==='string'&&/^\d+$/.test(id)));
+    }catch{}
+  }
+  function updateVisibilityLabel(){
+    const count=S.rows.filter(row=>!visibleEmployee(row)).length;
+    $('employeeVisibilityLabel').textContent=count?'Hide People ('+count+')':'Hide People';
+    $('employeeShowEveryone').disabled=count===0;
+  }
+  function paintVisibilityChoices(){
+    const query=M.norm($('employeeVisibilitySearch').value);
+    const rows=S.rows.filter(row=>M.norm(row.EmployeeName+' '+row.Employee_Code).includes(query));
+    $('employeeVisibilityList').innerHTML=rows.map(row=>'<label><input type="checkbox" data-hide-employee="'+esc(row.ID)+'" '+(!visibleEmployee(row)?'checked':'')+'><span>'+esc(row.EmployeeName)+(row.Employee_Code?' <span class="employee-visibility-code">'+esc(row.Employee_Code)+'</span>':'')+'</span></label>').join('')||'<p>No matching people.</p>';
+  }
+  function applyVisibility(){
+    try{localStorage.setItem(S.visibilityKey,JSON.stringify([...S.hiddenEmployees]));}catch{}
+    render();document.dispatchEvent(new CustomEvent('crew:employees-changed'));
+  }
+  function closeVisibility(restoreFocus=false){
+    $('employeeVisibility').open=false;
+    $('employeeVisibilityList').replaceChildren();
+    if(restoreFocus)$('employeeVisibilityLabel').focus({preventScroll:true});
+  }
+  function installVisibility(){
+    const menu=$('employeeVisibility'),input=$('employeeVisibilitySearch'),list=$('employeeVisibilityList');
+    menu.addEventListener('toggle',()=>{
+      if(!menu.open)return;
+      if(!S.ready||S.scope!==identity()){closeVisibility();return;}
+      closePicker();$('employeeFilterMenu').open=false;
+      input.value='';paintVisibilityChoices();input.focus({preventScroll:true});
+    });
+    input.oninput=paintVisibilityChoices;
+    list.onchange=event=>{
+      const {hideEmployee}=event.target.dataset;
+      if(!S.ready||S.scope!==identity()||!S.rows.some(row=>row.ID===hideEmployee))return;
+      if(event.target.checked)S.hiddenEmployees.add(hideEmployee);else S.hiddenEmployees.delete(hideEmployee);
+      applyVisibility();
+    };
+    $('employeeShowEveryone').onclick=()=>{
+      if(!S.ready||S.scope!==identity())return;
+      S.hiddenEmployees.clear();applyVisibility();paintVisibilityChoices();input.focus({preventScroll:true});
+    };
+    $('employeeVisibilityDone').onclick=()=>closeVisibility(true);
+    menu.addEventListener('keydown',event=>{if(event.key==='Escape'&&menu.open){event.preventDefault();closeVisibility(true);}});
+    document.addEventListener('pointerdown',event=>{if(menu.open&&!menu.contains(event.target))closeVisibility();});
   }
   function restoreCellFocus(){if(S.groupBusy||S.loading||S.saving||S.pending)return;const f=S.focusCell;if(f&&document.activeElement===document.body){const host=f.crew?document.querySelector('[data-crew-detail="'+f.crew+'"]'):$('employeeGroups');const button=host?.querySelector('[data-employee-inline="'+f.id+'"][data-field="'+f.field+'"]:not(:disabled)');(button||f.crew&&$('cmEditCrew'))?.focus({preventScroll:true});}S.focusCell=null;}
   function recordedGroups(){return S.groupsEnabled?E.foremanGroups(S.rows,S.timecards,M.today()):[];}
@@ -47,10 +108,11 @@
     const peopleIcon='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 20v-2a6 6 0 0 0-4-5.65"/></svg>';
     const memberHtml=row=>{const foreman=M.norm(row.Labor_Type)==='foreman',initials=String(row.EmployeeName||'').trim().split(/\s+/).filter(Boolean).map(part=>part[0]).filter((_,i,all)=>i===0||i===all.length-1).join('').slice(0,2);return '<tr data-member="'+esc(row.ID)+'"'+(foreman?' class="employee-is-foreman"':'')+'><td class="employee-name" title="'+esc(row.EmployeeName+(row.Employee_Code?' · '+row.Employee_Code:''))+'"><div class="employee-person"><span class="employee-avatar" aria-hidden="true">'+esc(initials)+'</span><div class="employee-person-copy"><strong>'+esc(row.EmployeeName)+'</strong><small>'+esc(row.Employee_Code)+(E.truth(row.IsActive)?'':' · Inactive')+'</small>'+(foreman?'<span class="employee-role">Foreman</span>':'')+'</div></div></td><td>'+cell(row,'territory')+'</td><td>'+cell(row,'laborType')+'</td><td>'+cell(row,'crewId')+'</td></tr>';};
     for(const group of groups){
-      const crew=group.crew,groupMatch=M.norm(group.name+' '+(crew?.Crew_Code||'')).includes(query),members=group.members.filter(row=>groupMatch||M.norm(row.EmployeeName+' '+row.Employee_Code+' '+row.Territory+' '+row.Labor_Type).includes(query));
+      const crew=group.crew,groupMatch=M.norm(group.name+' '+(crew?.Crew_Code||'')).includes(query),members=group.members.filter(row=>visibleEmployee(row)&&(groupMatch||M.norm(row.EmployeeName+' '+row.Employee_Code+' '+row.Territory+' '+row.Labor_Type).includes(query)));
       if(!members.length)continue;
       visible+=members.length;if(group.crewId)assignedGroups++;else unassigned+=members.length;
-      const color=/^#[a-f\d]{6}$/i.test(crew?.Badge_Color||'')?crew.Badge_Color:group.crewId?'#49688c':'#a16b24',foremen=group.foremen.map(row=>row.EmployeeName).join(', '),context=foremen?(group.foremen.length===1?'Foreman: ':'Foremen: ')+foremen:group.crewId?'No Assigned Foreman':'Awaiting Crew Assignment',badge=crew?esc(E.label({name:crew.Crew_Name,code:crew.Crew_Code})):peopleIcon;
+      const visibleForemen=group.foremen.filter(visibleEmployee);
+      const color=/^#[a-f\d]{6}$/i.test(crew?.Badge_Color||'')?crew.Badge_Color:group.crewId?'#49688c':'#a16b24',foremen=visibleForemen.map(row=>row.EmployeeName).join(', '),context=foremen?(visibleForemen.length===1?'Foreman: ':'Foremen: ')+foremen:group.foremen.length?'Foreman Hidden':group.crewId?'No Assigned Foreman':'Awaiting Crew Assignment',badge=crew?esc(E.label({name:crew.Crew_Name,code:crew.Crew_Code})):peopleIcon;
       html.push('<article class="employee-crew-group'+(!group.crewId?' employee-unassigned':'')+'" data-employee-crew="'+esc(group.key)+'" style="--employee-crew-accent:'+color+';--employee-crew-ink:'+(root.CrewApp.badgeInk?.(color)||'#ffffff')+'"><header><span class="employee-crew-badge" aria-hidden="true">'+badge+'</span><div class="employee-crew-title"><h3 title="'+esc(group.name)+'">'+esc(group.name)+(crew&&!E.truth(crew.Active)?'<span class="employee-crew-inactive">Inactive</span>':'')+'</h3><p title="'+esc(context)+'">'+esc(context)+'</p></div><span class="employee-crew-count">'+peopleIcon+'<span data-crew-number="employee-crew:'+esc(group.key)+':members">'+members.length+'</span><span>'+(members.length===1?'Employee':'Employees')+'</span></span></header><table aria-label="'+esc(group.name+' Employees')+'"><tbody>'+members.map(memberHtml).join('')+'</tbody></table></article>');
     }
     $('employeeGroups').innerHTML=html.join('')||'<div class="cm-empty compact">No Matching Employees</div>';
@@ -70,7 +132,7 @@
       if(groupsEnabled)reports.push(['All_Crew_Timecards',['ID','Timecard_ID','Work_Date','Foreman_ID','Foreman_Name','Job_Code','IsDeleted','Multi_Line']]);
       const values=await Promise.all(reports.map(async([reportName,fields])=>{const rows=await LMData.readAll({reportName,fields,criteria:reportName==='All_Crew_Timecards'?"(Work_Date >= '"+M.us(M.today()-13)+"' && Work_Date <= '"+M.us(M.today())+"')":undefined,fresh:true,isCancelled:()=>scope!==identity()||generation!==S.generation});for(const row of rows)for(const field of fields)if(!Object.hasOwn(row,field))throw new Error(reportName+' must expose native field '+field+'.');for(const row of rows)if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID))throw new Error('Invalid employee, crew or timecard identity.');return rows;}));
       if(scope!==identity()||generation!==S.generation)return;
-      S.rows=values[0].sort((a,b)=>String(a.EmployeeName).localeCompare(String(b.EmployeeName)));S.crews=values[1];S.timecards=values[2]||[];S.groupsEnabled=groupsEnabled;S.ready=true;S.scope=scope;render();document.dispatchEvent(new CustomEvent('crew:employees-changed'));
+      S.rows=values[0].sort((a,b)=>String(a.EmployeeName).localeCompare(String(b.EmployeeName)));S.crews=values[1];S.timecards=values[2]||[];S.groupsEnabled=groupsEnabled;S.ready=true;S.scope=scope;restoreVisibility();render();if($('employeeVisibility').open)paintVisibilityChoices();document.dispatchEvent(new CustomEvent('crew:employees-changed'));
       status(cap.permissions.assignments===true?'':'Employee assignments are read-only for your account.');
       if(!S.opened){S.opened=true;CrewManager.switchWorkspace('employees');}
       try{const pending=JSON.parse(sessionStorage.getItem(storageKey()));if(pending?.action==='save-employee'&&pending.employee?.id&&pending.requestId){S.pending=pending;bridge().setPending(true);open(S.rows.find(r=>r.ID===pending.employee.id),pending.employee);message('The previous save needs review. No write has been replayed.','unknown');controls();}}catch{}
@@ -128,6 +190,7 @@
   }
   async function check(){if(!S.pending||S.saving)return;S.saving=true;controls();message('Checking the saved assignment…','pending');const body=S.pending,scope=identity();try{const result=await bridge().api({...body,action:'employee-status'});if(scope!==identity())return;if(result.state==='saved')finish(result,body);else message('The save is unconfirmed. Review the employee in Creator. No write was replayed.','unknown');}catch(e){message(e.message,'unknown');}finally{S.saving=false;controls();}}
   function install(){
+    installVisibility();
     $('employeeSearch').oninput=e=>{closePicker();S.query=e.target.value;render();};$('employeeFilters').onclick=e=>{const b=e.target.closest('[data-employee-status]');if(b){closePicker();S.status=b.dataset.employeeStatus;$('employeeFilterMenu').open=false;render();}};
     for(const host of [$('employeeRoster'),$('cmDetail')])host.addEventListener('click',e=>{const b=e.target.closest('[data-employee-inline]');if(b&&!b.disabled)inline(b);});
     $('employeeFilterSearch').oninput=e=>$('employeeFilters').querySelectorAll('button').forEach(b=>b.hidden=!M.norm(b.textContent).includes(M.norm(e.target.value)));
