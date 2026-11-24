@@ -32,6 +32,16 @@ calendar-month mapping and its inverse so source dates remain exact. This displa
 range does not change the existing 12-month upcoming-phase selection rule.
 Sections share the same band within each row type.
 
+**Hide People** is a searchable multi-select in the Employees toolbar. It
+filters people from both roster panes for the current browser, Creator user and
+environment. Include hidden people in the picker so they can be restored
+individually or with **Show Everyone**. Keep source staffing and operational
+actions tied to their full employee sets.
+
+**View Sample Schedule** opens a separate read-only preview from **Milestones &
+Tasks**. It uses the same timeline and filters with clearly labeled fictional
+records and a **Schedule Dates** tab. The live workspace retains **Edit Schedule**.
+
 October 30 supersedes October 29's natural page-height timeline: both main
 workspaces fit Creator's actual iframe, and their report regions scroll. The
 timeline fits the selected calendar horizon horizontally where readable. Retain horizontal
