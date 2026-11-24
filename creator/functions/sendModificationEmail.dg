@@ -182,7 +182,7 @@ string sendModificationEmail(int modificationId, string action)
 	detailCard = detailCard + "<div style='margin-top:8px;font-size:13px;color:#475569;'><b>Reason:</b> " + modReasonSafe + "</div>";
 	detailCard = detailCard + "</div>";
 	linkBlock = "<a href='" + approvalUrl + "' style='display:inline-block;background:#1e40af;color:#ffffff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px;'>Open Budget Page</a>";
-	// Same native SpreadsheetML/toFile attachment pattern as PO approval mail.
+	// Build the same typed workbook input used by the PO XLSX converter.
 	attachmentXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet'><Styles><Style ss:ID='Default' ss:Name='Normal'><Font ss:FontName='Calibri' ss:Size='11'/><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00;-$#,##0.00'/></Style></Styles><Worksheet ss:Name='Budget Modification'><Table><Column ss:Width='160'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/><Column ss:Width='140'/>";
 	metadataRows = List();
 	metadataRows.add({"Budget",budgetLabelSafe}); metadataRows.add({"Budget Item",itemNameSafe}); metadataRows.add({"Reference",modRefSafe});
@@ -241,7 +241,7 @@ string sendModificationEmail(int modificationId, string action)
 		}
 	}
 	attachmentXml = attachmentXml + "</Table></Worksheet></Workbook>";
-	modificationFile = attachmentXml.toFile("Budget-Modification-" + vModId + ".xls");
+	attachmentFilename = "Budget-Modification-" + vModId + ".xlsx";
 	linkBlock = linkBlock + "<p style='margin:18px 0 0 0;font-size:12px;color:#64748b;'>If the button does not work, copy and paste this link into your browser:<br>";
 	linkBlock = linkBlock + "<span style='word-break:break-all;color:#1e40af;'>" + approvalUrl + "</span></p>";
 	// ---- created / approved: notify the next pending approver ----
@@ -255,6 +255,12 @@ string sendModificationEmail(int modificationId, string action)
 			{
 				return "No approver email found for the next Modification approval.";
 			}
+			attachment = thisapp.approvalWorkbookXlsxFile(attachmentXml,attachmentFilename);
+			if(attachment.get("success") != true)
+			{
+				return "ERROR: Budget Modification XLSX attachment could not be generated. No email was sent.";
+			}
+			modificationFile = attachment.get("file");
 			emailSubject = "Modification Approval Needed - " + budgetLabel + " - " + itemName;
 			emailBody = "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
 			emailBody = emailBody + "<h2 style='margin:0 0 8px 0;color:#0f2744;'>Budget Modification Approval Needed</h2>";
@@ -297,12 +303,22 @@ string sendModificationEmail(int modificationId, string action)
 	{
 		modRec.Status="Rejected";
 		notifiedList = "";
+		modificationFile = null;
 		for each  chainRow2 in chainRows
 		{
 			rowStatus2 = ifnull(chainRow2.Status,"").trim();
 			rowEmail2 = ifnull(chainRow2.Approver,"").trim();
 			if(rowStatus2 == "Approved" && rowEmail2 != "")
 			{
+				if(modificationFile == null)
+				{
+					attachment = thisapp.approvalWorkbookXlsxFile(attachmentXml,attachmentFilename);
+					if(attachment.get("success") != true)
+					{
+						return "ERROR: Budget Modification XLSX attachment could not be generated. No email was sent.";
+					}
+					modificationFile = attachment.get("file");
+				}
 				emailSubject2 = "Modification Rejected - " + budgetLabel + " - " + itemName;
 				emailBody2 = "<div style='font-family:Arial,sans-serif;color:#0f172a;line-height:1.5;'>";
 				emailBody2 = emailBody2 + "<h2 style='margin:0 0 8px 0;color:#8f221c;'>Budget Modification Rejected</h2>";

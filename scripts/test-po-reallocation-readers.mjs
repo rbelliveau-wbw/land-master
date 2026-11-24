@@ -28,7 +28,7 @@ function runtime(modifications){
   function query(form,predicate,sort){var rows=(tables[form]||[]).map(record).filter(predicate);if(sort)rows.sort((a,b)=>a[sort]-b[sort]);return new Proxy(rows,{get(array,key){return key in array||typeof key==='symbol'?array[key]:array[0]?.[key]??null;},set(array,key,value){array[0][key]=value;return true;}});}
   tables.Activity_Log=[];function insertRecord(form,value){if(value.Claim_Key&&tables[form].some(row=>row.Claim_Key===value.Claim_Key))throw Error('Duplicate native Claim_Key');value.ID=200+tables[form].length;tables[form].push(value);writes++;return value.ID;}
   function sendMail(message){mails.push(message);}
-  var thisapp={environment:{type:'Production'},poApprovalBundle(){return map({success:true,bundle});},poElementExportRows(){return [];}};
+  var thisapp={environment:{type:'Production'},poApprovalBundle(){return map({success:true,bundle});},poElementExportRows(){return [];},approvalWorkbookXlsxFile(xml,name){return map({success:true,file:{name}});}};
   `+programs,c);
   return c;
 }
@@ -38,13 +38,16 @@ for(const [type,amount,normalized,actual,net] of [
   ['Increase','25.00',['-75.00','0.00','0.00','100.00','0.00'],['-75.00','0.00','0.00','100.00','0.00'],25],
   ['Decrease','25.00',['125.00','0.00','0.00','-100.00','0.00'],['-125.00','0.00','0.00','100.00','0.00'],-25]
 ]){
-  const c=runtime([{id:'111',budgetItemId:'71',amount,componentReallocation:true,modificationType:type,components:parts(normalized),signedComponents:parts(actual)}]);
+  const reason = 'Use $100 & <existing crew>\r\nKeep the original scope';
+  const c=runtime([{id:'111',budgetItemId:'71',amount,componentReallocation:true,modificationType:type,components:parts(normalized),signedComponents:parts(actual),reason}]);
   const workbook=c.poExcelWorkbook('51');assert.equal(workbook.success,true,workbook.error);assert.equal(c.writes,0,'downloads stay read-only');
   const sheet=workbook.content.split("ss:Name='Budget Modifications'")[1].split('</Worksheet>')[0];assert.match(sheet,/Net Change/);assert.ok(sheet.includes("ss:Type='Number'>"+net+'</Data>'),'net Amount follows the global direction once');
   for(const value of actual)assert.ok(sheet.includes("ss:Type='Number'>"+value+'</Data>'),'workbook exports actual signed component '+value);
   assert.match(c.sendPurchaseOrderEmail('51'),/^OK:/);assert.equal(c.mails.length,1);assert.equal(c.mails[0].to,'approver@example.test');assert.match(c.mails[0].message,/Proposed Budget Changes/);assert.match(c.mails[0].message,/Road &amp; &lt;scope&gt;/);assert.ok(c.mails[0].message.includes(net<0?'Net -$25.00':'Net $'+net+'.00'));assert.match(c.mails[0].message,/-\$[0-9]+\.00/,'offset reductions are explicit in the approval message');assert.match(c.mails[0].message,/\$100\.00/,'element-four increase remains visible even when net is zero or negative');
+  assert.match(c.mails[0].message,/Road &amp; &lt;scope&gt;.*<\/tr><tr><td colspan='8'[^>]*><strong>Reason<\/strong><br>Use \$100 &amp; &lt;existing crew&gt;<br>Keep the original scope/);
   const writes=c.writes;assert.match(c.sendPurchaseOrderEmail('51'),/already recorded/);assert.equal(c.mails.length,1,'delivery stamp prevents duplicate mail');assert.equal(c.writes,writes);
 }
 const legacy=runtime([{id:'111',budgetItemId:'71',amount:'10.00',components:parts(['10.00','0.00','0.00','0.00','0.00'])}]);assert.equal(legacy.poExcelWorkbook('51').success,true);assert.match(legacy.sendPurchaseOrderEmail('51'),/^OK:/);assert.match(legacy.mails[0].message,/Net \$10/);
+assert.doesNotMatch(legacy.mails[0].message,/<strong>Reason<\/strong>/);
 const denied=runtime([]);vm.runInContext("thisapp.poApprovalBundle=function(){return map({success:false,error:'Unverified component marker'});};",denied);assert.equal(denied.poExcelWorkbook('51').success,false);assert.match(denied.sendPurchaseOrderEmail('51'),/^ERROR:/);assert.equal(denied.mails.length,0);assert.equal(denied.writes,0);
 console.log('PO reallocation readers: actual native workbook/email, normalized positive/zero/negative net, signed element offsets, escaped native item names, unchanged recipient/delivery guard, legacy compatibility and unverified-bundle refusal passed.');

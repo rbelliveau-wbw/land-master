@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {translate} from './lib/deluge-pdf-test-runtime.mjs';
 import {verifyPODownload} from './lib/po-download-roundtrip.mjs';
+import {approvalXlsxFixture,readApprovalXlsx} from './lib/approval-xlsx-fixture.mjs';
 
 // Execute the checked-in Deluge functions against local records. This harness
 // verifies behavior; it does not replace native Creator compilation or email QA.
@@ -35,7 +36,7 @@ const input={workflow:'Purchase Order',budgetId:'61',territory:'North',departmen
 const clone=value=>JSON.parse(JSON.stringify(value));
 function runtime({context=input,policyRow=policy,login='test-owner',environment='Production',users,extraTables={},mailFailure=false,deleteFailure=false}={}){
   const tables={Approval_Policy:[clone(policyRow)],Approval_Role:[{ID:1,Role_Name:'CFO',Active:true},{ID:2,Role_Name:'VP',Active:true},{ID:3,Role_Name:'COO',Active:true}],Approval_Role_Assignment:[{ID:21,Role:1,Company:31,Person:12,Active:true,Territory_Key:'',Department_Key:'',Effective_From:null,Effective_To:null},{ID:22,Role:3,Person:14,Active:true,Territory_Key:'',Department_Key:''}],User_Access:users||[{ID:19,User:'test-owner',Full_Name:'Robby Belliveau',Approver_Email:'legal@example.com',Approval_Routing_Enabled:false},{ID:12,User:'normal-cfo',Full_Name:'Normal CFO',Approver_Email:'normal@example.com',Approval_Routing_Enabled:true},{ID:13,User:'territory-vp',Full_Name:'Territory VP',Approver_Email:'vp@example.com',Approval_Routing_Enabled:true},{ID:14,User:'assigned-coo',Full_Name:'Assigned COO',Approver_Email:'coo@example.com',Approval_Routing_Enabled:true}],Territory:[{ID:501,Territory_Name:'North',VP:[{ID:13}],Dev_Mgr:[]}],Company:[{ID:31}],Add_Budget:[{ID:61}],Approval_Config_Audit:[],Approval_Config_Lock:[],PO_Phase_Lock:[],PO_Item:[],PO_Operation:[],Budget_Modification:[],Budget_Approvals:[],Payment_Request:[],Approval_Route_Snapshot:[],...clone(extraTables)};
-  const c=vm.createContext({tables:clone(tables),payload:clone(context),login,environment,mailFailure,deleteFailure});
+  const c=vm.createContext({tables:clone(tables),payload:clone(context),login,environment,mailFailure,deleteFailure,approvalXlsxFixture});
   vm.runInContext(`
   tables=JSON.parse(JSON.stringify(tables));tables.Activity_Log=[];payload=JSON.parse(JSON.stringify(payload));
   function map(v){if(!v||typeof v!=='object'||Object.prototype.hasOwnProperty.call(v,'get'))return v;if(Array.isArray(v))return v.map(map);for(var k of Object.keys(v))v[k]=map(v[k]);Object.defineProperties(v,{get:{value:function(k){return this[k]??null;}},put:{value:function(k,v){this[k]=map(v);}},remove:{value:function(k){delete this[k];}},keys:{value:function(){return Object.keys(this);}},toString:{value:function(){return JSON.stringify(this);}}});return v;}
@@ -56,6 +57,7 @@ function runtime({context=input,policyRow=policy,login='test-owner',environment=
   // New read-only element producer has its own actual-source fixture; these
   // older authorization/delivery cases retain their original PO-shaped tables.
   thisapp.poElementExportRows=function(){return [];};
+  thisapp.approvalWorkbookXlsxFile=function(xml,filename){return map({success:true,file:approvalXlsxFixture(xml,filename)});};
   // Outcome recipient/claim execution has its own actual-source native-shaped
   // fixture. Keep this older policy/financial fixture focused on its boundary.
   thisapp.poOutcomeNotificationStatus=function(){return map({contract:'po-outcome-email-v1',state:'Not Started',emailSent:false,canRetryEmail:false,events:[]});};
@@ -107,23 +109,24 @@ emailTables.PO_Item=[
   {ID:202,Purchase_Order:51,Revision:'revision-one',Line_Order:2,Budget_Item:{Item_Name:'Tanks & valves'},Cost_Code:'C_CAR01-4410-5',Description:'=1+1',Quantity_Exact:null,UOM:'LS',Cost_Element:'5',Unit_Price_Exact:null,Final_Amount_Exact:'35.00'}
 ];
 r=runtime({extraTables:emailTables});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
-const packet=r.c.mails[0];assert.equal(packet.Attachments.name,'Purchase_Order_51.xml');
-assert.match(packet.Attachments.content,/urn:schemas-microsoft-com:office:spreadsheet/);
-const XLSX=vm.runInNewContext(fs.readFileSync('widgets/land-master/src/app/vendor/xlsx.full.min.js','utf8')+';XLSX');
-const attached=XLSX.read(packet.Attachments.content.replace(/<[^>]*>/g,tag=>tag.replace(/(\s[\w:.-]+)='([^']*)'/g,(_,name,value)=>name+'="'+value.replace(/"/g,'&quot;')+'"')),{type:'string',cellNF:true});
+const packet=r.c.mails[0];assert.equal(packet.Attachments.name,'Purchase_Order_51.xlsx');
+const attached=readApprovalXlsx(packet.Attachments);
 assert.equal(attached.SheetNames[0],'PO Lines');
 const lines=attached.Sheets['PO Lines'];
 assert.deepEqual(['A','B','C','D','E','F','G'].map(column=>lines[column+'1'].v),['Cost Code','Vendor','Description','Qty','UOM','Unit Price','Total']);
 assert.equal(lines.D2.v,2);assert.equal(lines.D2.w,'2');assert.equal(lines.F2.v,10);assert.equal(lines.G2.v,20);
 assert.equal(lines.D3,undefined);assert.equal(lines.F3,undefined);assert.equal(lines.G3.v,35);
 assert.equal(lines.C3.v,'=1+1');assert.equal(lines.C3.f,undefined);
-assert.match(packet.Attachments.content,/Tanks &amp; valves/);assert.match(packet.Attachments.content,/Changed &lt;description&gt;/);
-assert.match(packet.Attachments.content,/<Data ss:Type='String'>=1\+1<\/Data>/,'Description is text, never an Excel formula');
-assert.match(packet.Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/);
-assert.equal((packet.Attachments.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,5,'Five compact summary rows');
-assert.match(packet.Attachments.content,/ss:Height='22' ss:AutoFitHeight='0'/);assert.doesNotMatch(packet.Attachments.content,/ss:Height='(?:[3-9]\d|\d{3})'/);
-assert.match(packet.Attachments.content,/<Data ss:Type='Number'>20.00<\/Data>/);assert.match(packet.Attachments.content,/<Data ss:Type='Number'>35.00<\/Data>/);
-assert.match(packet.Attachments.content,/<Data ss:Type='DateTime'>2026-10-12T00:00:00.000<\/Data>/);
+assert.equal(lines.C2.v,"Changed <description> O'Brien scope='literal'");
+assert.equal(attached.Sheets['Purchase Order'].H10.f,'SUM($H$8:$H$9)');
+assert.equal(attached.Sheets['Purchase Order'].H10.v,55);
+assert.match(packet.Attachments.sourceXml,/Tanks &amp; valves/);assert.match(packet.Attachments.sourceXml,/Changed &lt;description&gt;/);
+assert.match(packet.Attachments.sourceXml,/<Data ss:Type='String'>=1\+1<\/Data>/,'Description is text, never an Excel formula');
+assert.match(packet.Attachments.sourceXml,/ss:Formula='=SUM\(R8C8:R9C8\)'/);
+assert.equal((packet.Attachments.sourceXml.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,5,'Five compact summary rows');
+assert.match(packet.Attachments.sourceXml,/ss:Height='22' ss:AutoFitHeight='0'/);assert.doesNotMatch(packet.Attachments.sourceXml,/ss:Height='(?:[3-9]\d|\d{3})'/);
+assert.match(packet.Attachments.sourceXml,/<Data ss:Type='Number'>20.00<\/Data>/);assert.match(packet.Attachments.sourceXml,/<Data ss:Type='Number'>35.00<\/Data>/);
+assert.match(packet.Attachments.sourceXml,/<Data ss:Type='DateTime'>2026-10-12T00:00:00.000<\/Data>/);
 assert.match(packet.message,/Full line details are in the attached Excel file/);assert.match(packet.message,/Changed &lt;description&gt;/,'Approval email includes escaped line descriptions');assert.doesNotMatch(packet.message,/Approval chain/,'Route remains in the module');
 r=runtime({extraTables:emailTables,environment:'Development'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);assert.match(r.c.mails[0].subject,/\[DEV TEST\]/);
 // Gmail requires absolute URLs; the native appuri can be only an owner/app path.
@@ -133,9 +136,15 @@ for(const [environment,path] of [['Production',''],['Development','/environment/
  vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c);assert.equal(r.c.mails.length,1,'URL correction preserves the recorded-delivery guard');
 }
 r=runtime({extraTables:emailTables,environment:'Unknown'});assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^ERROR:/);assert.equal(r.c.mails.length,0);assert.equal(r.tables().Budget_Approvals[0].Sent_Date,null);
+r=runtime({extraTables:emailTables});
+vm.runInContext("thisapp.approvalWorkbookXlsxFile=function(){return map({success:false});};",r.c);
+assert.match(r.run('sendPurchaseOrderEmail','51'),/XLSX attachment could not be generated/);
+assert.equal(r.c.mails.length,0);
+assert.equal(r.tables().Activity_Log[0].Status,'Failed');
+assert.equal(r.tables().Budget_Approvals[0].Sent_Date,null);
 console.log('PO email URLs: absolute HTTPS Creator host, exact Dev/Stage/Prod path and PO identity, unknown-environment denial and duplicate delivery guard passed.');
 // The same compact workbook is used for a read-only download and email.
-r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.ok(packet.Attachments.content.includes(workbook.content.slice(workbook.content.indexOf('<Worksheet')).replaceAll('<Selected/>','')));assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
+r=runtime({extraTables:emailTables});let workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true,JSON.stringify(workbook));assert.ok(packet.Attachments.sourceXml.includes(workbook.content.slice(workbook.content.indexOf('<Worksheet')).replaceAll('<Selected/>','')));assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
 await verifyPODownload({...workbook,id:'51',budgetId:'61'});
 const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_Description='General & <scope>';r=runtime({extraTables:withDescription});workbook=r.run('poExcelWorkbook','51');assert.equal(workbook.success,true);assert.match(workbook.content,/General &amp; &lt;scope&gt;/);assert.match(workbook.content,/SUM\(R9C8:R10C8\)/);assert.equal((workbook.content.match(/ss:Height='18' ss:AutoFitHeight='0'/g)||[]).length,6);assert.equal(r.c.writes,0);assert.equal(r.c.mails.length,0);
 // The real delivery and attachment producers must retain all five element rows.
@@ -144,10 +153,10 @@ const withDescription=clone(emailTables);withDescription.Payment_Request[0].PO_D
 r=runtime({extraTables:emailTables});
 vm.runInContext(`Number.prototype.text=function(){return '$'+Number(this).toLocaleString('en-US',{maximumFractionDigits:4});};thisapp.poElementExportRows=function(){return map(['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other'].map((label,index)=>({budgetItemId:'71',costElement:String(index+1),costCode:'0032<&',values:['Tanks & valves',label,100,0,100,index===4?35:0,index===4?65:100,index===4?25:0,index===4?55:0,index===4?35:100]})));};`,r.c);
 assert.match(vm.runInContext(`sendPurchaseOrderEmail('51')`,r.c),/^OK:/);
-for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.content.includes(label));}
+for(const label of ['(1) Labor','(2) Materials','(3) Equipment','(4) Subcontractor','(5) Other']){assert.ok(r.c.mails[0].message.includes(label));assert.ok(r.c.mails[0].Attachments.sourceXml.includes(label));}
 assert.match(r.c.mails[0].message,/Cost Code/);assert.equal((r.c.mails[0].message.match(/0032&lt;&amp;/g)||[]).length,5,'preserve the independently captured native Cost Code column on every element row');
 assert.match(r.c.mails[0].message,/Current Bud Mod/);assert.match(r.c.mails[0].message,/Available \+ Current Bud Mod − This PO = Remaining/);
-assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.content,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.content,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
+assert.match(r.c.mails[0].message,/Modified Budget − Existing POs = Available/);assert.match(r.c.mails[0].message,/Tanks &amp; valves/);assert.match(r.c.mails[0].Attachments.sourceXml,/ss:Name='Budget Elements'/);assert.match(r.c.mails[0].Attachments.sourceXml,/ss:Formula='=SUM\(R8C8:R9C8\)'/,'element detail does not enter the parent PO total formula');
 assert.equal(r.c.mails[0].to,testCFO.email);assert.equal(r.c.mails.length,1);assert.equal(r.tables().PO_Item[0].Cost_Element,'5','outbound labels never change stored picklist codes');
 await verifyPODownload({...r.run('poExcelWorkbook','51'),id:'51',budgetId:'61'});
 console.log('PO Excel downloads: actual native XML through production download handler to genuine XLSX; typed IDs, escaped text, literal formulas, dates, currency, totals, layout and all five element rows round-trip correctly.');
