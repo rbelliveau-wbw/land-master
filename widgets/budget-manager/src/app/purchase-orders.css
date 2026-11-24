@@ -68,6 +68,10 @@
 .po-total{justify-content:flex-end;gap:15px;padding-top:14px}.po-total>span{font-size:13px;font-weight:750;letter-spacing:.8px;color:#41658f}.po-total>strong{font-size:30px;color:#173f78;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
 .po-total.po-context-total{justify-content:space-between;align-items:center;gap:18px;min-height:65px}
 .po-total.po-context-total>.po-budget-context{display:block;min-width:0;text-align:left}
+.po-modification-type{display:grid;gap:5px;max-width:240px;margin-top:12px;color:var(--gw-text,#0b2345);font-size:14px;font-weight:600}
+.po-modification-type[hidden]{display:none}
+.po-modification-type select{width:100%;min-height:34px;padding:5px 9px;border:1px solid var(--gw-border,#cbd9eb);border-radius:7px;background:var(--gw-surface,#fff);color:inherit;font:inherit;font-weight:400}
+.po-modification-type select:focus-visible{outline:2px solid var(--gw-accent,#1e40af);outline-offset:2px}
 .po-context-metrics{display:flex;align-items:center;flex-wrap:wrap;gap:5px 13px;margin-bottom:8px;color:#5c7597;font-size:11px}
 .po-context-metrics strong{font-size:11px;font-weight:700;letter-spacing:0;color:#173f78}
 .po-context-mod strong{color:#9a5a0c}.po-context-remaining strong{color:#087c64}.po-context-remaining.is-negative strong{color:#9a5a0c}

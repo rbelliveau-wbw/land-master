@@ -104,7 +104,11 @@
       html+=(model.originalPoId?'<section class="po-supplement-editor" aria-labelledby="po-supplement-title"><h3 id="po-supplement-title" class="po-supplement-new-title">Supplemental Lines</h3>':'')+'<div class="po-ledger-scroll"><div class="po-ledger-head"><span>Cost code / budget item</span><span>Item name</span><span>Description</span><span>Qty</span><span>UOM</span><span>ELEM</span><span>Unit price</span><span>Total</span><span></span></div>';
       html+='<div class="po-lines'+(model.originalPoId?' po-supplement-additions':'')+'">'+model.lines.map(function(line,index){var manual=line.pricingMode==='Manual',item=items.find(function(row){return row.id===line.budgetItemId;}),itemName=item?item.name:line.budgetItemId?'Item unavailable':'—';return '<article class="po-line" data-line="'+esc(line.key)+'"><div class="po-line-fields"><div class="po-code-cell">'+picker('Budget Item',line.budgetItemId,items.map(function(item){return {id:item.id,label:item.id===line.budgetItemId?(lineCode(line)||item.label):item.label};}),'budgetItemId',line.key)+'</div><span class="po-item-cell" title="'+esc(itemName)+'" aria-label="Item name">'+esc(itemName)+'</span>'+field('Description',line.description,'description',line.key)+field('Quantity',line.quantity,'quantity',line.key,false)+picker('UOM',line.uom,root.LMPO.uoms.map(function(n){return {id:n,label:n};}),'uom',line.key)+picker('ELEM',line.costElement,root.LMPO.elements,'costElement',line.key)+field('Unit Price',line.unitPrice,'unitPrice',line.key,false)+field('Final Amount',line.finalAmount,'finalAmount',line.key)+'<div class="po-line-actions">'+(!locked?'<button class="po-duplicate" data-po-duplicate="'+esc(line.key)+'" title="Duplicate line" aria-label="Duplicate line '+(index+1)+'" '+(model.lines.length>=250?'disabled':'')+'>'+duplicateIcon+'</button><button class="po-x po-remove" data-po-remove="'+esc(line.key)+'" aria-label="Remove line '+(index+1)+'">'+x+'</button>':'')+'</div></div><div class="po-line-meta"><span data-po-mode>'+(model.originalPoId?'<span class="po-new-line-tag">New</span> ':'')+ (manual?'Manual amount':'')+'</span><button class="po-link" data-po-calculated="'+esc(line.key)+'" '+(manual&&!locked?'':'hidden')+'>Use quantity × price</button></div></article>';}).join('')+'</div></div>'+(model.originalPoId?'</section>':'');
       if(!locked)html+='<div class="po-add-actions"><button class="po-add" data-po-add="1"><span aria-hidden="true">+</span> Add line</button><button class="po-add" data-po-add="10">+ 10 lines</button></div>';
-      html+='<div class="po-total po-context-total"><div class="po-budget-context" data-po-context aria-live="polite"></div><div class="po-total-amount"><span>TOTAL</span><strong data-po-total></strong></div></div>';
+      html+='<div class="po-total po-context-total"><div class="po-budget-context"><div data-po-context aria-live="polite"></div>'+
+        '<label class="po-modification-type" hidden><span>Budget Modification Type</span><select data-po-modification-type>'+
+        '<option value="">Choose Type</option>'+root.LMPO.modificationTypes.map(function(type){
+          return '<option value="'+type+'"'+(model.modificationClassification===type?' selected':'')+'>'+type+'</option>';
+        }).join('')+'</select></label></div><div class="po-total-amount"><span>TOTAL</span><strong data-po-total></strong></div></div>';
       card.querySelector('.po-body').innerHTML=html;
       card.querySelector('footer').innerHTML='<span class="po-spacer"></span>'+(!locked?(canAmend()?'<button class="mbtn neutral" data-po-close>Close</button><button class="mbtn primary" data-po-save="Save">Save changes</button>':'<button class="mbtn neutral" data-po-save="Save">Save draft</button><button class="mbtn primary" data-po-save="Submit">'+(model.approvalState==='Rejected'?'Resubmit PO':'Submit PO')+'</button>'):'<button class="mbtn neutral" data-po-close>Close</button>');
       if(model.originalPoId&&!locked)card.querySelector('footer').insertAdjacentHTML('afterbegin','<button class="mbtn neutral" type="button" data-po-refresh-supplement '+(model.supplementRefreshing?'disabled':'')+'>Refresh Approved Lines</button>');
@@ -141,8 +145,16 @@
     }
     function patchContext(){
       var node=card.querySelector('[data-po-context]');if(!node||progress)return;
+      var classification=card.querySelector('[data-po-modification-type]');
+      function patchModificationType(hasModifications){
+        var field=classification?.parentElement;
+        if(!field)return;
+        var show=hasModifications&&model.modificationTypeSupported&&!readOnly();
+        field.hidden=!show;
+        classification.disabled=!show;
+      }
       var allocations=allocationRows(),selected=model.lines.filter(function(line){return !!line.budgetItemId;}),valid=selected.length>0&&model.balanceState==='loaded'&&allocations.every(function(row){return row.verified;});
-      if(!valid){patchApprovers(false,0n);node.innerHTML='<span class="po-context-muted">'+(selected.length?'Budget context unavailable':'Choose a budget item to see approvals')+'</span>';clearTimeout(previewTimer);previewGeneration++;model.previewKey='';return;}
+      if(!valid){patchModificationType(false);patchApprovers(false,0n);node.innerHTML='<span class="po-context-muted">'+(selected.length?'Budget context unavailable':'Choose a budget item to see approvals')+'</span>';clearTimeout(previewTimer);previewGeneration++;model.previewKey='';return;}
       var available=0n,shortfall=0n,remaining=0n,pending=0n;allocations.forEach(function(row){available+=row.available;shortfall+=row.shortfall;remaining+=row.remaining;pending+=row.pending;});
       var components=root.LMPO.elementAllocations(model.lines,model.balances||[],model.reservedLines,model.approvalBundle&&model.approvalBundle.modifications),componentShortfalls={};
       components.forEach(function(group){var balance=(model.balances||[]).find(function(b){return b.budgetItemId===group.budgetItemId;});if(balance&&balance.componentBaselineAvailable===true){var known=group.elements.filter(function(e){return model.lines.some(function(line){return line.budgetItemId===group.budgetItemId&&line.costElement===e.costElement;});});if(known.every(function(e){return e.shortfall!==null;}))componentShortfalls[group.budgetItemId]=known.reduce(function(sum,e){return sum+e.shortfall;},0n);}});
@@ -152,6 +164,7 @@
       if(bundle&&readOnly()){modification=0n;net=0n;bundle.modifications.forEach(function(mod){var amount=root.LMPO.money(mod.amount);modification+=mod.componentReallocation&&mod.signedComponents?Object.values(mod.signedComponents).reduce(function(sum,n){return sum+root.LMPO.money(n[0]==='-'?n.slice(1):n);},0n):amount;net+=(mod.modificationType==='Decrease'?-1n:1n)*amount;});}
       var roles=bundle&&(readOnly()||canAmend())?bundle.rows.map(function(row){return {role:row.role};}):model.previewRoles;
       node.innerHTML='<div class="po-context-metrics"><span>Available <strong>'+money(root.LMPO.currency(available))+'</strong></span>'+(modification>0n?'<span class="po-context-mod">Net Modification <strong>'+(net>0n?'+':'')+money(root.LMPO.currency(net))+'</strong></span>':'<span class="po-context-remaining'+(remaining<0n?' is-negative':'')+'">Remaining <strong>'+money(root.LMPO.currency(remaining))+'</strong></span>')+'</div>';
+      patchModificationType(modification>0n&&(!model.reallocation||!!(plan&&plan.available&&plan.valid)));
       patchApprovers(true,modification,net);
       if(bundle||!canCompose())return;
       var hasMods=modification>0n,overrun=shortfall>0n||allocations.some(function(row){return row.remaining<0n;}),key=model.amount+'|'+hasMods+'|'+overrun+'|'+net.toString();if(model.previewKey===key)return;
@@ -292,6 +305,7 @@
       if(readOnly())return;
       var target=event.target;
       if(target.hasAttribute('data-po-search')){var needle=target.value.toLowerCase(),visible=0;target.parentElement.querySelectorAll('[data-po-pick]').forEach(function(button){button.hidden=(button.dataset.poSearchText||button.textContent.toLowerCase()).indexOf(needle)<0;if(!button.hidden)visible++;});target.parentElement.querySelectorAll('.po-item-group').forEach(function(group){group.hidden=!group.querySelector('[data-po-pick]:not([hidden])');});var empty=target.parentElement.querySelector('[data-po-picker-empty]');if(empty&&target.parentElement.querySelector('[data-po-pick]')){empty.hidden=visible>0;empty.textContent='No matching items.';}return;}
+      if(target.hasAttribute('data-po-modification-type')){model.modificationClassification=target.value;return;}
       var fieldName=target.dataset.poField;if(!fieldName)return;
       var line=model.lines.find(function(row){return row.key===target.dataset.key;});
       if(!line){if(target.dataset.key)return;model[fieldName]=target.value;patchTotal();return;}
@@ -302,9 +316,9 @@
       patchTotal();
     }
     async function readBalances(){
-      try{var resp=await call({action:'Balances'});if(!resp||resp.contract!=='po-v1'||resp.success!==true||!Array.isArray(resp.balances))throw new Error(resp&&resp.error||'Availability cannot be verified.');var seen=new Set();resp.balances.forEach(function(b){if(typeof b.budgetItemId!=='string'||!/^\d+$/.test(b.budgetItemId)||seen.has(b.budgetItemId)||![b.finalCents,b.modCents,b.issuedCents,b.availableCents,b.pendingModificationCents].every(function(n){return typeof n==='string'&&/^-?\d+$/.test(n);}))throw new Error('Malformed budget balance.');seen.add(b.budgetItemId);if(BigInt(b.finalCents)+BigInt(b.modCents)-BigInt(b.issuedCents)!==BigInt(b.availableCents))throw new Error('Budget balance does not reconcile.');});return {state:'loaded',balances:resp.balances,reallocationContract:resp.reallocationContract==='po-reallocation-v1'?'po-reallocation-v1':null};}catch(e){return {state:'unavailable',balances:[],error:e.message};}
+      try{var resp=await call({action:'Balances'});if(!resp||resp.contract!=='po-v1'||resp.success!==true||!Array.isArray(resp.balances))throw new Error(resp&&resp.error||'Availability cannot be verified.');var seen=new Set();resp.balances.forEach(function(b){if(typeof b.budgetItemId!=='string'||!/^\d+$/.test(b.budgetItemId)||seen.has(b.budgetItemId)||![b.finalCents,b.modCents,b.issuedCents,b.availableCents,b.pendingModificationCents].every(function(n){return typeof n==='string'&&/^-?\d+$/.test(n);}))throw new Error('Malformed budget balance.');seen.add(b.budgetItemId);if(BigInt(b.finalCents)+BigInt(b.modCents)-BigInt(b.issuedCents)!==BigInt(b.availableCents))throw new Error('Budget balance does not reconcile.');});return {state:'loaded',balances:resp.balances,modificationTypeSupported:resp.modificationTypeSupported===true,reallocationContract:resp.reallocationContract==='po-reallocation-v1'?'po-reallocation-v1':null};}catch(e){return {state:'unavailable',balances:[],error:e.message};}
     }
-    function useBalances(result){model.balances=result.balances;model.balanceState=result.state;model.reallocationContract=result.reallocationContract||null;if(result.error)error(result.error);}
+    function useBalances(result){model.balances=result.balances;model.balanceState=result.state;model.modificationTypeSupported=result.modificationTypeSupported===true;model.reallocationContract=result.reallocationContract||null;if(result.error)error(result.error);}
     async function refresh(){var own=generation,read=++balanceGeneration;model.previewKey='';model.balanceState='loading';render();var result=await readBalances();if(!current()||generation!==own||read!==balanceGeneration)return;useBalances(result);render();}
     function reviewSnapshot(run){
       // Reload the saved plan after rejection instead of reopening the decision
@@ -362,6 +376,10 @@
       if(!model.vendors.some(function(v){return v.ID===model.vendorId;}))throw new Error('Select a verified Vendor.');
       if(action==='Submit'||preserving){if(model.balanceState!=='loaded')throw new Error('Refresh and verify budget availability before submitting.');var v=root.LMPO.validate(payload,true);for(var key of Object.keys(v.grouped)){var b=model.balances.find(function(row){return row.budgetItemId===key;});if(!b)throw new Error('A selected item has no verified balance.');}}
       if(action==='Submit'||preserving){payload.expectedBalances={};payload.expectedPendingModifications={};allocationRows().forEach(function(row){if(!row.verified)throw new Error('Item balance is unverified.');payload.expectedBalances[row.budgetItemId]=String(row.available);payload.expectedPendingModifications[row.budgetItemId]=String(row.pending);});Object.assign(payload,root.LMPO.componentExpectations(model.lines,model.balances,model.reservedLines,model.approvalBundle&&model.approvalBundle.modifications));}
+      if((action==='Submit'||preserving)&&model.modificationClassification){
+        var classification=card.querySelector('[data-po-modification-type]:enabled');
+        if(classification)payload.modificationClassification=classification.value;
+      }
       if(model.reallocationContract==='po-reallocation-v1')payload.reallocationContract='po-reallocation-v1';
       if(model.reallocation){
         if(!reallocationUI)throw new Error('Reload Budget Manager to review the reallocation.');
@@ -373,7 +391,7 @@
     function loadVendors(){var own=generation;return Promise.resolve().then(function(){return options.vendors();}).then(function(vendors){if(!current()||own!==generation)return;var seen=new Set();vendors.forEach(function(row){if(typeof row.ID!=='string'||!/^\d+$/.test(row.ID)||seen.has(row.ID))throw new Error('Vendor identity is unavailable.');seen.add(row.ID);});model.vendors=vendors;});}
     async function get(id,vendorsReady){
       var own=generation,load=++loadGeneration;
-      model.loadState='loading';model.loadId=id;model.error='';model.canEditDraft=false;model.canEditInFlight=false;model.approvalBundle=null;model.reallocation=null;model.reallocationPlan=null;model.approvalNote='';model.balanceState='loading';balanceGeneration++;render();
+      model.loadState='loading';if(model.id!==id)model.modificationClassification='';model.loadId=id;model.error='';model.canEditDraft=false;model.canEditInFlight=false;model.approvalBundle=null;model.reallocation=null;model.reallocationPlan=null;model.approvalNote='';model.balanceState='loading';balanceGeneration++;render();
       try{
         var responses=await Promise.all([call({action:'Get',id:id}),vendorsReady||Promise.resolve(),readBalances()]),resp=responses[0];
         if(!current()||own!==generation||load!==loadGeneration)return;
