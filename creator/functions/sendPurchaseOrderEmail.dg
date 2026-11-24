@@ -171,6 +171,13 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 					elementBody = elementBody + "<td style='padding:5px;text-align:right'>" + modDisplay + "</td>";
 				}
 				elementBody = elementBody + "</tr>";
+				modReason = ifnull(modification.get("reason"),"").toString();
+				if(modReason.trim() != "")
+				{
+					modReason = modReason.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+					modReason = modReason.replaceAll("\r\n","<br>").replaceAll("\r","<br>").replaceAll("\n","<br>");
+					elementBody = elementBody + "<tr><td colspan='8' style='padding:5px 5px 10px;border-bottom:1px solid #e2e8f0'><strong>Reason</strong><br>" + modReason + "</td></tr>";
+				}
 			}
 			elementBody = elementBody + "</tbody></table>";
 		}
@@ -222,11 +229,17 @@ string sendPurchaseOrderEmail(string purchaseOrderId)
 			activity.Status="Failed"; activity.Error_Detail="The PO Excel attachment could not be generated. No email was sent.";
 			return "ERROR: PO Excel attachment could not be generated.";
 		}
-		// Excel SpreadsheetML uses the .xml extension. Preserve the widget's download contract.
+		// Add the email summary sheet before converting the workbook to XLSX.
 		attachmentContent = workbook.get("content");
 		firstSheet = attachmentContent.indexOf("<Worksheet");
 		attachmentContent = attachmentContent.subString(0,firstSheet) + workbook.get("emailSheet") + attachmentContent.subString(firstSheet,attachmentContent.length()).replaceAll("<Selected/>","");
-		excelFile = attachmentContent.toFile(workbook.get("filename").replaceAll("[.]xls$",".xml"));
+		attachment = thisapp.approvalWorkbookXlsxFile(attachmentContent,workbook.get("filename").replaceAll("[.]xls$",".xlsx"));
+		if(attachment.get("success") != true)
+		{
+			activity.Status="Failed"; activity.Error_Detail="The PO XLSX attachment could not be generated. No email was sent.";
+			return "ERROR: PO XLSX attachment could not be generated.";
+		}
+		excelFile = attachment.get("file");
 		activity.Subject=subjectLine;
 		if(po.PO_Approval_State != "Pending" || approval.Status != "Pending") { activity.Status="Failed"; activity.Error_Detail="The approval changed before notification. No email was sent."; return "ERROR: PO approval state changed before notification."; }
 		activity.Status="Sending"; mailStarted = true;

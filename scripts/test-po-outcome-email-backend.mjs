@@ -59,6 +59,7 @@ function runtime(options={}){
  thisapp.poBudgetBalances=function(){throw Error('Outcome eligibility must never scan the entire phase');};
  thisapp.poBudgetBalancesForItems=function(budgetId,items){scopedBalanceCalls.push({budgetId,items});return map({success:!options.balanceFailure,balances:[{budgetItemId:'4410926123456000021',finalCents:'10000',modCents:'0'}]});};
  thisapp.poExcelWorkbook=function(){return map({success:!options.workbookFailure,content:'<Workbook><Worksheet/></Workbook>',emailSheet:'<Worksheet/>',filename:'PO.xls'});};thisapp.poElementExportRows=function(){return [];};
+ thisapp.approvalWorkbookXlsxFile=function(xml,name){return map({success:true,file:{name}});};
  `,c);
  for(const name of names){try{vm.runInContext(programs[name]+`;thisapp.${name}=${name};`,c);}catch(error){throw Error(name+': '+error.message+'\n'+programs[name]);}}
  const call=(name,...args)=>{c.args=args;return vm.runInContext(`${name}(...args.map(value=>typeof value==='object'?map(value):value))`,c);};
@@ -183,7 +184,7 @@ for(const supplemental of [false,true]) {
  assert.equal(url.hash,'#Page:Budget_Management1?budgetId='+BUDGET+'&purchaseOrderId='+PO);
  if(supplemental){assert.match(message,/Supplemental Purchase Order Approval/);assert.match(message,/4410926000005964006 · Supplement 1/);assert.match(message,/\$123,456.00/);assert.match(message,/\$283,535.06/);assert.match(message,/Supplemental Lines/);}
  else {assert.match(message,/>Purchase Order Approval</);assert.match(message,/>Purchase Order Lines</);}
- assert.equal(h.mails[0].Attachments.name,'PO.xml');
+ assert.equal(h.mails[0].Attachments.name,'PO.xlsx');
  h.call('sendPurchaseOrderEmail',PO);assert.equal(h.mails.length,1);
  if(process.env.PO_EMAIL_PREVIEW_DIR)fs.writeFileSync(process.env.PO_EMAIL_PREVIEW_DIR+'/'+(supplemental?'supplemental-email':'original-email')+'.html',message);
 }

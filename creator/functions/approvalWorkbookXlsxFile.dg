@@ -1,0 +1,23 @@
+map approvalWorkbookXlsxFile(string spreadsheetXml, string filename)
+{
+	try
+	{
+		conversion = thisapp.approvalWorkbookXlsx(spreadsheetXml);
+		output = conversion.toString().toMap().get("output").toString().toMap();
+		encoded = ifnull(output.get("base64"),"").toString();
+		if(encoded.startsWith("UEsDB"))
+		{
+			workbookFile = zoho.encryption.base64DecodeToFile(encoded,filename);
+			if(workbookFile != null && workbookFile.getFileName() == filename && workbookFile.getFileSize() > 0)
+			{
+				return {"success":true,"file":workbookFile};
+			}
+		}
+	}
+	catch (workbookError)
+	{
+		// Workbook contents and cloud logs are private and must stay out of delivery errors.
+		return {"success":false};
+	}
+	return {"success":false};
+}
