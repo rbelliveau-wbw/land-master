@@ -43,14 +43,14 @@ map poExcelWorkbook(string purchaseOrderId)
 		modSummary = "None required";
 		if(bundle.get("modifications").size() > 0)
 		{
-			modSummary = bundle.get("modifications").size() + " modifications · Net $" + modTotal;
+			modSummary = bundle.get("modifications").size() + " modifications · Net " + modTotal.text("$#,##0.00");
 		}
 		packetTitle = "Purchase Order";
 		packetReference = purchaseOrderId;
 		if(po.PO_Original != null) { packetTitle = "Supplemental Purchase Order · Supplement " + po.PO_Supplement_Number; packetReference = po.PO_Original.toString(); }
-		// Real Excel SpreadsheetML (.xls), using the application's native export format.
+		// The widget converts SpreadsheetML to XLSX. The email uses a correctly named XML workbook.
 		// Keep title/summary rows at 22/18 points; no oversized cover or spacer rows.
-		excelXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet' xmlns:x='urn:schemas-microsoft-com:office:excel'><Styles><Style ss:ID='Default' ss:Name='Normal'><Alignment ss:Vertical='Center'/><Font ss:FontName='Calibri' ss:Size='10' ss:Color='#17385F'/></Style><Style ss:ID='Title'><Font ss:Size='13' ss:Bold='1' ss:Color='#FFFFFF'/><Interior ss:Color='#17385F' ss:Pattern='Solid'/></Style><Style ss:ID='Header'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Total'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Date'><NumberFormat ss:Format='mm/dd/yy'/></Style><Style ss:ID='Number'><NumberFormat ss:Format='0.###'/></Style><Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style></Styles><Worksheet ss:Name='Purchase Order'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='140'/><Column ss:Width='220'/><Column ss:Width='55'/><Column ss:Width='45'/><Column ss:Width='120'/><Column ss:Width='80'/><Column ss:Width='85'/>";
+		excelXml = "<?xml version='1.0'?><?mso-application progid='Excel.Sheet'?><Workbook xmlns='urn:schemas-microsoft-com:office:spreadsheet' xmlns:ss='urn:schemas-microsoft-com:office:spreadsheet' xmlns:x='urn:schemas-microsoft-com:office:excel'><Styles><Style ss:ID='Default' ss:Name='Normal'><Alignment ss:Vertical='Center'/><Font ss:FontName='Calibri' ss:Size='10' ss:Color='#17385F'/></Style><Style ss:ID='Title'><Font ss:Size='13' ss:Bold='1' ss:Color='#FFFFFF'/><Interior ss:Color='#17385F' ss:Pattern='Solid'/></Style><Style ss:ID='Header'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/></Style><Style ss:ID='Money'><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Total'><Font ss:Bold='1'/><Interior ss:Color='#EAF1FB' ss:Pattern='Solid'/><NumberFormat ss:Format='$#,##0.00'/></Style><Style ss:ID='Date'><NumberFormat ss:Format='mm/dd/yy'/></Style><Style ss:ID='Number'><NumberFormat ss:Format='General'/></Style><Style ss:ID='UnitPrice'><NumberFormat ss:Format='$#,##0.00######'/></Style><Style ss:ID='Wrap'><Alignment ss:Vertical='Top' ss:WrapText='1'/></Style></Styles><Worksheet ss:Name='Purchase Order'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='140'/><Column ss:Width='220'/><Column ss:Width='55'/><Column ss:Width='45'/><Column ss:Width='120'/><Column ss:Width='80'/><Column ss:Width='85'/>";
 		excelXml = excelXml + "<Row ss:Height='22' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7' ss:StyleID='Title'><Data ss:Type='String'>" + packetTitle + "</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell ss:MergeAcross='7'><Data ss:Type='String'>" + phase + "</Data></Cell></Row><Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Vendor</Data></Cell><Cell ss:MergeAcross='1'><Data ss:Type='String'>" + vendor + "</Data></Cell><Cell ss:Index='4'><Data ss:Type='String'>PO Reference</Data></Cell><Cell ss:MergeAcross='3'><Data ss:Type='String'>" + packetReference + "</Data></Cell></Row>";
 		excelXml = excelXml + "<Row ss:Height='18' ss:AutoFitHeight='0'><Cell><Data ss:Type='String'>Request date</Data></Cell>";
 		if(po.Request_Date != null)
@@ -83,11 +83,24 @@ map poExcelWorkbook(string purchaseOrderId)
 			excelXml = excelXml + "<Cell><Data ss:Type='String'>" + heading + "</Data></Cell>";
 		}
 		excelXml = excelXml + "</Row>";
+		emailSheet = "<Worksheet ss:Name='PO Lines'><Table ss:DefaultRowHeight='18'><Column ss:Width='110'/><Column ss:Width='140'/><Column ss:Width='240'/><Column ss:Width='55'/><Column ss:Width='50'/><Column ss:Width='95'/><Column ss:Width='95'/><Row ss:Height='20' ss:StyleID='Header'>";
+		for each heading in {"Cost Code","Vendor","Description","Qty","UOM","Unit Price","Total"}
+		{
+			emailSheet = emailSheet + "<Cell><Data ss:Type='String'>" + heading + "</Data></Cell>";
+		}
+		emailSheet = emailSheet + "</Row>";
 		for each  line in PO_Item[Purchase_Order == po.ID && Revision == revision] sort by Line_Order
 		{
 			itemName = ifnull(line.Budget_Item.Item_Name,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 			note = ifnull(line.Description,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 			code = ifnull(line.Cost_Code,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			escapedUom = ifnull(line.UOM,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+			qtyCell = "<Cell/>";
+			if(ifnull(line.Quantity_Exact,"") != "") { qtyCell = "<Cell ss:StyleID='Number'><Data ss:Type='Number'>" + line.Quantity_Exact + "</Data></Cell>"; }
+			priceCell = "<Cell/>";
+			if(ifnull(line.Unit_Price_Exact,"") != "") { priceCell = "<Cell ss:StyleID='UnitPrice'><Data ss:Type='Number'>" + line.Unit_Price_Exact + "</Data></Cell>"; }
+			totalCell = "<Cell ss:StyleID='Money'><Data ss:Type='Number'>" + line.Final_Amount_Exact + "</Data></Cell>";
+			emailSheet = emailSheet + "<Row><Cell><Data ss:Type='String'>" + code + "</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + vendor + "</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + note + "</Data></Cell>" + qtyCell + "<Cell><Data ss:Type='String'>" + escapedUom + "</Data></Cell>" + priceCell + totalCell + "</Row>";
 			excelXml = excelXml + "<Row><Cell><Data ss:Type='String'>" + code + "</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + itemName + "</Data></Cell><Cell ss:StyleID='Wrap'><Data ss:Type='String'>" + note + "</Data></Cell>";
 			if(line.Quantity_Exact != null && line.Quantity_Exact != "")
 			{
@@ -228,6 +241,11 @@ map poExcelWorkbook(string purchaseOrderId)
 		result.put("filename","Purchase_Order_" + purchaseOrderId + ".xls");
 		if(po.PO_Original != null) { result.put("filename","Purchase_Order_" + po.PO_Original.toString() + "_Supplement_" + po.PO_Supplement_Number + ".xls"); }
 		result.put("content",excelXml);
+		if(po.PO_Approval_State == "Pending")
+		{
+			emailSheet = emailSheet + "</Table><WorksheetOptions xmlns='urn:schemas-microsoft-com:office:excel'><FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal><TopRowBottomPane>1</TopRowBottomPane><Selected/><PageSetup><Layout x:Orientation='Landscape'/></PageSetup></WorksheetOptions></Worksheet>";
+			result.put("emailSheet",emailSheet);
+		}
 		return result;
 	}	catch (workbookError)
 	{

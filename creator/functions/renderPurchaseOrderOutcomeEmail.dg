@@ -19,7 +19,7 @@ map renderPurchaseOrderOutcomeEmail(map content)
 			body = body.replaceAll(">" + content.get("objectId") + "</td>",">" + content.get("reference") + "</td>");
 			body = body.replaceAll("PO amount","Supplement Amount");
 			familyLabel = "Proposed Total"; if(outcome == "Approved") { familyLabel = "Revised Approved Total"; }
-			body = body.replaceAll("Cost Code Summary",familyLabel + ": " + content.get("combinedAmount").toDecimal().text("$#,##0.00") + " · New Lines By Cost Code");
+			body = body.replaceAll("Cost Code Summary",familyLabel + ": " + content.get("combinedAmount").toDecimal().text("$#,##0.00") + " · New Lines By Cost Code",true);
 		}
 		for each rawCode in content.get("costCodes")
 		{
