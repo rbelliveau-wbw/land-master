@@ -376,8 +376,10 @@
       if(!model.vendors.some(function(v){return v.ID===model.vendorId;}))throw new Error('Select a verified Vendor.');
       if(action==='Submit'||preserving){if(model.balanceState!=='loaded')throw new Error('Refresh and verify budget availability before submitting.');var v=root.LMPO.validate(payload,true);for(var key of Object.keys(v.grouped)){var b=model.balances.find(function(row){return row.budgetItemId===key;});if(!b)throw new Error('A selected item has no verified balance.');}}
       if(action==='Submit'||preserving){payload.expectedBalances={};payload.expectedPendingModifications={};allocationRows().forEach(function(row){if(!row.verified)throw new Error('Item balance is unverified.');payload.expectedBalances[row.budgetItemId]=String(row.available);payload.expectedPendingModifications[row.budgetItemId]=String(row.pending);});Object.assign(payload,root.LMPO.componentExpectations(model.lines,model.balances,model.reservedLines,model.approvalBundle&&model.approvalBundle.modifications));}
-      var classification=card.querySelector('[data-po-modification-type]:enabled');
-      if((action==='Submit'||preserving)&&classification&&classification.value)payload.modificationClassification=classification.value;
+      if((action==='Submit'||preserving)&&model.modificationClassification){
+        var classification=card.querySelector('[data-po-modification-type]:enabled');
+        if(classification)payload.modificationClassification=classification.value;
+      }
       if(model.reallocationContract==='po-reallocation-v1')payload.reallocationContract='po-reallocation-v1';
       if(model.reallocation){
         if(!reallocationUI)throw new Error('Reload Budget Manager to review the reallocation.');

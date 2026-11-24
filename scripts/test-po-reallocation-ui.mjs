@@ -66,6 +66,7 @@ h.c.card.querySelector=selector=>selector==='[data-po-context]'?context:
 vm.runInContext(helper('patchContext'),h.c);
 h.c.patchContext();assert.equal(classification.parentElement.hidden,true,'Older backends hide the Type field');
 h.c.model.modificationTypeSupported=true;
+h.c.model.modificationClassification='Purch';
 h.c.patchContext();assert.equal(classification.parentElement.hidden,false);
 await h.c.save('Save');assert.equal(h.sends[0].modificationClassification,undefined);
 await h.c.save('Submit');assert.equal(h.sends[1].modificationClassification,'Purch');
