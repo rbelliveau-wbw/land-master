@@ -45,6 +45,7 @@ function runtime({grant={},login='demo',owners=[id.actor],duplicate=false,modSta
     function removeRecords(form,predicate){tables[form]=tables[form].filter(row=>!predicate(record(form,row)));writes.push({form,remove:true});}
     thisapp.poCurrencyString=function(value){return value;};
     thisapp.budgetElementExportRows=function(){return [];}; // Readonly detail producer is executed in test-budget-element-exports.
+    thisapp.approvalWorkbookXlsxFile=function(xml,filename){return delugeMap('success',true,'file',{name:filename});};
     thisapp.resolveApprovalRoute=function(context){policyCalls.push('preview');return delugeMap('success',false,'error','Fixture route unavailable');};
     thisapp.applySharedApprovalPolicy=function(context){policyCalls.push('apply');return delugeMap('success',false,'error','Fixture route unavailable');};
     thisapp.sendModificationEmail=function(){emails.push('unexpected');throw Error('No email in preflight fixture');};
