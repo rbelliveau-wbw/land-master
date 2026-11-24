@@ -56,6 +56,22 @@ h.c.model.balances[0].unallocatedModificationCount=1;h.ui.update();assert.equal(
 // Default controls are immediately usable without changing the request's
 // established automatic mode or introducing a reason requirement on Submit.
 h=fixture();h.ui.update();h.ui.update();assert.equal(h.ui.payload(),null);await h.c.save('Submit');assert.equal(h.sends.length,1);assert.equal(h.sends[0].reallocation,undefined);assert.deepEqual(h.errors,[]);
+
+h=fixture();
+const classification={value:'Purch',disabled:true,parentElement:{hidden:true}};
+const context={innerHTML:''};
+h.c.card.querySelector=selector=>selector==='[data-po-context]'?context:
+  selector==='[data-po-modification-type]'?classification:
+  selector==='[data-po-modification-type]:enabled'&&!classification.disabled?classification:null;
+vm.runInContext(helper('patchContext'),h.c);
+h.c.patchContext();assert.equal(classification.parentElement.hidden,true,'Older backends hide the Type field');
+h.c.model.modificationTypeSupported=true;
+h.c.patchContext();assert.equal(classification.parentElement.hidden,false);
+await h.c.save('Save');assert.equal(h.sends[0].modificationClassification,undefined);
+await h.c.save('Submit');assert.equal(h.sends[1].modificationClassification,'Purch');
+h.c.model.lines[0].finalAmount='10000.00';
+h.c.patchContext();assert.equal(classification.parentElement.hidden,true);
+await h.c.save('Submit');assert.equal(h.sends[2].modificationClassification,undefined);
 h.c.model.lines[0].finalAmount='32000.00';h.ui.update();assert.match(h.host.innerHTML,/value="18,000.00"/,'Untouched default amounts follow PO line changes');assert.equal(h.ui.payload(),null,'Refreshing defaults does not initialize a custom plan');
 h=fixture();h.ui.update();reason(h,'Use the required increase only');assert.equal(h.ui.payload().items[0].components['4'],'19000.00','Reason can be the first direct edit');assert.equal(h.host.querySelector('[data-po-rea-reset]').hidden,false);reset(h);assert.equal(h.ui.payload(),null);assert.equal(h.host.querySelector('[data-po-rea-reset]').hidden,true);assert.doesNotMatch(h.host.innerHTML,/<input[^>]*data-po-rea-amount[^>]*readonly/,'Reset returns to editable defaults');
 h=fixture();h.setEditor(true);Object.assign(h.c.model,{status:'Submitted',approvalState:'Pending',commitmentState:'Reserved',canEditInFlight:true,approvalBundle:{modifications:[],rows:[]}});assert.equal(h.c.canAmend(),true);h.ui.update();assert.equal(h.ui.payload(),null);assert.equal(h.c.canAmend(),true,'Untouched direct controls preserve legacy Pending admin amendment capability');input(h,'1','1.00',true);reason(h,'Cannot change during approval');assert.equal(h.ui.payload(),null,'The panel remains locked during Pending approval');

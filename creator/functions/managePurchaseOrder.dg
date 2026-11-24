@@ -977,6 +977,7 @@ string managePurchaseOrder(string payload)
 			}
 			result = thisapp.poBudgetBalances(budgetId);
 			result.put("contract","po-v1");
+			result.put("modificationTypeSupported",true);
 			return result.toString();
 		}
 		if(action == "PreviewApprovals")
@@ -1057,6 +1058,21 @@ string managePurchaseOrder(string payload)
 			return validated.toString();
 		}
 		p = validated.get("payload");
+		modificationClassification = p.get("modificationClassification");
+		if(modificationClassification != null)
+		{
+			typedClassification = {"value":modificationClassification};
+			if(!typedClassification.toString().matches("[ ]*[{][ ]*\"value\"[ ]*:[ ]*\"(Eng|Dev|Muni|Constr|Purch)\"[ ]*[}][ ]*"))
+			{
+				result.put("error","Choose a valid Budget Modification Type.");
+				return result.toString();
+			}
+			if(action != "Submit" && amendPending != true)
+			{
+				result.put("error","Choose the Budget Modification Type when submitting a PO or saving an in-flight edit.");
+				return result.toString();
+			}
+		}
 		customReallocation = p.get("reallocation") != null;
 		token = p.get("token");
 		result.put("token",token);
@@ -1518,6 +1534,10 @@ string managePurchaseOrder(string payload)
 					}
 				}
 			}
+            if(modificationClassification != null && modificationPlan.size() == 0)
+            {
+                result.put("error","This PO no longer generates a budget modification. Review budget availability.");
+            }
             netBudgetChangeCents = 0;
             for each netPlan in modificationPlan
             {
@@ -1743,6 +1763,7 @@ string managePurchaseOrder(string payload)
 						Budget_Item=item.ID
 						Budget_Category=item.Budget_Category
 						Modification_Type=planType
+						Type_field=modificationClassification
 						Component_Reallocation=plan.get("componentReallocation") == true
 						Amount=plan.get("amount").toDecimal()
 						Labor_Budget=modLabor
@@ -1759,6 +1780,10 @@ string managePurchaseOrder(string payload)
 				}
 				mod = Budget_Modification[ID == modId];
 				mod.Modification_Type=planType;
+				if(modificationClassification != null)
+				{
+					mod.Type_field=modificationClassification;
+				}
 				mod.Component_Reallocation=plan.get("componentReallocation") == true;
 				mod.Reason=planReason;
 				mod.Amount=plan.get("amount").toDecimal();

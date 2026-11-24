@@ -44,7 +44,12 @@ const stale=runtime(),staleContext=prepare(stale).supplement;stale.c.tables.Paym
 const denied=runtime();denied.c.tables.User_Access.find(user=>user.ID===12).Edit_All_Budgets=false;assert.equal(prepare(denied).success,false,'Supplement preparation uses current create grants');
 
 // A real native Submit captures only the additional budget change in a fresh route.
-let submitted=amendCall(r,payload(prepared.supplement,{action:'Submit',id:draftId,expectedRevision:revised.snapshot.revision,token:'supplement-submission-000001'}));assert.equal(submitted.success,true,JSON.stringify(submitted));assert.equal(submitted.snapshot.approvalState,'Pending');assert.deepEqual(submitted.snapshot.approvalBundle.rows.map(row=>row.role),['VP','CFO']);assert.equal(r.c.capturedRoutes.at(-1).netBudgetChange,'6000.00');assert.equal(r.c.capturedRoutes.at(-1).amount,'6000.00');
+const submission = {action:'Submit',id:draftId,expectedRevision:revised.snapshot.revision,token:'supplement-submission-000001'};
+const invalidType = amendCall(r,payload(prepared.supplement,{...submission,modificationClassification:'Engineering'}));
+assert.match(invalidType.error,/valid Budget Modification Type/);
+assert.equal(r.tables().Payment_Request.find(po=>String(po.ID)===draftId).PO_Revision,revised.snapshot.revision);
+let submitted=amendCall(r,payload(prepared.supplement,{...submission,modificationClassification:'Eng'}));assert.equal(submitted.success,true,JSON.stringify(submitted));assert.equal(submitted.snapshot.approvalState,'Pending');assert.deepEqual(submitted.snapshot.approvalBundle.rows.map(row=>row.role),['VP','CFO']);assert.equal(r.c.capturedRoutes.at(-1).netBudgetChange,'6000.00');assert.equal(r.c.capturedRoutes.at(-1).amount,'6000.00');
+assert.equal(r.tables().Budget_Modification.find(mod=>String(mod.ID)===submitted.snapshot.budgetModificationId).Type_field,'Eng');
 assert.equal(r.c.capturedRoutes.at(-1).originalPoId,'51');assert.deepEqual(r.tables().PO_Item.slice(0,oldLines.length),oldLines);assert.deepEqual(r.tables().Budget_Approvals.slice(0,oldApprovals.length),oldApprovals);
 const blocked=amendCall(r,payload(prepared.supplement,{action:'Submit',token:'second-pending-supplement-0001',lines:[{...payload(prepared.supplement).lines[0],key:'other-new-line'}]}));assert.equal(blocked.success,false);assert.match(blocked.error,/pending or rejected supplement/);
 const familyPreview=amendCall(r,{action:'PreviewDelete',id:'51',budgetId:'61',userAccessId:'12',expectedRevision:original.PO_Revision});assert.equal(familyPreview.success,true,JSON.stringify(familyPreview));assert.equal(familyPreview.deletePlan.family.length,2,'Original deletion includes its supplement');

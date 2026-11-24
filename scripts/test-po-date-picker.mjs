@@ -5,6 +5,8 @@ const source=fs.readFileSync('widgets/budget-manager/src/app/widget.html','utf8'
 const pop={classList:{remove:()=>{}}};let dispatched=0,selected=null,closed=0;
 const input={value:'',isConnected:true,setAttribute:()=>{},closest:()=>({querySelector:()=>({setAttribute:()=>{}})}),focus:()=>{},dispatchEvent:()=>{dispatched++;}};
 const ctx=vm.createContext({$:()=>pop,cleanVal:value=>String(value||''),document:{addEventListener:()=>{}},window:{addEventListener:()=>{}},Event:class{}});
+vm.runInContext(fs.readFileSync('widgets/budget-manager/src/app/po-domain.js','utf8'),ctx);
+ctx.window.LMPO=ctx.LMPO;
 vm.runInContext(source.slice(source.indexOf('var REQUEST_DATE_PICKER ='),source.indexOf('function wireModForm(fin, agg)')),ctx);
 Object.assign(ctx.REQUEST_DATE_PICKER,{input,iso:true,onSelect:value=>{selected=value;},onClose:()=>{closed++;}});
 ctx.setRequestDateFromPicker('02/29/2028');assert.equal(selected,'2028-02-29');assert.equal(input.value,'2028-02-29');assert.equal(dispatched,0);assert.equal(closed,1);

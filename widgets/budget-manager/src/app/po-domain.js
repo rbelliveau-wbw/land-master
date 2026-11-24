@@ -4,6 +4,7 @@
   // Creator counts the decimal point in Max Digits: 13 integral digits + '.' + 2.
   var UOMS = [ "CY", "EA", "LB", "LF",  "LOTS", "LS", "S", "SET", "SF", "SY", "TN",   "VF", "WK"];
   var ELEMENTS = [{id:"1",label:"(1) Labor"},{id:"2",label:"(2) Materials"},{id:"3",label:"(3) Equipment"},{id:"4",label:"(4) Subcontractor"},{id:"5",label:"(5) Other"}];
+  var MODIFICATION_TYPES = Object.freeze(["Eng", "Dev", "Muni", "Constr", "Purch"]);
   var MAX_CENTS = 999999999999999n;
   // Match the existing editor's grouped-on-blur convention without converting
   // exact PO decimals through Number or accepting malformed comma grouping.
@@ -199,5 +200,5 @@
       return {budgetItemId:id,elements:elements,unallocatedIssued:unallocatedPO,unallocatedModifications:unallocatedMod,componentsAvailable:complete,derivedBaseline:derivedBaseline,defaultElement:derivedBaseline?defaultElement:null};
     });
   }
-  root.LMPO={supplementContext:supplementContext,departmentAllows:departmentAllows,uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
+  root.LMPO={modificationTypes:MODIFICATION_TYPES,supplementContext:supplementContext,departmentAllows:departmentAllows,uoms:UOMS,elements:ELEMENTS,editDecimal:editDecimal,formatDecimal:formatDecimal,duplicate:duplicate,costCode:function(subdivision,minor,element){return subdivision&&minor&&/^[1-5]$/.test(element)?"C_"+subdivision+"-"+minor+"-"+element:"";},money:money,currency:currency,multiply:multiply,override:override,calculated:calculated,validate:validate,commitments:commitments,allocations:allocations,componentExpectations:componentExpectations,elementAllocations:elementAllocations};
 })(typeof globalThis!=="undefined"?globalThis:this);
