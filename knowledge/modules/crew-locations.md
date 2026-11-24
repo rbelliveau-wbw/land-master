@@ -621,3 +621,13 @@ live view preferences. It is independent of live task mirror readiness. The live
 **Edit Schedule** and its existing permissions stay available. No Creator form,
 field, function, Custom API or publication change is needed. Roll back by mapping
 the affected environment to crew-locations **1.10.3**.
+
+## Editable Sample Schedule — 1.10.5
+
+**Edit Sample Dates** lets users change milestone and task Start, Days and End
+values. Timeline milestone handles and the duration controls use the same local
+sample dates. Changes apply immediately, persist for the current preview tab and
+reset on reload or **Reset Sample Dates**. A sample-only model validates all
+affected dates before updating any of them. The preview uses no Creator session,
+data requests, draft recovery, or saved preferences. Roll back to **1.10.4** to
+restore the read-only preview. No Creator changes are required.

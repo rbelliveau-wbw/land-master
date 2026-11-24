@@ -14,7 +14,7 @@
   function message(text,state='ready'){$('connection').textContent=text;$('connection').dataset.state=state;}
   function decode(raw){let data=raw;for(let i=0;i<7;i++){if(typeof data==='string'){try{data=JSON.parse(data);}catch{throw new Error('Creator returned an unreadable response');}continue;}if(!data||typeof data!=='object'||Array.isArray(data))throw new Error('Creator returned an invalid response');if(data.ok!==undefined)return data;if(data.code!=null&&String(data.code)!=='3000')throw new Error(data.message||data.description||'Creator rejected the request');data=data.result??data.details?.output??data.output??data.data;}throw new Error('Creator returned an unsupported response');}
   async function api(body,write=false){
-    if(S.sample)throw new Error('The sample schedule is read-only');
+    if(S.sample)throw new Error('Creator requests are unavailable in the sample schedule');
     const c=LMRuntime.current();if(!['DEVELOPMENT','STAGE','PRODUCTION'].includes(c.environment)||!c.user||c.user==='(unknown)')throw new Error('Scheduling requires an authenticated Creator session');
     let timer;try{
       const raw=await Promise.race([LMData.request('crew:'+body.action,()=>ZOHO.CREATOR.DATA.invokeCustomApi({api_name:LMRuntime.apiName('Crew_Locations_Widget'),http_method:'POST',content_type:'application/json',payload:{payload:JSON.stringify(body)}}),{readOnly:!write}),new Promise((_,reject)=>{timer=setTimeout(()=>{const e=new Error(write?'The save response is unknown. Check Status before continuing.':'The request timed out');e.unknown=write;reject(e);},write?90000:30000);})]);
@@ -119,7 +119,7 @@
     try{return await Promise.race([check,timeout]);}finally{clearTimeout(timer);S.managementBusy=false;controls();}
   }
   async function managementApi(body){
-    if(S.sample)throw new Error('The sample schedule is read-only');
+    if(S.sample)throw new Error('Creator requests are unavailable in the sample schedule');
     // The manager releases an unknown-save lock only after matching the exact
     // request, kind and destination returned by an explicit read-only recheck.
     if(body.action==='employee-status'||body.action==='management-status'&&body.statusFor==='crew')return nativeManagementStatus(body);
@@ -270,7 +270,6 @@
       for(const key of stages){const r=p.records[type][key],fields=['start','days','end'].filter(f=>M.visible(S.hidden,key,f));for(const [i,field] of fields.entries()){
         const val=r?(field==='days'?M.duration(r):M.us(r[field])):null;
         html+='<td class="'+(field==='days'?'days-cell':'date-cell')+(i===fields.length-1?' stage-end':'')+'">';
-        if(S.sample){html+=esc(val??'')+'</td>';continue;}
         const reason=r?M.editable(p,r,field==='days'?(r.start!=null?'end':'start'):field,S.permissions,S.day):'No verified source record',disabled=!!reason||S.busy||S.loading||!!S.operation?.unknown;
         const input='<input class="stage-input '+(field==='days'?'days-input':'')+'" type="text" inputmode="'+(field==='days'?'numeric':'text')+'" data-record="'+(r?esc(recordKey(r)):'')+'" data-field="'+field+'" data-source-locked="'+!!reason+'" aria-label="'+esc(phaseName(p)+' '+type+' '+key+' '+field)+'" value="'+(val==null?'':esc(val))+'" placeholder="'+(field==='days'?'—':'MM/DD/YYYY')+'" '+(disabled?'disabled':'')+' title="'+esc(reason||key+' '+field)+'">';
         if(field==='days'){const delta=r&&S.deltas.get(recordKey(r)),amount=delta?Math.abs(delta.delta):0,arrow=(dir,all)=>'<button class="arrow" data-arrow="'+dir+'" data-all="'+all+'" data-record="'+(r?esc(recordKey(r)):'')+'" data-source-locked="'+(!!reason||!amount)+'" aria-label="'+esc((all?'All ':'')+(dir<0?'earlier':'later')+' stages · '+key)+'" title="'+(dir<0?'Move earlier ':'Move later ')+amount+' days'+(all?' · all stages':' · adjacent stage')+'" '+(disabled||!amount?'disabled':'')+'>'+(dir<0?(all?'«':'‹'):(all?'»':'›'))+'</button>';html+='<div class="days-wrap"><span class="arrows">'+arrow(-1,false)+arrow(-1,true)+'</span>'+input+'<span class="arrows">'+arrow(1,false)+arrow(1,true)+'</span></div>';}else html+=input;html+='</td>';
@@ -314,7 +313,15 @@
     for(const returned of result.records||[]){const key=returned.type+':'+returned.id,record=S.model.records.get(key);if(record&&targets.has(key))for(const field of ['start','end'])if(Object.prototype.hasOwnProperty.call(returned,field))record[field]=M.date(returned[field]);}
   }
   function closeOperation(){if(S.busy)return;const saved=S.operation?.result?.state==='saved';$('operationDialog').close();$('app').inert=false;if(!S.operation?.unknown){S.operation=null;if(saved&&root.LMSuccess)LMSuccess.show('Schedule saved locally · no Projects push');load();}controls();}
-  async function commit(p,changes,origin,extra={}){if(!drafts)throw Error('Schedule draft controls are unavailable. Refresh before editing.');return drafts.stage(p,changes,origin,extra);}
+  async function commit(p,changes,origin,extra={}){
+    if(S.sample){
+      if(!root.CrewSampleSchedule.apply(S.model,p,changes,S.day,origin))return null;
+      render();
+      return {state:'sample'};
+    }
+    if(!drafts)throw Error('Schedule draft controls are unavailable. Refresh before editing.');
+    return drafts.stage(p,changes,origin,extra);
+  }
   async function saveOperation(p,changes,origin,extra={}){
     changes=changes.filter(c=>Object.keys(c.fields).length);if(!changes.length)return null;if(S.busy||S.loading||S.managementBusy||S.managementUnknown||S.operation?.unknown)throw new Error('Finish reviewing the current operation first');
     const capturedScope=managementScope(),op={action:'apply',operationId:crypto.randomUUID(),subdivisionId:p.id,origin,changes,...extra};openOperation(op);
@@ -355,7 +362,7 @@
     $('picker').addEventListener('input',e=>{if(!S.picker)return;S.picker.query=e.target.value;paintOptions();positionPicker();});$('picker').addEventListener('keydown',e=>{if(!S.picker)return;if(e.key==='Escape'){const button=S.picker.button;closePicker();button.focus();return;}if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();const opts=[...$('picker').querySelectorAll('[role=option]')],i=opts.indexOf(document.activeElement),next=i<0?(e.key==='ArrowDown'?0:opts.length-1):(i+(e.key==='ArrowDown'?1:-1)+opts.length)%opts.length;focusOption(opts[next]);}});
     window.addEventListener('resize',positionPicker);document.addEventListener('scroll',event=>{if(S.picker&&!$('picker').contains(event.target))positionPicker();},true);
     $('showAll').addEventListener('change',e=>{S.filters.showAll=e.target.checked;storeView();render();});$('refresh').onmousedown=e=>e.preventDefault();$('refresh').onclick=requestRefresh;$('scheduleSave').onmousedown=e=>e.preventDefault();$('scheduleSave').onclick=saveSchedule;$('scheduleKeepEditing').onclick=()=>{$('scheduleRefreshDialog').close();$('refresh').focus();};$('scheduleRefreshDialog').addEventListener('cancel',e=>{e.preventDefault();$('scheduleRefreshDialog').close();$('refresh').focus();});$('scheduleDiscardRefresh').onclick=()=>{try{drafts.discard();S.deltas.clear();$('scheduleRefreshDialog').close();refreshSchedule();}catch(error){message(error.message,'error');}};$('history').onclick=()=>history();$('closeHistory').onclick=()=>$('historyDialog').close();$('closeEndpoint').onclick=()=>{$('endpointDialog').close();$('endpointContent').replaceChildren();};
-    if(!S.sample)root.CrewDrag.install({state:S,staged:true,scope:managementScope,allowed:()=>S.ready&&$('app').dataset.workspace==='schedule'&&$('app').dataset.scheduleView==='timeline',commit,controls});
+    root.CrewDrag.install({state:S,staged:!S.sample,sample:S.sample,scope:S.sample?()=> 'sample':managementScope,allowed:()=>S.ready&&$('app').dataset.workspace==='schedule'&&$('app').dataset.scheduleView==='timeline',commit,controls});
     $('tableTopScroll').onscroll=()=>$('tableScroll').scrollLeft=$('tableTopScroll').scrollLeft;$('tableScroll').onscroll=()=>$('tableTopScroll').scrollLeft=$('tableScroll').scrollLeft;
     $('reviewSave').onclick=()=>{$('app').inert=true;$('operationDialog').showModal();};$('closeOperation').onclick=closeOperation;$('doneOperation').onclick=closeOperation;$('operationDialog').addEventListener('cancel',e=>{e.preventDefault();if(!S.busy)closeOperation();});
     $('checkOperation').onclick=async()=>{if(S.busy)return;S.busy=true;$('checkOperation').disabled=true;try{const result=await api({action:'status',operationId:S.operation.operationId,subdivisionId:S.operation.subdivisionId});if(result.operationId!==S.operation.operationId)throw new Error('Creator returned status for a different operation');if(result.state==='saved'){requireDestinations(result,S.operation.operationId,S.operation.changes);applyConfirmedValues(result,S.operation.changes);finishOperation(result);render();}else{const error=new Error(result.message||'The operation still needs review');error.unknown=result.unknown;error.data=result;finishOperation(null,error);}}catch(e){e.unknown=true;finishOperation(null,e);}finally{$('checkOperation').disabled=false;}};
@@ -366,12 +373,22 @@
     app.dataset.sampleSchedule='true';
     document.title=app.querySelector('h1').textContent='Sample Schedule';
     const mode=app.querySelector('.mode');
-    mode.textContent='Read-Only Sample Data';
+    mode.textContent='Sample Data · Edits Reset on Reload';
     mode.removeAttribute('title');
-    $('editorView').textContent='Schedule Dates';
+    $('editorView').textContent='Edit Sample Dates';
     for(const id of ['workspaceTabs','crewWorkspace','assignmentWindow','sampleScheduleLink','scheduleSave','history','refresh','issues'])$(id).hidden=true;
-    S.model=root.CrewSampleSchedule.create(S.day);
+    const reset=$('resetSample');
+    reset.hidden=false;
+    reset.onclick=()=>{
+      root.CrewDrag.cancel();
+      S.deltas.clear();
+      S.model=root.CrewSampleSchedule.create(S.day);
+      render();
+      message('Sample dates reset.');
+    };
     S.capabilities={sources:{crews:true,tasks:true}};
+    S.permissions=root.CrewSampleSchedule.permissions;
+    S.model=root.CrewSampleSchedule.create(S.day);
     S.filters=defaultFilters();
     S.ready=true;
     scheduleView('timeline');
