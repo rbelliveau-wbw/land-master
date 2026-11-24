@@ -101,4 +101,19 @@ test('Saved New phase selections cannot re-enter the picker; project lookup disp
  assert.ok(scope.CrewApp.allOptions('phases').some(option=>option.id==='assigned'));
  assert.equal(state.model.phases[0].projectName,'','missing display text is not inferred from a phase name or ID');
 });
+test('Sample edits affect only sample records, apply atomically and reset from the seed',()=>{
+ const scope=vm.createContext({Date,Intl});scope.window=scope;
+ vm.runInContext(source,scope);
+ vm.runInContext(fs.readFileSync('widgets/crew-locations/src/app/crew-sample-schedule.js','utf8'),scope);
+ const model=scope.CrewSampleSchedule.create(day),phase=model.phases[0],live=normalized();
+ const milestone=phase.records.M['Rough Cut'],task=phase.records.T['Rough Cut'];
+ const milestoneEdit=M.change(milestone,{end:day+25}),taskEdit=M.change(task,{end:day+30});
+ assert.throws(()=>scope.CrewSampleSchedule.apply(live,live.phases[0],[milestoneEdit],day,'table'),/sample schedule/);
+ assert.throws(()=>scope.CrewSampleSchedule.apply(model,phase,[milestoneEdit,M.change(task,{end:day+1})],day,'table'),/on or before/);
+ assert.equal(milestone.end,day+24);
+ assert.equal(scope.CrewSampleSchedule.apply(model,phase,[milestoneEdit,taskEdit],day,'table'),2);
+ assert.equal(milestone.end,day+25);
+ assert.equal(task.end,day+30);
+ assert.equal(scope.CrewSampleSchedule.create(day).phases[0].records.T['Rough Cut'].end,day+27);
+});
 console.log('Passed '+checks+' Crew Locations scheduling and contract groups. Deluge compilation/live installation are separate checks.');

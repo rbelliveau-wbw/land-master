@@ -38,9 +38,12 @@ environment. Include hidden people in the picker so they can be restored
 individually or with **Show Everyone**. Keep source staffing and operational
 actions tied to their full employee sets.
 
-**View Sample Schedule** opens a separate read-only preview from **Milestones &
-Tasks**. It uses the same timeline and filters with clearly labeled fictional
-records and a **Schedule Dates** tab. The live workspace retains **Edit Schedule**.
+**View Sample Schedule** opens a separate preview from **Milestones & Tasks**.
+Use **Edit Sample Dates** for milestone and task changes and the Timeline handles
+for milestone boundaries. Apply changes to the fictional records in the current
+tab immediately. **Reset Sample Dates** restores the starting dates, and a reload
+starts a fresh preview. Keep the sample separate from Creator reads, writes and
+the live schedule's drafts and preferences.
 
 October 30 supersedes October 29's natural page-height timeline: both main
 workspaces fit Creator's actual iframe, and their report regions scroll. The
