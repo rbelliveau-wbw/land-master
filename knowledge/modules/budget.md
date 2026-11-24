@@ -1,3 +1,13 @@
+## My Approvals Badge — 122.29.156
+
+The Budget Manager Approvals tab shows the current user's pending count. It
+matches the My Approvals filter across tracks, including when the count is
+zero. The All Approvals filter continues to show all visible pending rows.
+The badge uses the existing Budget Manager count transition.
+
+This widget change requires no Creator deployment. Roll back by mapping
+Budget Manager Production to 122.29.155 and deploying Pages.
+
 ## Modification History Continuity — 122.29.149, November 13, 2026
 
 The two-column editor retains its prior-history disclosure state across form
