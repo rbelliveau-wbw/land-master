@@ -4,24 +4,24 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Budget Manager</title>
-<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.157"></script>
+<script src="https://static.zohocdn.com/creator/widgets/version/2.0/widgetsdk-min.js?v=122.29.158"></script>
 <script src="runtime-context.js"></script>
 <script src="creator-data.js"></script>
 <script src="critical-error-reporter.js"></script>
-<script src="po-domain.js?v=122.29.157"></script>
-<script src="po-reallocation.js?v=122.29.157"></script>
-<script src="po-reallocation-ui.js?v=122.29.157"></script>
-<script src="po-grid.js?v=122.29.157"></script>
-<script src="po-controller.js?v=122.29.157"></script>
-<script src="po-progress.js?v=122.29.157"></script>
-<script src="po-activity.js?v=122.29.157"></script>
-<script src="po-ui.js?v=122.29.157"></script>
-<script src="request-attachments.js?v=122.29.157"></script>
-<script src="full-budget-export.js?v=122.29.157"></script>
-<script src="budget-snapshot-pdf.js?v=122.29.157"></script>
-<link rel="stylesheet" href="request-attachments.css?v=122.29.157">
-<link rel="stylesheet" href="purchase-orders.css?v=122.29.157">
-<link rel="stylesheet" href="po-activity.css?v=122.29.157">
+<script src="po-domain.js?v=122.29.158"></script>
+<script src="po-reallocation.js?v=122.29.158"></script>
+<script src="po-reallocation-ui.js?v=122.29.158"></script>
+<script src="po-grid.js?v=122.29.158"></script>
+<script src="po-controller.js?v=122.29.158"></script>
+<script src="po-progress.js?v=122.29.158"></script>
+<script src="po-activity.js?v=122.29.158"></script>
+<script src="po-ui.js?v=122.29.158"></script>
+<script src="request-attachments.js?v=122.29.158"></script>
+<script src="full-budget-export.js?v=122.29.158"></script>
+<script src="budget-snapshot-pdf.js?v=122.29.158"></script>
+<link rel="stylesheet" href="request-attachments.css?v=122.29.158">
+<link rel="stylesheet" href="purchase-orders.css?v=122.29.158">
+<link rel="stylesheet" href="po-activity.css?v=122.29.158">
 <script src="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.js?v=1.80.132"></script>
 <link rel="stylesheet" href="https://rbelliveau-wbw.github.io/land-master/prod/proforma-manager/comments.css?v=1.80.132">
 <style>
@@ -1216,15 +1216,26 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 /* Modification approvals section on the Approvals page */
 .mod-appr-track .appr-track-head .tname{color:#6d28d9}
 .mod-appr-cards{padding:12px 16px;display:flex;flex-direction:column;gap:9px}
-.mod-appr-card{border:1px solid var(--line);border-radius:11px;padding:11px 14px;background:#fbfaff}
-.mod-appr-card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mod-appr-card{--mod-card-inset:14px;border:1px solid var(--line);border-radius:12px;padding:var(--mod-card-inset);background:#fbfaff}
+.mod-appr-card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:calc(-1 * var(--mod-card-inset)) calc(-1 * var(--mod-card-inset)) 10px;padding:10px var(--mod-card-inset);border-radius:11px 11px 0 0;background:#0b2345;color:#f5f9ff}
+.mod-appr-card .mod-appr-item{min-width:0;flex-wrap:wrap}
+.mod-appr-card .mod-appr-item .nm{color:inherit;white-space:normal;overflow-wrap:anywhere}
+.mod-appr-card-top .codepill{max-width:100%;white-space:normal;overflow-wrap:anywhere;background:#22395a;color:#d6e4f7}
+.mod-appr-card-top .mod-badge{font-size:11px;border-radius:999px;text-transform:none}
+.mod-appr-card-top .mod-badge.appr{background:#caefdd;color:#07543b}
+.mod-appr-card-top button:focus-visible{outline:2px solid #b7d5fb;outline-offset:2px}
 .mod-appr-item{display:flex;align-items:center;gap:7px;min-width:0}
 .mod-appr-item .nm{font-size:13px;font-weight:700;color:var(--text)}
 .mod-appr-card .ma{font-family:"SF Mono",monospace;font-weight:800;font-size:13.5px}
-.mod-appr-card .ma.pos{color:#177245}
-.mod-appr-card .ma.neg{color:#b3261e}
-.mod-appr-acts{margin-left:auto;display:inline-flex;gap:6px}
+.mod-appr-card .ma.pos{color:#a0e8cb}
+.mod-appr-card .ma.neg{color:#ffc1bf}
+.mod-appr-acts{margin-left:auto;display:inline-flex;flex-wrap:wrap;justify-content:flex-end;max-width:100%;gap:6px}
+.mod-appr-card-top [data-moddetail]{background:#0b2345;border-color:#7891b2;color:#f5f9ff}
+.mod-appr-card-top [data-moddetail]:hover{background:#17365c;border-color:#f5f9ff}
 .mod-appr-meta{font-size:10.5px;color:var(--faint);margin-top:4px}
+.mod-appr-card .mdate.appr{background:#e2f5ec;color:#07543b}
+.mod-appr-card .mdate .dl{text-transform:none}
+.mod-appr-card .mod-appr-reason{overflow-wrap:anywhere}
 .mod-appr-reason{font-size:12px;color:#41557a;margin-top:3px}
 .mod-appr-steps{display:flex;align-items:flex-start;gap:0;margin-top:9px;padding-top:9px;border-top:1px dashed #e4dcf5}
 /* Modification action buttons — real buttons, no ghosts */
@@ -1285,6 +1296,12 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .mod-chain-line .role{font-weight:800;color:var(--muted);min-width:34px}
 .mod-chain-line .appr-recipient-edit{flex:1;max-width:300px;height:27px;font-size:11.5px;padding:0 10px;border:1px solid var(--line-strong);border-radius:7px;color:var(--text);background:#fff}
 .mod-chain-line .person{flex:1;color:#41557a}
+.mod-appr-card .mod-chain-line{align-items:baseline;flex-wrap:wrap;gap:4px 9px;font-size:13px}
+.mod-appr-card .mod-chain-line .role{flex:0 0 38px}
+.mod-appr-card .mod-chain-line :is(.person,.appr-recipient-edit){flex:0 1 auto;min-width:0;max-width:min(280px,100% - 47px);color:var(--text);overflow-wrap:anywhere}
+.mod-appr-card .mod-chain-line .appr-recipient-edit{width:280px;height:1.45em;padding:0;border:1px solid transparent;border-radius:3px 3px 0 0;background:transparent;font:inherit}
+.mod-appr-card .mod-chain-line .appr-recipient-edit:focus{border-bottom-color:var(--primary);box-shadow:none;outline:2px solid var(--line-strong);outline-offset:1px}
+.mod-appr-status-approved{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .mod-approval-comments{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:12px}
 .mod-approval-comments h4{margin:0 0 9px;font-size:12px;color:var(--text)}
 .mod-approval-comment{margin:0 0 10px;padding:8px 10px;border-radius:7px;background:#f3f7fc}
@@ -1858,25 +1875,25 @@ tr.irow:hover .nbtn{border-color:#8fa9d2;background:#e3edfa}
 .mod-classification-detail{margin-bottom:7px;overflow-wrap:anywhere}
 </style>
 <style>.comment-activity-btn{box-sizing:border-box;width:25px;height:25px;border-radius:7px;box-shadow:0 2px 5px rgba(21,61,108,.1)}.comment-activity-btn svg{width:14px;height:14px}.comment-activity-count{right:-6px;bottom:-6px;min-width:14px;height:14px;padding:0 2px;border-width:1.5px;font-size:7px}.comment-activity-btn.has-recent:after{top:3px;right:3px;width:4px;height:4px;box-shadow:0 0 0 1.5px #e8fbff}.project-comment{width:32.5px;height:32.5px;border-radius:9px}.project-comment svg{width:18.2px;height:18.2px}.project-comment .comment-activity-count{min-width:16px;height:16px;font-size:8px}.project-comment.has-recent:after{top:4px;right:4px}.phase-comment,.phase-attachment{width:28.75px;height:28.75px;border-radius:8px}.phase-comment svg,.phase-attachment svg{width:16.1px;height:16.1px}.phase-comment .comment-activity-count,.phase-attachment .comment-activity-count{min-width:15px;height:15px;font-size:7.5px}.phase-comment.has-recent:after{top:4px;right:4px}.project-comment:hover,.phase-comment:hover,.phase-attachment:hover{border-color:#82a9d8;box-shadow:0 4px 10px rgba(21,61,108,.14);background:#f4f8ff;color:#285b97}</style>
-<link rel="stylesheet" href="budget-layout.css?v=122.29.157">
-<script src="success-feedback.js?v=122.29.157"></script>
-<link rel="stylesheet" href="interaction-motion.css?v=122.29.157">
-<script src="interaction-motion.js?v=122.29.157"></script>
-<script src="interaction-surfaces.js?v=122.29.157"></script>
-<script src="number-edit-commit.js?v=122.29.157"></script>
-<script src="number-transitions.js?v=122.29.157"></script>
-<script src="number-surfaces.js?v=122.29.157"></script>
-<link rel="stylesheet" href="number-transitions.css?v=122.29.157">
-<script src="budget-import-ledger.js?v=122.29.157"></script>
-<script src="budget-import-workspace.js?v=122.29.157"></script>
-<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.157">
-<script src="po-register.js?v=122.29.157"></script>
-<link rel="stylesheet" href="po-register.css?v=122.29.157">
-<script src="budget-requests-workspace.js?v=122.29.157"></script>
-<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.157">
+<link rel="stylesheet" href="budget-layout.css?v=122.29.158">
+<script src="success-feedback.js?v=122.29.158"></script>
+<link rel="stylesheet" href="interaction-motion.css?v=122.29.158">
+<script src="interaction-motion.js?v=122.29.158"></script>
+<script src="interaction-surfaces.js?v=122.29.158"></script>
+<script src="number-edit-commit.js?v=122.29.158"></script>
+<script src="number-transitions.js?v=122.29.158"></script>
+<script src="number-surfaces.js?v=122.29.158"></script>
+<link rel="stylesheet" href="number-transitions.css?v=122.29.158">
+<script src="budget-import-ledger.js?v=122.29.158"></script>
+<script src="budget-import-workspace.js?v=122.29.158"></script>
+<link rel="stylesheet" href="budget-import-workspace.css?v=122.29.158">
+<script src="po-register.js?v=122.29.158"></script>
+<link rel="stylesheet" href="po-register.css?v=122.29.158">
+<script src="budget-requests-workspace.js?v=122.29.158"></script>
+<link rel="stylesheet" href="budget-requests-workspace.css?v=122.29.158">
 
-<link rel="stylesheet" href="modal-layout.css?v=122.29.157">
-<link rel="stylesheet" href="modification-editor.css?v=122.29.157">
+<link rel="stylesheet" href="modal-layout.css?v=122.29.158">
+<link rel="stylesheet" href="modification-editor.css?v=122.29.158">
 </head>
 <body>
 
@@ -2759,7 +2776,7 @@ if (window.LMCriticalErrors) window.LMCriticalErrors.configure({
   // Keep in sync with widget.config.json on every release — this is the version
   // stamped on automatic critical-error reports, and a stale value sends triage
   // to the wrong build.
-  widget:"Budget Manager", version:"122.29.157", code:"BMW",
+  widget:"Budget Manager", version:"122.29.158", code:"BMW",
   apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],
   getContext:function(){ var r=LMRuntime.current(); return { environment:r.environment, sdkMode:S.liveSDK?"LIVE":(S.useMock?"MOCK":"NO-SDK"), view:S.view, user:S.currentUser||r.user||"", budgetId:String(S.edBudget&&S.edBudget.ID||"") }; }
 });
@@ -9791,19 +9808,22 @@ function buildModApprovalPageSection(b) {
       acts += "<button class='mbtn sm primary' data-modreopen='" + escAttr(String(mod.ID)) + "'>Revise &amp; Resubmit</button>";
     }
     acts += "<button class='mbtn sm neutral' data-moddetail='" + escAttr(String(mod.ID)) + "'>Details</button>";
-    var withChip = info.waitingOnMe
+    var withChip = st.toLowerCase() === "approved" ? "" : info.waitingOnMe
       ? "<span class='mpc-with me'>⏳ Waiting on you</span>"
       : "<span class='mpc-with'>" + esc(info.label + (info.who ? " · " + info.who : "")) + "</span>";
-    // Per-approver lines: editable recipient (same delegation as budget-track cards) + status.
+    // Preserve recipient editing and accessible status in the existing approval rows.
     var chainLines = chain.map(function (row) {
       var who = cleanVal(firstRaw(row, ["Approver", "Approver_Name"]));
       var rst = cleanVal(row.Status || "Not Sent") || "Not Sent";
       var role = cleanVal(firstRaw(row, ["Title", "Role"])) || "Approver";
       var recip = canEditApprovalRow(row)
-        ? "<input class='appr-recipient-edit' data-apprrecip='" + escAttr(String(row.ID)) + "' data-last-saved='" + escAttr(who) + "' value='" + escAttr(who) + "' placeholder='approver@email.com'>"
+        ? "<input class='appr-recipient-edit' aria-label='" + escAttr(role + " Approver") + "' data-apprrecip='" + escAttr(String(row.ID)) + "' data-last-saved='" + escAttr(who) + "' value='" + escAttr(who) + "' title='" + escAttr(who) + "' placeholder='—'>"
         : "<span class='person'>" + esc(who || "—") + "</span>";
+      var status = rst.toLowerCase() === "approved"
+        ? "<span class='mod-appr-status-approved'>Approved</span>"
+        : "<span class='st " + stCls(rst) + "' style='" + statusStyleAttr(rst) + "'>" + esc(stLabel(rst)) + "</span>";
       return "<div class='mod-chain-line'><span class='role'>" + esc(role) + "</span>" + recip +
-        "<span class='st " + stCls(rst) + "' style='" + statusStyleAttr(rst) + "'>" + esc(stLabel(rst)) + "</span></div>";
+        status + "</div>";
     }).join("");
     return "<div class='mod-appr-card" + (info.waitingOnMe ? " waiting-me" : "") + "'>" +
       "<div class='mod-appr-card-top'>" +
@@ -9813,7 +9833,7 @@ function buildModApprovalPageSection(b) {
         "<span class='mod-appr-acts'>" + acts + "</span>" +
       "</div>" +
       "<div class='mod-appr-meta'>" + modRefPill(mod) + modDateChips(mod) +
-        (cleanVal(mod.Approved_By) ? "<span class='mdate by'>" + esc(cleanVal(mod.Approved_By)) + "</span>" : "") + "</div>" +
+        (!chain.length && cleanVal(mod.Approved_By) ? "<span class='mdate by'>" + esc(cleanVal(mod.Approved_By)) + "</span>" : "") + "</div>" +
       (cleanVal(mod.Reason) ? "<div class='mod-appr-reason'>" + esc(cleanVal(mod.Reason)) + "</div>" : "") +
       (steps ? "<div class='mod-appr-steps'>" + steps + "</div>" : "") +
       (chainLines ? "<div class='mod-chain-lines'>" + chainLines + "</div>" : "") +
@@ -9821,8 +9841,7 @@ function buildModApprovalPageSection(b) {
     "</div>";
   }).join("");
   return "<div class='appr-track mod-appr-track'>" +
-    "<div class='appr-track-head'><div class='tname'>Modification Approvals</div>" +
-    "<div class='appr-admin-actions'><span class='modcount'>" + mods.length + " modification" + (mods.length === 1 ? "" : "s") + "</span></div></div>" +
+    "<div class='appr-track-head'><div class='tname'>Modification Approvals</div></div>" +
     "<div class='mod-appr-cards'>" + cards + "</div></div>";
 }
 
@@ -15069,7 +15088,7 @@ if (window.ZOHO && window.ZOHO.CREATOR && ZOHO.CREATOR.DATA && typeof ZOHO.CREAT
       if(window.LMPerf)LMPerf.end("budget:sdk-context");
       return runtime;
     })
-    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.157",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
+    .then(function (runtime) { if(window.LMCriticalErrors){LMCriticalErrors.configure({widget:"Budget Manager",version:"122.29.158",code:"BMW",apiCandidates:[LMRuntime.apiName(CFG.customApis.errorReport)],getContext:function(){var r=LMRuntime.current();return{environment:r.environment,sdkMode:S.liveSDK?"LIVE":"NO-SDK",view:S.view,user:S.currentUser||r.user||"",budgetId:String(S.edBudget&&S.edBudget.ID||"")};}});LMCriticalErrors.markReady();} auditLog("info","Runtime identity resolved",runtime); boot(); })
     .catch(function (err) {
       S.liveSDK = false;
       S.useMock = false;
