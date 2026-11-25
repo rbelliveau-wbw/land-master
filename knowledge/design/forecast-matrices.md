@@ -1,11 +1,12 @@
 # Forecast matrices
 
-## Year on Total — November 18, 2026
+## Shared Timeline Header
 
 Builder Forecasts uses one shared date header for Phase → Builder and Builder
-→ Phase. Month labels sit directly above the sums for the selected filters and
-measure, regardless of which groups are open. Put the fiscal year label in its
-subtotal column. The header, group totals and expanded editors share the same
+→ Phase. Show each month over its calendar year in smaller type. Put the fiscal
+year label in its subtotal column. A dedicated Totals row directly below the
+headings shows the sums for the selected filters and measure, including closed
+groups. The headings, totals, group rows and expanded editors share the same
 column tracks and horizontal scrollbar. Preserve pinned names and period
 totals, the Volume Heatmap, and Sliding push on changed visible totals.
 

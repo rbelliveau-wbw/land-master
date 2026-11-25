@@ -353,25 +353,39 @@
       header.dataset.years=scope+'|'+key;
       $('phaseReportContent').style.setProperty('--phase-year-count',years.length);
       $('phaseReportContent').style.setProperty('--phase-month-tracks',years.map(()=>'repeat(12,var(--phase-month-width)) var(--phase-year-total-width)').join(' '));
-      const cell=(label,id,classes='',title=label)=>'<span class="phase-header-cell '+classes+'" data-visible-period="'+esc(id)+'" title="'+esc(title)+'"><span>'+esc(label)+'</span>'+ForecastNumbers.markup('—',scope+'|'+id)+'</span>';
-      header.innerHTML='<span class="phase-axis-start phase-header-cell"><span>'+(grouping==='phase'?'Phase':'Builder')+'</span></span>'+
-        cell('Total','total','phase-axis-total')+'<span class="phase-months">'+years.map(year=>
-          M.months.map((month,index)=>cell(month.slice(0,3),M.start(year,index),'',month+' '+M.start(year,index).slice(0,4))).join('')+
-          cell('WFY '+year,year,'phase-year-total','WFY '+year+' Total')).join('')+'</span>';
+      const periods=years.flatMap(year=>[
+        ...M.months.map((month,index)=>{
+          const id=M.start(year,index), calendarYear=id.slice(0,4);
+          return {id,label:month.slice(0,3),calendarYear,title:month+' '+calendarYear,classes:''};
+        }),
+        {id:year,label:'WFY '+year,title:'WFY '+year+' Total',classes:'phase-year-total'}
+      ]);
+      const heading=(label,classes='',calendarYear='')=>'<span class="phase-header-cell '+classes+'"><span>'+esc(label)+'</span>'+
+        (calendarYear?'<small class="phase-calendar-year">'+esc(calendarYear)+'</small>':'')+'</span>';
+      const total=(id,classes,title)=>'<span class="phase-header-cell '+classes+'" data-visible-period="'+esc(id)+'" title="'+esc(title)+'">'+
+        ForecastNumbers.markup('—',scope+'|'+id)+'</span>';
+      header.innerHTML='<div class="forecast-phase-axis phase-column-headings">'+heading(grouping==='phase'?'Phase':'Builder','phase-axis-start')+
+        heading('Total','phase-axis-total')+'<span class="phase-months">'+periods.map(period=>heading(period.label,period.classes,period.calendarYear)).join('')+'</span></div>'+
+        '<div class="forecast-phase-axis phase-visible-totals"><span class="phase-axis-start phase-header-cell">Totals</span>'+
+        total('total','phase-axis-total','Total')+'<span class="phase-months">'+periods.map(period=>total(period.id,period.classes,period.title)).join('')+'</span></div>';
     }
     const totals=new Map();
     for(const snapshot of S.snapshots.values())mergeMonthlyTotals(totals,phaseTotals(rows(snapshot),snapshot));
     const available=S.snapshots.size>0;
     const today=(S.snapshot||S.snapshots.values().next().value)?.today;
+    const headings=header.querySelector('.phase-column-headings .phase-months').children;
+    const totalsRow=header.querySelector('.phase-visible-totals');
     let total=0;
-    [...header.querySelector('.phase-months').children].forEach((node,position)=>{
+    [...totalsRow.querySelector('.phase-months').children].forEach((node,position)=>{
       const year=years[Math.floor(position/13)], month=position%13, values=totals.get(year)||[];
       const value=month===12?values.reduce((sum,item)=>sum+item,0):values[month]??0;
       if(month===12)total+=value;
-      node.classList.toggle('current-month',!!today&&month<12&&M.start(year,month).slice(0,7)===today.slice(0,7));
-      ForecastNumbers.update(node.lastElementChild,available?count(value):'—');
+      const current=!!today&&month<12&&node.dataset.visiblePeriod.slice(0,7)===today.slice(0,7);
+      headings[position].classList.toggle('current-month',current);
+      node.classList.toggle('current-month',current);
+      ForecastNumbers.update(node.firstElementChild,available?count(value):'—');
     });
-    ForecastNumbers.update(header.querySelector('.phase-axis-total').lastElementChild,available?count(total):'—');
+    ForecastNumbers.update(totalsRow.querySelector('.phase-axis-total').firstElementChild,available?count(total):'—');
     return years;
   }
   function phaseTotals(matrix,snapshot) {

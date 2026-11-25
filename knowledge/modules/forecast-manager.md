@@ -1,3 +1,10 @@
+## Builder Forecasts Totals Row — 1.12.6
+
+The shared timeline shows calendar years below the month names. For example,
+January in WFY 2026 is labeled Jan 2027. A dedicated Totals row shows the same
+filtered counts beneath the month, fiscal subtotal and Total columns in both
+groupings. Rollback restores Forecast Manager 1.12.5 in the environment mapping.
+
 ## Inline Phase Reordering — 1.12.4
 
 Drag the six-dot handle on a phase to move it. The insertion line shows the
