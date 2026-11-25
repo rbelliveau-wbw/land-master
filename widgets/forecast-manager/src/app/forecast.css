@@ -571,16 +571,17 @@ tbody tr:hover .builder-column{background:#f4f8fe}
 }
 .forecast-phase-axis .phase-axis-start{left:0;gap:5px;flex-wrap:wrap}
 .forecast-phase-axis .phase-axis-total{left:var(--phase-name-width);justify-content:center;white-space:nowrap;border-right:2px solid #a9bfd9}
-#phaseMonthHeader{
-  margin:0 0 6px;background:#dce8f5;color:#254967;font-size:14px;font-weight:650;
-  border-block:1px solid #b2c6dd;
-}
+#phaseMonthHeader{margin:0 0 6px;color:#254967;font-size:14px;font-weight:650}
+.phase-column-headings{min-height:42px;background:#dce8f5;border-top:1px solid #b2c6dd}
+.phase-visible-totals{min-height:32px;background:#dce8f5;border-block:1px solid #b2c6dd}
+.phase-calendar-year{font-size:.875em;font-weight:500}
 .phase-months{display:grid;grid-template-columns:var(--phase-month-tracks)}
 .phase-year-total{background:#d5e4f4;border-right:1px solid #b2c6dd}
 #phaseMonthHeader .phase-header-cell{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:5px 2px;text-align:center;white-space:nowrap}
 #phaseMonthHeader .phase-axis-start{align-items:flex-start;padding-inline:11px}
 #phaseMonthHeader .phase-header-cell .number-push{font-weight:750;font-variant-numeric:tabular-nums}
-#phaseMonthHeader .current-month{background:#eee5fb;color:#624381;box-shadow:inset 0 3px #c3a8e4}
+#phaseMonthHeader .current-month{background:#eee5fb;color:#624381}
+.phase-column-headings .current-month{box-shadow:inset 0 3px #c3a8e4}
 .phase-month{
   display:grid;place-items:center;min-width:0;padding:3px 1px;
   font-size:14px;font-variant-numeric:tabular-nums;
