@@ -1,3 +1,7 @@
+## Budget Modification Approval Cards — 122.29.158
+
+The Modification Approvals section keeps its route strip above plain-text recipient rows. The navy card header shows the item, amount, approval badge and actions. The saved approval timestamp appears below the header when available. Completed route markers replace repeated visible Approved labels in the recipient rows. Existing recipient editing and approval permissions still apply. Roll back by mapping Budget Manager Production to 122.29.157 and deploying Pages.
+
 ## My Approvals Badge — 122.29.156
 
 The Budget Manager Approvals tab shows the current user's pending count. It

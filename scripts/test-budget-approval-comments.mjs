@@ -33,6 +33,37 @@ assert.match(view,/previous@example\.test/);assert.match(view,/10\/21\/2026/);as
 assert.match(view,new RegExp("data-modnote='"+aid+"'"));assert.match(view,/Retained note/);assert.doesNotMatch(view,/<button|Add comment|Post|Save Note/);
 assert.doesNotMatch(c.modApprovalCommentsHtml([saved],null,false,false),/<textarea/,'Read-only history never grants a composer');
 assert.match(c.modApprovalCommentsHtml([row],row,true,true),/id='modRejNotes' aria-required='true'/);
+
+Object.assign(c, {
+  budgetModsReady:()=>true, modsForBudget:()=>[mod], maybeRepairModChains(){},
+  canSubmitMod:()=>true, lookupId:()=>'', lookupName:()=> 'Engineering',
+  modSignedAmount:()=>1250, fmtModAmount:()=> '+$1,250',
+  modStatusOf:record=>record.Status, canEditApprovalRow:()=>owned,
+  stCls:status=>status.toLowerCase(), stLabel:status=>status, statusStyleAttr:()=> '',
+});
+for(const name of ['modRefPill','modDateChips','modWithInfo','modBadge','buildModApprovalPageSection']) {
+  vm.runInContext(sourceOf(name),c);
+}
+mod.Status='Approved';
+mod.Approved_On='11/24/2026 11:59:15 AM';
+row.Status='Approved';
+view=c.buildModApprovalPageSection({ID:bid});
+assert.match(view,/mod-badge appr'>Approved/);
+assert.match(view,/mdate appr'>.*11\/24\/2026 11:59:15 AM/);
+assert.match(view,/mod-appr-status-approved'>Approved/);
+assert.doesNotMatch(view,/Fully approved|class='st approved'/i);
+assert.match(view,/mod-appr-steps.*mod-chain-lines/);
+assert.match(view,/aria-label='CFO Approver'.*value='cfo@example\.test'/);
+owned=false;
+view=c.buildModApprovalPageSection({ID:bid});
+assert.match(view,/class='person'>cfo@example\.test/);
+assert.doesNotMatch(view,/data-apprrecip/);
+delete mod.Approved_On;
+reset();
+view=c.buildModApprovalPageSection({ID:bid});
+assert.match(view,/class='st pending'/);
+assert.match(view,/data-modapprove/);
+
 draft('Draft for CFO');assert.equal(c.modApprovalNote(row),'Draft for CFO');actor='other';assert.equal(c.modApprovalNote(row),'Retained note','Drafts cannot leak across actor/environment scope');actor='reviewer';
 c.clearModApprovalNote(aid,'Older draft',key());assert.equal(c.modApprovalNote(row),'Draft for CFO','An older completion preserves a newer draft');
 
